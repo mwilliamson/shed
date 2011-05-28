@@ -8,11 +8,8 @@ import org.zwobble.shed.parser.tokeniser.Token;
 import org.zwobble.shed.parser.tokeniser.TokenPosition;
 import org.zwobble.shed.parser.tokeniser.TokenType;
 
-import com.google.common.collect.PeekingIterator;
-
 import static java.lang.String.format;
-import static org.zwobble.shed.parser.parsing.Result.failure;
-
+import static java.util.Arrays.asList;
 import static org.zwobble.shed.parser.parsing.Result.success;
 import static org.zwobble.shed.parser.tokeniser.TokenType.WHITESPACE;
 
@@ -20,12 +17,17 @@ public class Rules {
     public static <T, U> Rule<T> then(final Rule<U> originalRule, final ParseAction<U, T> action) {
         return new Rule<T>() {
             @Override
-            public Result<T> parse(PeekingIterator<TokenPosition> tokens) {
+            public Result<T> parse(TokenIterator tokens) {
                 Result<U> result = originalRule.parse(tokens);
-                if (result.anyErrors()) {
+                if (result.getType() == Result.Type.NO_MATCH || result.getType() == Result.Type.FATAL) {
                     return result.changeValue(null);
                 }
-                return action.apply(result.get());
+                Result<T> actionResult = action.apply(result);
+                if (actionResult.getType() == Result.Type.SUCCESS) {
+                    return result.changeValue(actionResult.get());
+                } else {
+                    return result.changeValue(null);
+                }
             }
         };
     }
@@ -33,20 +35,37 @@ public class Rules {
     public static Rule<RuleValues> sequence(final Rule<?>... rules) {
         return new Rule<RuleValues>() {
             @Override
-            public Result<RuleValues> parse(PeekingIterator<TokenPosition> tokens) {
+            public Result<RuleValues> parse(TokenIterator tokens) {
                 RuleValues values = new RuleValues();
+                List<Error> errors = new ArrayList<Error>();
                 for (Rule<?> rule : rules) {
                     Result<?> result = rule.parse(tokens);
                     if (result.anyErrors()) {
-                        if (rule instanceof GuardRule) {
+                        errors.addAll(result.getErrors());
+                        if (rule instanceof GuardRule && result.getType() == Result.Type.NO_MATCH) {
                             return result.changeValue(null);                            
-                        } else {
-                            return result.toFatal(null);                            
+                        } else if (result.getType() != Result.Type.ERROR_RECOVERED) {
+                            Rule<?> lastRule = rules[rules.length - 1];
+                            if (lastRule instanceof LastRule) {
+                                Result<?> lastRuleResult;
+                                while ((lastRuleResult = lastRule.parse(tokens)).getType() == Result.Type.NO_MATCH) {
+                                    tokens.next();
+                                }
+                                if (lastRuleResult.getType() == Result.Type.SUCCESS) {
+                                    return new Result<RuleValues>(new RuleValues(), errors, Result.Type.ERROR_RECOVERED);
+                                }
+                            }
+                            return result.toType(null, Result.Type.FATAL);                                
                         }
                     }
                     values.add(rule, result.get());
                 }
-                return success(values);
+                if (errors.isEmpty()) {
+                    return success(values);                    
+                } else {
+                    return new Result<RuleValues>(values, errors, Result.Type.ERROR_RECOVERED);
+                }
+                
             }
         };
     }
@@ -62,30 +81,45 @@ public class Rules {
     private static <T> Rule<List<T>> repeatedWithSeparator(final Rule<T> rule, final Rule<?> separator, final boolean allowEmpty) {
         return new Rule<List<T>>() {
             @Override
-            public Result<List<T>> parse(PeekingIterator<TokenPosition> tokens) {
+            public Result<List<T>> parse(TokenIterator tokens) {
                 List<T> values = new ArrayList<T>();
+                List<Error> errors = new ArrayList<Error>();
                 Result<T> firstResult = rule.parse(tokens);
                 if (firstResult.anyErrors()) {
-                    if (allowEmpty && !firstResult.isFatal()) {
+                    if (allowEmpty && firstResult.getType() == Result.Type.NO_MATCH) {
                         return success(values);
                     }
-                    return firstResult.changeValue(null);
+                    if (firstResult.getType() != Result.Type.ERROR_RECOVERED) {
+                        return firstResult.changeValue(null);
+                    }
+                    errors.addAll(firstResult.getErrors());
                 }
-                values.add(firstResult.get());
+                if (firstResult.hasValue()) {
+                    values.add(firstResult.get());                    
+                }
                 while (true) {
                     Result<?> separatorResult = separator.parse(tokens);
                     if (separatorResult.anyErrors()) {
-                        if (firstResult.isFatal()) {
-                            return firstResult.changeValue(null);
+                        if (separatorResult.getType() == Result.Type.NO_MATCH) {
+                            if (errors.isEmpty()) {
+                                return success(values);                    
+                            } else {
+                                return new Result<List<T>>(values, errors, Result.Type.ERROR_RECOVERED);
+                            }
                         }
-                        return success(values);
+                        return firstResult.changeValue(values);
                     }
                     
                     Result<T> ruleResult = rule.parse(tokens);
                     if (ruleResult.anyErrors()) {
-                        return ruleResult.changeValue(null);
+                        if (firstResult.getType() != Result.Type.ERROR_RECOVERED) {
+                            return ruleResult.changeValue(values);                            
+                        }
+                        errors.addAll(ruleResult.getErrors());
                     }
-                    values.add(ruleResult.get());
+                    if (ruleResult.hasValue()) {
+                        values.add(ruleResult.get());                    
+                    }
                 }
             }
         };
@@ -94,10 +128,14 @@ public class Rules {
     public static <T> Rule<T> optional(final Rule<T> rule) {
         return new Rule<T>() {
             @Override
-            public Result<T> parse(PeekingIterator<TokenPosition> tokens) {
+            public Result<T> parse(TokenIterator tokens) {
                 Result<T> result = rule.parse(tokens);
                 if (result.anyErrors()) {
-                    return success(null);
+                    if (result.getType() == Result.Type.NO_MATCH) {
+                        return success(null);                        
+                    } else {
+                        return result.changeValue(null);
+                    }
                 }
                 return result;
             }
@@ -106,6 +144,10 @@ public class Rules {
     
     public static <T> Rule<T> guard(Rule<T> rule) {
         return new GuardRule<T>(rule);
+    }
+    
+    public static <T> Rule<T> last(Rule<T> rule) {
+        return new LastRule<T>(rule);
     }
     
     public static Rule<Void> keyword(final Keyword keyword) {
@@ -123,10 +165,10 @@ public class Rules {
     public static Rule<String> tokenOfType(final TokenType type) {
         return new Rule<String>() {
             @Override
-            public Result<String> parse(PeekingIterator<TokenPosition> tokens) {
+            public Result<String> parse(TokenIterator tokens) {
                 TokenPosition firstToken = tokens.peek();
                 if (firstToken.getToken().getType() != type) {
-                    return error(firstToken, type);
+                    return error(firstToken, type, Result.Type.NO_MATCH);
                 }
                 return success(tokens.next().getToken().getValue());
             }
@@ -136,10 +178,10 @@ public class Rules {
     public static Rule<Void> token(final Token expectedToken) {
         return new Rule<Void>() {
             @Override
-            public Result<Void> parse(PeekingIterator<TokenPosition> tokens) {
+            public Result<Void> parse(TokenIterator tokens) {
                 TokenPosition firstToken = tokens.peek();
                 if (!firstToken.getToken().equals(expectedToken)) {
-                    return error(firstToken, expectedToken);
+                    return error(firstToken, expectedToken, Result.Type.NO_MATCH);
                 }
                 tokens.next();
                 return success(null);
@@ -147,15 +189,20 @@ public class Rules {
         };
     }
     
-    private static <T> Result<T> error(TokenPosition actual, TokenType tokenType) {
-        return error(actual, tokenType.name().toLowerCase());
+    private static <T> Result<T> error(TokenPosition actual, TokenType tokenType, Result.Type type) {
+        return error(actual, tokenType.name().toLowerCase(), type);
     }
     
-    private static <T> Result<T> error(TokenPosition actual, Token token) {
-        return error(actual, token.describe());
+    private static <T> Result<T> error(TokenPosition actual, Token token, Result.Type type) {
+        return error(actual, token.describe(), type);
     }
     
-    private static <T> Result<T> error(TokenPosition actual, Object expected) {
-        return failure(new Error(actual.getLineNumber(), actual.getCharacterNumber(), format("Expected %s but got %s", expected, actual.getToken().describe())));
+    private static <T> Result<T> error(TokenPosition actual, Object expected, Result.Type type) {
+        String message = format("Expected %s but got %s", expected, actual.getToken().describe());
+        return new Result<T>(
+            null,
+            asList(new Error(actual.getLineNumber(), actual.getCharacterNumber(), message)),
+            type
+        );
     }
 }

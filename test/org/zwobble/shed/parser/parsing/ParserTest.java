@@ -3,11 +3,7 @@ package org.zwobble.shed.parser.parsing;
 import java.util.Collections;
 
 import org.junit.Test;
-import org.zwobble.shed.parser.tokeniser.TokenPosition;
 import org.zwobble.shed.parser.tokeniser.Tokeniser;
-
-import com.google.common.collect.Iterators;
-import com.google.common.collect.PeekingIterator;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.is;
@@ -49,27 +45,38 @@ public class ParserTest {
     
     @Test public void
     errorsIfImportIsMissingSemicolon() {
-        assertThat(parser.source().parse(tokens("package shed.util.collections; import shed import shed.collections;")),
-            is(Result.<SourceNode>fatal(asList(new Error(1, 43, "Expected symbol \";\" but got whitespace \" \""))))
+        assertThat(parser.source().parse(tokens("package shed.util.collections; import shed import shed.collections;")).getErrors(),
+            is(asList(new Error(1, 43, "Expected symbol \";\" but got whitespace \" \"")))
+        );
+    }
+    
+    @Test public void
+    parserAttemptsToParseRestOfSourceFileIfErrorIsFound() {
+        String source = "package shed.util.collections; import shed import shed.collections; import shed.stuff;";
+        assertThat(parser.source().parse(tokens(source)).get(),
+            is(new SourceNode(
+                new PackageDeclarationNode(asList("shed", "util", "collections")),
+                asList(new ImportNode(asList("shed", "stuff")))
+            ))
         );
     }
     
     @Test public void
     errorIsRaisedIfPackageDeclarationDoesNotStartWithPackageKeyword() {
-        assertThat(parser.packageDeclaration().parse(tokens("packag shed.util.collections;")),
-                   is(Result.<PackageDeclarationNode>failure(asList(new Error(1, 1, "Expected keyword \"package\" but got identifier \"packag\"")))));
+        assertThat(parser.packageDeclaration().parse(tokens("packag shed.util.collections;")).getErrors(),
+                   is(asList(new Error(1, 1, "Expected keyword \"package\" but got identifier \"packag\""))));
     }
     
     @Test public void
     errorInPackageDeclarationIsRaisedIfWhitespaceIsEncounteredInsteadOfDot() {
-        assertThat(parser.packageDeclaration().parse(tokens("package shed .util.collections;")),
-                   is(Result.<PackageDeclarationNode>fatal(asList(new Error(1, 13, "Expected symbol \";\" but got whitespace \" \"")))));
+        assertThat(parser.packageDeclaration().parse(tokens("package shed .util.collections;")).getErrors(),
+                   is(asList(new Error(1, 13, "Expected symbol \";\" but got whitespace \" \""))));
     }
     
     @Test public void
     errorInPackageDeclarationIsRaisedIfWhitespaceIsEncounteredInsteadOfIdentifier() {
-        assertThat(parser.packageDeclaration().parse(tokens("package shed. util.collections;")),
-                   is(Result.<PackageDeclarationNode>fatal(asList(new Error(1, 14, "Expected identifier but got whitespace \" \"")))));
+        assertThat(parser.packageDeclaration().parse(tokens("package shed. util.collections;")).getErrors(),
+                   is(asList(new Error(1, 14, "Expected identifier but got whitespace \" \""))));
     }
     
     @Test public void
@@ -78,7 +85,7 @@ public class ParserTest {
                    is(success(new ImportNode(asList("shed", "util", "collections")))));
     }
     
-    private PeekingIterator<TokenPosition> tokens(String input) {
-        return Iterators.peekingIterator(tokeniser.tokenise(input).iterator());
+    private TokenIterator tokens(String input) {
+        return new TokenIterator(tokeniser.tokenise(input));
     }
 }

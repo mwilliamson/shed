@@ -2,13 +2,12 @@ package org.zwobble.shed.parser.parsing;
 
 import java.util.List;
 
-import static org.zwobble.shed.parser.parsing.Rules.guard;
-
-import static org.zwobble.shed.parser.parsing.Rules.optional;
-
 import static org.zwobble.shed.parser.parsing.Result.success;
+import static org.zwobble.shed.parser.parsing.Rules.guard;
 import static org.zwobble.shed.parser.parsing.Rules.keyword;
+import static org.zwobble.shed.parser.parsing.Rules.last;
 import static org.zwobble.shed.parser.parsing.Rules.oneOrMoreWithSeparator;
+import static org.zwobble.shed.parser.parsing.Rules.optional;
 import static org.zwobble.shed.parser.parsing.Rules.sequence;
 import static org.zwobble.shed.parser.parsing.Rules.symbol;
 import static org.zwobble.shed.parser.parsing.Rules.then;
@@ -31,8 +30,8 @@ public class Parser {
             ),
             new ParseAction<RuleValues, SourceNode>() {
                 @Override
-                public Result<SourceNode> apply(RuleValues result) {
-                    return success(new SourceNode(result.get(packageDeclaration), result.get(imports)));
+                public Result<SourceNode> apply(Result<RuleValues> result) {
+                    return success(new SourceNode(result.get().get(packageDeclaration), result.get().get(imports)));
                 }
             }
         );
@@ -45,12 +44,12 @@ public class Parser {
                 guard(keyword(PACKAGE)),
                 whitespace(),
                 names = dotSeparatedIdentifiers(),
-                symbol(";")
+                last(symbol(";"))
             ),
             new ParseAction<RuleValues, PackageDeclarationNode>() {
                 @Override
-                public Result<PackageDeclarationNode> apply(RuleValues result) {
-                    return success(new PackageDeclarationNode(result.get(names)));
+                public Result<PackageDeclarationNode> apply(Result<RuleValues> result) {
+                    return success(new PackageDeclarationNode(result.get().get(names)));
                 }
             }
         );
@@ -63,12 +62,15 @@ public class Parser {
                 guard(keyword(IMPORT)),
                 whitespace(),
                 (names = dotSeparatedIdentifiers()),
-                symbol(";")
+                last(symbol(";"))
             ),
             new ParseAction<RuleValues, ImportNode>() {
                 @Override
-                public Result<ImportNode> apply(RuleValues result) {
-                    return success(new ImportNode(result.get(names)));
+                public Result<ImportNode> apply(Result<RuleValues> result) {
+                    if (result.getType() != Result.Type.SUCCESS) {
+                        return result.changeValue(null);
+                    }
+                    return success(new ImportNode(result.get().get(names)));
                 }
             }
         );
