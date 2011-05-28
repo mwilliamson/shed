@@ -2,6 +2,8 @@ package org.zwobble.shed.parser.parsing;
 
 import java.util.List;
 
+import static org.zwobble.shed.parser.parsing.Rules.guard;
+
 import static org.zwobble.shed.parser.parsing.Rules.optional;
 
 import static org.zwobble.shed.parser.parsing.Result.success;
@@ -40,7 +42,7 @@ public class Parser {
         final Rule<List<String>> names;
         return then(
             sequence(
-                keyword(PACKAGE),
+                guard(keyword(PACKAGE)),
                 whitespace(),
                 names = dotSeparatedIdentifiers(),
                 symbol(";")
@@ -58,7 +60,7 @@ public class Parser {
         final Rule<List<String>> names;
         return then(
             sequence(
-                keyword(IMPORT),
+                guard(keyword(IMPORT)),
                 whitespace(),
                 (names = dotSeparatedIdentifiers()),
                 symbol(";")

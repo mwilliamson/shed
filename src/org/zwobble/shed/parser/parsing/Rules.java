@@ -38,7 +38,11 @@ public class Rules {
                 for (Rule<?> rule : rules) {
                     Result<?> result = rule.parse(tokens);
                     if (result.anyErrors()) {
-                        return result.changeValue(null);
+                        if (rule instanceof GuardRule) {
+                            return result.changeValue(null);                            
+                        } else {
+                            return result.toFatal(null);                            
+                        }
                     }
                     values.add(rule, result.get());
                 }
@@ -62,7 +66,7 @@ public class Rules {
                 List<T> values = new ArrayList<T>();
                 Result<T> firstResult = rule.parse(tokens);
                 if (firstResult.anyErrors()) {
-                    if (allowEmpty) {
+                    if (allowEmpty && !firstResult.isFatal()) {
                         return success(values);
                     }
                     return firstResult.changeValue(null);
@@ -71,6 +75,9 @@ public class Rules {
                 while (true) {
                     Result<?> separatorResult = separator.parse(tokens);
                     if (separatorResult.anyErrors()) {
+                        if (firstResult.isFatal()) {
+                            return firstResult.changeValue(null);
+                        }
                         return success(values);
                     }
                     
@@ -95,6 +102,10 @@ public class Rules {
                 return result;
             }
         };
+    }
+    
+    public static <T> Rule<T> guard(Rule<T> rule) {
+        return new GuardRule<T>(rule);
     }
     
     public static Rule<Void> keyword(final Keyword keyword) {
