@@ -1,10 +1,10 @@
 package org.zwobble.shed.parser.tokeniser;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.google.common.collect.Lists.charactersOf;
-import static java.util.Collections.emptyList;
 
 public class Tokeniser {
     private static final String operatorCharacters = ".;";
@@ -14,7 +14,7 @@ public class Tokeniser {
         int startCharacterNumber = 1;
         int currentCharacterNumber = 1;
         if (inputString.isEmpty()) {
-            return emptyList();
+            return Collections.singletonList(new TokenPosition(lineNumber, currentCharacterNumber, Token.end()));
         }
         List<TokenPosition> tokens = new ArrayList<TokenPosition>();
         TokenType currentTokenType = null;
@@ -44,6 +44,7 @@ public class Tokeniser {
             }
         }
         tokens.add(new TokenPosition(lineNumber, startCharacterNumber, toToken(currentTokenValue.toString(), currentTokenType)));
+        tokens.add(new TokenPosition(lineNumber, currentCharacterNumber, Token.end()));
         return tokens;
     }
     

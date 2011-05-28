@@ -4,5 +4,6 @@ public enum TokenType {
     KEYWORD,
     WHITESPACE,
     IDENTIFIER,
-    SYMBOL
+    SYMBOL,
+    END
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.zwobble.shed.parser.tokeniser.Keyword;
+import org.zwobble.shed.parser.tokeniser.Token;
 import org.zwobble.shed.parser.tokeniser.TokenPosition;
 import org.zwobble.shed.parser.tokeniser.TokenType;
 
@@ -56,7 +57,7 @@ public class Parser {
                 }
                 names.add(identifierResult.get());
             } else {
-                return error(next, format("%s or %s", symbol("."), symbol(";")));
+                return error(next, format("%s or %s", symbol(".").describe(), symbol(";").describe()));
             }
         }
     }
@@ -86,11 +87,14 @@ public class Parser {
     }
     
     private <T> Result<T> error(TokenPosition actual, TokenType tokenType) {
-        return failure(new Error(actual.getLineNumber(), actual.getCharacterNumber(), 
-            format("Expected %s but got %s", tokenType.name().toLowerCase(), actual.getToken())));
+        return error(actual, tokenType.name().toLowerCase());
+    }
+    
+    private <T> Result<T> error(TokenPosition actual, Token token) {
+        return error(actual, token.describe());
     }
     
     private <T> Result<T> error(TokenPosition actual, Object expected) {
-        return failure(new Error(actual.getLineNumber(), actual.getCharacterNumber(), format("Expected %s but got %s", expected, actual.getToken())));
+        return failure(new Error(actual.getLineNumber(), actual.getCharacterNumber(), format("Expected %s but got %s", expected, actual.getToken().describe())));
     }
 }

@@ -2,7 +2,6 @@ package org.zwobble.shed.parser.tokeniser;
 
 import java.util.List;
 
-import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import com.google.common.base.Function;
@@ -21,23 +20,23 @@ public class TokeniserTest {
     private final Tokeniser tokeniser = new Tokeniser();
     
     @Test public void
-    emptyStringIsEmptyListOfTokens() {
-        assertThat(tokens(""), Matchers.<Token>empty());
+    emptyStringIsSingletonOfEndToken() {
+        assertThat(tokens(""), is(asList(Token.end())));
     }
     
     @Test public void
     tokeniseKeyword() {
-        assertThat(tokens("package"), is(asList(new Token(TokenType.KEYWORD, "package"))));
+        assertThat(tokens("package"), is(asList(new Token(TokenType.KEYWORD, "package"), Token.end())));
     }
     
     @Test public void
     tokeniseIdentifier() {
-        assertThat(tokens("bob"), is(asList(new Token(TokenType.IDENTIFIER, "bob"))));
+        assertThat(tokens("bob"), is(asList(new Token(TokenType.IDENTIFIER, "bob"), Token.end())));
     }
     
     @Test public void
     tokeniseSymbol() {
-        assertThat(tokens("."), is(asList(new Token(TokenType.SYMBOL, "."))));
+        assertThat(tokens("."), is(asList(new Token(TokenType.SYMBOL, "."), Token.end())));
     }
     
     @Test public void
@@ -50,7 +49,8 @@ public class TokeniserTest {
             identifier("util"),
             symbol("."),
             identifier("collections"),
-            symbol(";")
+            symbol(";"),
+            Token.end()
         )));
     }
     

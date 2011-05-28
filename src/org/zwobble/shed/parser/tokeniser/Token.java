@@ -4,6 +4,8 @@ import lombok.Data;
 
 @Data
 public class Token {
+    private static final Token END = new Token(TokenType.END, null);
+    
     public static Token keyword(Keyword keyword) {
         return new Token(TokenType.KEYWORD, keyword.keywordName());
     }
@@ -20,11 +22,14 @@ public class Token {
         return new Token(TokenType.WHITESPACE, value);
     }
     
+    public static Token end() {
+        return END;
+    }
+    
     private final TokenType type;
     private final String value;
     
-    @Override
-    public String toString() {
+    public String describe() {
         return String.format("%s \"%s\"", type.name().toLowerCase(), value);
     }
 }
