@@ -2,37 +2,47 @@ package org.zwobble.shed.parser.parsing;
 
 import java.util.List;
 
-import org.zwobble.shed.parser.tokeniser.TokenPosition;
-
-import com.google.common.collect.PeekingIterator;
+import static org.zwobble.shed.parser.parsing.Rules.optional;
 
 import static org.zwobble.shed.parser.parsing.Result.success;
 import static org.zwobble.shed.parser.parsing.Rules.keyword;
-import static org.zwobble.shed.parser.parsing.Rules.repeatedWithSeparator;
+import static org.zwobble.shed.parser.parsing.Rules.oneOrMoreWithSeparator;
 import static org.zwobble.shed.parser.parsing.Rules.sequence;
 import static org.zwobble.shed.parser.parsing.Rules.symbol;
 import static org.zwobble.shed.parser.parsing.Rules.then;
 import static org.zwobble.shed.parser.parsing.Rules.tokenOfType;
 import static org.zwobble.shed.parser.parsing.Rules.whitespace;
+import static org.zwobble.shed.parser.parsing.Rules.zeroOrMoreWithSeparator;
+import static org.zwobble.shed.parser.tokeniser.Keyword.IMPORT;
 import static org.zwobble.shed.parser.tokeniser.Keyword.PACKAGE;
 import static org.zwobble.shed.parser.tokeniser.TokenType.IDENTIFIER;
 
 public class Parser {
-    public Result<SourceNode> source(PeekingIterator<TokenPosition> tokens) {
-        Result<PackageDeclarationNode> packageDeclaration = parsePackageDeclaration().parse(tokens);
-        if (packageDeclaration.anyErrors()) {
-            return packageDeclaration.changeValue(null);
-        }
-        return success(new SourceNode(packageDeclaration.get()));
+    public Rule<SourceNode> source() {
+        final Rule<PackageDeclarationNode> packageDeclaration;
+        final Rule<List<ImportNode>> imports;
+        return then(
+            sequence(
+                packageDeclaration = packageDeclaration(),
+                optional(whitespace()),
+                imports = zeroOrMoreWithSeparator(importNode(), whitespace())
+            ),
+            new ParseAction<RuleValues, SourceNode>() {
+                @Override
+                public Result<SourceNode> apply(RuleValues result) {
+                    return success(new SourceNode(result.get(packageDeclaration), result.get(imports)));
+                }
+            }
+        );
     }
     
-    public Rule<PackageDeclarationNode> parsePackageDeclaration() {
+    public Rule<PackageDeclarationNode> packageDeclaration() {
         final Rule<List<String>> names;
         return then(
             sequence(
                 keyword(PACKAGE),
                 whitespace(),
-                (names = repeatedWithSeparator(tokenOfType(IDENTIFIER), symbol("."))),
+                names = dotSeparatedIdentifiers(),
                 symbol(";")
             ),
             new ParseAction<RuleValues, PackageDeclarationNode>() {
@@ -42,5 +52,27 @@ public class Parser {
                 }
             }
         );
+    }
+
+    public Rule<ImportNode> importNode() {
+        final Rule<List<String>> names;
+        return then(
+            sequence(
+                keyword(IMPORT),
+                whitespace(),
+                (names = dotSeparatedIdentifiers()),
+                symbol(";")
+            ),
+            new ParseAction<RuleValues, ImportNode>() {
+                @Override
+                public Result<ImportNode> apply(RuleValues result) {
+                    return success(new ImportNode(result.get(names)));
+                }
+            }
+        );
+    }
+    
+    private Rule<List<String>> dotSeparatedIdentifiers() {
+        return oneOrMoreWithSeparator(tokenOfType(IDENTIFIER), symbol("."));
     }
 }

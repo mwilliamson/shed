@@ -1,5 +1,7 @@
 package org.zwobble.shed.parser.parsing;
 
+import java.util.Collections;
+
 import org.junit.Test;
 import org.zwobble.shed.parser.tokeniser.TokenPosition;
 import org.zwobble.shed.parser.tokeniser.Tokeniser;
@@ -18,32 +20,55 @@ public class ParserTest {
     
     @Test public void
     packageDeclarationIsListOfIdentifiersJoinedByDots() {
-        assertThat(parser.parsePackageDeclaration().parse(tokens("package shed.util.collections;")),
+        assertThat(parser.packageDeclaration().parse(tokens("package shed.util.collections;")),
                    is(success(new PackageDeclarationNode(asList("shed", "util", "collections")))));
     }
     
     @Test public void
     sourceNodeBeginsWithPackageDeclaration() {
-        assertThat(parser.source(tokens("package shed.util.collections;")),
-                   is(success(new SourceNode(new PackageDeclarationNode(asList("shed", "util", "collections"))))));
+        assertThat(parser.source().parse(tokens("package shed.util.collections;")),
+            is(success(new SourceNode(
+                new PackageDeclarationNode(asList("shed", "util", "collections")),
+                Collections.<ImportNode>emptyList()
+            )))
+        );
+    }
+    
+    @Test public void
+    sourceNodeCanHaveImportsAfterPackageDeclaration() {
+        assertThat(parser.source().parse(tokens("package shed.util.collections;\n\nimport shed.util; import shed;")),
+            is(success(new SourceNode(
+                new PackageDeclarationNode(asList("shed", "util", "collections")),
+                asList(
+                    new ImportNode(asList("shed", "util")),
+                    new ImportNode(asList("shed"))
+                )
+            )))
+        );
     }
     
     @Test public void
     errorIsRaisedIfPackageDeclarationDoesNotStartWithPackageKeyword() {
-        assertThat(parser.parsePackageDeclaration().parse(tokens("packag shed.util.collections;")),
+        assertThat(parser.packageDeclaration().parse(tokens("packag shed.util.collections;")),
                    is(Result.<PackageDeclarationNode>failure(asList(new Error(1, 1, "Expected keyword \"package\" but got identifier \"packag\"")))));
     }
     
     @Test public void
     errorInPackageDeclarationIsRaisedIfWhitespaceIsEncounteredInsteadOfDot() {
-        assertThat(parser.parsePackageDeclaration().parse(tokens("package shed .util.collections;")),
+        assertThat(parser.packageDeclaration().parse(tokens("package shed .util.collections;")),
                    is(Result.<PackageDeclarationNode>failure(asList(new Error(1, 13, "Expected symbol \";\" but got whitespace \" \"")))));
     }
     
     @Test public void
     errorInPackageDeclarationIsRaisedIfWhitespaceIsEncounteredInsteadOfIdentifier() {
-        assertThat(parser.parsePackageDeclaration().parse(tokens("package shed. util.collections;")),
+        assertThat(parser.packageDeclaration().parse(tokens("package shed. util.collections;")),
                    is(Result.<PackageDeclarationNode>failure(asList(new Error(1, 14, "Expected identifier but got whitespace \" \"")))));
+    }
+    
+    @Test public void
+    canImportPackages() {
+        assertThat(parser.importNode().parse(tokens("import shed.util.collections;")),
+                   is(success(new ImportNode(asList("shed", "util", "collections")))));
     }
     
     private PeekingIterator<TokenPosition> tokens(String input) {

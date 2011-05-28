@@ -47,13 +47,24 @@ public class Rules {
         };
     }
     
-    public static <T> Rule<List<T>> repeatedWithSeparator(final Rule<T> rule, final Rule<?> separator) {
+    public static <T> Rule<List<T>> oneOrMoreWithSeparator(final Rule<T> rule, final Rule<?> separator) {
+        return repeatedWithSeparator(rule, separator, false);
+    }
+    
+    public static <T> Rule<List<T>> zeroOrMoreWithSeparator(final Rule<T> rule, final Rule<?> separator) {
+        return repeatedWithSeparator(rule, separator, true);
+    }
+    
+    private static <T> Rule<List<T>> repeatedWithSeparator(final Rule<T> rule, final Rule<?> separator, final boolean allowEmpty) {
         return new Rule<List<T>>() {
             @Override
             public Result<List<T>> parse(PeekingIterator<TokenPosition> tokens) {
                 List<T> values = new ArrayList<T>();
                 Result<T> firstResult = rule.parse(tokens);
                 if (firstResult.anyErrors()) {
+                    if (allowEmpty) {
+                        return success(values);
+                    }
                     return firstResult.changeValue(null);
                 }
                 values.add(firstResult.get());
@@ -69,6 +80,19 @@ public class Rules {
                     }
                     values.add(ruleResult.get());
                 }
+            }
+        };
+    }
+    
+    public static <T> Rule<T> optional(final Rule<T> rule) {
+        return new Rule<T>() {
+            @Override
+            public Result<T> parse(PeekingIterator<TokenPosition> tokens) {
+                Result<T> result = rule.parse(tokens);
+                if (result.anyErrors()) {
+                    return success(null);
+                }
+                return result;
             }
         };
     }
