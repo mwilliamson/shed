@@ -1,7 +1,5 @@
 package org.zwobble.shed.parser.parsing;
 
-import java.util.List;
-
 import org.zwobble.shed.parser.tokeniser.Token;
 import org.zwobble.shed.parser.tokeniser.TokenType;
 
@@ -13,7 +11,11 @@ import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
 
 public class Parser {
-    public PackageDeclarationNode parsePackageDeclaration(List<Token> tokens) {
+    public SourceNode source(Iterable<Token> tokens) {
+        return new SourceNode(parsePackageDeclaration(tokens));
+    }
+    
+    public PackageDeclarationNode parsePackageDeclaration(Iterable<Token> tokens) {
         return new PackageDeclarationNode(copyOf(transform(filter(tokens, isIdentifier()), toValue())));
     }
 

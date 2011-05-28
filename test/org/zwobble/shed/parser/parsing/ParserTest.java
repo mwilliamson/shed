@@ -19,6 +19,11 @@ public class ParserTest {
         assertThat(parser.parsePackageDeclaration(tokens("package shed.util.collections;")),
                    is(new PackageDeclarationNode(asList("shed", "util", "collections"))));
     }
+    @Test public void
+    sourceNodeBeginsWithPackageDeclaration() {
+        assertThat(parser.source(tokens("package shed.util.collections;")),
+                   is(new SourceNode(new PackageDeclarationNode(asList("shed", "util", "collections")))));
+    }
     
     private List<Token> tokens(String input) {
         return tokeniser.tokenise(input);
