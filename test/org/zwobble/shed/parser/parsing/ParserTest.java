@@ -37,7 +37,7 @@ public class ParserTest {
     @Test public void
     errorInPackageDeclarationIsRaisedIfWhitespaceIsEncounteredInsteadOfDot() {
         assertThat(parser.parsePackageDeclaration().parse(tokens("package shed .util.collections;")),
-                   is(Result.<PackageDeclarationNode>failure(asList(new Error(1, 13, "Expected symbol \".\" or symbol \";\" but got whitespace \" \"")))));
+                   is(Result.<PackageDeclarationNode>failure(asList(new Error(1, 13, "Expected symbol \";\" but got whitespace \" \"")))));
     }
     
     @Test public void

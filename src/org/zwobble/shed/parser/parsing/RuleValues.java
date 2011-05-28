@@ -10,6 +10,7 @@ public class RuleValues {
         values.put(rule, value);
     }
     
+    @SuppressWarnings("unchecked")
     public <T> T get(Rule<T> rule) {
         return (T) values.get(rule);
     }
