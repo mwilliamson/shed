@@ -9,11 +9,14 @@ import static java.util.Collections.emptyList;
 public class Tokeniser {
     private static final String operatorCharacters = ".;";
     
-    public List<Token> tokenise(String inputString) {
+    public List<TokenPosition> tokenise(String inputString) {
+        int lineNumber = 1;
+        int startCharacterNumber = 1;
+        int currentCharacterNumber = 1;
         if (inputString.isEmpty()) {
             return emptyList();
         }
-        List<Token> tokens = new ArrayList<Token>();
+        List<TokenPosition> tokens = new ArrayList<TokenPosition>();
         TokenType currentTokenType = null;
         TokenType previousTokenType = null;
         StringBuilder currentTokenValue = new StringBuilder();
@@ -28,12 +31,19 @@ public class Tokeniser {
                 currentTokenType = TokenType.IDENTIFIER;
             }
             if (previousTokenType != currentTokenType && previousTokenType != null) {
-                tokens.add(toToken(currentTokenValue.toString(), previousTokenType));
+                tokens.add(new TokenPosition(lineNumber, startCharacterNumber, toToken(currentTokenValue.toString(), previousTokenType)));
                 currentTokenValue = new StringBuilder();
+                startCharacterNumber = currentCharacterNumber;
             }
             currentTokenValue.append(c);
+            if (c == '\n') {
+                lineNumber += 1;
+                currentCharacterNumber = 1;
+            } else {
+                currentCharacterNumber += 1;
+            }
         }
-        tokens.add(toToken(currentTokenValue.toString(), currentTokenType));
+        tokens.add(new TokenPosition(lineNumber, startCharacterNumber, toToken(currentTokenValue.toString(), currentTokenType)));
         return tokens;
     }
     

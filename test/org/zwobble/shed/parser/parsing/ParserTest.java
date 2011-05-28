@@ -1,10 +1,11 @@
 package org.zwobble.shed.parser.parsing;
 
-import java.util.List;
-
 import org.junit.Test;
-import org.zwobble.shed.parser.tokeniser.Token;
+import org.zwobble.shed.parser.tokeniser.TokenPosition;
 import org.zwobble.shed.parser.tokeniser.Tokeniser;
+
+import com.google.common.collect.Iterators;
+import com.google.common.collect.PeekingIterator;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.is;
@@ -26,13 +27,20 @@ public class ParserTest {
         assertThat(parser.source(tokens("package shed.util.collections;")),
                    is(success(new SourceNode(new PackageDeclarationNode(asList("shed", "util", "collections"))))));
     }
+    
     @Test public void
     errorIsRaisedIfPackageDeclarationDoesNotStartWithPackageKeyword() {
         assertThat(parser.parsePackageDeclaration(tokens("packag shed.util.collections;")),
                    is(Result.<PackageDeclarationNode>failure(asList(new Error(1, 1, "Expected keyword \"package\" but got identifier \"packag\"")))));
     }
     
-    private List<Token> tokens(String input) {
-        return tokeniser.tokenise(input);
+    @Test public void
+    errorInPackageDeclarationIsRaisedIfWhitespaceIsEncounteredInsteadOfDot() {
+        assertThat(parser.parsePackageDeclaration(tokens("package shed .util.collections;")),
+                   is(Result.<PackageDeclarationNode>failure(asList(new Error(1, 13, "Expected symbol \".\" or symbol \";\" but got whitespace \" \"")))));
+    }
+    
+    private PeekingIterator<TokenPosition> tokens(String input) {
+        return Iterators.peekingIterator(tokeniser.tokenise(input).iterator());
     }
 }

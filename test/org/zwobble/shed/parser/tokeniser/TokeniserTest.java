@@ -1,8 +1,13 @@
 package org.zwobble.shed.parser.tokeniser;
 
+import java.util.List;
+
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
+import com.google.common.base.Function;
+
+import static com.google.common.collect.Lists.transform;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -17,32 +22,27 @@ public class TokeniserTest {
     
     @Test public void
     emptyStringIsEmptyListOfTokens() {
-        assertThat(tokeniser.tokenise(""), Matchers.<Token>empty());
-    }
-    
-    @Test public void
-    tokeniseWhitespace() {
-        assertThat(tokeniser.tokenise("  \n\t \n\t\r"), is(asList(new Token(TokenType.WHITESPACE, "  \n\t \n\t\r"))));
+        assertThat(tokens(""), Matchers.<Token>empty());
     }
     
     @Test public void
     tokeniseKeyword() {
-        assertThat(tokeniser.tokenise("package"), is(asList(new Token(TokenType.KEYWORD, "package"))));
+        assertThat(tokens("package"), is(asList(new Token(TokenType.KEYWORD, "package"))));
     }
     
     @Test public void
     tokeniseIdentifier() {
-        assertThat(tokeniser.tokenise("bob"), is(asList(new Token(TokenType.IDENTIFIER, "bob"))));
+        assertThat(tokens("bob"), is(asList(new Token(TokenType.IDENTIFIER, "bob"))));
     }
     
     @Test public void
     tokeniseSymbol() {
-        assertThat(tokeniser.tokenise("."), is(asList(new Token(TokenType.SYMBOL, "."))));
+        assertThat(tokens("."), is(asList(new Token(TokenType.SYMBOL, "."))));
     }
     
     @Test public void
     tokenisePackageDeclaration() {
-        assertThat(tokeniser.tokenise("package shed.util.collections;"), is(asList(
+        assertThat(tokens("package shed.util.collections;"), is(asList(
             keyword(PACKAGE),
             whitespace(" "),
             identifier("shed"),
@@ -52,5 +52,18 @@ public class TokeniserTest {
             identifier("collections"),
             symbol(";")
         )));
+    }
+    
+    private List<Token> tokens(String input) {
+        return transform(tokeniser.tokenise(input), toToken());
+    }
+
+    private Function<TokenPosition, Token> toToken() {
+        return new Function<TokenPosition, Token>() {
+            @Override
+            public Token apply(TokenPosition input) {
+                return input.getToken();
+            }
+        };
     }
 }
