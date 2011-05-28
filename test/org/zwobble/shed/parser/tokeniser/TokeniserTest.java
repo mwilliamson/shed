@@ -3,16 +3,14 @@ package org.zwobble.shed.parser.tokeniser;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
-import static org.zwobble.shed.parser.tokeniser.Token.identifier;
-
-import static org.zwobble.shed.parser.tokeniser.Token.symbol;
-
-import static org.zwobble.shed.parser.tokeniser.Token.whitespace;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.zwobble.shed.parser.tokeniser.Keyword.PACKAGE;
+import static org.zwobble.shed.parser.tokeniser.Token.identifier;
 import static org.zwobble.shed.parser.tokeniser.Token.keyword;
+import static org.zwobble.shed.parser.tokeniser.Token.symbol;
+import static org.zwobble.shed.parser.tokeniser.Token.whitespace;
 
 public class TokeniserTest {
     private final Tokeniser tokeniser = new Tokeniser();
@@ -45,7 +43,7 @@ public class TokeniserTest {
     @Test public void
     tokenisePackageDeclaration() {
         assertThat(tokeniser.tokenise("package shed.util.collections;"), is(asList(
-            keyword("package"),
+            keyword(PACKAGE),
             whitespace(" "),
             identifier("shed"),
             symbol("."),
