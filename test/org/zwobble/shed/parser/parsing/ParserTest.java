@@ -40,6 +40,12 @@ public class ParserTest {
                    is(Result.<PackageDeclarationNode>failure(asList(new Error(1, 13, "Expected symbol \".\" or symbol \";\" but got whitespace \" \"")))));
     }
     
+    @Test public void
+    errorInPackageDeclarationIsRaisedIfWhitespaceIsEncounteredInsteadOfIdentifier() {
+        assertThat(parser.parsePackageDeclaration(tokens("package shed. util.collections;")),
+                   is(Result.<PackageDeclarationNode>failure(asList(new Error(1, 14, "Expected identifier but got whitespace \" \"")))));
+    }
+    
     private PeekingIterator<TokenPosition> tokens(String input) {
         return Iterators.peekingIterator(tokeniser.tokenise(input).iterator());
     }

@@ -85,6 +85,11 @@ public class Parser {
         return success(firstToken.getToken().getValue());
     }
     
+    private <T> Result<T> error(TokenPosition actual, TokenType tokenType) {
+        return failure(new Error(actual.getLineNumber(), actual.getCharacterNumber(), 
+            format("Expected %s but got %s", tokenType.name().toLowerCase(), actual.getToken())));
+    }
+    
     private <T> Result<T> error(TokenPosition actual, Object expected) {
         return failure(new Error(actual.getLineNumber(), actual.getCharacterNumber(), format("Expected %s but got %s", expected, actual.getToken())));
     }
