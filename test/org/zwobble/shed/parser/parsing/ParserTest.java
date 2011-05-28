@@ -18,7 +18,7 @@ public class ParserTest {
     
     @Test public void
     packageDeclarationIsListOfIdentifiersJoinedByDots() {
-        assertThat(parser.parsePackageDeclaration(tokens("package shed.util.collections;")),
+        assertThat(parser.parsePackageDeclaration().parse(tokens("package shed.util.collections;")),
                    is(success(new PackageDeclarationNode(asList("shed", "util", "collections")))));
     }
     
@@ -30,19 +30,19 @@ public class ParserTest {
     
     @Test public void
     errorIsRaisedIfPackageDeclarationDoesNotStartWithPackageKeyword() {
-        assertThat(parser.parsePackageDeclaration(tokens("packag shed.util.collections;")),
+        assertThat(parser.parsePackageDeclaration().parse(tokens("packag shed.util.collections;")),
                    is(Result.<PackageDeclarationNode>failure(asList(new Error(1, 1, "Expected keyword \"package\" but got identifier \"packag\"")))));
     }
     
     @Test public void
     errorInPackageDeclarationIsRaisedIfWhitespaceIsEncounteredInsteadOfDot() {
-        assertThat(parser.parsePackageDeclaration(tokens("package shed .util.collections;")),
+        assertThat(parser.parsePackageDeclaration().parse(tokens("package shed .util.collections;")),
                    is(Result.<PackageDeclarationNode>failure(asList(new Error(1, 13, "Expected symbol \".\" or symbol \";\" but got whitespace \" \"")))));
     }
     
     @Test public void
     errorInPackageDeclarationIsRaisedIfWhitespaceIsEncounteredInsteadOfIdentifier() {
-        assertThat(parser.parsePackageDeclaration(tokens("package shed. util.collections;")),
+        assertThat(parser.parsePackageDeclaration().parse(tokens("package shed. util.collections;")),
                    is(Result.<PackageDeclarationNode>failure(asList(new Error(1, 14, "Expected identifier but got whitespace \" \"")))));
     }
     
