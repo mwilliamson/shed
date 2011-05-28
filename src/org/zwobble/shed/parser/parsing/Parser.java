@@ -30,8 +30,8 @@ public class Parser {
             ),
             new ParseAction<RuleValues, SourceNode>() {
                 @Override
-                public Result<SourceNode> apply(Result<RuleValues> result) {
-                    return success(new SourceNode(result.get().get(packageDeclaration), result.get().get(imports)));
+                public Result<SourceNode> apply(RuleValues result) {
+                    return success(new SourceNode(result.get(packageDeclaration), result.get(imports)));
                 }
             }
         );
@@ -48,8 +48,8 @@ public class Parser {
             ),
             new ParseAction<RuleValues, PackageDeclarationNode>() {
                 @Override
-                public Result<PackageDeclarationNode> apply(Result<RuleValues> result) {
-                    return success(new PackageDeclarationNode(result.get().get(names)));
+                public Result<PackageDeclarationNode> apply(RuleValues result) {
+                    return success(new PackageDeclarationNode(result.get(names)));
                 }
             }
         );
@@ -66,11 +66,8 @@ public class Parser {
             ),
             new ParseAction<RuleValues, ImportNode>() {
                 @Override
-                public Result<ImportNode> apply(Result<RuleValues> result) {
-                    if (result.getType() != Result.Type.SUCCESS) {
-                        return result.changeValue(null);
-                    }
-                    return success(new ImportNode(result.get().get(names)));
+                public Result<ImportNode> apply(RuleValues result) {
+                    return success(new ImportNode(result.get(names)));
                 }
             }
         );

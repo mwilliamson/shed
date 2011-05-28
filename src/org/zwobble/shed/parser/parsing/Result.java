@@ -54,4 +54,8 @@ public class Result<T> {
     public boolean hasValue() {
         return type == Type.SUCCESS || type == Type.ERROR_RECOVERED_WITH_VALUE;
     }
+
+    public boolean ruleDidFinish() {
+        return type == Type.SUCCESS || type == Type.ERROR_RECOVERED || type == Type.ERROR_RECOVERED_WITH_VALUE;
+    }
 }

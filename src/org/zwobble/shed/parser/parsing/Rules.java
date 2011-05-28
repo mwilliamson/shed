@@ -19,10 +19,10 @@ public class Rules {
             @Override
             public Result<T> parse(TokenIterator tokens) {
                 Result<U> result = originalRule.parse(tokens);
-                if (result.getType() == Result.Type.NO_MATCH || result.getType() == Result.Type.FATAL) {
+                if (!result.hasValue()) {
                     return result.changeValue(null);
                 }
-                Result<T> actionResult = action.apply(result);
+                Result<T> actionResult = action.apply(result.get());
                 if (actionResult.getType() == Result.Type.SUCCESS) {
                     return result.changeValue(actionResult.get());
                 } else {
@@ -44,7 +44,7 @@ public class Rules {
                         errors.addAll(result.getErrors());
                         if (rule instanceof GuardRule && result.getType() == Result.Type.NO_MATCH) {
                             return result.changeValue(null);                            
-                        } else if (result.getType() != Result.Type.ERROR_RECOVERED) {
+                        } else if (!result.ruleDidFinish()) {
                             Rule<?> lastRule = rules[rules.length - 1];
                             if (lastRule instanceof LastRule) {
                                 Result<?> lastRuleResult;
@@ -52,7 +52,7 @@ public class Rules {
                                     tokens.next();
                                 }
                                 if (lastRuleResult.getType() == Result.Type.SUCCESS) {
-                                    return new Result<RuleValues>(new RuleValues(), errors, Result.Type.ERROR_RECOVERED);
+                                    return new Result<RuleValues>(null, errors, Result.Type.ERROR_RECOVERED);
                                 }
                             }
                             return result.toType(null, Result.Type.FATAL);                                
@@ -63,7 +63,7 @@ public class Rules {
                 if (errors.isEmpty()) {
                     return success(values);                    
                 } else {
-                    return new Result<RuleValues>(values, errors, Result.Type.ERROR_RECOVERED);
+                    return new Result<RuleValues>(values, errors, Result.Type.ERROR_RECOVERED_WITH_VALUE);
                 }
                 
             }
