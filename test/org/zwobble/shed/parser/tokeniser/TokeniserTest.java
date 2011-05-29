@@ -6,6 +6,8 @@ import org.junit.Test;
 
 import com.google.common.base.Function;
 
+import static org.zwobble.shed.parser.tokeniser.Token.error;
+
 import static com.google.common.collect.Lists.transform;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.is;
@@ -63,6 +65,11 @@ public class TokeniserTest {
     @Test public void
     digitsAreTokenisedIntoANumber() {
         assertThat(tokens("42"), is(asList(number("42"), Token.end())));
+    }
+    
+    @Test public void
+    numbersCannotContainsLetters() {
+        assertThat(tokens("42ab"), is(asList(number("42"), error("ab"), Token.end())));
     }
     
     private List<Token> tokens(String input) {

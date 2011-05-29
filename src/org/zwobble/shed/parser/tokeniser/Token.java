@@ -30,6 +30,10 @@ public class Token {
         return END;
     }
     
+    public static Token error(String value) {
+        return new Token(TokenType.ERROR, value);
+    }
+    
     private final TokenType type;
     private final String value;
     

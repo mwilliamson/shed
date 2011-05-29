@@ -29,6 +29,10 @@ public class Tokeniser {
                 currentTokenType = TokenType.SYMBOL;
             } else if (Character.isDigit(c) && (previousTokenType == TokenType.NUMBER || currentTokenValue.length() == 0)) {
                 currentTokenType = TokenType.NUMBER;
+            } else if (previousTokenType == TokenType.ERROR) {
+                currentTokenType = TokenType.ERROR;
+            } else if (previousTokenType == TokenType.NUMBER) {
+                currentTokenType = TokenType.ERROR;
             } else {
                 currentTokenType = TokenType.IDENTIFIER;
             }
