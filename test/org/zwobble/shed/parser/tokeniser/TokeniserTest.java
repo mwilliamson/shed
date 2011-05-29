@@ -13,6 +13,7 @@ import static org.junit.Assert.assertThat;
 import static org.zwobble.shed.parser.tokeniser.Keyword.PACKAGE;
 import static org.zwobble.shed.parser.tokeniser.Token.identifier;
 import static org.zwobble.shed.parser.tokeniser.Token.keyword;
+import static org.zwobble.shed.parser.tokeniser.Token.number;
 import static org.zwobble.shed.parser.tokeniser.Token.symbol;
 import static org.zwobble.shed.parser.tokeniser.Token.whitespace;
 
@@ -52,6 +53,16 @@ public class TokeniserTest {
             symbol(";"),
             Token.end()
         )));
+    }
+    
+    @Test public void
+    identifiersCanContainNumbers() {
+        assertThat(tokens("a42"), is(asList(identifier("a42"), Token.end())));
+    }
+    
+    @Test public void
+    digitsAreTokenisedIntoANumber() {
+        assertThat(tokens("42"), is(asList(number("42"), Token.end())));
     }
     
     private List<Token> tokens(String input) {

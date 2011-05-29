@@ -22,6 +22,10 @@ public class Token {
         return new Token(TokenType.WHITESPACE, value);
     }
     
+    public static Token number(String value) {
+        return new Token(TokenType.NUMBER, value);
+    }
+    
     public static Token end() {
         return END;
     }
