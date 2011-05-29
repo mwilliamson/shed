@@ -2,67 +2,119 @@ package org.zwobble.shed.parser.tokeniser;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.PeekingIterator;
+import com.google.common.collect.UnmodifiableIterator;
+
+import static com.google.common.base.Predicates.or;
+
+import static com.google.common.base.Predicates.not;
+
+import static com.google.common.collect.Iterators.peekingIterator;
 
 import static com.google.common.collect.Lists.charactersOf;
 
 public class Tokeniser {
     private static final String symbolCharacters = "`¬!£$%^&*()-_=+[]{};:'@#~<>,./?\\|";
+    private static final char stringDelimiter = '"';
     
     public List<TokenPosition> tokenise(String inputString) {
-        int lineNumber = 1;
-        int startCharacterNumber = 1;
-        int currentCharacterNumber = 1;
-        if (inputString.isEmpty()) {
-            return Collections.singletonList(new TokenPosition(lineNumber, currentCharacterNumber, Token.end()));
-        }
         List<TokenPosition> tokens = new ArrayList<TokenPosition>();
-        TokenType currentTokenType = null;
         TokenType previousTokenType = null;
-        StringBuilder currentTokenValue = new StringBuilder();
-        
-        for (char c : charactersOf(inputString)) {
-            previousTokenType = currentTokenType;
-            if (Character.isWhitespace(c)) {
-                currentTokenType = TokenType.WHITESPACE;
-            } else if (isSymbolCharacter(c)) {
-                currentTokenType = TokenType.SYMBOL;
-            } else if (Character.isDigit(c) && previousTokenType != TokenType.IDENTIFIER) {
-                currentTokenType = TokenType.NUMBER;
-            } else if (previousTokenType == TokenType.ERROR) {
-                currentTokenType = TokenType.ERROR;
-            } else if (previousTokenType == TokenType.NUMBER) {
-                currentTokenType = TokenType.ERROR;
-            } else {
-                currentTokenType = TokenType.IDENTIFIER;
-            }
-            if (previousTokenType != currentTokenType && previousTokenType != null) {
-                tokens.add(new TokenPosition(lineNumber, startCharacterNumber, toToken(currentTokenValue.toString(), previousTokenType)));
-                currentTokenValue = new StringBuilder();
-                startCharacterNumber = currentCharacterNumber;
-            }
-            currentTokenValue.append(c);
-            if (c == '\n') {
-                lineNumber += 1;
-                currentCharacterNumber = 1;
-            } else {
-                currentCharacterNumber += 1;
-            }
+        InputStringIterator characters = new InputStringIterator(inputString);
+        while (characters.hasNext()) {
+            int lineNumber = characters.currentLineNumber();
+            int characterNumber = characters.currentCharacterNumber();
+            Token token = nextToken(characters, previousTokenType);
+            tokens.add(new TokenPosition(lineNumber, characterNumber, token));
+            previousTokenType = token.getType();
         }
-        tokens.add(new TokenPosition(lineNumber, startCharacterNumber, toToken(currentTokenValue.toString(), currentTokenType)));
-        tokens.add(new TokenPosition(lineNumber, currentCharacterNumber, Token.end()));
+        tokens.add(new TokenPosition(characters.currentLineNumber(), characters.currentCharacterNumber(), Token.end()));
         return tokens;
     }
     
-    private boolean isSymbolCharacter(char c) {
-        return symbolCharacters.contains(Character.toString(c));
+    private Token nextToken(PeekingIterator<Character> characters, TokenType previousTokenType) {
+        Character firstCharacter = characters.peek();
+        
+        if (isWhitespace().apply(firstCharacter)) {
+            return new Token(TokenType.WHITESPACE, takeWhile(characters, isWhitespace()));
+        } else if (isSymbolCharacter().apply(firstCharacter)) {
+            return new Token(TokenType.SYMBOL, takeWhile(characters, isSymbolCharacter()));
+        } else if (isDigit().apply(firstCharacter)) {
+            return new Token(TokenType.NUMBER, takeWhile(characters, isDigit()));
+        } else if (previousTokenType == TokenType.NUMBER) {
+            return new Token(TokenType.ERROR, takeWhile(characters, isIdentifierCharacter()));
+        } else if (firstCharacter == stringDelimiter) {
+            characters.next();
+            String value = takeWhile(characters, isStringCharacter());
+//            if (characters.peek() != stringDelimiter) {
+//                return new T
+//            }
+            characters.next();
+            return new Token(TokenType.STRING, value);
+        } else {
+            String value = takeWhile(characters, isIdentifierCharacter());
+            if (isKeyword(value)) {
+                return new Token(TokenType.KEYWORD, value);
+            } else {
+                return new Token(TokenType.IDENTIFIER, value);
+            }
+        }
     }
 
-    private Token toToken(String value, TokenType currentTokenType) {
-        if (isKeyword(value)) {
-            return new Token(TokenType.KEYWORD, value);
+    private Predicate<Character> isStringCharacter() {
+        return new Predicate<Character>() {
+            @Override
+            public boolean apply(Character input) {
+                return input != stringDelimiter;
+            }
+        };
+    }
+
+    private String takeWhile(PeekingIterator<Character> characters, Predicate<Character> predicate) {
+        StringBuilder result = new StringBuilder();
+        while (characters.hasNext() && predicate.apply(characters.peek())) {
+            result.append(characters.next());
         }
-        return new Token(currentTokenType, value);
+        return result.toString();
+    }
+
+    private Predicate<Character> isDigit() {
+        return new Predicate<Character>() {
+            @Override
+            public boolean apply(Character input) {
+                return Character.isDigit(input);
+            }
+        };
+    }
+
+    private Predicate<Character> isWhitespace() {
+        return new Predicate<Character>() {
+            @Override
+            public boolean apply(Character input) {
+                return Character.isWhitespace(input);
+            }
+        };
+    }
+    
+    private Predicate<Character> isSymbolCharacter() {
+        return new Predicate<Character>() {
+            @Override
+            public boolean apply(Character input) {
+                return symbolCharacters.contains(Character.toString(input));
+            }
+        };
+    }
+    
+    private Predicate<Character> isIdentifierCharacter() {
+        return not(or(isWhitespace(), isSymbolCharacter()));
     }
 
     private boolean isKeyword(String value) {
@@ -72,5 +124,50 @@ public class Tokeniser {
             }
         }
         return false;
+    }
+    
+    private class InputStringIterator implements PeekingIterator<Character> {
+        private final PeekingIterator<Character> characters;
+        private int lineNumber = 1;
+        private int characterNumber = 1;
+
+        public InputStringIterator(String inputString) {
+            characters = peekingIterator(charactersOf(inputString).iterator());
+        }
+        
+        @Override
+        public boolean hasNext() {
+            return characters.hasNext();
+        }
+
+        @Override
+        public Character peek() {
+            return characters.peek();
+        }
+
+        @Override
+        public Character next() {
+            Character character = characters.next();
+            if (character == '\n') {
+                lineNumber += 1;
+                characterNumber = 1;
+            } else {
+                characterNumber += 1;
+            }
+            return character;
+        }
+
+        @Override
+        public void remove() {
+            characters.remove();
+        }
+        
+        public int currentLineNumber() {
+            return lineNumber;
+        }
+        
+        public int currentCharacterNumber() {
+            return characterNumber;
+        }
     }
 }

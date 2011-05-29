@@ -26,6 +26,10 @@ public class Token {
         return new Token(TokenType.NUMBER, value);
     }
     
+    public static Token string(String value) {
+        return new Token(TokenType.STRING, value);
+    }
+    
     public static Token end() {
         return END;
     }

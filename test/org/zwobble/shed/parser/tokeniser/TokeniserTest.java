@@ -6,6 +6,8 @@ import org.junit.Test;
 
 import com.google.common.base.Function;
 
+import static org.zwobble.shed.parser.tokeniser.Token.string;
+
 import static org.zwobble.shed.parser.tokeniser.Token.error;
 
 import static com.google.common.collect.Lists.transform;
@@ -75,6 +77,11 @@ public class TokeniserTest {
     @Test public void
     numbersAfterWhitespace() {
         assertThat(tokens(" 42"), is(asList(whitespace(" "), number("42"), Token.end())));
+    }
+    
+    @Test public void
+    simpleStrings() {
+        assertThat(tokens("\"Hello!\""), is(asList(string("Hello!"), Token.end())));
     }
     
     private List<Token> tokens(String input) {

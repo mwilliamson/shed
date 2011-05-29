@@ -6,6 +6,7 @@ public enum TokenType {
     IDENTIFIER,
     SYMBOL,
     NUMBER,
+    STRING,
     END,
     ERROR
 }
