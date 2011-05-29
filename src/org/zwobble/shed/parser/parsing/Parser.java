@@ -105,12 +105,12 @@ public class Parser {
         final Rule<String> identifier = tokenOfType(IDENTIFIER);
         final Rule<? extends ExpressionNode> expression = expression(); 
         return then(
-            sequence(OnError.CONTINUE,
+            sequence(OnError.FINISH,
                 guard(keyword(keyword)), whitespace(),
                 identifier, optional(whitespace()),
                 symbol("="), optional(whitespace()),
                 expression, optional(whitespace()),
-                symbol(";")
+                last(symbol(";"))
             ),
             new ParseAction<RuleValues, T>() {
                 @Override
