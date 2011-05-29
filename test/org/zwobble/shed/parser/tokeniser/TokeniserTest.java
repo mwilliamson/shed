@@ -96,6 +96,11 @@ public class TokeniserTest {
         assertThat(tokens("\"Hello!\n"), is(asList(unterminatedString("Hello!"), whitespace("\n"), Token.end())));
     }
     
+    @Test public void
+    escapingSpecialCharactersInStrings() {
+        assertThat(tokens("\"\\\"\\b\\t\\n\\f\\r\\'\\\\\""), is(asList(string("\"\b\t\n\f\r'\\"), Token.end())));
+    }
+    
     private List<Token> tokens(String input) {
         return transform(tokeniser.tokenise(input), toToken());
     }

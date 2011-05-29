@@ -2,8 +2,10 @@ package org.zwobble.shed.parser.tokeniser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.PeekingIterator;
 
 import static com.google.common.base.Predicates.not;
@@ -15,6 +17,16 @@ public class Tokeniser {
     private static final String symbolCharacters = "`¬!£$%^&*()-_=+[]{};:'@#~<>,./?\\|";
     private static final char stringDelimiter = '"';
     private static final char newLine = '\n';
+    private static final Map<Character, Character> escapeCharacters = ImmutableMap.<Character, Character>builder()
+        .put('"', '"')
+        .put('b', '\b')
+        .put('t', '\t')
+        .put('n', '\n')
+        .put('f', '\f')
+        .put('r', '\r')
+        .put('\'', '\'')
+        .put('\\', '\\')
+        .build();
     
     public List<TokenPosition> tokenise(String inputString) {
         List<TokenPosition> tokens = new ArrayList<TokenPosition>();
@@ -44,12 +56,20 @@ public class Tokeniser {
             return new Token(TokenType.ERROR, takeWhile(characters, isIdentifierCharacter()));
         } else if (firstCharacter == stringDelimiter) {
             characters.next();
-            String value = takeWhile(characters, isStringCharacter());
+            StringBuilder value = new StringBuilder();
+            while (characters.hasNext() && characters.peek() != newLine && characters.peek() != stringDelimiter) {
+                Character next = characters.next();
+                if (next == '\\') {
+                    value.append(escapeCharacters.get(characters.next()));
+                } else {
+                    value.append(next);
+                }
+            }
             if (!characters.hasNext() || characters.peek() == newLine) {
-                return new Token(TokenType.UNTERMINATED_STRING, value);
+                return new Token(TokenType.UNTERMINATED_STRING, value.toString());
             }
             characters.next();
-            return new Token(TokenType.STRING, value);
+            return new Token(TokenType.STRING, value.toString());
         } else {
             String value = takeWhile(characters, isIdentifierCharacter());
             if (isKeyword(value)) {
@@ -58,15 +78,6 @@ public class Tokeniser {
                 return new Token(TokenType.IDENTIFIER, value);
             }
         }
-    }
-
-    private Predicate<Character> isStringCharacter() {
-        return new Predicate<Character>() {
-            @Override
-            public boolean apply(Character input) {
-                return input != stringDelimiter && input != newLine;
-            }
-        };
     }
 
     private String takeWhile(PeekingIterator<Character> characters, Predicate<Character> predicate) {
