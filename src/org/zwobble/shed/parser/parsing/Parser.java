@@ -33,7 +33,7 @@ public class Parser {
         final Rule<PackageDeclarationNode> packageDeclaration;
         final Rule<List<ImportNode>> imports;
         return then(
-            sequence(
+            sequence(OnError.CONTINUE,
                 packageDeclaration = packageDeclaration(),
                 optional(whitespace()),
                 imports = zeroOrMoreWithSeparator(importNode(), whitespace())
@@ -50,7 +50,7 @@ public class Parser {
     public Rule<PackageDeclarationNode> packageDeclaration() {
         final Rule<List<String>> names;
         return then(
-            sequence(
+            sequence(OnError.FINISH,
                 keyword(PACKAGE),
                 whitespace(),
                 names = dotSeparatedIdentifiers(),
@@ -68,7 +68,7 @@ public class Parser {
     public Rule<ImportNode> importNode() {
         final Rule<List<String>> names;
         return then(
-            sequence(
+            sequence(OnError.FINISH,
                 guard(keyword(IMPORT)),
                 whitespace(),
                 (names = dotSeparatedIdentifiers()),
@@ -105,7 +105,7 @@ public class Parser {
         final Rule<String> identifier = tokenOfType(IDENTIFIER);
         final Rule<? extends ExpressionNode> expression = expression(); 
         return then(
-            sequence(
+            sequence(OnError.CONTINUE,
                 guard(keyword(keyword)), whitespace(),
                 identifier, optional(whitespace()),
                 symbol("="), optional(whitespace()),

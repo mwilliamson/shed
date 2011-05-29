@@ -32,7 +32,7 @@ public class Rules {
         };
     }
     
-    public static Rule<RuleValues> sequence(final Rule<?>... rules) {
+    public static Rule<RuleValues> sequence(final OnError recovery, final Rule<?>... rules) {
         return new Rule<RuleValues>() {
             @Override
             public Result<RuleValues> parse(TokenIterator tokens) {
@@ -44,7 +44,7 @@ public class Rules {
                         errors.addAll(result.getErrors());
                         if (rule instanceof GuardRule && result.noMatch()) {
                             return result.changeValue(null);                            
-                        } else if (!result.ruleDidFinish()) {
+                        } else if (!result.ruleDidFinish() || recovery == OnError.FINISH) {
                             Rule<?> lastRule = rules[rules.length - 1];
                             if (lastRule instanceof LastRule) {
                                 Result<?> lastRuleResult;

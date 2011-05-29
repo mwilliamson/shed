@@ -93,8 +93,7 @@ public class ParserTest {
     errorInPackageDeclarationIsRaisedIfWhitespaceIsEncounteredInsteadOfIdentifier() {
         assertThat(parser.packageDeclaration().parse(tokens("package shed. util.collections;")).getErrors(),
             is(asList(
-                new Error(1, 14, "Expected identifier but got whitespace \" \""),
-                new Error(1, 14, "Expected symbol \";\" but got whitespace \" \"")
+                new Error(1, 14, "Expected identifier but got whitespace \" \"")
             ))
         );
     }
