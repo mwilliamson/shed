@@ -101,6 +101,11 @@ public class TokeniserTest {
         assertThat(tokens("\"\\\"\\b\\t\\n\\f\\r\\'\\\\\""), is(asList(string("\"\b\t\n\f\r'\\"), Token.end())));
     }
     
+    @Test public void
+    invalidStringEscapeCodes() {
+        assertThat(tokens("\" 53\\yz\""), is(asList(Token.stringWithInvalidEscapeCodes(" 53z"), Token.end())));
+    }
+    
     private List<Token> tokens(String input) {
         return transform(tokeniser.tokenise(input), toToken());
     }

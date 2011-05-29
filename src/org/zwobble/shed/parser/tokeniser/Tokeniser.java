@@ -55,12 +55,18 @@ public class Tokeniser {
         } else if (previousTokenType == TokenType.NUMBER) {
             return new Token(TokenType.ERROR, takeWhile(characters, isIdentifierCharacter()));
         } else if (firstCharacter == stringDelimiter) {
+            TokenType type = TokenType.STRING;
             characters.next();
             StringBuilder value = new StringBuilder();
             while (characters.hasNext() && characters.peek() != newLine && characters.peek() != stringDelimiter) {
-                Character next = characters.next();
+                char next = characters.next();
                 if (next == '\\') {
-                    value.append(escapeCharacters.get(characters.next()));
+                    char escapeCharacter = characters.next();
+                    if (escapeCharacters.containsKey(escapeCharacter)) {
+                        value.append(escapeCharacters.get(escapeCharacter));
+                    } else {
+                        type = TokenType.STRING_WITH_INVALID_ESCAPE_CODES;
+                    }
                 } else {
                     value.append(next);
                 }
@@ -69,7 +75,7 @@ public class Tokeniser {
                 return new Token(TokenType.UNTERMINATED_STRING, value.toString());
             }
             characters.next();
-            return new Token(TokenType.STRING, value.toString());
+            return new Token(type, value.toString());
         } else {
             String value = takeWhile(characters, isIdentifierCharacter());
             if (isKeyword(value)) {

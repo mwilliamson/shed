@@ -32,6 +32,9 @@ public class Token {
     public static Token unterminatedString(String value) {
         return new Token(TokenType.UNTERMINATED_STRING, value);
     }
+    public static Token stringWithInvalidEscapeCodes(String value) {
+        return new Token(TokenType.STRING_WITH_INVALID_ESCAPE_CODES, value);
+    }
     
     public static Token end() {
         return END;
