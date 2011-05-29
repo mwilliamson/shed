@@ -7,7 +7,7 @@ import java.util.List;
 import static com.google.common.collect.Lists.charactersOf;
 
 public class Tokeniser {
-    private static final String operatorCharacters = ".;";
+    private static final String symbolCharacters = "`¬!£$%^&*()-_=+[]{};:'@#~<>,./?\\|";
     
     public List<TokenPosition> tokenise(String inputString) {
         int lineNumber = 1;
@@ -55,7 +55,7 @@ public class Tokeniser {
     }
     
     private boolean isSymbolCharacter(char c) {
-        return operatorCharacters.contains(Character.toString(c));
+        return symbolCharacters.contains(Character.toString(c));
     }
 
     private Token toToken(String value, TokenType currentTokenType) {
