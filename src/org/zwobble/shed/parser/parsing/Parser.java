@@ -51,7 +51,7 @@ public class Parser {
         final Rule<List<String>> names;
         return then(
             sequence(
-                guard(keyword(PACKAGE)),
+                keyword(PACKAGE),
                 whitespace(),
                 names = dotSeparatedIdentifiers(),
                 last(symbol(";"))

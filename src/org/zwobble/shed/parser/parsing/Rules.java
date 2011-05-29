@@ -23,7 +23,7 @@ public class Rules {
                     return result.changeValue(null);
                 }
                 Result<T> actionResult = action.apply(result.get());
-                if (actionResult.getType() == Result.Type.SUCCESS) {
+                if (actionResult.isSuccess()) {
                     return result.changeValue(actionResult.get());
                 } else {
                     return result.changeValue(null);
@@ -42,16 +42,16 @@ public class Rules {
                     Result<?> result = rule.parse(tokens);
                     if (result.anyErrors()) {
                         errors.addAll(result.getErrors());
-                        if (rule instanceof GuardRule && result.getType() == Result.Type.NO_MATCH) {
+                        if (rule instanceof GuardRule && result.noMatch()) {
                             return result.changeValue(null);                            
                         } else if (!result.ruleDidFinish()) {
                             Rule<?> lastRule = rules[rules.length - 1];
                             if (lastRule instanceof LastRule) {
                                 Result<?> lastRuleResult;
-                                while ((lastRuleResult = lastRule.parse(tokens)).getType() == Result.Type.NO_MATCH) {
+                                while ((lastRuleResult = lastRule.parse(tokens)).noMatch()) {
                                     tokens.next();
                                 }
-                                if (lastRuleResult.getType() == Result.Type.SUCCESS) {
+                                if (lastRuleResult.isSuccess()) {
                                     return new Result<RuleValues>(null, errors, Result.Type.ERROR_RECOVERED);
                                 }
                             }
@@ -86,10 +86,10 @@ public class Rules {
                 List<Error> errors = new ArrayList<Error>();
                 Result<T> firstResult = rule.parse(tokens);
                 if (firstResult.anyErrors()) {
-                    if (allowEmpty && firstResult.getType() == Result.Type.NO_MATCH) {
+                    if (allowEmpty && firstResult.noMatch()) {
                         return success(values);
                     }
-                    if (firstResult.getType() != Result.Type.ERROR_RECOVERED) {
+                    if (!firstResult.ruleDidFinish()) {
                         return firstResult.changeValue(null);
                     }
                     errors.addAll(firstResult.getErrors());
@@ -100,7 +100,7 @@ public class Rules {
                 while (true) {
                     Result<?> separatorResult = separator.parse(tokens);
                     if (separatorResult.anyErrors()) {
-                        if (separatorResult.getType() == Result.Type.NO_MATCH) {
+                        if (separatorResult.noMatch()) {
                             if (errors.isEmpty()) {
                                 return success(values);                    
                             } else {
@@ -112,7 +112,7 @@ public class Rules {
                     
                     Result<T> ruleResult = rule.parse(tokens);
                     if (ruleResult.anyErrors()) {
-                        if (firstResult.getType() != Result.Type.ERROR_RECOVERED) {
+                        if (!firstResult.ruleDidFinish()) {
                             return ruleResult.changeValue(values);                            
                         }
                         errors.addAll(ruleResult.getErrors());
@@ -131,7 +131,7 @@ public class Rules {
             public Result<T> parse(TokenIterator tokens) {
                 Result<T> result = rule.parse(tokens);
                 if (result.anyErrors()) {
-                    if (result.getType() == Result.Type.NO_MATCH) {
+                    if (result.noMatch()) {
                         return success(null);                        
                     } else {
                         return result.changeValue(null);

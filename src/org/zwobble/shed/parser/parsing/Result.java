@@ -39,10 +39,6 @@ public class Result<T> {
         return errors;
     }
     
-    public Type getType() {
-        return type;
-    }
-    
     public static enum Type {
         SUCCESS,
         NO_MATCH,
@@ -50,7 +46,11 @@ public class Result<T> {
         ERROR_RECOVERED_WITH_VALUE,
         FATAL
     }
-
+    
+    public boolean isSuccess() {
+        return type == Type.SUCCESS;
+    }
+    
     public boolean hasValue() {
         return type == Type.SUCCESS || type == Type.ERROR_RECOVERED_WITH_VALUE;
     }

@@ -50,6 +50,16 @@ public class ParserTest {
     }
     
     @Test public void
+    errorsAreCombinedIfPackageDeclarationAndImportsHaveErrors() {
+        assertThat(parser.source().parse(tokens("packag shed.util.collections; import shed import shed.collections;")).getErrors(),
+            is(asList(
+                new Error(1, 1, "Expected keyword \"package\" but got identifier \"packag\""),
+                new Error(1, 42, "Expected symbol \";\" but got whitespace \" \"")
+            ))
+        );
+    }
+    
+    @Test public void
     errorsIfImportIsMissingSemicolon() {
         assertThat(parser.source().parse(tokens("package shed.util.collections; import shed import shed.collections;")).getErrors(),
             is(asList(new Error(1, 43, "Expected symbol \";\" but got whitespace \" \"")))
@@ -82,7 +92,11 @@ public class ParserTest {
     @Test public void
     errorInPackageDeclarationIsRaisedIfWhitespaceIsEncounteredInsteadOfIdentifier() {
         assertThat(parser.packageDeclaration().parse(tokens("package shed. util.collections;")).getErrors(),
-                   is(asList(new Error(1, 14, "Expected identifier but got whitespace \" \""))));
+            is(asList(
+                new Error(1, 14, "Expected identifier but got whitespace \" \""),
+                new Error(1, 14, "Expected symbol \";\" but got whitespace \" \"")
+            ))
+        );
     }
     
     @Test public void
