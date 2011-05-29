@@ -58,4 +58,7 @@ public class Result<T> {
     public boolean ruleDidFinish() {
         return type == Type.SUCCESS || type == Type.ERROR_RECOVERED || type == Type.ERROR_RECOVERED_WITH_VALUE;
     }
+    public boolean noMatch() {
+        return type == Type.NO_MATCH;
+    }
 }

@@ -10,6 +10,8 @@ import org.zwobble.shed.parser.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.parser.parsing.nodes.SourceNode;
 import org.zwobble.shed.parser.tokeniser.Keyword;
 
+import static org.zwobble.shed.parser.parsing.Expressions.expression;
+
 import static org.zwobble.shed.parser.parsing.Result.success;
 import static org.zwobble.shed.parser.parsing.Rules.guard;
 import static org.zwobble.shed.parser.parsing.Rules.keyword;
@@ -99,7 +101,7 @@ public class Parser {
         });
     }
 
-    public <T> Rule<T> variable(Keyword keyword, final VariableNodeConstructor<T> constructor) {
+    private <T> Rule<T> variable(Keyword keyword, final VariableNodeConstructor<T> constructor) {
         final Rule<String> identifier = tokenOfType(IDENTIFIER);
         final Rule<? extends ExpressionNode> expression = expression(); 
         return then(
@@ -117,10 +119,6 @@ public class Parser {
                 }
             }
         );
-    }
-    
-    public Rule<? extends ExpressionNode> expression() {
-        return Literals.numberLiteral();
     }
     
     private Rule<List<String>> dotSeparatedIdentifiers() {

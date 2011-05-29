@@ -188,6 +188,21 @@ public class Rules {
             }
         };
     }
+
+    public static <T> Rule<T> firstOf(final Rule<? extends T>... rules) {
+        return new Rule<T>() {
+            @Override
+            public Result<T> parse(TokenIterator tokens) {
+                for (Rule<? extends T> rule : rules) {
+                    Result<? extends T> result = rule.parse(tokens);
+                    if (!result.noMatch()) {
+                        return (Result<T>) result;
+                    }
+                }
+                return null;
+            }
+        };
+    }
     
     private static <T> Result<T> error(TokenPosition actual, TokenType tokenType, Result.Type type) {
         return error(actual, tokenType.name().toLowerCase(), type);
