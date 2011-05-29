@@ -8,5 +8,6 @@ public enum TokenType {
     NUMBER,
     STRING,
     END,
-    ERROR
+    ERROR,
+    UNTERMINATED_STRING
 }

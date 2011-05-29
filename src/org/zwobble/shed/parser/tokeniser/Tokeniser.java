@@ -1,29 +1,20 @@
 package org.zwobble.shed.parser.tokeniser;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;
-import com.google.common.collect.UnmodifiableIterator;
-
-import static com.google.common.base.Predicates.or;
 
 import static com.google.common.base.Predicates.not;
-
+import static com.google.common.base.Predicates.or;
 import static com.google.common.collect.Iterators.peekingIterator;
-
 import static com.google.common.collect.Lists.charactersOf;
 
 public class Tokeniser {
     private static final String symbolCharacters = "`¬!£$%^&*()-_=+[]{};:'@#~<>,./?\\|";
     private static final char stringDelimiter = '"';
+    private static final char newLine = '\n';
     
     public List<TokenPosition> tokenise(String inputString) {
         List<TokenPosition> tokens = new ArrayList<TokenPosition>();
@@ -54,9 +45,9 @@ public class Tokeniser {
         } else if (firstCharacter == stringDelimiter) {
             characters.next();
             String value = takeWhile(characters, isStringCharacter());
-//            if (characters.peek() != stringDelimiter) {
-//                return new T
-//            }
+            if (!characters.hasNext() || characters.peek() == newLine) {
+                return new Token(TokenType.UNTERMINATED_STRING, value);
+            }
             characters.next();
             return new Token(TokenType.STRING, value);
         } else {
@@ -73,7 +64,7 @@ public class Tokeniser {
         return new Predicate<Character>() {
             @Override
             public boolean apply(Character input) {
-                return input != stringDelimiter;
+                return input != stringDelimiter && input != newLine;
             }
         };
     }

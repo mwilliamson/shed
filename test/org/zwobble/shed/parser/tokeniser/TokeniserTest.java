@@ -6,6 +6,8 @@ import org.junit.Test;
 
 import com.google.common.base.Function;
 
+import static org.zwobble.shed.parser.tokeniser.Token.unterminatedString;
+
 import static org.zwobble.shed.parser.tokeniser.Token.string;
 
 import static org.zwobble.shed.parser.tokeniser.Token.error;
@@ -82,6 +84,16 @@ public class TokeniserTest {
     @Test public void
     simpleStrings() {
         assertThat(tokens("\"Hello!\""), is(asList(string("Hello!"), Token.end())));
+    }
+    
+    @Test public void
+    unterminatedStringsDueToEndOfInput() {
+        assertThat(tokens("\"Hello!"), is(asList(unterminatedString("Hello!"), Token.end())));
+    }
+    
+    @Test public void
+    unterminatedStringsDueNewLine() {
+        assertThat(tokens("\"Hello!\n"), is(asList(unterminatedString("Hello!"), whitespace("\n"), Token.end())));
     }
     
     private List<Token> tokens(String input) {

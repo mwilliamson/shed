@@ -29,6 +29,9 @@ public class Token {
     public static Token string(String value) {
         return new Token(TokenType.STRING, value);
     }
+    public static Token unterminatedString(String value) {
+        return new Token(TokenType.UNTERMINATED_STRING, value);
+    }
     
     public static Token end() {
         return END;
