@@ -189,7 +189,7 @@ public class Rules {
         };
     }
 
-    public static <T> Rule<T> firstOf(final Rule<? extends T>... rules) {
+    public static <T> Rule<T> firstOf(final String name, final Rule<? extends T>... rules) {
         return new Rule<T>() {
             @Override
             public Result<T> parse(TokenIterator tokens) {
@@ -199,7 +199,7 @@ public class Rules {
                         return (Result<T>) result;
                     }
                 }
-                return null;
+                return error(tokens.peek(), name, Result.Type.NO_MATCH);
             }
         };
     }
