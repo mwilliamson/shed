@@ -2,6 +2,12 @@ package org.zwobble.shed.parser.parsing;
 
 import java.util.List;
 
+import org.zwobble.shed.parser.parsing.nodes.ExpressionNode;
+import org.zwobble.shed.parser.parsing.nodes.ImmutableVariableNode;
+import org.zwobble.shed.parser.parsing.nodes.ImportNode;
+import org.zwobble.shed.parser.parsing.nodes.PackageDeclarationNode;
+import org.zwobble.shed.parser.parsing.nodes.SourceNode;
+
 import static org.zwobble.shed.parser.parsing.Result.success;
 import static org.zwobble.shed.parser.parsing.Rules.guard;
 import static org.zwobble.shed.parser.parsing.Rules.keyword;
@@ -16,6 +22,7 @@ import static org.zwobble.shed.parser.parsing.Rules.whitespace;
 import static org.zwobble.shed.parser.parsing.Rules.zeroOrMoreWithSeparator;
 import static org.zwobble.shed.parser.tokeniser.Keyword.IMPORT;
 import static org.zwobble.shed.parser.tokeniser.Keyword.PACKAGE;
+import static org.zwobble.shed.parser.tokeniser.Keyword.VAL;
 import static org.zwobble.shed.parser.tokeniser.TokenType.IDENTIFIER;
 
 public class Parser {
@@ -71,6 +78,30 @@ public class Parser {
                 }
             }
         );
+    }
+
+    public Rule<ImmutableVariableNode> immutableVariable() {
+        final Rule<String> identifier = tokenOfType(IDENTIFIER);
+        final Rule<? extends ExpressionNode> expression = expression(); 
+        return then(
+            sequence(
+                guard(keyword(VAL)), whitespace(),
+                identifier, optional(whitespace()),
+                symbol("="), optional(whitespace()),
+                expression, optional(whitespace()),
+                symbol(";")
+            ),
+            new ParseAction<RuleValues, ImmutableVariableNode>() {
+                @Override
+                public Result<ImmutableVariableNode> apply(RuleValues result) {
+                    return success(new ImmutableVariableNode(result.get(identifier), result.get(expression)));
+                }
+            }
+        );
+    }
+    
+    public Rule<? extends ExpressionNode> expression() {
+        return Literals.numberLiteral();
     }
     
     private Rule<List<String>> dotSeparatedIdentifiers() {

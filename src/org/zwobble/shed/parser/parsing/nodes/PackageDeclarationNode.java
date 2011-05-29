@@ -1,4 +1,4 @@
-package org.zwobble.shed.parser.parsing;
+package org.zwobble.shed.parser.parsing.nodes;
 
 import java.util.List;
 
