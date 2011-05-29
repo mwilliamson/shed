@@ -5,8 +5,10 @@ import java.util.List;
 import org.zwobble.shed.parser.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.parser.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.parser.parsing.nodes.ImportNode;
+import org.zwobble.shed.parser.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.parser.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.parser.parsing.nodes.SourceNode;
+import org.zwobble.shed.parser.tokeniser.Keyword;
 
 import static org.zwobble.shed.parser.parsing.Result.success;
 import static org.zwobble.shed.parser.parsing.Rules.guard;
@@ -22,7 +24,6 @@ import static org.zwobble.shed.parser.parsing.Rules.whitespace;
 import static org.zwobble.shed.parser.parsing.Rules.zeroOrMoreWithSeparator;
 import static org.zwobble.shed.parser.tokeniser.Keyword.IMPORT;
 import static org.zwobble.shed.parser.tokeniser.Keyword.PACKAGE;
-import static org.zwobble.shed.parser.tokeniser.Keyword.VAL;
 import static org.zwobble.shed.parser.tokeniser.TokenType.IDENTIFIER;
 
 public class Parser {
@@ -81,20 +82,38 @@ public class Parser {
     }
 
     public Rule<ImmutableVariableNode> immutableVariable() {
+        return variable(Keyword.VAL, new VariableNodeConstructor<ImmutableVariableNode>() {
+            @Override
+            public ImmutableVariableNode apply(String identifier, ExpressionNode expression) {
+                return new ImmutableVariableNode(identifier, expression);
+            }
+        });
+    }
+
+    public Rule<MutableVariableNode> mutableVariable() {
+        return variable(Keyword.VAR, new VariableNodeConstructor<MutableVariableNode>() {
+            @Override
+            public MutableVariableNode apply(String identifier, ExpressionNode expression) {
+                return new MutableVariableNode(identifier, expression);
+            }
+        });
+    }
+
+    public <T> Rule<T> variable(Keyword keyword, final VariableNodeConstructor<T> constructor) {
         final Rule<String> identifier = tokenOfType(IDENTIFIER);
         final Rule<? extends ExpressionNode> expression = expression(); 
         return then(
             sequence(
-                guard(keyword(VAL)), whitespace(),
+                guard(keyword(keyword)), whitespace(),
                 identifier, optional(whitespace()),
                 symbol("="), optional(whitespace()),
                 expression, optional(whitespace()),
                 symbol(";")
             ),
-            new ParseAction<RuleValues, ImmutableVariableNode>() {
+            new ParseAction<RuleValues, T>() {
                 @Override
-                public Result<ImmutableVariableNode> apply(RuleValues result) {
-                    return success(new ImmutableVariableNode(result.get(identifier), result.get(expression)));
+                public Result<T> apply(RuleValues result) {
+                    return success(constructor.apply(result.get(identifier), result.get(expression)));
                 }
             }
         );
@@ -106,5 +125,9 @@ public class Parser {
     
     private Rule<List<String>> dotSeparatedIdentifiers() {
         return oneOrMoreWithSeparator(tokenOfType(IDENTIFIER), symbol("."));
+    }
+    
+    private interface VariableNodeConstructor<T> {
+        T apply(String identifier, ExpressionNode expression);
     }
 }

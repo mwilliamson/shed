@@ -5,6 +5,7 @@ import java.util.Collections;
 import org.junit.Test;
 import org.zwobble.shed.parser.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.parser.parsing.nodes.ImportNode;
+import org.zwobble.shed.parser.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.parser.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.parser.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.parser.parsing.nodes.SourceNode;
@@ -94,6 +95,12 @@ public class ParserTest {
     canDeclareImmutableVariables() {
         assertThat(parser.immutableVariable().parse(tokens("val magic = 42;")),
                    is(success(new ImmutableVariableNode("magic", new NumberLiteralNode("42")))));
+    }
+    
+    @Test public void
+    canDeclareMutableVariables() {
+        assertThat(parser.mutableVariable().parse(tokens("var magic = 42;")),
+                   is(success(new MutableVariableNode("magic", new NumberLiteralNode("42")))));
     }
     
     private TokenIterator tokens(String input) {
