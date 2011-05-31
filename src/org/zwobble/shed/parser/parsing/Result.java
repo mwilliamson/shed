@@ -12,11 +12,11 @@ import lombok.ToString;
 @ToString
 public class Result<T> {
     public static <T> Result<T> success(T value) {
-        return new Result<T>(value, Collections.<Error>emptyList(), Type.SUCCESS);
+        return new Result<T>(value, Collections.<CompilerError>emptyList(), Type.SUCCESS);
     }
     
     private final T value;
-    private final List<Error> errors;
+    private final List<CompilerError> errors;
     private final Type type;
     
     public boolean anyErrors() {
@@ -35,7 +35,7 @@ public class Result<T> {
         return value;
     }
     
-    public List<Error> getErrors() {
+    public List<CompilerError> getErrors() {
         return errors;
     }
     

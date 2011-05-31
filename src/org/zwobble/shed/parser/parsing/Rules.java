@@ -37,7 +37,7 @@ public class Rules {
             @Override
             public Result<RuleValues> parse(TokenIterator tokens) {
                 RuleValues values = new RuleValues();
-                List<Error> errors = new ArrayList<Error>();
+                List<CompilerError> errors = new ArrayList<CompilerError>();
                 for (Rule<?> rule : rules) {
                     Result<?> result = rule.parse(tokens);
                     if (result.anyErrors()) {
@@ -47,11 +47,11 @@ public class Rules {
                         } else if (!result.ruleDidFinish() || recovery == OnError.FINISH) {
                             Rule<?> lastRule = rules[rules.length - 1];
                             if (lastRule instanceof LastRule) {
-                                Result<?> lastRuleResult;
-                                while ((lastRuleResult = lastRule.parse(tokens)).noMatch()) {
+                                Result<?> lastRuleResult = null;
+                                while (tokens.hasNext() && (lastRuleResult = lastRule.parse(tokens)).noMatch()) {
                                     tokens.next();
                                 }
-                                if (lastRuleResult.isSuccess()) {
+                                if (lastRuleResult != null && lastRuleResult.isSuccess()) {
                                     return new Result<RuleValues>(null, errors, Result.Type.ERROR_RECOVERED);
                                 }
                             }
@@ -83,7 +83,7 @@ public class Rules {
             @Override
             public Result<List<T>> parse(TokenIterator tokens) {
                 List<T> values = new ArrayList<T>();
-                List<Error> errors = new ArrayList<Error>();
+                List<CompilerError> errors = new ArrayList<CompilerError>();
                 Result<T> firstResult = rule.parse(tokens);
                 if (firstResult.anyErrors()) {
                     if (allowEmpty && firstResult.noMatch()) {
@@ -216,7 +216,7 @@ public class Rules {
         String message = format("Expected %s but got %s", expected, actual.getToken().describe());
         return new Result<T>(
             null,
-            asList(new Error(actual.getLineNumber(), actual.getCharacterNumber(), message)),
+            asList(new CompilerError(actual.getLineNumber(), actual.getCharacterNumber(), message)),
             type
         );
     }

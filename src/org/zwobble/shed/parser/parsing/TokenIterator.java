@@ -18,6 +18,10 @@ public class TokenIterator {
         return tokens.get(nextIndex);
     }
     
+    public boolean hasNext() {
+        return nextIndex < tokens.size();
+    }
+    
     public TokenPosition next() {
         nextIndex += 1;
         return tokens.get(nextIndex - 1);

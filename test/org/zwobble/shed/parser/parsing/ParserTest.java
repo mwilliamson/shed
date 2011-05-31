@@ -21,6 +21,12 @@ public class ParserTest {
     private final Parser parser = new Parser();
     
     @Test public void
+    canParseEmptyString() {
+        assertThat(parser.source().parse(tokens("")).anyErrors(),
+                   is(true));
+    }
+    
+    @Test public void
     packageDeclarationIsListOfIdentifiersJoinedByDots() {
         assertThat(parser.packageDeclaration().parse(tokens("package shed.util.collections;")),
                    is(success(new PackageDeclarationNode(asList("shed", "util", "collections")))));
@@ -53,8 +59,8 @@ public class ParserTest {
     errorsAreCombinedIfPackageDeclarationAndImportsHaveErrors() {
         assertThat(parser.source().parse(tokens("packag shed.util.collections; import shed import shed.collections;")).getErrors(),
             is(asList(
-                new Error(1, 1, "Expected keyword \"package\" but got identifier \"packag\""),
-                new Error(1, 42, "Expected symbol \";\" but got whitespace \" \"")
+                new CompilerError(1, 1, "Expected keyword \"package\" but got identifier \"packag\""),
+                new CompilerError(1, 42, "Expected symbol \";\" but got whitespace \" \"")
             ))
         );
     }
@@ -62,7 +68,7 @@ public class ParserTest {
     @Test public void
     errorsIfImportIsMissingSemicolon() {
         assertThat(parser.source().parse(tokens("package shed.util.collections; import shed import shed.collections;")).getErrors(),
-            is(asList(new Error(1, 43, "Expected symbol \";\" but got whitespace \" \"")))
+            is(asList(new CompilerError(1, 43, "Expected symbol \";\" but got whitespace \" \"")))
         );
     }
     
@@ -80,20 +86,20 @@ public class ParserTest {
     @Test public void
     errorIsRaisedIfPackageDeclarationDoesNotStartWithPackageKeyword() {
         assertThat(parser.packageDeclaration().parse(tokens("packag shed.util.collections;")).getErrors(),
-                   is(asList(new Error(1, 1, "Expected keyword \"package\" but got identifier \"packag\""))));
+                   is(asList(new CompilerError(1, 1, "Expected keyword \"package\" but got identifier \"packag\""))));
     }
     
     @Test public void
     errorInPackageDeclarationIsRaisedIfWhitespaceIsEncounteredInsteadOfDot() {
         assertThat(parser.packageDeclaration().parse(tokens("package shed .util.collections;")).getErrors(),
-                   is(asList(new Error(1, 13, "Expected symbol \";\" but got whitespace \" \""))));
+                   is(asList(new CompilerError(1, 13, "Expected symbol \";\" but got whitespace \" \""))));
     }
     
     @Test public void
     errorInPackageDeclarationIsRaisedIfWhitespaceIsEncounteredInsteadOfIdentifier() {
         assertThat(parser.packageDeclaration().parse(tokens("package shed. util.collections;")).getErrors(),
             is(asList(
-                new Error(1, 14, "Expected identifier but got whitespace \" \"")
+                new CompilerError(1, 14, "Expected identifier but got whitespace \" \"")
             ))
         );
     }
