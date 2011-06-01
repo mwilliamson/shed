@@ -3,10 +3,7 @@ package org.zwobble.shed.parser.parsing;
 import java.util.Collections;
 
 import org.junit.Test;
-import org.zwobble.shed.parser.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.parser.parsing.nodes.ImportNode;
-import org.zwobble.shed.parser.parsing.nodes.MutableVariableNode;
-import org.zwobble.shed.parser.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.parser.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.parser.parsing.nodes.SourceNode;
 import org.zwobble.shed.parser.tokeniser.Tokeniser;
@@ -108,18 +105,6 @@ public class ParserTest {
     canImportPackages() {
         assertThat(parser.importNode().parse(tokens("import shed.util.collections;")),
                    is(success(new ImportNode(asList("shed", "util", "collections")))));
-    }
-    
-    @Test public void
-    canDeclareImmutableVariables() {
-        assertThat(parser.immutableVariable().parse(tokens("val magic = 42;")),
-                   is(success(new ImmutableVariableNode("magic", new NumberLiteralNode("42")))));
-    }
-    
-    @Test public void
-    canDeclareMutableVariables() {
-        assertThat(parser.mutableVariable().parse(tokens("var magic = 42;")),
-                   is(success(new MutableVariableNode("magic", new NumberLiteralNode("42")))));
     }
     
     private TokenIterator tokens(String input) {
