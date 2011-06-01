@@ -191,6 +191,7 @@ public class Rules {
 
     public static <T> Rule<T> firstOf(final String name, final Rule<? extends T>... rules) {
         return new Rule<T>() {
+            @SuppressWarnings("unchecked")
             @Override
             public Result<T> parse(TokenIterator tokens) {
                 for (Rule<? extends T> rule : rules) {
