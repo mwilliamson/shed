@@ -31,41 +31,43 @@ public class ParserTest {
     }
     
     @Test public void
-    sourceNodeBeginsWithPackageDeclaration() {
-        assertThat(parser.source().parse(tokens("package shed.util.collections;")),
+    sourceNodeCanHaveNoImportNodes() {
+        assertThat(parser.source().parse(tokens("package shed.util.collections;\n\npublic List;")),
             is(success(new SourceNode(
                 new PackageDeclarationNode(asList("shed", "util", "collections")),
-                Collections.<ImportNode>emptyList()
+                Collections.<ImportNode>emptyList(),
+                new PublicDeclarationNode(asList("List"))
             )))
         );
     }
     
     @Test public void
-    sourceNodeCanHaveImportsAfterPackageDeclaration() {
-        assertThat(parser.source().parse(tokens("package shed.util.collections;\n\nimport shed.util; import shed;")),
+    sourceNodeHasPackageDeclarationAndImportNodesAndPublicDeclaration() {
+        assertThat(parser.source().parse(tokens("package shed.util.collections;\n\nimport shed.util;\npublic List, Set;")),
             is(success(new SourceNode(
                 new PackageDeclarationNode(asList("shed", "util", "collections")),
                 asList(
-                    new ImportNode(asList("shed", "util")),
-                    new ImportNode(asList("shed"))
-                )
+                    new ImportNode(asList("shed", "util"))
+                ),
+                new PublicDeclarationNode(asList("List", "Set"))
             )))
         );
     }
     
     @Test public void
     errorsAreCombinedIfPackageDeclarationAndImportsHaveErrors() {
-        assertThat(parser.source().parse(tokens("packag shed.util.collections; import shed import shed.collections;")).getErrors(),
+        assertThat(parser.source().parse(tokens("packag shed.util.collections; import shed import shed.collections;\nblah")).getErrors(),
             is(asList(
                 new CompilerError(1, 1, "Expected keyword \"package\" but got identifier \"packag\""),
-                new CompilerError(1, 42, "Expected symbol \";\" but got whitespace \" \"")
+                new CompilerError(1, 42, "Expected symbol \";\" but got whitespace \" \""),
+                new CompilerError(2, 1, "Expected keyword \"public\" but got identifier \"blah\"")
             ))
         );
     }
     
     @Test public void
     errorsIfImportIsMissingSemicolon() {
-        assertThat(parser.source().parse(tokens("package shed.util.collections; import shed import shed.collections;")).getErrors(),
+        assertThat(parser.source().parse(tokens("package shed.util.collections; import shed import shed.collections;public List;")).getErrors(),
             is(asList(new CompilerError(1, 43, "Expected symbol \";\" but got whitespace \" \"")))
         );
     }
@@ -76,7 +78,8 @@ public class ParserTest {
         assertThat(parser.source().parse(tokens(source)).get(),
             is(new SourceNode(
                 new PackageDeclarationNode(asList("shed", "util", "collections")),
-                asList(new ImportNode(asList("shed", "stuff")))
+                asList(new ImportNode(asList("shed", "stuff"))),
+                null
             ))
         );
     }
@@ -111,7 +114,7 @@ public class ParserTest {
     @Test public void
     canDeclarePublicVariables() {
         assertThat(
-            parser.publicDeclaration().parse(tokens("public List, Set")),
+            parser.publicDeclaration().parse(tokens("public List, Set;")),
             is(success(new PublicDeclarationNode(asList("List", "Set"))))
         );
     }

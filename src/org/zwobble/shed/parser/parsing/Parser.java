@@ -8,6 +8,10 @@ import org.zwobble.shed.parser.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.parser.parsing.nodes.SourceNode;
 import org.zwobble.shed.parser.tokeniser.Keyword;
 
+import static org.zwobble.shed.parser.parsing.Separator.hardSeparator;
+
+import static org.zwobble.shed.parser.parsing.Separator.softSeparator;
+
 import static org.zwobble.shed.parser.parsing.Result.success;
 import static org.zwobble.shed.parser.parsing.Rules.guard;
 import static org.zwobble.shed.parser.parsing.Rules.keyword;
@@ -28,16 +32,19 @@ public class Parser {
     public Rule<SourceNode> source() {
         final Rule<PackageDeclarationNode> packageDeclaration;
         final Rule<List<ImportNode>> imports;
+        final Rule<PublicDeclarationNode> publicDeclaration;
         return then(
             sequence(OnError.CONTINUE,
                 packageDeclaration = packageDeclaration(),
                 optional(whitespace()),
-                imports = zeroOrMoreWithSeparator(importNode(), whitespace())
+                imports = zeroOrMoreWithSeparator(importNode(), softSeparator(whitespace())),
+                optional(whitespace()),
+                publicDeclaration = publicDeclaration()
             ),
             new ParseAction<RuleValues, SourceNode>() {
                 @Override
                 public Result<SourceNode> apply(RuleValues result) {
-                    return success(new SourceNode(result.get(packageDeclaration), result.get(imports)));
+                    return success(new SourceNode(result.get(packageDeclaration), result.get(imports), result.get(publicDeclaration)));
                 }
             }
         );
@@ -79,9 +86,9 @@ public class Parser {
     
     public Rule<PublicDeclarationNode> publicDeclaration() {
         Rule<RuleValues> comma = sequence(OnError.FINISH, optional(whitespace()), symbol(","), optional(whitespace()));
-        final Rule<List<String>> identifiers = oneOrMoreWithSeparator(tokenOfType(IDENTIFIER), comma);
+        final Rule<List<String>> identifiers = oneOrMoreWithSeparator(tokenOfType(IDENTIFIER), hardSeparator(comma));
         return then( 
-            sequence(OnError.FINISH,
+            aStatement(OnError.FINISH,
                 keyword(Keyword.PUBLIC),
                 whitespace(),
                 identifiers
@@ -96,7 +103,7 @@ public class Parser {
     }
     
     private Rule<List<String>> dotSeparatedIdentifiers() {
-        return oneOrMoreWithSeparator(tokenOfType(IDENTIFIER), symbol("."));
+        return oneOrMoreWithSeparator(tokenOfType(IDENTIFIER), hardSeparator(symbol(".")));
     }
     
     // TODO: implicit whitespace in sequence

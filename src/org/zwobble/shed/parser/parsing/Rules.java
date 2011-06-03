@@ -3,6 +3,7 @@ package org.zwobble.shed.parser.parsing;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.zwobble.shed.parser.parsing.Separator.Type;
 import org.zwobble.shed.parser.tokeniser.Keyword;
 import org.zwobble.shed.parser.tokeniser.Token;
 import org.zwobble.shed.parser.tokeniser.TokenPosition;
@@ -48,10 +49,10 @@ public class Rules {
                             Rule<?> lastRule = rules[rules.length - 1];
                             if (lastRule instanceof LastRule) {
                                 Result<?> lastRuleResult = null;
-                                while (tokens.hasNext() && (lastRuleResult = lastRule.parse(tokens)).noMatch()) {
+                                while (!tokens.peek().getToken().equals(Token.end()) && (lastRuleResult = lastRule.parse(tokens)).noMatch()) {
                                     tokens.next();
                                 }
-                                if (lastRuleResult != null && lastRuleResult.isSuccess()) {
+                                if (tokens.peek().getToken().equals(Token.end()) || (lastRuleResult != null && lastRuleResult.isSuccess())) {
                                     return new Result<RuleValues>(null, errors, Result.Type.ERROR_RECOVERED);
                                 }
                             }
@@ -70,15 +71,15 @@ public class Rules {
         };
     }
     
-    public static <T> Rule<List<T>> oneOrMoreWithSeparator(final Rule<T> rule, final Rule<?> separator) {
+    public static <T> Rule<List<T>> oneOrMoreWithSeparator(final Rule<T> rule, final Separator<?> separator) {
         return repeatedWithSeparator(rule, separator, false);
     }
     
-    public static <T> Rule<List<T>> zeroOrMoreWithSeparator(final Rule<T> rule, final Rule<?> separator) {
+    public static <T> Rule<List<T>> zeroOrMoreWithSeparator(final Rule<T> rule, final Separator<?> separator) {
         return repeatedWithSeparator(rule, separator, true);
     }
     
-    private static <T> Rule<List<T>> repeatedWithSeparator(final Rule<T> rule, final Rule<?> separator, final boolean allowEmpty) {
+    private static <T> Rule<List<T>> repeatedWithSeparator(final Rule<T> rule, final Separator<?> separator, final boolean allowEmpty) {
         return new Rule<List<T>>() {
             @Override
             public Result<List<T>> parse(TokenIterator tokens) {
@@ -98,6 +99,7 @@ public class Rules {
                     values.add(firstResult.get());                    
                 }
                 while (true) {
+                    int positionBeforeSeparator = tokens.currentPosition();
                     Result<?> separatorResult = separator.parse(tokens);
                     if (separatorResult.anyErrors()) {
                         if (separatorResult.noMatch()) {
@@ -112,6 +114,14 @@ public class Rules {
                     
                     Result<T> ruleResult = rule.parse(tokens);
                     if (ruleResult.anyErrors()) {
+                        if (separator.getType() == Type.SOFT) {
+                            tokens.resetPosition(positionBeforeSeparator);
+                            if (errors.isEmpty()) {
+                                return success(values);                    
+                            } else {
+                                return new Result<List<T>>(values, errors, Result.Type.ERROR_RECOVERED);
+                            }
+                        }
                         if (!firstResult.ruleDidFinish()) {
                             return ruleResult.changeValue(values);                            
                         }
