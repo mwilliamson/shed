@@ -5,6 +5,7 @@ import java.util.Collections;
 import org.junit.Test;
 import org.zwobble.shed.parser.parsing.nodes.ImportNode;
 import org.zwobble.shed.parser.parsing.nodes.PackageDeclarationNode;
+import org.zwobble.shed.parser.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.parser.parsing.nodes.SourceNode;
 import org.zwobble.shed.parser.tokeniser.Tokeniser;
 
@@ -105,6 +106,14 @@ public class ParserTest {
     canImportPackages() {
         assertThat(parser.importNode().parse(tokens("import shed.util.collections;")),
                    is(success(new ImportNode(asList("shed", "util", "collections")))));
+    }
+    
+    @Test public void
+    canDeclarePublicVariables() {
+        assertThat(
+            parser.publicDeclaration().parse(tokens("public List, Set")),
+            is(success(new PublicDeclarationNode(asList("List", "Set"))))
+        );
     }
     
     private TokenIterator tokens(String input) {

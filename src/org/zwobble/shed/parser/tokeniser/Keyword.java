@@ -4,7 +4,8 @@ public enum Keyword {
     PACKAGE,
     IMPORT,
     VAL,
-    VAR;
+    VAR,
+    PUBLIC;
     
     public String keywordName() {
         return name().toLowerCase();

@@ -4,7 +4,9 @@ import java.util.List;
 
 import org.zwobble.shed.parser.parsing.nodes.ImportNode;
 import org.zwobble.shed.parser.parsing.nodes.PackageDeclarationNode;
+import org.zwobble.shed.parser.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.parser.parsing.nodes.SourceNode;
+import org.zwobble.shed.parser.tokeniser.Keyword;
 
 import static org.zwobble.shed.parser.parsing.Result.success;
 import static org.zwobble.shed.parser.parsing.Rules.guard;
@@ -40,6 +42,7 @@ public class Parser {
             }
         );
     }
+    
     public Rule<PackageDeclarationNode> packageDeclaration() {
         final Rule<List<String>> names;
         return then(
@@ -69,6 +72,24 @@ public class Parser {
                 @Override
                 public Result<ImportNode> apply(RuleValues result) {
                     return success(new ImportNode(result.get(names)));
+                }
+            }
+        );
+    }
+    
+    public Rule<PublicDeclarationNode> publicDeclaration() {
+        Rule<RuleValues> comma = sequence(OnError.FINISH, optional(whitespace()), symbol(","), optional(whitespace()));
+        final Rule<List<String>> identifiers = oneOrMoreWithSeparator(tokenOfType(IDENTIFIER), comma);
+        return then( 
+            sequence(OnError.FINISH,
+                keyword(Keyword.PUBLIC),
+                whitespace(),
+                identifiers
+            ),
+            new ParseAction<RuleValues, PublicDeclarationNode>() {
+                @Override
+                public Result<PublicDeclarationNode> apply(RuleValues result) {
+                    return success(new PublicDeclarationNode(result.get(identifiers)));
                 }
             }
         );
