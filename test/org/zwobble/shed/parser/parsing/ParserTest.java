@@ -3,10 +3,14 @@ package org.zwobble.shed.parser.parsing;
 import java.util.Collections;
 
 import org.junit.Test;
+import org.zwobble.shed.parser.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.parser.parsing.nodes.ImportNode;
+import org.zwobble.shed.parser.parsing.nodes.MutableVariableNode;
+import org.zwobble.shed.parser.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.parser.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.parser.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.parser.parsing.nodes.SourceNode;
+import org.zwobble.shed.parser.parsing.nodes.StatementNode;
 import org.zwobble.shed.parser.tokeniser.Tokeniser;
 
 import static java.util.Arrays.asList;
@@ -32,24 +36,30 @@ public class ParserTest {
     
     @Test public void
     sourceNodeCanHaveNoImportNodes() {
-        assertThat(parser.source().parse(tokens("package shed.util.collections;\n\npublic List;")),
+        assertThat(parser.source().parse(tokens("package shed.util.collections;\n\npublic List;\nval x = 1;")),
             is(success(new SourceNode(
                 new PackageDeclarationNode(asList("shed", "util", "collections")),
                 Collections.<ImportNode>emptyList(),
-                new PublicDeclarationNode(asList("List"))
+                new PublicDeclarationNode(asList("List")),
+                asList((StatementNode)new ImmutableVariableNode("x", new NumberLiteralNode("1")))
             )))
         );
     }
     
     @Test public void
-    sourceNodeHasPackageDeclarationAndImportNodesAndPublicDeclaration() {
-        assertThat(parser.source().parse(tokens("package shed.util.collections;\n\nimport shed.util;\npublic List, Set;")),
+    sourceNodeHasPackageDeclarationAndImportNodesAndPublicDeclarationAndStatements() {
+        assertThat(parser.source().parse(tokens("package shed.util.collections;\n\nimport shed.util;\npublic List, Set;" +
+                "val x = 1; var y = 2;")),
             is(success(new SourceNode(
                 new PackageDeclarationNode(asList("shed", "util", "collections")),
                 asList(
                     new ImportNode(asList("shed", "util"))
                 ),
-                new PublicDeclarationNode(asList("List", "Set"))
+                new PublicDeclarationNode(asList("List", "Set")),
+                asList(
+                    new ImmutableVariableNode("x", new NumberLiteralNode("1")),
+                    new MutableVariableNode("y", new NumberLiteralNode("2"))
+                )
             )))
         );
     }
@@ -60,26 +70,28 @@ public class ParserTest {
             is(asList(
                 new CompilerError(1, 1, "Expected keyword \"package\" but got identifier \"packag\""),
                 new CompilerError(1, 42, "Expected symbol \";\" but got whitespace \" \""),
-                new CompilerError(2, 1, "Expected keyword \"public\" but got identifier \"blah\"")
+                new CompilerError(2, 1, "Expected keyword \"public\" but got identifier \"blah\""),
+                new CompilerError(2, 5, "Expected statement but got end of source")
             ))
         );
     }
     
     @Test public void
     errorsIfImportIsMissingSemicolon() {
-        assertThat(parser.source().parse(tokens("package shed.util.collections; import shed import shed.collections;public List;")).getErrors(),
+        assertThat(parser.source().parse(tokens("package shed.util.collections; import shed import shed.collections;public List;val x = 1;")).getErrors(),
             is(asList(new CompilerError(1, 43, "Expected symbol \";\" but got whitespace \" \"")))
         );
     }
     
     @Test public void
     parserAttemptsToParseRestOfSourceFileIfErrorIsFound() {
-        String source = "package shed.util.collections; import shed import shed.collections; import shed.stuff;";
+        String source = "package shed.util.collections; import shed import shed.collections; import shed.stuff; val x; val y = 2;";
         assertThat(parser.source().parse(tokens(source)).get(),
             is(new SourceNode(
                 new PackageDeclarationNode(asList("shed", "util", "collections")),
                 asList(new ImportNode(asList("shed", "stuff"))),
-                null
+                null,
+                asList((StatementNode)new ImmutableVariableNode("y", new NumberLiteralNode("2")))
             ))
         );
     }

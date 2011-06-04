@@ -56,7 +56,7 @@ public class Rules {
                                     return new Result<RuleValues>(null, errors, Result.Type.ERROR_RECOVERED);
                                 }
                             }
-                            return result.toType(null, Result.Type.FATAL);                                
+                            return new Result<RuleValues>(null, errors, Result.Type.FATAL);                                
                         }
                     }
                     values.add(rule, result.get());

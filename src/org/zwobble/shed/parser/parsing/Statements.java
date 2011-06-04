@@ -5,7 +5,10 @@ import java.util.Arrays;
 import org.zwobble.shed.parser.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.parser.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.parser.parsing.nodes.MutableVariableNode;
+import org.zwobble.shed.parser.parsing.nodes.StatementNode;
 import org.zwobble.shed.parser.tokeniser.Keyword;
+
+import static org.zwobble.shed.parser.parsing.Rules.firstOf;
 
 import static org.zwobble.shed.parser.parsing.Expressions.expression;
 import static org.zwobble.shed.parser.parsing.Result.success;
@@ -21,6 +24,14 @@ import static org.zwobble.shed.parser.parsing.Rules.whitespace;
 import static org.zwobble.shed.parser.tokeniser.TokenType.IDENTIFIER;
 
 public class Statements {
+    @SuppressWarnings("unchecked")
+    public static Rule<StatementNode> statement() {
+        return firstOf("statement",
+            immutableVariable(),
+            mutableVariable()
+        );
+    }
+    
     public static Rule<ImmutableVariableNode> immutableVariable() {
         return variable(Keyword.VAL, new VariableNodeConstructor<ImmutableVariableNode>() {
             @Override

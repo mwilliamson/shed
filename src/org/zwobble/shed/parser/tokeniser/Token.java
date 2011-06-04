@@ -48,6 +48,9 @@ public class Token {
     private final String value;
     
     public String describe() {
+        if (type == TokenType.END) {
+            return "end of source";
+        }
         return String.format("%s \"%s\"", type.name().toLowerCase(), value);
     }
 }

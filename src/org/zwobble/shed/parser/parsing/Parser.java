@@ -6,11 +6,8 @@ import org.zwobble.shed.parser.parsing.nodes.ImportNode;
 import org.zwobble.shed.parser.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.parser.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.parser.parsing.nodes.SourceNode;
+import org.zwobble.shed.parser.parsing.nodes.StatementNode;
 import org.zwobble.shed.parser.tokeniser.Keyword;
-
-import static org.zwobble.shed.parser.parsing.Separator.hardSeparator;
-
-import static org.zwobble.shed.parser.parsing.Separator.softSeparator;
 
 import static org.zwobble.shed.parser.parsing.Result.success;
 import static org.zwobble.shed.parser.parsing.Rules.guard;
@@ -23,7 +20,10 @@ import static org.zwobble.shed.parser.parsing.Rules.then;
 import static org.zwobble.shed.parser.parsing.Rules.tokenOfType;
 import static org.zwobble.shed.parser.parsing.Rules.whitespace;
 import static org.zwobble.shed.parser.parsing.Rules.zeroOrMoreWithSeparator;
+import static org.zwobble.shed.parser.parsing.Separator.hardSeparator;
+import static org.zwobble.shed.parser.parsing.Separator.softSeparator;
 import static org.zwobble.shed.parser.parsing.Statements.aStatement;
+import static org.zwobble.shed.parser.parsing.Statements.statement;
 import static org.zwobble.shed.parser.tokeniser.Keyword.IMPORT;
 import static org.zwobble.shed.parser.tokeniser.Keyword.PACKAGE;
 import static org.zwobble.shed.parser.tokeniser.TokenType.IDENTIFIER;
@@ -33,18 +33,26 @@ public class Parser {
         final Rule<PackageDeclarationNode> packageDeclaration;
         final Rule<List<ImportNode>> imports;
         final Rule<PublicDeclarationNode> publicDeclaration;
+        final Rule<List<StatementNode>> statements;
         return then(
             sequence(OnError.CONTINUE,
                 packageDeclaration = packageDeclaration(),
                 optional(whitespace()),
                 imports = zeroOrMoreWithSeparator(importNode(), softSeparator(whitespace())),
                 optional(whitespace()),
-                publicDeclaration = publicDeclaration()
+                publicDeclaration = publicDeclaration(),
+                optional(whitespace()),
+                statements = oneOrMoreWithSeparator(statement(), softSeparator(whitespace()))
             ),
             new ParseAction<RuleValues, SourceNode>() {
                 @Override
                 public Result<SourceNode> apply(RuleValues result) {
-                    return success(new SourceNode(result.get(packageDeclaration), result.get(imports), result.get(publicDeclaration)));
+                    return success(new SourceNode(
+                        result.get(packageDeclaration),
+                        result.get(imports),
+                        result.get(publicDeclaration),
+                        result.get(statements)
+                    ));
                 }
             }
         );
