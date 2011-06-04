@@ -77,6 +77,15 @@ public class ParserTest {
     }
     
     @Test public void
+    sourceNodeAttemptsToParseUpToEnd() {
+        assertThat(parser.source().parse(tokens("package shed.util.collections; public x;\nval x = 1; a")).getErrors(),
+            is(asList(
+                new CompilerError(2, 12, "Expected end of source but got identifier \"a\"")
+            ))
+        );
+    }
+    
+    @Test public void
     errorsIfImportIsMissingSemicolon() {
         assertThat(parser.source().parse(tokens("package shed.util.collections; import shed import shed.collections;public List;val x = 1;")).getErrors(),
             is(asList(new CompilerError(1, 43, "Expected symbol \";\" but got whitespace \" \"")))

@@ -8,6 +8,7 @@ import org.zwobble.shed.parser.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.parser.parsing.nodes.SourceNode;
 import org.zwobble.shed.parser.parsing.nodes.StatementNode;
 import org.zwobble.shed.parser.tokeniser.Keyword;
+import org.zwobble.shed.parser.tokeniser.Token;
 
 import static org.zwobble.shed.parser.parsing.Result.success;
 import static org.zwobble.shed.parser.parsing.Rules.guard;
@@ -42,7 +43,9 @@ public class Parser {
                 optional(whitespace()),
                 publicDeclaration = publicDeclaration(),
                 optional(whitespace()),
-                statements = oneOrMoreWithSeparator(statement(), softSeparator(whitespace()))
+                statements = oneOrMoreWithSeparator(statement(), softSeparator(whitespace())),
+                optional(whitespace()),
+                Rules.token(Token.end())
             ),
             new ParseAction<RuleValues, SourceNode>() {
                 @Override
