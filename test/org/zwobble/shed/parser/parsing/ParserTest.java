@@ -11,11 +11,13 @@ import org.zwobble.shed.parser.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.parser.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.parser.parsing.nodes.SourceNode;
 import org.zwobble.shed.parser.parsing.nodes.StatementNode;
+import org.zwobble.shed.parser.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.parser.tokeniser.Tokeniser;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.zwobble.shed.parser.Option.none;
 import static org.zwobble.shed.parser.parsing.Result.success;
 
 public class ParserTest {
@@ -41,7 +43,7 @@ public class ParserTest {
                 new PackageDeclarationNode(asList("shed", "util", "collections")),
                 Collections.<ImportNode>emptyList(),
                 new PublicDeclarationNode(asList("List")),
-                asList((StatementNode)new ImmutableVariableNode("x", new NumberLiteralNode("1")))
+                asList((StatementNode)new ImmutableVariableNode("x", none(TypeReferenceNode.class), new NumberLiteralNode("1")))
             )))
         );
     }
@@ -57,8 +59,8 @@ public class ParserTest {
                 ),
                 new PublicDeclarationNode(asList("List", "Set")),
                 asList(
-                    new ImmutableVariableNode("x", new NumberLiteralNode("1")),
-                    new MutableVariableNode("y", new NumberLiteralNode("2"))
+                    new ImmutableVariableNode("x", none(TypeReferenceNode.class), new NumberLiteralNode("1")),
+                    new MutableVariableNode("y", none(TypeReferenceNode.class), new NumberLiteralNode("2"))
                 )
             )))
         );
@@ -69,7 +71,7 @@ public class ParserTest {
         assertThat(parser.source().parse(tokens("packag shed.util.collections; import shed import shed.collections;\nblah")).getErrors(),
             is(asList(
                 new CompilerError(1, 1, "Expected keyword \"package\" but got identifier \"packag\""),
-                new CompilerError(1, 42, "Expected symbol \";\" but got whitespace \" \""),
+                new CompilerError(1, 43, "Expected symbol \";\" but got keyword \"import\""),
                 new CompilerError(2, 1, "Expected keyword \"public\" but got identifier \"blah\""),
                 new CompilerError(2, 5, "Expected statement but got end of source")
             ))
@@ -88,7 +90,7 @@ public class ParserTest {
     @Test public void
     errorsIfImportIsMissingSemicolon() {
         assertThat(parser.source().parse(tokens("package shed.util.collections; import shed import shed.collections;public List;val x = 1;")).getErrors(),
-            is(asList(new CompilerError(1, 43, "Expected symbol \";\" but got whitespace \" \"")))
+            is(asList(new CompilerError(1, 44, "Expected symbol \";\" but got keyword \"import\"")))
         );
     }
     
@@ -100,7 +102,7 @@ public class ParserTest {
                 new PackageDeclarationNode(asList("shed", "util", "collections")),
                 asList(new ImportNode(asList("shed", "stuff"))),
                 null,
-                asList((StatementNode)new ImmutableVariableNode("y", new NumberLiteralNode("2")))
+                asList((StatementNode)new ImmutableVariableNode("y", none(TypeReferenceNode.class), new NumberLiteralNode("2")))
             ))
         );
     }
@@ -114,7 +116,7 @@ public class ParserTest {
     @Test public void
     errorInPackageDeclarationIsRaisedIfWhitespaceIsEncounteredInsteadOfDot() {
         assertThat(parser.packageDeclaration().parse(tokens("package shed .util.collections;")).getErrors(),
-                   is(asList(new CompilerError(1, 13, "Expected symbol \";\" but got whitespace \" \""))));
+                   is(asList(new CompilerError(1, 14, "Expected symbol \";\" but got symbol \".\""))));
     }
     
     @Test public void

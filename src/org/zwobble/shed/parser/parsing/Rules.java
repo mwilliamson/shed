@@ -3,6 +3,7 @@ package org.zwobble.shed.parser.parsing;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.zwobble.shed.parser.Option;
 import org.zwobble.shed.parser.parsing.Separator.Type;
 import org.zwobble.shed.parser.tokeniser.Keyword;
 import org.zwobble.shed.parser.tokeniser.Token;
@@ -11,6 +12,7 @@ import org.zwobble.shed.parser.tokeniser.TokenType;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static org.zwobble.shed.parser.Option.some;
 import static org.zwobble.shed.parser.parsing.Result.success;
 import static org.zwobble.shed.parser.tokeniser.TokenType.WHITESPACE;
 
@@ -135,19 +137,19 @@ public class Rules {
         };
     }
     
-    public static <T> Rule<T> optional(final Rule<T> rule) {
-        return new Rule<T>() {
+    public static <T> Rule<Option<T>> optional(final Rule<T> rule) {
+        return new Rule<Option<T>>() {
             @Override
-            public Result<T> parse(TokenIterator tokens) {
+            public Result<Option<T>> parse(TokenIterator tokens) {
                 Result<T> result = rule.parse(tokens);
                 if (result.anyErrors()) {
                     if (result.noMatch()) {
-                        return success(null);                        
+                        return success(Option.<T>none());                        
                     } else {
                         return result.changeValue(null);
                     }
                 }
-                return result;
+                return success(some(result.get()));
             }
         };
     }
