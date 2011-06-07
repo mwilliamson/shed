@@ -1,8 +1,10 @@
 package org.zwobble.shed.parser;
 
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @EqualsAndHashCode
+@ToString
 public class Option<T> {
     private final boolean hasValue;
     private final T value;

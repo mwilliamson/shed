@@ -7,7 +7,6 @@ import org.zwobble.shed.parser.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.parser.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.parser.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.parser.parsing.nodes.StatementNode;
-import org.zwobble.shed.parser.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.parser.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.parser.tokeniser.Keyword;
 
@@ -23,6 +22,7 @@ import static org.zwobble.shed.parser.parsing.Rules.symbol;
 import static org.zwobble.shed.parser.parsing.Rules.then;
 import static org.zwobble.shed.parser.parsing.Rules.tokenOfType;
 import static org.zwobble.shed.parser.parsing.Rules.whitespace;
+import static org.zwobble.shed.parser.parsing.TypeReferences.typeReference;
 import static org.zwobble.shed.parser.tokeniser.TokenType.IDENTIFIER;
 
 public class Statements {
@@ -92,18 +92,6 @@ public class Statements {
                 @Override
                 public Result<TypeReferenceNode> apply(RuleValues result) {
                     return success(result.get(typeReference));
-                }
-            }
-        );
-    }
-    
-    private static Rule<TypeReferenceNode> typeReference() {
-        return then(
-            tokenOfType(IDENTIFIER),
-            new ParseAction<String, TypeReferenceNode>() {
-                @Override
-                public Result<TypeReferenceNode> apply(String result) {
-                    return Result.<TypeReferenceNode>success(new TypeIdentifierNode(result));
                 }
             }
         );

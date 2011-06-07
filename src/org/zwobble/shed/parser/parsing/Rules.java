@@ -207,10 +207,12 @@ public class Rules {
             @Override
             public Result<T> parse(TokenIterator tokens) {
                 for (Rule<? extends T> rule : rules) {
+                    int positionBeforeRule = tokens.currentPosition();
                     Result<? extends T> result = rule.parse(tokens);
-                    if (!result.noMatch()) {
+                    if (!result.anyErrors()) {
                         return (Result<T>) result;
                     }
+                    tokens.resetPosition(positionBeforeRule);
                 }
                 return error(tokens.peek(), name, Result.Type.NO_MATCH);
             }
