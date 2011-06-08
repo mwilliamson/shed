@@ -50,8 +50,7 @@ public class Expressions {
                 formalArguments,
                 guard(symbol(")")),
                 optional(whitespace()),
-                guard(symbol("=")),
-                guard(symbol(">")),
+                guard(symbol("=>")),
                 optional(whitespace()),
                 functionBody
             ),

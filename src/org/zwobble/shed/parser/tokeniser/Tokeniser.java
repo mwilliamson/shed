@@ -12,9 +12,14 @@ import static com.google.common.base.Predicates.not;
 import static com.google.common.base.Predicates.or;
 import static com.google.common.collect.Iterators.peekingIterator;
 import static com.google.common.collect.Lists.charactersOf;
+import static java.util.Arrays.asList;
 
 public class Tokeniser {
-    private static final String symbolCharacters = "`¬!£$%^&*()-_=+[]{};:'@#~<>,./?\\|";
+    private static final List<String> symbols = asList(
+        "=>", "`", "¬", "!", "£", "$", "%", "^", "&", "*", "(", ")", "-", "_",
+        "=", "+", "[", "]", "{", "}", ";", ":", "'", "@", "#", "~", "<",
+        ">", ",", ".", "/", "?", "\\", "|"
+    );
     private static final char stringDelimiter = '"';
     private static final char newLine = '\n';
     private static final Map<Character, Character> escapeCharacters = ImmutableMap.<Character, Character>builder()
@@ -48,8 +53,12 @@ public class Tokeniser {
         
         if (isWhitespace().apply(firstCharacter)) {
             return new Token(TokenType.WHITESPACE, takeWhile(characters, isWhitespace()));
-        } else if (isSymbolCharacter().apply(firstCharacter)) {
-            return new Token(TokenType.SYMBOL, characters.next().toString());
+        } else if (symbols.contains(firstCharacter.toString())) {
+            characters.next();
+            if (characters.hasNext() && symbols.contains(firstCharacter.toString() + characters.peek().toString())) {
+                return new Token(TokenType.SYMBOL, firstCharacter.toString() + characters.next().toString());
+            }
+            return new Token(TokenType.SYMBOL, firstCharacter.toString());
         } else if (isDigit().apply(firstCharacter)) {
             return new Token(TokenType.NUMBER, takeWhile(characters, isDigit()));
         } else if (previousTokenType == TokenType.NUMBER) {
@@ -112,17 +121,17 @@ public class Tokeniser {
         };
     }
     
+    private Predicate<Character> isIdentifierCharacter() {
+        return not(or(isWhitespace(), isSymbolCharacter()));
+    }
+
     private Predicate<Character> isSymbolCharacter() {
         return new Predicate<Character>() {
             @Override
             public boolean apply(Character input) {
-                return symbolCharacters.contains(Character.toString(input));
+                return symbols.contains(input.toString());
             }
         };
-    }
-    
-    private Predicate<Character> isIdentifierCharacter() {
-        return not(or(isWhitespace(), isSymbolCharacter()));
     }
 
     private boolean isKeyword(String value) {

@@ -52,6 +52,11 @@ public class TokeniserTest {
     }
     
     @Test public void
+    canParseMultiCharacterSymbols() {
+        assertThat(tokens("=>"), is(asList(new Token(TokenType.SYMBOL, "=>"), Token.end())));
+    }
+    
+    @Test public void
     tokenisePackageDeclaration() {
         assertThat(tokens("package shed.util.collections;"), is(asList(
             keyword(PACKAGE),
