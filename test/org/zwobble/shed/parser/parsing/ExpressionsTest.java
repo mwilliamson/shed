@@ -58,6 +58,20 @@ public class ExpressionsTest {
         );
     }
     
+    @Test public void
+    canParseShortLambdaExpressionWithMultipleArgument() {
+        assertThat(
+            Expressions.expression().parse(tokens("(num : Integer, name: String) => 2")),
+            is((Object)Result.success(new FunctionNode(
+                asList(
+                    new FormalArgumentNode("num", new TypeIdentifierNode("Integer")),
+                    new FormalArgumentNode("name", new TypeIdentifierNode("String"))
+                ),
+                Arrays.<StatementNode>asList(new ReturnNode(new NumberLiteralNode("2")))
+            )))
+        );
+    }
+    
     private TokenIterator tokens(String input) {
         return new TokenIterator(new Tokeniser().tokenise(input));
     }
