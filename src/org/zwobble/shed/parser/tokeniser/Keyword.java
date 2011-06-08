@@ -5,7 +5,8 @@ public enum Keyword {
     IMPORT,
     VAL,
     VAR,
-    PUBLIC;
+    PUBLIC,
+    RETURN;
     
     public String keywordName() {
         return name().toLowerCase();

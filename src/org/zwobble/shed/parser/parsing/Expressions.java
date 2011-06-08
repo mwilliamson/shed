@@ -1,5 +1,6 @@
 package org.zwobble.shed.parser.parsing;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.zwobble.shed.parser.parsing.nodes.ExpressionNode;
@@ -9,8 +10,9 @@ import org.zwobble.shed.parser.parsing.nodes.ReturnNode;
 import org.zwobble.shed.parser.parsing.nodes.StatementNode;
 import org.zwobble.shed.parser.parsing.nodes.TypeReferenceNode;
 
-import static java.util.Arrays.asList;
+import static org.zwobble.shed.parser.parsing.Blocks.block;
 import static org.zwobble.shed.parser.parsing.Result.success;
+import static org.zwobble.shed.parser.parsing.Rules.firstOf;
 import static org.zwobble.shed.parser.parsing.Rules.guard;
 import static org.zwobble.shed.parser.parsing.Rules.optional;
 import static org.zwobble.shed.parser.parsing.Rules.sequence;
@@ -39,9 +41,9 @@ public class Expressions {
     }
     
     private static Rule<FunctionNode> function() {
-        final Rule<ExpressionNode> expression = expression();
         final Rule<?> comma = sequence(OnError.FINISH, optional(whitespace()), symbol(","), optional(whitespace()));
         final Rule<List<FormalArgumentNode>> formalArguments = zeroOrMoreWithSeparator(formalArgument(), hardSeparator(comma));
+        final Rule<List<StatementNode>> functionBody = functionBody();
         return then(
             sequence(OnError.FINISH,
                 guard(symbol("(")),
@@ -51,14 +53,14 @@ public class Expressions {
                 guard(symbol("=")),
                 guard(symbol(">")),
                 optional(whitespace()),
-                expression
+                functionBody
             ),
             new ParseAction<RuleValues, FunctionNode>() {
                 @Override
                 public Result<FunctionNode> apply(RuleValues result) {
                     return success(new FunctionNode(
                         result.get(formalArguments),
-                        asList((StatementNode)new ReturnNode(result.get(expression)))
+                        result.get(functionBody)
                     ));
                 }
             }
@@ -80,6 +82,20 @@ public class Expressions {
                     return success(new FormalArgumentNode(result.get(name), result.get(type)));
                 }
             }
+        );
+    }
+    
+    @SuppressWarnings("unchecked")
+    private static Rule<List<StatementNode>> functionBody() {
+        final Rule<ExpressionNode> expression = expression();
+        return firstOf("expression",
+            block(),
+            then(expression, new ParseAction<ExpressionNode, List<StatementNode>>() {
+                @Override
+                public Result<List<StatementNode>> apply(ExpressionNode result) {
+                    return success(Arrays.<StatementNode>asList(new ReturnNode(result)));
+                }
+            })
         );
     }
 }

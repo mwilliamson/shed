@@ -4,13 +4,16 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Test;
+import org.zwobble.shed.parser.Option;
 import org.zwobble.shed.parser.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.parser.parsing.nodes.FunctionNode;
+import org.zwobble.shed.parser.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.parser.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.parser.parsing.nodes.ReturnNode;
 import org.zwobble.shed.parser.parsing.nodes.StatementNode;
 import org.zwobble.shed.parser.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.parser.parsing.nodes.TypeIdentifierNode;
+import org.zwobble.shed.parser.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.parser.tokeniser.Tokeniser;
 
 import static java.util.Arrays.asList;
@@ -68,6 +71,20 @@ public class ExpressionsTest {
                     new FormalArgumentNode("name", new TypeIdentifierNode("String"))
                 ),
                 Arrays.<StatementNode>asList(new ReturnNode(new NumberLiteralNode("2")))
+            )))
+        );
+    }
+    
+    @Test public void
+    canParseLongLambdaExpressionWithNoArguments() {
+        assertThat(
+            Expressions.expression().parse(tokens("() => { val x = 2; return 3; }")),
+            is((Object)Result.success(new FunctionNode(
+                Collections.<FormalArgumentNode>emptyList(),
+                asList(
+                    new ImmutableVariableNode("x", Option.<TypeReferenceNode>none(), new NumberLiteralNode("2")),
+                    new ReturnNode(new NumberLiteralNode("3"))
+                )
             )))
         );
     }

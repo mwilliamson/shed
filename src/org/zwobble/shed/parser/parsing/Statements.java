@@ -6,6 +6,7 @@ import org.zwobble.shed.parser.Option;
 import org.zwobble.shed.parser.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.parser.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.parser.parsing.nodes.MutableVariableNode;
+import org.zwobble.shed.parser.parsing.nodes.ReturnNode;
 import org.zwobble.shed.parser.parsing.nodes.StatementNode;
 import org.zwobble.shed.parser.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.parser.tokeniser.Keyword;
@@ -30,7 +31,8 @@ public class Statements {
     public static Rule<StatementNode> statement() {
         return firstOf("statement",
             immutableVariable(),
-            mutableVariable()
+            mutableVariable(),
+            returnStatement()
         );
     }
     
@@ -50,6 +52,23 @@ public class Statements {
                 return new MutableVariableNode(identifier, typeReference, expression);
             }
         });
+    }
+    
+    public static Rule<ReturnNode> returnStatement() {
+        final Rule<ExpressionNode> expression = expression();
+        return then( 
+            aStatement(OnError.FINISH,
+                guard(keyword(Keyword.RETURN)),
+                optional(whitespace()),
+                expression
+            ),
+            new ParseAction<RuleValues, ReturnNode>() {
+                @Override
+                public Result<ReturnNode> apply(RuleValues result) {
+                    return success(new ReturnNode(result.get(expression)));
+                }
+            }
+        );
     }
     
     public static Rule<RuleValues> aStatement(OnError recovery, Rule<?>... rules) {
