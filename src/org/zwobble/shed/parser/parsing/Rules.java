@@ -39,14 +39,17 @@ public class Rules {
         return new Rule<RuleValues>() {
             @Override
             public Result<RuleValues> parse(TokenIterator tokens) {
+                int startPosition = tokens.currentPosition();
                 RuleValues values = new RuleValues();
                 List<CompilerError> errors = new ArrayList<CompilerError>();
+                
                 for (Rule<?> rule : rules) {
                     Result<?> result = rule.parse(tokens);
                     if (result.anyErrors()) {
                         errors.addAll(result.getErrors());
-                        if (rule instanceof GuardRule && result.noMatch()) {
-                            return result.changeValue(null);                            
+                        if (rule instanceof GuardRule) {
+                            tokens.resetPosition(startPosition);
+                            return result.toType(null, Result.Type.NO_MATCH);                            
                         } else if (!result.ruleDidFinish() || recovery == OnError.FINISH) {
                             Rule<?> lastRule = rules[rules.length - 1];
                             if (lastRule instanceof LastRule) {
@@ -207,12 +210,10 @@ public class Rules {
             @Override
             public Result<T> parse(TokenIterator tokens) {
                 for (Rule<? extends T> rule : rules) {
-                    int positionBeforeRule = tokens.currentPosition();
                     Result<? extends T> result = rule.parse(tokens);
-                    if (!result.anyErrors()) {
+                    if (!result.noMatch()) {
                         return (Result<T>) result;
                     }
-                    tokens.resetPosition(positionBeforeRule);
                 }
                 return error(tokens.peek(), name, Result.Type.NO_MATCH);
             }

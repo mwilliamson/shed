@@ -6,6 +6,8 @@ import org.zwobble.shed.parser.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.parser.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.parser.parsing.nodes.TypeReferenceNode;
 
+import static org.zwobble.shed.parser.parsing.Rules.guard;
+
 import static org.zwobble.shed.parser.parsing.Result.success;
 import static org.zwobble.shed.parser.parsing.Rules.firstOf;
 import static org.zwobble.shed.parser.parsing.Rules.oneOrMoreWithSeparator;
@@ -43,12 +45,12 @@ public class TypeReferences {
     }
     
     public static Rule<TypeApplicationNode> typeApplication() {
-        final Rule<TypeIdentifierNode> baseIdentifier = typeIdentifier();
+        final Rule<TypeIdentifierNode> baseIdentifier;
         final Rule<List<TypeReferenceNode>> typeParameters = oneOrMoreWithSeparator(typeReference(), hardSeparator(symbol(",")));
         return then(
             sequence(OnError.FINISH,
-                baseIdentifier,
-                symbol("["),
+                baseIdentifier = guard(typeIdentifier()),
+                guard(symbol("[")),
                 typeParameters,
                 symbol("]")
             ),
