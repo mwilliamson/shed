@@ -61,4 +61,7 @@ public class Result<T> {
     public boolean noMatch() {
         return type == Type.NO_MATCH;
     }
+    public boolean isFatal() {
+        return type == Type.FATAL;
+    }
 }

@@ -15,8 +15,9 @@ import org.zwobble.shed.parser.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.parser.tokeniser.Tokeniser;
 
 import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 import static org.zwobble.shed.parser.Option.none;
 import static org.zwobble.shed.parser.parsing.Result.success;
 
@@ -150,6 +151,18 @@ public class ParserTest {
             is(success(new PublicDeclarationNode(asList("List", "Set"))))
         );
     }
+    
+    @Test public void
+    closingBraceEndsCurrentStatement() {
+        assertThat(
+            parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { return 4 }; va y = 4;")).getErrors(),
+            containsInAnyOrder(
+                new CompilerError(1, 60, "Expected symbol \";\" but got symbol \"}\""),
+                new CompilerError(1, 63, "Expected end of source but got identifier \"va\""
+            ))
+        );
+    }
+    
     
     private TokenIterator tokens(String input) {
         return new TokenIterator(tokeniser.tokenise(input));

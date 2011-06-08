@@ -64,7 +64,7 @@ public class Parser {
     public Rule<PackageDeclarationNode> packageDeclaration() {
         final Rule<List<String>> names;
         return then(
-            aStatement(OnError.FINISH,
+            aStatement(
                 keyword(PACKAGE),
                 whitespace(),
                 names = dotSeparatedIdentifiers()
@@ -81,7 +81,7 @@ public class Parser {
     public Rule<ImportNode> importNode() {
         final Rule<List<String>> names;
         return then(
-            aStatement(OnError.FINISH,
+            aStatement(
                 guard(keyword(IMPORT)),
                 whitespace(),
                 (names = dotSeparatedIdentifiers())
@@ -99,7 +99,7 @@ public class Parser {
         Rule<RuleValues> comma = sequence(OnError.FINISH, optional(whitespace()), symbol(","), optional(whitespace()));
         final Rule<List<String>> identifiers = oneOrMoreWithSeparator(tokenOfType(IDENTIFIER), hardSeparator(comma));
         return then( 
-            aStatement(OnError.FINISH,
+            aStatement(
                 keyword(Keyword.PUBLIC),
                 whitespace(),
                 identifiers

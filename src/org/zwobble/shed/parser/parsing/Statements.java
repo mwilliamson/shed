@@ -10,6 +10,8 @@ import org.zwobble.shed.parser.parsing.nodes.ReturnNode;
 import org.zwobble.shed.parser.parsing.nodes.StatementNode;
 import org.zwobble.shed.parser.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.parser.tokeniser.Keyword;
+import org.zwobble.shed.parser.tokeniser.Token;
+import org.zwobble.shed.parser.tokeniser.TokenType;
 
 import static org.zwobble.shed.parser.parsing.Expressions.expression;
 import static org.zwobble.shed.parser.parsing.Result.success;
@@ -57,7 +59,7 @@ public class Statements {
     public static Rule<ReturnNode> returnStatement() {
         final Rule<ExpressionNode> expression = expression();
         return then( 
-            aStatement(OnError.FINISH,
+            aStatement(
                 guard(keyword(Keyword.RETURN)),
                 optional(whitespace()),
                 expression
@@ -71,11 +73,22 @@ public class Statements {
         );
     }
     
-    public static Rule<RuleValues> aStatement(OnError recovery, Rule<?>... rules) {
-        Rule<?>[] statementRules = Arrays.copyOf(rules, rules.length + 2);
+    public static Rule<RuleValues> aStatement(Rule<?>... rules) {
+        final Rule<?>[] statementRules = Arrays.copyOf(rules, rules.length + 2);
         statementRules[rules.length] = optional(whitespace());
-        statementRules[rules.length + 1] = last(symbol(";"));
-        return sequence(recovery, statementRules);
+        statementRules[rules.length + 1] = symbol(";");
+        return new Rule<RuleValues>() {
+            @Override
+            public Result<RuleValues> parse(TokenIterator tokens) {
+                Result<RuleValues> result = sequence(OnError.FINISH, statementRules).parse(tokens);
+                if (!result.isFatal()) {
+                    return result;
+                }
+                tokens.seekToEndOfStatement();
+                return new Result<RuleValues>(null, result.getErrors(), Result.Type.ERROR_RECOVERED);
+            }
+        };
+        
     }
 
     private static <T> Rule<T> variable(Keyword keyword, final VariableNodeConstructor<T> constructor) {
@@ -83,7 +96,7 @@ public class Statements {
         final Rule<? extends ExpressionNode> expression = expression(); 
         final Rule<Option<TypeReferenceNode>> type = optional(typeSpecifier());
         return then(
-            aStatement(OnError.FINISH,
+            aStatement(
                 guard(keyword(keyword)), whitespace(),
                 identifier, optional(whitespace()),
                 type, optional(whitespace()),

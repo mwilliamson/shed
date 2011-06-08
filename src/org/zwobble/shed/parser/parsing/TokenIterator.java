@@ -2,7 +2,9 @@ package org.zwobble.shed.parser.parsing;
 
 import java.util.List;
 
+import org.zwobble.shed.parser.tokeniser.Token;
 import org.zwobble.shed.parser.tokeniser.TokenPosition;
+import org.zwobble.shed.parser.tokeniser.TokenType;
 
 public class TokenIterator {
     private final List<TokenPosition> tokens;
@@ -31,5 +33,10 @@ public class TokenIterator {
     
     public void resetPosition(int index) {
         nextIndex = index;
+    }
+
+    public void seekToEndOfStatement() {
+        while (!peek().getToken().equals(Token.end()) && !next().getToken().equals(new Token(TokenType.SYMBOL, ";"))) {
+        }
     }
 }
