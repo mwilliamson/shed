@@ -1,6 +1,5 @@
 package org.zwobble.shed.parser.parsing;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.zwobble.shed.parser.parsing.nodes.ExpressionNode;

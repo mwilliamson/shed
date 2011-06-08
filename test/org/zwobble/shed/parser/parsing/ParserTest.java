@@ -129,6 +129,15 @@ public class ParserTest {
     }
     
     @Test public void
+    errorsInStatementsAreReported() {
+        assertThat(parser.source().parse(tokens("package blah; public blah; val x = 2; val y 3;")).getErrors(),
+            is(asList(
+                new CompilerError(1, 45, "Expected symbol \"=\" but got number \"3\"")
+            ))
+        );
+    }
+    
+    @Test public void
     canImportPackages() {
         assertThat(parser.importNode().parse(tokens("import shed.util.collections;")),
                    is(success(new ImportNode(asList("shed", "util", "collections")))));

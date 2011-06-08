@@ -119,7 +119,7 @@ public class Rules {
                     
                     Result<T> ruleResult = rule.parse(tokens);
                     if (ruleResult.anyErrors()) {
-                        if (separator.getType() == Type.SOFT) {
+                        if (separator.getType() == Type.SOFT && ruleResult.noMatch()) {
                             tokens.resetPosition(positionBeforeSeparator);
                             if (errors.isEmpty()) {
                                 return success(values);                    
