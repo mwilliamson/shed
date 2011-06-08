@@ -6,15 +6,16 @@ import org.zwobble.shed.parser.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.parser.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.parser.parsing.nodes.TypeReferenceNode;
 
-import static org.zwobble.shed.parser.parsing.Rules.guard;
-
 import static org.zwobble.shed.parser.parsing.Result.success;
 import static org.zwobble.shed.parser.parsing.Rules.firstOf;
+import static org.zwobble.shed.parser.parsing.Rules.guard;
 import static org.zwobble.shed.parser.parsing.Rules.oneOrMoreWithSeparator;
+import static org.zwobble.shed.parser.parsing.Rules.optional;
 import static org.zwobble.shed.parser.parsing.Rules.sequence;
 import static org.zwobble.shed.parser.parsing.Rules.symbol;
 import static org.zwobble.shed.parser.parsing.Rules.then;
 import static org.zwobble.shed.parser.parsing.Rules.tokenOfType;
+import static org.zwobble.shed.parser.parsing.Rules.whitespace;
 import static org.zwobble.shed.parser.parsing.Separator.hardSeparator;
 import static org.zwobble.shed.parser.tokeniser.TokenType.IDENTIFIER;
 
@@ -58,6 +59,23 @@ public class TypeReferences {
                 @Override
                 public Result<TypeApplicationNode> apply(RuleValues result) {
                     return success(new TypeApplicationNode(result.get(baseIdentifier), result.get(typeParameters)));
+                }
+            }
+        );
+    }
+    
+    public static Rule<TypeReferenceNode> typeSpecifier() {
+        final Rule<TypeReferenceNode> typeReference = typeReference();
+        return then(
+            sequence(OnError.FINISH,
+                guard(symbol(":")),
+                optional(whitespace()),
+                typeReference
+            ),
+            new ParseAction<RuleValues, TypeReferenceNode>() {
+                @Override
+                public Result<TypeReferenceNode> apply(RuleValues result) {
+                    return success(result.get(typeReference));
                 }
             }
         );

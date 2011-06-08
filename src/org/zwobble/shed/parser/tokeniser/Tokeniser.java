@@ -49,7 +49,7 @@ public class Tokeniser {
         if (isWhitespace().apply(firstCharacter)) {
             return new Token(TokenType.WHITESPACE, takeWhile(characters, isWhitespace()));
         } else if (isSymbolCharacter().apply(firstCharacter)) {
-            return new Token(TokenType.SYMBOL, takeWhile(characters, isSymbolCharacter()));
+            return new Token(TokenType.SYMBOL, characters.next().toString());
         } else if (isDigit().apply(firstCharacter)) {
             return new Token(TokenType.NUMBER, takeWhile(characters, isDigit()));
         } else if (previousTokenType == TokenType.NUMBER) {

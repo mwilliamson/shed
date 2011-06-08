@@ -22,7 +22,7 @@ import static org.zwobble.shed.parser.parsing.Rules.symbol;
 import static org.zwobble.shed.parser.parsing.Rules.then;
 import static org.zwobble.shed.parser.parsing.Rules.tokenOfType;
 import static org.zwobble.shed.parser.parsing.Rules.whitespace;
-import static org.zwobble.shed.parser.parsing.TypeReferences.typeReference;
+import static org.zwobble.shed.parser.parsing.TypeReferences.typeSpecifier;
 import static org.zwobble.shed.parser.tokeniser.TokenType.IDENTIFIER;
 
 public class Statements {
@@ -62,7 +62,7 @@ public class Statements {
     private static <T> Rule<T> variable(Keyword keyword, final VariableNodeConstructor<T> constructor) {
         final Rule<String> identifier = tokenOfType(IDENTIFIER);
         final Rule<? extends ExpressionNode> expression = expression(); 
-        final Rule<Option<TypeReferenceNode>> type = optional(type());
+        final Rule<Option<TypeReferenceNode>> type = optional(typeSpecifier());
         return then(
             aStatement(OnError.FINISH,
                 guard(keyword(keyword)), whitespace(),
@@ -75,23 +75,6 @@ public class Statements {
                 @Override
                 public Result<T> apply(RuleValues result) {
                     return success(constructor.apply(result.get(identifier), result.get(type), result.get(expression)));
-                }
-            }
-        );
-    }
-    
-    private static Rule<TypeReferenceNode> type() {
-        final Rule<TypeReferenceNode> typeReference = typeReference();
-        return then(
-            sequence(OnError.FINISH,
-                guard(symbol(":")),
-                optional(whitespace()),
-                typeReference
-            ),
-            new ParseAction<RuleValues, TypeReferenceNode>() {
-                @Override
-                public Result<TypeReferenceNode> apply(RuleValues result) {
-                    return success(result.get(typeReference));
                 }
             }
         );
