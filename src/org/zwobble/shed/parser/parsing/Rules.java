@@ -39,7 +39,7 @@ public class Rules {
         return new Rule<RuleValues>() {
             @Override
             public Result<RuleValues> parse(TokenIterator tokens) {
-                int startPosition = tokens.currentPosition();
+                TokenIterator startPosition = tokens.currentPosition();
                 RuleValues values = new RuleValues();
                 List<CompilerError> errors = new ArrayList<CompilerError>();
                 
@@ -104,7 +104,7 @@ public class Rules {
                     values.add(firstResult.get());                    
                 }
                 while (true) {
-                    int positionBeforeSeparator = tokens.currentPosition();
+                    TokenIterator positionBeforeSeparator = tokens.currentPosition();
                     Result<?> separatorResult = separator.parse(tokens);
                     if (separatorResult.anyErrors()) {
                         if (separatorResult.noMatch()) {

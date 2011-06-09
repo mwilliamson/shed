@@ -4,10 +4,9 @@ import java.util.List;
 
 import org.zwobble.shed.parser.parsing.nodes.StatementNode;
 
-import static org.zwobble.shed.parser.parsing.Rules.guard;
-
 import static org.zwobble.shed.parser.parsing.Result.success;
-
+import static org.zwobble.shed.parser.parsing.Rules.guard;
+import static org.zwobble.shed.parser.parsing.Rules.last;
 import static org.zwobble.shed.parser.parsing.Rules.optional;
 import static org.zwobble.shed.parser.parsing.Rules.sequence;
 import static org.zwobble.shed.parser.parsing.Rules.symbol;
@@ -26,7 +25,7 @@ public class Blocks {
                 optional(whitespace()),
                 statements,
                 optional(whitespace()),
-                symbol("}")
+                last(symbol("}"))
             ),
             new ParseAction<RuleValues, List<StatementNode>>() {
                 @Override

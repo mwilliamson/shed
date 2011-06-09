@@ -10,15 +10,12 @@ import org.zwobble.shed.parser.parsing.nodes.ReturnNode;
 import org.zwobble.shed.parser.parsing.nodes.StatementNode;
 import org.zwobble.shed.parser.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.parser.tokeniser.Keyword;
-import org.zwobble.shed.parser.tokeniser.Token;
-import org.zwobble.shed.parser.tokeniser.TokenType;
 
 import static org.zwobble.shed.parser.parsing.Expressions.expression;
 import static org.zwobble.shed.parser.parsing.Result.success;
 import static org.zwobble.shed.parser.parsing.Rules.firstOf;
 import static org.zwobble.shed.parser.parsing.Rules.guard;
 import static org.zwobble.shed.parser.parsing.Rules.keyword;
-import static org.zwobble.shed.parser.parsing.Rules.last;
 import static org.zwobble.shed.parser.parsing.Rules.optional;
 import static org.zwobble.shed.parser.parsing.Rules.sequence;
 import static org.zwobble.shed.parser.parsing.Rules.symbol;
