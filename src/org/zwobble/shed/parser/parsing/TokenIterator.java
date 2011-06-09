@@ -42,6 +42,9 @@ public class TokenIterator {
         }
         if (nextToken.equals(symbol("}"))) {
             // Assume that other rules will report an error if nested badly
+            while (currentScope() != ScopeType.BRACES) {
+                popScope();                
+            }
             popScope();
         }
         if (nextToken.equals(symbol("("))) {

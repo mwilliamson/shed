@@ -196,6 +196,17 @@ public class ParserTest {
         );
     }
     
+    @Test public void
+    closingBraceClosesAnyEnclosedBrackets() {
+        assertThat(
+            parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { {(} }; va y = 4;")).getErrors(),
+            containsInAnyOrder(
+                new CompilerError(1, 51, "Expected symbol \"}\" but got symbol \"{\""),
+                new CompilerError(1, 58, "Expected end of source but got identifier \"va\""
+            ))
+        );
+    }
+    
     
     private TokenIterator tokens(String input) {
         return new TokenIterator(tokeniser.tokenise(input));
