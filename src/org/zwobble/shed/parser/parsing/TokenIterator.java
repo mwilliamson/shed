@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.zwobble.shed.parser.tokeniser.Token;
 import org.zwobble.shed.parser.tokeniser.TokenPosition;
-import org.zwobble.shed.parser.tokeniser.TokenType;
 
 import static org.zwobble.shed.parser.tokeniser.Token.symbol;
 
@@ -71,8 +70,9 @@ public class TokenIterator {
     }
 
     public void seekToEndOfStatement() {
+        int initialScopeDepth = scopes.size();
         while (!peek().getToken().equals(Token.end()) &&
-            !peek().getToken().equals(symbol("}")) &&
+            !(initialScopeDepth == scopes.size() && peek().getToken().equals(symbol("}"))) &&
             !next().getToken().equals(symbol(";"))) {
         }
     }
