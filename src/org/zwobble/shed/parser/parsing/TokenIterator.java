@@ -50,7 +50,10 @@ public class TokenIterator {
         if (nextToken.equals(symbol("("))) {
             scopes.add(ScopeType.PARENS);
         }
-        if (nextToken.equals(symbol(")")) && currentScope() == ScopeType.PARENS) {
+        if (nextToken.equals(symbol(")"))) {
+            while (currentScope() != ScopeType.PARENS) {
+                popScope();                
+            }
             popScope();
         }
         if (nextToken.equals(symbol(";"))) {

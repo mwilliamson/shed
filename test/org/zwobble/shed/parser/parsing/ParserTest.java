@@ -186,12 +186,12 @@ public class ParserTest {
     }
     
     @Test public void
-    closingBracketDoesNotEndCurrentBlock() {
+    closingBracketClosesAnyEnclosedBraces() {
         assertThat(
-            parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { {)} }; va y = 4;")).getErrors(),
+            parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { { ({)  } }; va y = 4;")).getErrors(),
             containsInAnyOrder(
                 new CompilerError(1, 51, "Expected symbol \"}\" but got symbol \"{\""),
-                new CompilerError(1, 58, "Expected end of source but got identifier \"va\""
+                new CompilerError(1, 63, "Expected end of source but got identifier \"va\""
             ))
         );
     }
