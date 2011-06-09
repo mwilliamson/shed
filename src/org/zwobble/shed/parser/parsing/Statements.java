@@ -85,7 +85,6 @@ public class Statements {
                 return new Result<RuleValues>(null, result.getErrors(), Result.Type.ERROR_RECOVERED);
             }
         };
-        
     }
 
     private static <T> Rule<T> variable(Keyword keyword, final VariableNodeConstructor<T> constructor) {

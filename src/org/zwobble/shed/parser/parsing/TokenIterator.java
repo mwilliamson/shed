@@ -76,6 +76,17 @@ public class TokenIterator {
             !next().getToken().equals(symbol(";"))) {
         }
     }
+
+    public void seekToEndOfBlock() {
+        int initialScopeDepth = scopes.size();
+        while (!(initialScopeDepth == scopes.size() && peek().getToken().equals(symbol("}")))) {
+            if (peek().getToken().equals(Token.end())) {
+                return;
+            }
+            next();
+        }
+        next();
+    }
     
     private ScopeType currentScope() {
         if (scopes.isEmpty()) {
