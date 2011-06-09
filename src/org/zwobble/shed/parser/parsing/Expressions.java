@@ -34,10 +34,30 @@ public class Expressions {
                 return Rules.firstOf("expression",
                     function(),
                     Literals.numberLiteral(),
-                    Literals.stringLiteral()
+                    Literals.stringLiteral(),
+                    expressionInParens()
                 ).parse(tokens);
             }
         };
+    }
+
+    private static Rule<ExpressionNode> expressionInParens() {
+        final Rule<ExpressionNode> expression = expression();
+        return then(
+            sequence(OnError.FINISH,
+                guard(symbol("(")),
+                optional(whitespace()),
+                expression,
+                optional(whitespace()),
+                symbol(")")
+            ),
+            new ParseAction<RuleValues, ExpressionNode>() {
+                @Override
+                public Result<ExpressionNode> apply(RuleValues result) {
+                    return success(result.get(expression));
+                }
+            }
+        );
     }
     
     private static Rule<FunctionNode> function() {

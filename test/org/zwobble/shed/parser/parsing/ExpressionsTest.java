@@ -89,6 +89,14 @@ public class ExpressionsTest {
         );
     }
     
+    @Test public void
+    canEncloseExpressionInParens() {
+        assertThat(
+            Expressions.expression().parse(tokens("(3)")),
+            is((Object)Result.success(new NumberLiteralNode("3")))
+        );
+    }
+    
     private TokenIterator tokens(String input) {
         return new TokenIterator(new Tokeniser().tokenise(input));
     }
