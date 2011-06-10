@@ -9,6 +9,7 @@ import org.zwobble.shed.parser.parsing.nodes.FunctionNode;
 import org.zwobble.shed.parser.parsing.nodes.ReturnNode;
 import org.zwobble.shed.parser.parsing.nodes.StatementNode;
 import org.zwobble.shed.parser.parsing.nodes.TypeReferenceNode;
+import org.zwobble.shed.parser.parsing.nodes.VariableIdentifierNode;
 
 import static org.zwobble.shed.parser.parsing.Blocks.block;
 import static org.zwobble.shed.parser.parsing.Result.success;
@@ -33,12 +34,25 @@ public class Expressions {
             public Result<ExpressionNode> parse(TokenIterator tokens) {
                 return Rules.firstOf("expression",
                     function(),
+                    variableIdentifier(),
                     Literals.numberLiteral(),
                     Literals.stringLiteral(),
                     expressionInParens()
                 ).parse(tokens);
             }
         };
+    }
+
+    private static Rule<ExpressionNode> variableIdentifier() {
+        return then(
+            tokenOfType(IDENTIFIER),
+            new ParseAction<String, ExpressionNode>() {
+                @Override
+                public Result<ExpressionNode> apply(String result) {
+                    return Result.<ExpressionNode>success(new VariableIdentifierNode(result));
+                }
+            }
+        );
     }
 
     private static Rule<ExpressionNode> expressionInParens() {

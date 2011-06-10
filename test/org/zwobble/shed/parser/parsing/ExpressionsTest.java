@@ -14,6 +14,7 @@ import org.zwobble.shed.parser.parsing.nodes.StatementNode;
 import org.zwobble.shed.parser.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.parser.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.parser.parsing.nodes.TypeReferenceNode;
+import org.zwobble.shed.parser.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.parser.tokeniser.Tokeniser;
 
 import static java.util.Arrays.asList;
@@ -94,6 +95,14 @@ public class ExpressionsTest {
         assertThat(
             Expressions.expression().parse(tokens("(3)")),
             is((Object)Result.success(new NumberLiteralNode("3")))
+        );
+    }
+    
+    @Test public void
+    canReferenceVariableByIdentifier() {
+        assertThat(
+            Expressions.expression().parse(tokens("value")),
+            is((Object)(Result.success(new VariableIdentifierNode("value"))))
         );
     }
     
