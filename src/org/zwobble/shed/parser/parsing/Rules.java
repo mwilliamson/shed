@@ -165,8 +165,17 @@ public class Rules {
         return new LastRule<T>(rule);
     }
     
-    public static Rule<Void> keyword(final Keyword keyword) {
-        return token(Token.keyword(keyword));
+    public static Rule<Keyword> keyword(final Keyword keyword) {
+        return then(
+            token(Token.keyword(keyword)),
+            new ParseAction<Void, Keyword>() {
+                @Override
+                public Result<Keyword> apply(Void result) {
+                    return success(keyword);
+                }
+            }
+        ); 
+        
     }
     
     public static Rule<Void> symbol(String symbol) {

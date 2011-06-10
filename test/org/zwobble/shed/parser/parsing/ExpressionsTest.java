@@ -5,6 +5,7 @@ import java.util.Collections;
 
 import org.junit.Test;
 import org.zwobble.shed.parser.Option;
+import org.zwobble.shed.parser.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.parser.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.parser.parsing.nodes.FunctionNode;
 import org.zwobble.shed.parser.parsing.nodes.ImmutableVariableNode;
@@ -103,6 +104,22 @@ public class ExpressionsTest {
         assertThat(
             Expressions.expression().parse(tokens("value")),
             is((Object)(Result.success(new VariableIdentifierNode("value"))))
+        );
+    }
+    
+    @Test public void
+    canParseTrueLiteral() {
+        assertThat(
+            Expressions.expression().parse(tokens("true")),
+            is((Object)(Result.success(new BooleanLiteralNode(true))))
+        );
+    }
+    
+    @Test public void
+    canParseFalseLiteral() {
+        assertThat(
+            Expressions.expression().parse(tokens("false")),
+            is((Object)(Result.success(new BooleanLiteralNode(false))))
         );
     }
     

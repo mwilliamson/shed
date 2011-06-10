@@ -37,6 +37,7 @@ public class Expressions {
                     variableIdentifier(),
                     Literals.numberLiteral(),
                     Literals.stringLiteral(),
+                    Literals.booleanLiteral(),
                     expressionInParens()
                 ).parse(tokens);
             }
