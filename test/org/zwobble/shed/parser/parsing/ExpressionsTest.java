@@ -38,7 +38,7 @@ public class ExpressionsTest {
     @Test public void
     errorIfValueIsNotExpression() {
         assertThat(Expressions.expression().parse(tokens("{")).getErrors(),
-            is(asList(new CompilerError(1, 1, "Expected expression but got symbol \"{\""))));
+            is(asList(new CompilerError(1, 1, 1, "Expected expression but got symbol \"{\""))));
     }
     
     @Test public void

@@ -6,5 +6,6 @@ import lombok.Data;
 public class CompilerError {
     private final int lineNumber;
     private final int characterNumber;
+    private final int length;
     private final String description;
 }

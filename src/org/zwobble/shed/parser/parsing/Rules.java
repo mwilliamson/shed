@@ -238,10 +238,12 @@ public class Rules {
     }
     
     private static <T> Result<T> error(TokenPosition actual, Object expected, Result.Type type) {
-        String message = format("Expected %s but got %s", expected, actual.getToken().describe());
+        Token actualToken = actual.getToken();
+        String actualTokenValue = actualToken.getValue() == null ? "" : actualToken.getValue();
+        String message = format("Expected %s but got %s", expected, actualToken.describe());
         return new Result<T>(
             null,
-            asList(new CompilerError(actual.getLineNumber(), actual.getCharacterNumber(), message)),
+            asList(new CompilerError(actual.getLineNumber(), actual.getCharacterNumber(), actualTokenValue.length(), message)),
             type
         );
     }
