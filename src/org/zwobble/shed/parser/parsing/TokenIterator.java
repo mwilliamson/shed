@@ -29,8 +29,16 @@ public class TokenIterator {
         return tokens.get(nextIndex);
     }
     
+    public TokenPosition peek(int offset) {
+        return tokens.get(nextIndex + offset);
+    }
+    
     public boolean hasNext() {
         return nextIndex < tokens.size();
+    }
+    
+    public boolean hasNext(int offset) {
+        return nextIndex + offset < tokens.size();
     }
     
     public TokenPosition next() {

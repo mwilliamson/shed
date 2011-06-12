@@ -1,10 +1,11 @@
 package org.zwobble.shed.parser.tokeniser;
 
+import org.zwobble.shed.parser.parsing.SourcePosition;
+
 import lombok.Data;
 
 @Data
 public class TokenPosition {
-    private final int lineNumber;
-    private final int characterNumber;
+    private final SourcePosition position;
     private final Token token;
 }

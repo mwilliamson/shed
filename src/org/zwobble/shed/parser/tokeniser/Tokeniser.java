@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.zwobble.shed.parser.parsing.SourcePosition;
+
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.PeekingIterator;
@@ -38,13 +40,12 @@ public class Tokeniser {
         TokenType previousTokenType = null;
         InputStringIterator characters = new InputStringIterator(inputString);
         while (characters.hasNext()) {
-            int lineNumber = characters.currentLineNumber();
-            int characterNumber = characters.currentCharacterNumber();
+            SourcePosition tokenStart = new SourcePosition(characters.currentLineNumber(), characters.currentCharacterNumber());
             Token token = nextToken(characters, previousTokenType);
-            tokens.add(new TokenPosition(lineNumber, characterNumber, token));
+            tokens.add(new TokenPosition(tokenStart, token));
             previousTokenType = token.getType();
         }
-        tokens.add(new TokenPosition(characters.currentLineNumber(), characters.currentCharacterNumber(), Token.end()));
+        tokens.add(new TokenPosition(new SourcePosition(characters.currentLineNumber(), characters.currentCharacterNumber()), Token.end()));
         return tokens;
     }
     

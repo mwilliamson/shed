@@ -12,17 +12,17 @@ import org.zwobble.shed.parser.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.parser.parsing.nodes.SourceNode;
 import org.zwobble.shed.parser.parsing.nodes.StatementNode;
 import org.zwobble.shed.parser.parsing.nodes.TypeReferenceNode;
-import org.zwobble.shed.parser.tokeniser.Tokeniser;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.parser.Option.none;
+import static org.zwobble.shed.parser.parsing.ParserTesting.errorStrings;
+import static org.zwobble.shed.parser.parsing.ParserTesting.tokens;
 import static org.zwobble.shed.parser.parsing.Result.success;
 
 public class ParserTest {
-    private final Tokeniser tokeniser = new Tokeniser();
     private final Parser parser = new Parser();
     
     @Test public void
@@ -68,30 +68,44 @@ public class ParserTest {
     }
     
     @Test public void
-    errorsAreCombinedIfPackageDeclarationAndImportsHaveErrors() {
+    errorsHaveLineNumbersAndCharacterNumbers() {
         assertThat(parser.source().parse(tokens("packag shed.util.collections; import shed import shed.collections;\nblah")).getErrors(),
             is(asList(
-                new CompilerError(1, 1, 6, "Expected keyword \"package\" but got identifier \"packag\""),
-                new CompilerError(1, 43, 6, "Expected symbol \";\" but got keyword \"import\""),
-                new CompilerError(2, 1, 4, "Expected keyword \"public\" but got identifier \"blah\""),
-                new CompilerError(2, 5, 0, "Expected statement but got end of source")
+                new CompilerError(new SourcePosition(1, 1), new SourcePosition(1, 7), "Expected keyword \"package\" but got identifier \"packag\""),
+                new CompilerError(new SourcePosition(1, 43), new SourcePosition(1, 49), "Expected symbol \";\" but got keyword \"import\""),
+                new CompilerError(new SourcePosition(2, 1), new SourcePosition(2, 5), "Expected keyword \"public\" but got identifier \"blah\""),
+                new CompilerError(new SourcePosition(2, 5), new SourcePosition(2, 5), "Expected statement but got end of source")
+                
+            ))
+        );
+    }
+    
+    @Test public void
+    errorsAreCombinedIfPackageDeclarationAndImportsHaveErrors() {
+        assertThat(errorStrings(parser.source().parse(tokens("packag shed.util.collections; import shed import shed.collections;\nblah"))),
+            is(asList(
+                "Expected keyword \"package\" but got identifier \"packag\"",
+                "Expected symbol \";\" but got keyword \"import\"",
+                "Expected keyword \"public\" but got identifier \"blah\"",
+                "Expected statement but got end of source"
             ))
         );
     }
     
     @Test public void
     sourceNodeAttemptsToParseUpToEnd() {
-        assertThat(parser.source().parse(tokens("package shed.util.collections; public x;\nval x = 1; a")).getErrors(),
+        assertThat(errorStrings(parser.source().parse(tokens("package shed.util.collections; public x;\nval x = 1; a"))),
             is(asList(
-                new CompilerError(2, 12, 1, "Expected end of source but got identifier \"a\"")
+                "Expected end of source but got identifier \"a\""
             ))
         );
     }
     
     @Test public void
     errorsIfImportIsMissingSemicolon() {
-        assertThat(parser.source().parse(tokens("package shed.util.collections; import shed import shed.collections;public List;val x = 1;")).getErrors(),
-            is(asList(new CompilerError(1, 44, 6, "Expected symbol \";\" but got keyword \"import\"")))
+        assertThat(
+            errorStrings(parser.source().parse(tokens("package shed.util.collections; import shed import shed.collections;public List;val x = 1;"))),
+            is(asList("Expected symbol \";\" but got keyword \"import\""))
         );
     }
     
@@ -110,30 +124,30 @@ public class ParserTest {
     
     @Test public void
     errorIsRaisedIfPackageDeclarationDoesNotStartWithPackageKeyword() {
-        assertThat(parser.packageDeclaration().parse(tokens("packag shed.util.collections;")).getErrors(),
-                   is(asList(new CompilerError(1, 1, 6, "Expected keyword \"package\" but got identifier \"packag\""))));
+        assertThat(errorStrings(parser.packageDeclaration().parse(tokens("packag shed.util.collections;"))),
+                   is(asList("Expected keyword \"package\" but got identifier \"packag\"")));
     }
     
     @Test public void
     errorInPackageDeclarationIsRaisedIfWhitespaceIsEncounteredInsteadOfDot() {
-        assertThat(parser.packageDeclaration().parse(tokens("package shed .util.collections;")).getErrors(),
-                   is(asList(new CompilerError(1, 14, 1, "Expected symbol \";\" but got symbol \".\""))));
+        assertThat(errorStrings(parser.packageDeclaration().parse(tokens("package shed .util.collections;"))),
+                   is(asList("Expected symbol \";\" but got symbol \".\"")));
     }
     
     @Test public void
     errorInPackageDeclarationIsRaisedIfWhitespaceIsEncounteredInsteadOfIdentifier() {
-        assertThat(parser.packageDeclaration().parse(tokens("package shed. util.collections;")).getErrors(),
+        assertThat(errorStrings(parser.packageDeclaration().parse(tokens("package shed. util.collections;"))),
             is(asList(
-                new CompilerError(1, 14, 1, "Expected identifier but got whitespace \" \"")
+                "Expected identifier but got whitespace \" \""
             ))
         );
     }
     
     @Test public void
     errorsInStatementsAreReported() {
-        assertThat(parser.source().parse(tokens("package blah; public blah; val x = 2; val y 3;")).getErrors(),
+        assertThat(errorStrings(parser.source().parse(tokens("package blah; public blah; val x = 2; val y 3;"))),
             is(asList(
-                new CompilerError(1, 45, 1, "Expected symbol \"=\" but got number \"3\"")
+                "Expected symbol \"=\" but got number \"3\""
             ))
         );
     }
@@ -155,71 +169,66 @@ public class ParserTest {
     @Test public void
     closingBraceEndsCurrentStatement() {
         assertThat(
-            parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { return 4 }; va y = 4;")).getErrors(),
+            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { return 4 }; va y = 4;"))),
             containsInAnyOrder(
-                new CompilerError(1, 60, 1, "Expected symbol \";\" but got symbol \"}\""),
-                new CompilerError(1, 63, 2, "Expected end of source but got identifier \"va\""
-            ))
+                "Expected symbol \";\" but got symbol \"}\"",
+                "Expected end of source but got identifier \"va\""
+            )
         );
     }
     
     @Test public void
     matchingClosingBraceEndsCurrentStatement() {
         assertThat(
-            parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { return 4 {} }; va y = 4;")).getErrors(),
+            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { return 4 {} }; va y = 4;"))),
             containsInAnyOrder(
-                new CompilerError(1, 60, 1, "Expected symbol \";\" but got symbol \"{\""),
-                new CompilerError(1, 66, 2, "Expected end of source but got identifier \"va\""
-            ))
+                "Expected symbol \";\" but got symbol \"{\"",
+                "Expected end of source but got identifier \"va\""
+            )
         );
     }
     
     @Test public void
     matchingClosingBraceEndsCurrentBlock() {
         assertThat(
-            parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { {} }; va y = 4;")).getErrors(),
+            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { {} }; va y = 4;"))),
             containsInAnyOrder(
-                new CompilerError(1, 51, 1, "Expected symbol \"}\" but got symbol \"{\""),
-                new CompilerError(1, 57, 2, "Expected end of source but got identifier \"va\""
-            ))
+                "Expected symbol \"}\" but got symbol \"{\"",
+                "Expected end of source but got identifier \"va\""
+            )
         );
     }
     
     @Test public void
     closingBracketClosesAnyEnclosedBraces() {
         assertThat(
-            parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { { ({)  } }; va y = 4;")).getErrors(),
+            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { { ({)  } }; va y = 4;"))),
             containsInAnyOrder(
-                new CompilerError(1, 51, 1, "Expected symbol \"}\" but got symbol \"{\""),
-                new CompilerError(1, 63, 2, "Expected end of source but got identifier \"va\""
-            ))
+                "Expected symbol \"}\" but got symbol \"{\"",
+                "Expected end of source but got identifier \"va\""
+            )
         );
     }
     
     @Test public void
     closingBraceClosesAnyEnclosedBrackets() {
         assertThat(
-            parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { {(} }; va y = 4;")).getErrors(),
+            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { {(} }; va y = 4;"))),
             containsInAnyOrder(
-                new CompilerError(1, 51, 1, "Expected symbol \"}\" but got symbol \"{\""),
-                new CompilerError(1, 58, 2, "Expected end of source but got identifier \"va\""
-            ))
+                "Expected symbol \"}\" but got symbol \"{\"",
+                "Expected end of source but got identifier \"va\""
+            )
         );
     }
     
     @Test public void
     semicolonEndsStatementAndClosesAnyOpenParensInBlockScope() {
         assertThat(
-            parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { ({(; )}; va y = 4;")).getErrors(),
+            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { ({(; )}; va y = 4;"))),
             containsInAnyOrder(
-                new CompilerError(1, 51, 1, "Expected symbol \"}\" but got symbol \"(\""),
-                new CompilerError(1, 60, 2, "Expected end of source but got identifier \"va\""
-            ))
+                "Expected symbol \"}\" but got symbol \"(\"",
+                "Expected end of source but got identifier \"va\""
+            )
         );
-    }
-    
-    
-    private TokenIterator tokens(String input) {
-        return new TokenIterator(tokeniser.tokenise(input));
     }
 }

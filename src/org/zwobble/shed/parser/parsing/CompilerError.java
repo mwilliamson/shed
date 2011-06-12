@@ -4,8 +4,7 @@ import lombok.Data;
 
 @Data
 public class CompilerError {
-    private final int lineNumber;
-    private final int characterNumber;
-    private final int length;
+    private final SourcePosition from;
+    private final SourcePosition to;
     private final String description;
 }

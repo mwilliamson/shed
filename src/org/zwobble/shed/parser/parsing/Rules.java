@@ -192,7 +192,7 @@ public class Rules {
             public Result<String> parse(TokenIterator tokens) {
                 TokenPosition firstToken = tokens.peek();
                 if (firstToken.getToken().getType() != type) {
-                    return error(firstToken, type, Result.Type.NO_MATCH);
+                    return error(tokens, type, Result.Type.NO_MATCH);
                 }
                 return success(tokens.next().getToken().getValue());
             }
@@ -205,7 +205,7 @@ public class Rules {
             public Result<Void> parse(TokenIterator tokens) {
                 TokenPosition firstToken = tokens.peek();
                 if (!firstToken.getToken().equals(expectedToken)) {
-                    return error(firstToken, expectedToken, Result.Type.NO_MATCH);
+                    return error(tokens, expectedToken, Result.Type.NO_MATCH);
                 }
                 tokens.next();
                 return success(null);
@@ -224,26 +224,29 @@ public class Rules {
                         return (Result<T>) result;
                     }
                 }
-                return error(tokens.peek(), name, Result.Type.NO_MATCH);
+                return error(tokens, name, Result.Type.NO_MATCH);
             }
         };
     }
     
-    private static <T> Result<T> error(TokenPosition actual, TokenType tokenType, Result.Type type) {
-        return error(actual, tokenType.name().toLowerCase(), type);
+    private static <T> Result<T> error(TokenIterator startOfError, TokenType tokenType, Result.Type type) {
+        return error(startOfError, tokenType.name().toLowerCase(), type);
     }
     
-    private static <T> Result<T> error(TokenPosition actual, Token token, Result.Type type) {
-        return error(actual, token.describe(), type);
+    private static <T> Result<T> error(TokenIterator startOfError, Token token, Result.Type type) {
+        return error(startOfError, token.describe(), type);
     }
     
-    private static <T> Result<T> error(TokenPosition actual, Object expected, Result.Type type) {
+    private static <T> Result<T> error(TokenIterator startOfError, Object expected, Result.Type type) {
+        TokenPosition actual = startOfError.peek();
+        TokenPosition endOfError = startOfError.hasNext(1) ? startOfError.peek(1) : actual;
         Token actualToken = actual.getToken();
-        String actualTokenValue = actualToken.getValue() == null ? "" : actualToken.getValue();
         String message = format("Expected %s but got %s", expected, actualToken.describe());
         return new Result<T>(
             null,
-            asList(new CompilerError(actual.getLineNumber(), actual.getCharacterNumber(), actualTokenValue.length(), message)),
+            asList(new CompilerError(
+                actual.getPosition(), endOfError.getPosition(), message
+            )),
             type
         );
     }

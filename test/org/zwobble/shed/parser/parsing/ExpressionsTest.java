@@ -16,11 +16,12 @@ import org.zwobble.shed.parser.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.parser.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.parser.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.parser.parsing.nodes.VariableIdentifierNode;
-import org.zwobble.shed.parser.tokeniser.Tokeniser;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.zwobble.shed.parser.parsing.ParserTesting.errorStrings;
+import static org.zwobble.shed.parser.parsing.ParserTesting.tokens;
 
 public class ExpressionsTest {
     @Test public void
@@ -37,8 +38,10 @@ public class ExpressionsTest {
     
     @Test public void
     errorIfValueIsNotExpression() {
-        assertThat(Expressions.expression().parse(tokens("{")).getErrors(),
-            is(asList(new CompilerError(1, 1, 1, "Expected expression but got symbol \"{\""))));
+        assertThat(
+            errorStrings(Expressions.expression().parse(tokens("{"))),
+            is(asList("Expected expression but got symbol \"{\""))
+        );
     }
     
     @Test public void
@@ -121,9 +124,5 @@ public class ExpressionsTest {
             Expressions.expression().parse(tokens("false")),
             is((Object)(Result.success(new BooleanLiteralNode(false))))
         );
-    }
-    
-    private TokenIterator tokens(String input) {
-        return new TokenIterator(new Tokeniser().tokenise(input));
     }
 }

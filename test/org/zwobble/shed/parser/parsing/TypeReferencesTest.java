@@ -4,11 +4,11 @@ import org.junit.Test;
 import org.zwobble.shed.parser.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.parser.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.parser.parsing.nodes.TypeReferenceNode;
-import org.zwobble.shed.parser.tokeniser.Tokeniser;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.zwobble.shed.parser.parsing.ParserTesting.tokens;
 import static org.zwobble.shed.parser.parsing.Result.success;
 
 public class TypeReferencesTest {
@@ -29,10 +29,6 @@ public class TypeReferencesTest {
                 asList((TypeReferenceNode)new TypeIdentifierNode("Integer"))
             )))
         );
-    }
-    
-    private TokenIterator tokens(String input) {
-        return new TokenIterator(new Tokeniser().tokenise(input));
     }
     
 }
