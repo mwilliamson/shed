@@ -15,6 +15,10 @@ public class Result<T> {
         return new Result<T>(value, Collections.<CompilerError>emptyList(), Type.SUCCESS);
     }
     
+    public static <T> Result<T> fatal(List<CompilerError> errors) {
+        return new Result<T>(null, errors, Type.FATAL);
+    }
+    
     private final T value;
     private final List<CompilerError> errors;
     private final Type type;

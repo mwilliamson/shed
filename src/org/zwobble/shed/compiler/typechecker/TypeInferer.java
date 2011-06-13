@@ -1,5 +1,9 @@
 package org.zwobble.shed.compiler.typechecker;
 
+import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.parsing.CompilerError;
+import org.zwobble.shed.compiler.parsing.Result;
+import org.zwobble.shed.compiler.parsing.SourcePosition;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
@@ -8,19 +12,34 @@ import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
 
+import static java.util.Arrays.asList;
+import static org.zwobble.shed.compiler.parsing.Result.fatal;
+import static org.zwobble.shed.compiler.parsing.Result.success;
+
 public class TypeInferer {
-    public static Type inferType(ExpressionNode expression, StaticContext context) {
+    public static Result<Type> inferType(ExpressionNode expression, StaticContext context) {
         if (expression instanceof BooleanLiteralNode) {
-            return CoreTypes.BOOLEAN;            
+            return success(CoreTypes.BOOLEAN);            
         }
         if (expression instanceof NumberLiteralNode) {
-            return CoreTypes.NUMBER;
+            return success(CoreTypes.NUMBER);
         }
         if (expression instanceof StringLiteralNode) {
-            return CoreTypes.STRING;
+            return success(CoreTypes.STRING);
         }
         if (expression instanceof VariableIdentifierNode) {
-            return context.get(((VariableIdentifierNode)expression).getIdentifier());
+            String identifier = ((VariableIdentifierNode)expression).getIdentifier();
+            Option<Type> type = context.get(identifier);
+            if (type.hasValue()) {
+                return success(type.get());                
+            } else {
+                return fatal(asList(new CompilerError(
+                    new SourcePosition(-1, -1),
+                    new SourcePosition(-1, -1),
+                    "No variable \"" + identifier + "\" in scope"
+                )));
+            }
+            
         }
         throw new RuntimeException("Cannot infer type of expression: " + expression);
     }

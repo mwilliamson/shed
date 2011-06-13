@@ -3,9 +3,6 @@ package org.zwobble.shed.compiler.parsing;
 import java.util.Collections;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.parsing.CompilerError;
-import org.zwobble.shed.compiler.parsing.Parser;
-import org.zwobble.shed.compiler.parsing.SourcePosition;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
@@ -16,16 +13,14 @@ import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 
-import static org.zwobble.shed.compiler.parsing.ParserTesting.errorStrings;
-import static org.zwobble.shed.compiler.parsing.ParserTesting.tokens;
-
-import static org.zwobble.shed.compiler.Option.none;
-import static org.zwobble.shed.compiler.parsing.Result.success;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
+import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
+import static org.zwobble.shed.compiler.Option.none;
+import static org.zwobble.shed.compiler.parsing.ParserTesting.tokens;
+import static org.zwobble.shed.compiler.parsing.Result.success;
 
 public class ParserTest {
     private final Parser parser = new Parser();

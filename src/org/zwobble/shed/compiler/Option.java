@@ -21,6 +21,14 @@ public class Option<T> {
         return new Option<T>(false, null);
     }
     
+    public boolean hasValue() {
+        return hasValue;
+    }
+    
+    public T get() {
+        return value;
+    }
+    
     private Option(boolean hasValue, T value) {
         this.hasValue = hasValue;
         this.value = value;

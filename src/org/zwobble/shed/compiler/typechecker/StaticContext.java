@@ -3,6 +3,7 @@ package org.zwobble.shed.compiler.typechecker;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.types.Type;
 
 public class StaticContext {
@@ -12,7 +13,11 @@ public class StaticContext {
         values.put(identifier, type);
     }
     
-    public Type get(String identifier) {
-        return values.get(identifier);
+    public Option<Type> get(String identifier) {
+        if (values.containsKey(identifier)) {
+            return Option.some(values.get(identifier));
+        } else {
+            return Option.none();
+        }
     }
 }

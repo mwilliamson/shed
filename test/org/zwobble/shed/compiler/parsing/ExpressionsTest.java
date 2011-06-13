@@ -5,8 +5,6 @@ import java.util.Collections;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.parsing.Expressions;
-import org.zwobble.shed.compiler.parsing.Result;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionNode;
@@ -19,12 +17,11 @@ import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
-import static org.zwobble.shed.compiler.parsing.ParserTesting.errorStrings;
-import static org.zwobble.shed.compiler.parsing.ParserTesting.tokens;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
+import static org.zwobble.shed.compiler.parsing.ParserTesting.tokens;
 
 public class ExpressionsTest {
     @Test public void
