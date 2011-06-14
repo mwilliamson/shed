@@ -36,28 +36,31 @@ public class TypeInferer {
             return lookupVariableReference(((VariableIdentifierNode)expression).getIdentifier(), context);
         }
         if (expression instanceof ShortLambdaExpressionNode) {
-            ShortLambdaExpressionNode lambdaExpression = (ShortLambdaExpressionNode)expression;
-            Result<Type> expressionTypeResult = inferType(lambdaExpression.getBody(), context);
-            if (expressionTypeResult.anyErrors()) {
-                return expressionTypeResult.changeValue(null);
-            }
-            Option<TypeReferenceNode> returnTypeReference = lambdaExpression.getReturnType();
-            if (returnTypeReference.hasValue()) {
-                Result<Type> returnType = lookupTypeReference(returnTypeReference.get(), context);
-                if (returnType.anyErrors()) {
-                    return returnType;
-                }
-                if (!expressionTypeResult.get().equals(returnType.get())) {
-                    return fatal(asList(new CompilerError(
-                        new SourcePosition(-1, -1),
-                        new SourcePosition(-1, -1),
-                        "Type mismatch: expected expression of type \"" + returnType.get().shortName() +
-                            "\" but was of type \"" + expressionTypeResult.get().shortName() + "\""
-                    )));
-                }
-            }
-            return success((Type)new TypeApplication(CoreTypes.functionType(), asList(expressionTypeResult.get())));
+            return inferType((ShortLambdaExpressionNode)expression, context);
         }
         throw new RuntimeException("Cannot infer type of expression: " + expression);
+    }
+
+    private static Result<Type> inferType(ShortLambdaExpressionNode lambdaExpression, StaticContext context) {
+        Result<Type> expressionTypeResult = inferType(lambdaExpression.getBody(), context);
+        if (expressionTypeResult.anyErrors()) {
+            return expressionTypeResult.changeValue(null);
+        }
+        Option<TypeReferenceNode> returnTypeReference = lambdaExpression.getReturnType();
+        if (returnTypeReference.hasValue()) {
+            Result<Type> returnType = lookupTypeReference(returnTypeReference.get(), context);
+            if (returnType.anyErrors()) {
+                return returnType;
+            }
+            if (!expressionTypeResult.get().equals(returnType.get())) {
+                return fatal(asList(new CompilerError(
+                    new SourcePosition(-1, -1),
+                    new SourcePosition(-1, -1),
+                    "Type mismatch: expected expression of type \"" + returnType.get().shortName() +
+                        "\" but was of type \"" + expressionTypeResult.get().shortName() + "\""
+                )));
+            }
+        }
+        return success((Type)new TypeApplication(CoreTypes.functionType(), asList(expressionTypeResult.get())));
     }
 }
