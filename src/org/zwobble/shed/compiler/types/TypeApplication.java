@@ -19,6 +19,7 @@ public class TypeApplication implements Type {
         Iterable<String> typeParameterNames = transform(typeParameters, toShortName());
         return typeFunction.shortName() + "[" + Joiner.on(", ").join(typeParameterNames) + "]";
     }
+    
     private Function<Type, String> toShortName() {
         return new Function<Type, String>() {
             @Override

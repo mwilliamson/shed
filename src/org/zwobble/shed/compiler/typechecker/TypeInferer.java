@@ -9,7 +9,6 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
-import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -19,6 +18,8 @@ import org.zwobble.shed.compiler.types.TypeApplication;
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.parsing.Result.fatal;
 import static org.zwobble.shed.compiler.parsing.Result.success;
+import static org.zwobble.shed.compiler.types.TypeLookup.lookupTypeReference;
+import static org.zwobble.shed.compiler.types.VariableLookup.lookupVariableReference;
 
 public class TypeInferer {
     public static Result<Type> inferType(ExpressionNode expression, StaticContext context) {
@@ -55,31 +56,5 @@ public class TypeInferer {
             return success((Type)new TypeApplication(CoreTypes.functionType(), asList(expressionTypeResult.get())));
         }
         throw new RuntimeException("Cannot infer type of expression: " + expression);
-    }
-    
-    private static Result<Type> lookupVariableReference(String identifier, StaticContext context) {
-        Option<Type> type = context.get(identifier);
-        if (type.hasValue()) {
-            return success(type.get());
-        } else {
-            return fatal(asList(new CompilerError(
-                new SourcePosition(-1, -1),
-                new SourcePosition(-1, -1),
-                "No variable \"" + identifier + "\" in scope"
-            )));
-        }
-    }
-    
-    private static Result<Type> lookupTypeReference(TypeReferenceNode typeReference, StaticContext context) {
-        if (typeReference instanceof TypeIdentifierNode) {
-            String identifier = ((TypeIdentifierNode)typeReference).getIdentifier();
-            Result<Type> variableType = lookupVariableReference(identifier, context);
-            if (variableType.hasValue()) {
-                return success(((TypeApplication)variableType.get()).getTypeParameters().get(0));
-            } else {
-                return variableType;
-            }
-        }
-        throw new RuntimeException("Cannot look up type reference: " + typeReference);
     }
 }
