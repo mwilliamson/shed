@@ -67,7 +67,7 @@ public class TypeInfererTest {
         );
         Result<Type> result = inferType(functionExpression, context);
         assertThat(result, is(success(
-            (Type) new TypeApplication(CoreTypes.functionType(), asList(CoreTypes.NUMBER))
+            (Type) new TypeApplication(CoreTypes.functionType(0), asList(CoreTypes.NUMBER))
         )));
     }
     
@@ -106,5 +106,24 @@ public class TypeInfererTest {
         );
         Result<Type> result = inferType(functionExpression, context);
         assertThat(errorStrings(result), is(asList("No variable \"String\" in scope")));
+    }
+    
+    @Test public void
+    canInferTypesOfArgumentsOfShortLambdaExpression() {
+        StaticContext context = new StaticContext();
+        context.add("String", CoreTypes.classOf(CoreTypes.STRING));
+        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
+        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
+            asList(
+                new FormalArgumentNode("name", new TypeIdentifierNode("String")),
+                new FormalArgumentNode("age", new TypeIdentifierNode("Number"))
+            ),
+            none(TypeReferenceNode.class),
+            new BooleanLiteralNode(true)
+        );
+        Result<Type> result = inferType(functionExpression, context);
+        assertThat(result, is(success(
+            (Type) new TypeApplication(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN))
+        )));
     }
 }

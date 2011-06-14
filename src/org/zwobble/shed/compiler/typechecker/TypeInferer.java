@@ -1,11 +1,15 @@
 package org.zwobble.shed.compiler.typechecker;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.Result;
 import org.zwobble.shed.compiler.parsing.SourcePosition;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
@@ -42,6 +46,16 @@ public class TypeInferer {
     }
 
     private static Result<Type> inferType(ShortLambdaExpressionNode lambdaExpression, StaticContext context) {
+        List<Type> typeParameters = new ArrayList<Type>();
+        for (FormalArgumentNode argument : lambdaExpression.getArguments()) {
+            Result<Type> argumentType = lookupTypeReference(argument.getType(), context);
+            if (argumentType.anyErrors()) {
+                throw new RuntimeException(argumentType.toString());
+            }
+            typeParameters.add(argumentType.get());
+        }
+        
+        // TODO: add arguments to context
         Result<Type> expressionTypeResult = inferType(lambdaExpression.getBody(), context);
         if (expressionTypeResult.anyErrors()) {
             return expressionTypeResult.changeValue(null);
@@ -61,6 +75,7 @@ public class TypeInferer {
                 )));
             }
         }
-        return success((Type)new TypeApplication(CoreTypes.functionType(), asList(expressionTypeResult.get())));
+        typeParameters.add(expressionTypeResult.get());
+        return success((Type)new TypeApplication(CoreTypes.functionType(lambdaExpression.getArguments().size()), typeParameters));
     }
 }
