@@ -9,4 +9,9 @@ public class TypeFunction implements Type {
     private final List<String> scope;
     private final String name;
     private final List<FormalTypeParameter> typeParameters;
+    
+    @Override
+    public String shortName() {
+        return name;
+    }
 }

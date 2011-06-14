@@ -8,4 +8,9 @@ import lombok.Data;
 public class ScalarType implements Type {
     private final List<String> scope;
     private final String name;
+    
+    @Override
+    public String shortName() {
+        return name;
+    }
 }

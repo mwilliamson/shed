@@ -9,6 +9,8 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
+import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
@@ -30,25 +32,54 @@ public class TypeInferer {
             return success(CoreTypes.STRING);
         }
         if (expression instanceof VariableIdentifierNode) {
-            String identifier = ((VariableIdentifierNode)expression).getIdentifier();
-            Option<Type> type = context.get(identifier);
-            if (type.hasValue()) {
-                return success(type.get());                
-            } else {
-                return fatal(asList(new CompilerError(
-                    new SourcePosition(-1, -1),
-                    new SourcePosition(-1, -1),
-                    "No variable \"" + identifier + "\" in scope"
-                )));
-            }
+            return lookupVariableReference(((VariableIdentifierNode)expression).getIdentifier(), context);
         }
         if (expression instanceof ShortLambdaExpressionNode) {
-            Result<Type> expressionTypeResult = inferType(((ShortLambdaExpressionNode)expression).getBody(), context);
+            ShortLambdaExpressionNode lambdaExpression = (ShortLambdaExpressionNode)expression;
+            Result<Type> expressionTypeResult = inferType(lambdaExpression.getBody(), context);
             if (expressionTypeResult.anyErrors()) {
                 return expressionTypeResult.changeValue(null);
+            }
+            Option<TypeReferenceNode> returnTypeReference = lambdaExpression.getReturnType();
+            if (returnTypeReference.hasValue()) {
+                Result<Type> returnType = lookupTypeReference(returnTypeReference.get(), context);
+                if (!expressionTypeResult.get().equals(returnType.get())) {
+                    return fatal(asList(new CompilerError(
+                        new SourcePosition(-1, -1),
+                        new SourcePosition(-1, -1),
+                        "Type mismatch: expected expression of type \"" + returnType.get().shortName() +
+                            "\" but was of type \"" + expressionTypeResult.get().shortName() + "\""
+                    )));
+                }
             }
             return success((Type)new TypeApplication(CoreTypes.functionType(), asList(expressionTypeResult.get())));
         }
         throw new RuntimeException("Cannot infer type of expression: " + expression);
+    }
+    
+    private static Result<Type> lookupVariableReference(String identifier, StaticContext context) {
+        Option<Type> type = context.get(identifier);
+        if (type.hasValue()) {
+            return success(type.get());
+        } else {
+            return fatal(asList(new CompilerError(
+                new SourcePosition(-1, -1),
+                new SourcePosition(-1, -1),
+                "No variable \"" + identifier + "\" in scope"
+            )));
+        }
+    }
+    
+    private static Result<Type> lookupTypeReference(TypeReferenceNode typeReference, StaticContext context) {
+        if (typeReference instanceof TypeIdentifierNode) {
+            String identifier = ((TypeIdentifierNode)typeReference).getIdentifier();
+            Result<Type> variableType = lookupVariableReference(identifier, context);
+            if (variableType.hasValue()) {
+                return success(((TypeApplication)variableType.get()).getTypeParameters().get(0));
+            } else {
+                return variableType;
+            }
+        }
+        throw new RuntimeException("Cannot look up type reference: " + typeReference);
     }
 }

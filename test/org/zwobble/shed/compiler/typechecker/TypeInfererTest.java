@@ -9,6 +9,7 @@ import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -20,6 +21,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.Option.none;
+import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.parsing.Result.success;
 import static org.zwobble.shed.compiler.typechecker.TypeInferer.inferType;
 
@@ -79,5 +81,18 @@ public class TypeInfererTest {
         );
         Result<Type> result = inferType(functionExpression, context);
         assertThat(errorStrings(result), is(asList("No variable \"blah\" in scope")));
+    }
+    
+    @Test public void
+    errorIfTypeSpecifierAndTypeBodyOfShortLambdaExpressionDoNotAgree() {
+        StaticContext context = new StaticContext();
+        context.add("String", new TypeApplication(CoreTypes.CLASS, asList(CoreTypes.STRING)));
+        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
+            Collections.<FormalArgumentNode>emptyList(),
+            some((TypeReferenceNode)new TypeIdentifierNode("String")),
+            new NumberLiteralNode("42")
+        );
+        Result<Type> result = inferType(functionExpression, context);
+        assertThat(errorStrings(result), is(asList("Type mismatch: expected expression of type \"String\" but was of type \"Number\"")));
     }
 }
