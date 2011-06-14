@@ -44,6 +44,9 @@ public class TypeInferer {
             Option<TypeReferenceNode> returnTypeReference = lambdaExpression.getReturnType();
             if (returnTypeReference.hasValue()) {
                 Result<Type> returnType = lookupTypeReference(returnTypeReference.get(), context);
+                if (returnType.anyErrors()) {
+                    return returnType;
+                }
                 if (!expressionTypeResult.get().equals(returnType.get())) {
                     return fatal(asList(new CompilerError(
                         new SourcePosition(-1, -1),

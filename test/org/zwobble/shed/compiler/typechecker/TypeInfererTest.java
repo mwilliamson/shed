@@ -95,4 +95,16 @@ public class TypeInfererTest {
         Result<Type> result = inferType(functionExpression, context);
         assertThat(errorStrings(result), is(asList("Type mismatch: expected expression of type \"String\" but was of type \"Number\"")));
     }
+    
+    @Test public void
+    errorIfCannotFindReturnType() {
+        StaticContext context = new StaticContext();
+        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
+            Collections.<FormalArgumentNode>emptyList(),
+            some((TypeReferenceNode)new TypeIdentifierNode("String")),
+            new NumberLiteralNode("42")
+        );
+        Result<Type> result = inferType(functionExpression, context);
+        assertThat(errorStrings(result), is(asList("No variable \"String\" in scope")));
+    }
 }
