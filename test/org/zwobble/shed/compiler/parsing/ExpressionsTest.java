@@ -1,17 +1,16 @@
 package org.zwobble.shed.compiler.parsing;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
-import org.zwobble.shed.compiler.parsing.nodes.FunctionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
+import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
-import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
@@ -21,6 +20,7 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
+import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.parsing.ParserTesting.tokens;
 
 public class ExpressionsTest {
@@ -48,9 +48,10 @@ public class ExpressionsTest {
     canParseShortLambdaExpressionWithNoArguments() {
         assertThat(
             Expressions.expression().parse(tokens("() => 2")),
-            is((Object)Result.success(new FunctionNode(
+            is((Object)Result.success(new ShortLambdaExpressionNode(
                 Collections.<FormalArgumentNode>emptyList(),
-                asList((StatementNode)new ReturnNode(new NumberLiteralNode("2")))
+                none(TypeReferenceNode.class),
+                new NumberLiteralNode("2")
             )))
         );
     }
@@ -59,23 +60,25 @@ public class ExpressionsTest {
     canParseShortLambdaExpressionWithOneArgument() {
         assertThat(
             Expressions.expression().parse(tokens("(num : Integer) => 2")),
-            is((Object)Result.success(new FunctionNode(
-                Arrays.<FormalArgumentNode>asList(new FormalArgumentNode("num", new TypeIdentifierNode("Integer"))),
-                Arrays.<StatementNode>asList(new ReturnNode(new NumberLiteralNode("2")))
+            is((Object)Result.success(new ShortLambdaExpressionNode(
+                asList(new FormalArgumentNode("num", new TypeIdentifierNode("Integer"))),
+                none(TypeReferenceNode.class),
+                new NumberLiteralNode("2")
             )))
         );
     }
     
     @Test public void
-    canParseShortLambdaExpressionWithMultipleArgument() {
+    canParseShortLambdaExpressionWithMultipleArguments() {
         assertThat(
             Expressions.expression().parse(tokens("(num : Integer, name: String) => 2")),
-            is((Object)Result.success(new FunctionNode(
+            is((Object)Result.success(new ShortLambdaExpressionNode(
                 asList(
                     new FormalArgumentNode("num", new TypeIdentifierNode("Integer")),
                     new FormalArgumentNode("name", new TypeIdentifierNode("String"))
                 ),
-                Arrays.<StatementNode>asList(new ReturnNode(new NumberLiteralNode("2")))
+                none(TypeReferenceNode.class),
+                new NumberLiteralNode("2")
             )))
         );
     }
@@ -83,9 +86,10 @@ public class ExpressionsTest {
     @Test public void
     canParseLongLambdaExpressionWithNoArguments() {
         assertThat(
-            Expressions.expression().parse(tokens("() => { val x = 2; return 3; }")),
-            is((Object)Result.success(new FunctionNode(
+            Expressions.expression().parse(tokens("() : String => { val x = 2; return 3; }")),
+            is((Object)Result.success(new LongLambdaExpressionNode(
                 Collections.<FormalArgumentNode>emptyList(),
+                new TypeIdentifierNode("String"),
                 asList(
                     new ImmutableVariableNode("x", Option.<TypeReferenceNode>none(), new NumberLiteralNode("2")),
                     new ReturnNode(new NumberLiteralNode("3"))

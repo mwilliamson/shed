@@ -47,21 +47,13 @@ public class Rules {
                 for (Rule<?> rule : rules) {
                     Result<?> result = rule.parse(tokens);
                     if (result.anyErrors()) {
-                        errors.addAll(result.getErrors());
-                        if (rule instanceof GuardRule) {
+                        if (rule instanceof GuardRule && result.noMatch() && errors.isEmpty()) {
                             tokens.resetPosition(startPosition);
                             return result.toType(null, Result.Type.NO_MATCH);                            
-                        } else if (!result.ruleDidFinish() || recovery == OnError.FINISH) {
-                            Rule<?> lastRule = rules[rules.length - 1];
-                            if (lastRule instanceof LastRule) {
-                                Result<?> lastRuleResult = null;
-                                while (!tokens.peek().getToken().equals(Token.end()) && (lastRuleResult = lastRule.parse(tokens)).noMatch()) {
-                                    tokens.next();
-                                }
-                                if (tokens.peek().getToken().equals(Token.end()) || (lastRuleResult != null && lastRuleResult.isSuccess())) {
-                                    return new Result<RuleValues>(null, errors, Result.Type.ERROR_RECOVERED);
-                                }
-                            }
+                        }
+
+                        errors.addAll(result.getErrors());
+                        if (!result.ruleDidFinish() || recovery == OnError.FINISH) {
                             return new Result<RuleValues>(null, errors, Result.Type.FATAL);                                
                         }
                     }
@@ -160,10 +152,6 @@ public class Rules {
     
     public static <T> Rule<T> guard(Rule<T> rule) {
         return new GuardRule<T>(rule);
-    }
-    
-    public static <T> Rule<T> last(Rule<T> rule) {
-        return new LastRule<T>(rule);
     }
     
     public static Rule<Keyword> keyword(final Keyword keyword) {

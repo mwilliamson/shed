@@ -169,7 +169,7 @@ public class ParserTest {
     @Test public void
     closingBraceEndsCurrentStatement() {
         assertThat(
-            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { return 4 }; va y = 4;"))),
+            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) : Integer => { return 4 }; va y = 4;"))),
             containsInAnyOrder(
                 "Expected symbol \";\" but got symbol \"}\"",
                 "Expected end of source but got identifier \"va\""
@@ -180,7 +180,7 @@ public class ParserTest {
     @Test public void
     matchingClosingBraceEndsCurrentStatement() {
         assertThat(
-            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { return 4 {} }; va y = 4;"))),
+            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) : Integer => { return 4 {} }; va y = 4;"))),
             containsInAnyOrder(
                 "Expected symbol \";\" but got symbol \"{\"",
                 "Expected end of source but got identifier \"va\""
@@ -191,7 +191,7 @@ public class ParserTest {
     @Test public void
     matchingClosingBraceEndsCurrentBlock() {
         assertThat(
-            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { {} }; va y = 4;"))),
+            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) : Integer => { {} }; va y = 4;"))),
             containsInAnyOrder(
                 "Expected symbol \"}\" but got symbol \"{\"",
                 "Expected end of source but got identifier \"va\""
@@ -202,7 +202,7 @@ public class ParserTest {
     @Test public void
     closingBracketClosesAnyEnclosedBraces() {
         assertThat(
-            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { { ({)  } }; va y = 4;"))),
+            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer)  : Integer => { { ({)  } }; va y = 4;"))),
             containsInAnyOrder(
                 "Expected symbol \"}\" but got symbol \"{\"",
                 "Expected end of source but got identifier \"va\""
@@ -213,7 +213,7 @@ public class ParserTest {
     @Test public void
     closingBraceClosesAnyEnclosedBrackets() {
         assertThat(
-            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { {(} }; va y = 4;"))),
+            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) : Integer => { {(} }; va y = 4;"))),
             containsInAnyOrder(
                 "Expected symbol \"}\" but got symbol \"{\"",
                 "Expected end of source but got identifier \"va\""
@@ -224,7 +224,7 @@ public class ParserTest {
     @Test public void
     semicolonEndsStatementAndClosesAnyOpenParensInBlockScope() {
         assertThat(
-            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) => { ({(; )}; va y = 4;"))),
+            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) : Integer => { ({(; )}; va y = 4;"))),
             containsInAnyOrder(
                 "Expected symbol \"}\" but got symbol \"(\"",
                 "Expected end of source but got identifier \"va\""

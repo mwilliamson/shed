@@ -6,12 +6,13 @@ import org.zwobble.shed.compiler.parsing.Result;
 import org.zwobble.shed.compiler.parsing.SourcePosition;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
-import org.zwobble.shed.compiler.parsing.nodes.FunctionNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
+import org.zwobble.shed.compiler.types.TypeApplication;
 
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.parsing.Result.fatal;
@@ -41,8 +42,9 @@ public class TypeInferer {
                 )));
             }
         }
-        if (expression instanceof FunctionNode) {
-            return success((Type)CoreTypes.functionType());
+        if (expression instanceof ShortLambdaExpressionNode) {
+            Result<Type> expressionTypeResult = inferType(((ShortLambdaExpressionNode)expression).getBody(), context);
+            return success((Type)new TypeApplication(CoreTypes.functionType(), asList(expressionTypeResult.get())));
         }
         throw new RuntimeException("Cannot infer type of expression: " + expression);
     }

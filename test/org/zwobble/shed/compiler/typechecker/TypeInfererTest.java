@@ -6,18 +6,20 @@ import org.junit.Test;
 import org.zwobble.shed.compiler.parsing.Result;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
-import org.zwobble.shed.compiler.parsing.nodes.FunctionNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
-import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
+import org.zwobble.shed.compiler.types.TypeApplication;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
+import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.parsing.Result.success;
 import static org.zwobble.shed.compiler.typechecker.TypeInferer.inferType;
 
@@ -54,13 +56,16 @@ public class TypeInfererTest {
     }
     
     @Test public void
-    canInferTypeOfFunctionLiteralWithNoArgumentsAndUnitReturnType() {
+    canInferTypeOfShortLambdaExpressionWithoutArgumentsNorExplicitReturnType() {
         StaticContext context = new StaticContext();
-        FunctionNode functionExpression = new FunctionNode(
+        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
-            Collections.<StatementNode>emptyList()
+            none(TypeReferenceNode.class),
+            new NumberLiteralNode("42")
         );
         Result<Type> result = inferType(functionExpression, context);
-        assertThat(result, is(success((Type)CoreTypes.functionType())));
+        assertThat(result, is(success(
+            (Type) new TypeApplication(CoreTypes.functionType(), asList(CoreTypes.NUMBER))
+        )));
     }
 }

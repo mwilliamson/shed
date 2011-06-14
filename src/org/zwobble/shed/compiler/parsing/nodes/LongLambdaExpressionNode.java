@@ -5,7 +5,8 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class FunctionNode implements ExpressionNode {
+public class LongLambdaExpressionNode implements ExpressionNode {
     private final List<FormalArgumentNode> arguments;
+    private final TypeReferenceNode returnType;
     private final List<StatementNode> body;
 }
