@@ -1,9 +1,14 @@
 package org.zwobble.shed.compiler.typechecker;
 
+import java.util.Collections;
+
 import org.junit.Test;
 import org.zwobble.shed.compiler.parsing.Result;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
+import org.zwobble.shed.compiler.parsing.nodes.FunctionNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -46,5 +51,16 @@ public class TypeInfererTest {
         Result<Type> result = inferType(new VariableIdentifierNode("value"), context);
         assertThat(result.isFatal(), is(true));
         assertThat(errorStrings(result), is(asList("No variable \"value\" in scope")));
+    }
+    
+    @Test public void
+    canInferTypeOfFunctionLiteralWithNoArgumentsAndUnitReturnType() {
+        StaticContext context = new StaticContext();
+        FunctionNode functionExpression = new FunctionNode(
+            Collections.<FormalArgumentNode>emptyList(),
+            Collections.<StatementNode>emptyList()
+        );
+        Result<Type> result = inferType(functionExpression, context);
+        assertThat(result, is(success((Type)CoreTypes.functionType())));
     }
 }

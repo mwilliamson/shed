@@ -5,7 +5,8 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class ScalarType implements Type {
+public class TypeFunction implements Type {
     private final List<String> scope;
     private final String name;
+    private final List<FormalTypeParameter> typeParameters;
 }

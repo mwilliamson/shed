@@ -6,6 +6,7 @@ import org.zwobble.shed.compiler.parsing.Result;
 import org.zwobble.shed.compiler.parsing.SourcePosition;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.FunctionNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
@@ -39,7 +40,9 @@ public class TypeInferer {
                     "No variable \"" + identifier + "\" in scope"
                 )));
             }
-            
+        }
+        if (expression instanceof FunctionNode) {
+            return success((Type)CoreTypes.functionType());
         }
         throw new RuntimeException("Cannot infer type of expression: " + expression);
     }
