@@ -44,6 +44,9 @@ public class TypeInferer {
         }
         if (expression instanceof ShortLambdaExpressionNode) {
             Result<Type> expressionTypeResult = inferType(((ShortLambdaExpressionNode)expression).getBody(), context);
+            if (expressionTypeResult.anyErrors()) {
+                return expressionTypeResult.changeValue(null);
+            }
             return success((Type)new TypeApplication(CoreTypes.functionType(), asList(expressionTypeResult.get())));
         }
         throw new RuntimeException("Cannot infer type of expression: " + expression);

@@ -68,4 +68,16 @@ public class TypeInfererTest {
             (Type) new TypeApplication(CoreTypes.functionType(), asList(CoreTypes.NUMBER))
         )));
     }
+    
+    @Test public void
+    errorIfCannotTypeBodyOfShortLambdaExpression() {
+        StaticContext context = new StaticContext();
+        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
+            Collections.<FormalArgumentNode>emptyList(),
+            none(TypeReferenceNode.class),
+            new VariableIdentifierNode("blah")
+        );
+        Result<Type> result = inferType(functionExpression, context);
+        assertThat(errorStrings(result), is(asList("No variable \"blah\" in scope")));
+    }
 }
