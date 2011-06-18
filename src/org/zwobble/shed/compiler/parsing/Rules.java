@@ -113,7 +113,6 @@ public class Rules {
                             if (errors.isEmpty()) {
                                 return success(values, subResults);                    
                             } else {
-                                // TODO: check that we should be returning a value
                                 return errorRecoveredWithValue(values, errors, subResults);
                             }
                         }
