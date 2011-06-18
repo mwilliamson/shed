@@ -12,7 +12,6 @@ import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
 import static org.zwobble.shed.compiler.parsing.Blocks.block;
-import static org.zwobble.shed.compiler.parsing.Result.success;
 import static org.zwobble.shed.compiler.parsing.Rules.guard;
 import static org.zwobble.shed.compiler.parsing.Rules.optional;
 import static org.zwobble.shed.compiler.parsing.Rules.sequence;
@@ -50,8 +49,8 @@ public class Expressions {
             tokenOfType(IDENTIFIER),
             new ParseAction<String, ExpressionNode>() {
                 @Override
-                public Result<ExpressionNode> apply(String result) {
-                    return Result.<ExpressionNode>success(new VariableIdentifierNode(result));
+                public ExpressionNode apply(String result) {
+                    return new VariableIdentifierNode(result);
                 }
             }
         );
@@ -69,8 +68,8 @@ public class Expressions {
             ),
             new ParseAction<RuleValues, ExpressionNode>() {
                 @Override
-                public Result<ExpressionNode> apply(RuleValues result) {
-                    return success(result.get(expression));
+                public ExpressionNode apply(RuleValues result) {
+                    return result.get(expression);
                 }
             }
         );
@@ -92,12 +91,12 @@ public class Expressions {
             ),
             new ParseAction<RuleValues, LongLambdaExpressionNode>() {
                 @Override
-                public Result<LongLambdaExpressionNode> apply(RuleValues result) {
-                    return success(new LongLambdaExpressionNode(
+                public LongLambdaExpressionNode apply(RuleValues result) {
+                    return new LongLambdaExpressionNode(
                         result.get(formalArguments),
                         result.get(returnType),
                         result.get(functionBody)
-                    ));
+                    );
                 }
             }
         );
@@ -119,12 +118,12 @@ public class Expressions {
             ),
             new ParseAction<RuleValues, ShortLambdaExpressionNode>() {
                 @Override
-                public Result<ShortLambdaExpressionNode> apply(RuleValues result) {
-                    return success(new ShortLambdaExpressionNode(
+                public ShortLambdaExpressionNode apply(RuleValues result) {
+                    return new ShortLambdaExpressionNode(
                         result.get(formalArguments),
                         result.get(returnType),
                         result.get(functionBody)
-                    ));
+                    );
                 }
             }
         );
@@ -141,8 +140,8 @@ public class Expressions {
             ),
             new ParseAction<RuleValues, List<FormalArgumentNode>>() {
                 @Override
-                public Result<List<FormalArgumentNode>> apply(RuleValues result) {
-                    return success(result.get(formalArguments));
+                public List<FormalArgumentNode> apply(RuleValues result) {
+                    return result.get(formalArguments);
                 }
             }
         );
@@ -160,8 +159,8 @@ public class Expressions {
             ),
             new ParseAction<RuleValues, FormalArgumentNode>() {
                 @Override
-                public Result<FormalArgumentNode> apply(RuleValues result) {
-                    return success(new FormalArgumentNode(result.get(name), result.get(type)));
+                public FormalArgumentNode apply(RuleValues result) {
+                    return new FormalArgumentNode(result.get(name), result.get(type));
                 }
             }
         );

@@ -26,12 +26,8 @@ public class Rules {
                 if (!result.hasValue()) {
                     return result.changeValue(null);
                 }
-                Result<T> actionResult = action.apply(result.get());
-                if (actionResult.isSuccess()) {
-                    return result.changeValue(actionResult.get());
-                } else {
-                    return result.changeValue(null);
-                }
+                T actionResult = action.apply(result.get());
+                return result.changeValue(actionResult);
             }
         };
     }
@@ -159,8 +155,8 @@ public class Rules {
             token(Token.keyword(keyword)),
             new ParseAction<Void, Keyword>() {
                 @Override
-                public Result<Keyword> apply(Void result) {
-                    return success(keyword);
+                public Keyword apply(Void result) {
+                    return keyword;
                 }
             }
         ); 

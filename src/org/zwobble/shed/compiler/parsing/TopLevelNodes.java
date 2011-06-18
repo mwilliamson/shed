@@ -10,7 +10,6 @@ import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.tokeniser.Keyword;
 import org.zwobble.shed.compiler.tokeniser.Token;
 
-import static org.zwobble.shed.compiler.parsing.Result.success;
 import static org.zwobble.shed.compiler.parsing.Rules.guard;
 import static org.zwobble.shed.compiler.parsing.Rules.keyword;
 import static org.zwobble.shed.compiler.parsing.Rules.oneOrMoreWithSeparator;
@@ -50,13 +49,13 @@ public class TopLevelNodes {
             ),
             new ParseAction<RuleValues, SourceNode>() {
                 @Override
-                public Result<SourceNode> apply(RuleValues result) {
-                    return success(new SourceNode(
+                public SourceNode apply(RuleValues result) {
+                    return new SourceNode(
                         result.get(packageDeclaration),
                         result.get(imports),
                         result.get(publicDeclaration),
                         result.get(statements)
-                    ));
+                    );
                 }
             }
         );
@@ -72,8 +71,8 @@ public class TopLevelNodes {
             ),
             new ParseAction<RuleValues, PackageDeclarationNode>() {
                 @Override
-                public Result<PackageDeclarationNode> apply(RuleValues result) {
-                    return success(new PackageDeclarationNode(result.get(names)));
+                public PackageDeclarationNode apply(RuleValues result) {
+                    return new PackageDeclarationNode(result.get(names));
                 }
             }
         );
@@ -89,8 +88,8 @@ public class TopLevelNodes {
             ),
             new ParseAction<RuleValues, ImportNode>() {
                 @Override
-                public Result<ImportNode> apply(RuleValues result) {
-                    return success(new ImportNode(result.get(names)));
+                public ImportNode apply(RuleValues result) {
+                    return new ImportNode(result.get(names));
                 }
             }
         );
@@ -107,8 +106,8 @@ public class TopLevelNodes {
             ),
             new ParseAction<RuleValues, PublicDeclarationNode>() {
                 @Override
-                public Result<PublicDeclarationNode> apply(RuleValues result) {
-                    return success(new PublicDeclarationNode(result.get(identifiers)));
+                public PublicDeclarationNode apply(RuleValues result) {
+                    return new PublicDeclarationNode(result.get(identifiers));
                 }
             }
         );

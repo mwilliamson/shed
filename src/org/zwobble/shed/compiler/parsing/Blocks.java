@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 
-import static org.zwobble.shed.compiler.parsing.Result.success;
 import static org.zwobble.shed.compiler.parsing.Rules.guard;
 import static org.zwobble.shed.compiler.parsing.Rules.optional;
 import static org.zwobble.shed.compiler.parsing.Rules.sequence;
@@ -41,8 +40,8 @@ public class Blocks {
             
             new ParseAction<RuleValues, List<StatementNode>>() {
                 @Override
-                public Result<List<StatementNode>> apply(RuleValues result) {
-                    return success(result.get(statements));
+                public List<StatementNode> apply(RuleValues result) {
+                    return result.get(statements);
                 }
             }
         );

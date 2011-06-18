@@ -12,7 +12,6 @@ import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.tokeniser.Keyword;
 
 import static org.zwobble.shed.compiler.parsing.Expressions.expression;
-import static org.zwobble.shed.compiler.parsing.Result.success;
 import static org.zwobble.shed.compiler.parsing.Rules.firstOf;
 import static org.zwobble.shed.compiler.parsing.Rules.guard;
 import static org.zwobble.shed.compiler.parsing.Rules.keyword;
@@ -64,8 +63,8 @@ public class Statements {
             ),
             new ParseAction<RuleValues, ReturnNode>() {
                 @Override
-                public Result<ReturnNode> apply(RuleValues result) {
-                    return success(new ReturnNode(result.get(expression)));
+                public ReturnNode apply(RuleValues result) {
+                    return new ReturnNode(result.get(expression));
                 }
             }
         );
@@ -102,8 +101,8 @@ public class Statements {
             ),
             new ParseAction<RuleValues, T>() {
                 @Override
-                public Result<T> apply(RuleValues result) {
-                    return success(constructor.apply(result.get(identifier), result.get(type), result.get(expression)));
+                public T apply(RuleValues result) {
+                    return constructor.apply(result.get(identifier), result.get(type), result.get(expression));
                 }
             }
         );

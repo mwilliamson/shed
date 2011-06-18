@@ -6,7 +6,6 @@ import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 
-import static org.zwobble.shed.compiler.parsing.Result.success;
 import static org.zwobble.shed.compiler.parsing.Rules.firstOf;
 import static org.zwobble.shed.compiler.parsing.Rules.guard;
 import static org.zwobble.shed.compiler.parsing.Rules.oneOrMoreWithSeparator;
@@ -39,8 +38,8 @@ public class TypeReferences {
             tokenOfType(IDENTIFIER),
             new ParseAction<String, TypeIdentifierNode>() {
                 @Override
-                public Result<TypeIdentifierNode> apply(String result) {
-                    return success(new TypeIdentifierNode(result));
+                public TypeIdentifierNode apply(String result) {
+                    return new TypeIdentifierNode(result);
                 }
             }
         );
@@ -58,8 +57,8 @@ public class TypeReferences {
             ),
             new ParseAction<RuleValues, TypeApplicationNode>() {
                 @Override
-                public Result<TypeApplicationNode> apply(RuleValues result) {
-                    return success(new TypeApplicationNode(result.get(baseIdentifier), result.get(typeParameters)));
+                public TypeApplicationNode apply(RuleValues result) {
+                    return new TypeApplicationNode(result.get(baseIdentifier), result.get(typeParameters));
                 }
             }
         );
@@ -75,8 +74,8 @@ public class TypeReferences {
             ),
             new ParseAction<RuleValues, TypeReferenceNode>() {
                 @Override
-                public Result<TypeReferenceNode> apply(RuleValues result) {
-                    return success(result.get(typeReference));
+                public TypeReferenceNode apply(RuleValues result) {
+                    return result.get(typeReference);
                 }
             }
         );

@@ -6,7 +6,6 @@ import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.tokeniser.Keyword;
 import org.zwobble.shed.compiler.tokeniser.TokenType;
 
-import static org.zwobble.shed.compiler.parsing.Result.success;
 import static org.zwobble.shed.compiler.parsing.Rules.firstOf;
 import static org.zwobble.shed.compiler.parsing.Rules.keyword;
 import static org.zwobble.shed.compiler.parsing.Rules.then;
@@ -17,8 +16,8 @@ public class Literals {
     public static Rule<NumberLiteralNode> numberLiteral() {
         return then(tokenOfType(TokenType.NUMBER), new ParseAction<String, NumberLiteralNode>() {
             @Override
-            public Result<NumberLiteralNode> apply(String result) {
-                return success(new NumberLiteralNode(result));
+            public NumberLiteralNode apply(String result) {
+                return new NumberLiteralNode(result);
             }
         });
     }
@@ -26,8 +25,8 @@ public class Literals {
     public static Rule<StringLiteralNode> stringLiteral() {
         return then(tokenOfType(TokenType.STRING), new ParseAction<String, StringLiteralNode>() {
             @Override
-            public Result<StringLiteralNode> apply(String result) {
-                return success(new StringLiteralNode(result));
+            public StringLiteralNode apply(String result) {
+                return new StringLiteralNode(result);
             }
         });
     }
@@ -38,8 +37,8 @@ public class Literals {
             firstOf("Boolean literal", keyword(Keyword.TRUE), keyword(Keyword.FALSE)),
             new ParseAction<Keyword, BooleanLiteralNode>() {
                 @Override
-                public Result<BooleanLiteralNode> apply(Keyword result) {
-                    return success(new BooleanLiteralNode(result == Keyword.TRUE));
+                public BooleanLiteralNode apply(Keyword result) {
+                    return new BooleanLiteralNode(result == Keyword.TRUE);
                 }
             }
         );
