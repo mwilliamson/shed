@@ -12,7 +12,7 @@ import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.tokeniser.Keyword;
 
 import static org.zwobble.shed.compiler.parsing.Expressions.expression;
-import static org.zwobble.shed.compiler.parsing.Result.subResults;
+import static org.zwobble.shed.compiler.parsing.ParseResult.subResults;
 import static org.zwobble.shed.compiler.parsing.Rules.firstOf;
 import static org.zwobble.shed.compiler.parsing.Rules.guard;
 import static org.zwobble.shed.compiler.parsing.Rules.keyword;
@@ -77,13 +77,13 @@ public class Statements {
         statementRules[rules.length + 1] = symbol(";");
         return new Rule<RuleValues>() {
             @Override
-            public Result<RuleValues> parse(TokenIterator tokens) {
-                Result<RuleValues> result = sequence(OnError.FINISH, statementRules).parse(tokens);
+            public ParseResult<RuleValues> parse(TokenIterator tokens) {
+                ParseResult<RuleValues> result = sequence(OnError.FINISH, statementRules).parse(tokens);
                 if (!result.isFatal()) {
                     return result;
                 }
                 tokens.seekToEndOfStatement();
-                return Result.errorRecovered(result.getErrors(), subResults(result));
+                return ParseResult.errorRecovered(result.getErrors(), subResults(result));
             }
         };
     }

@@ -15,14 +15,14 @@ import org.zwobble.shed.compiler.tokeniser.TokenType;
 
 import com.google.common.collect.ImmutableMap;
 
-import static org.zwobble.shed.compiler.parsing.Result.subResults;
+import static org.zwobble.shed.compiler.parsing.ParseResult.subResults;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.Option.some;
-import static org.zwobble.shed.compiler.parsing.Result.errorRecoveredWithValue;
-import static org.zwobble.shed.compiler.parsing.Result.fatal;
-import static org.zwobble.shed.compiler.parsing.Result.success;
+import static org.zwobble.shed.compiler.parsing.ParseResult.errorRecoveredWithValue;
+import static org.zwobble.shed.compiler.parsing.ParseResult.fatal;
+import static org.zwobble.shed.compiler.parsing.ParseResult.success;
 import static org.zwobble.shed.compiler.tokeniser.TokenType.WHITESPACE;
 
 public class Rules {
@@ -30,16 +30,16 @@ public class Rules {
         return new Rule<T>() {
             @SuppressWarnings("unchecked")
             @Override
-            public Result<T> parse(TokenIterator tokens) {
+            public ParseResult<T> parse(TokenIterator tokens) {
                 SourcePosition start = tokens.currentPosition();
-                Result<U> result = originalRule.parse(tokens);
+                ParseResult<U> result = originalRule.parse(tokens);
                 if (!result.hasValue()) {
                     return result.changeValue(null);
                 }
                 T actionResult = action.apply(result.get());
                 SourcePosition end = tokens.currentPosition();
                 if (actionResult instanceof SyntaxNode) {
-                    return (Result<T>)result.changeValue((SyntaxNode)actionResult, new SourceRange(start, end));
+                    return (ParseResult<T>)result.changeValue((SyntaxNode)actionResult, new SourceRange(start, end));
                 } else {
                     return result.changeValue(actionResult);
                 }
@@ -50,19 +50,19 @@ public class Rules {
     public static Rule<RuleValues> sequence(final OnError recovery, final Rule<?>... rules) {
         return new Rule<RuleValues>() {
             @Override
-            public Result<RuleValues> parse(TokenIterator tokens) {
+            public ParseResult<RuleValues> parse(TokenIterator tokens) {
                 TokenIterator startPosition = tokens.currentState();
                 RuleValues values = new RuleValues();
                 List<CompilerError> errors = new ArrayList<CompilerError>();
-                List<Result<?>> subResults = new ArrayList<Result<?>>();
+                List<ParseResult<?>> subResults = new ArrayList<ParseResult<?>>();
                 
                 for (Rule<?> rule : rules) {
-                    Result<?> result = rule.parse(tokens);
+                    ParseResult<?> result = rule.parse(tokens);
                     subResults.add(result);
                     if (result.anyErrors()) {
                         if (rule instanceof GuardRule && result.noMatch() && errors.isEmpty()) {
                             tokens.reset(startPosition);
-                            return result.toType(null, Result.Type.NO_MATCH);                            
+                            return result.toType(null, ParseResult.Type.NO_MATCH);                            
                         }
 
                         errors.addAll(result.getErrors());
@@ -93,12 +93,12 @@ public class Rules {
     private static <T> Rule<List<T>> repeatedWithSeparator(final Rule<T> rule, final Separator<?> separator, final boolean allowEmpty) {
         return new Rule<List<T>>() {
             @Override
-            public Result<List<T>> parse(TokenIterator tokens) {
+            public ParseResult<List<T>> parse(TokenIterator tokens) {
                 List<T> values = new ArrayList<T>();
-                List<Result<?>> subResults = new ArrayList<Result<?>>();
+                List<ParseResult<?>> subResults = new ArrayList<ParseResult<?>>();
                 List<CompilerError> errors = new ArrayList<CompilerError>();
                 
-                Result<T> firstResult = rule.parse(tokens);
+                ParseResult<T> firstResult = rule.parse(tokens);
                 subResults.add(firstResult);
                 if (firstResult.anyErrors()) {
                     if (allowEmpty && firstResult.noMatch()) {
@@ -114,7 +114,7 @@ public class Rules {
                 }
                 while (true) {
                     TokenIterator positionBeforeSeparator = tokens.currentState();
-                    Result<?> separatorResult = separator.parse(tokens);
+                    ParseResult<?> separatorResult = separator.parse(tokens);
                     subResults.add(separatorResult);
                     if (separatorResult.anyErrors()) {
                         if (separatorResult.noMatch()) {
@@ -127,7 +127,7 @@ public class Rules {
                         return firstResult.changeValue(values);
                     }
                     
-                    Result<T> ruleResult = rule.parse(tokens);
+                    ParseResult<T> ruleResult = rule.parse(tokens);
                     subResults.add(ruleResult);
                     if (ruleResult.anyErrors()) {
                         if (separator.getType() == Type.SOFT && ruleResult.noMatch()) {
@@ -154,11 +154,11 @@ public class Rules {
     public static <T> Rule<Option<T>> optional(final Rule<T> rule) {
         return new Rule<Option<T>>() {
             @Override
-            public Result<Option<T>> parse(TokenIterator tokens) {
-                Result<T> result = rule.parse(tokens);
+            public ParseResult<Option<T>> parse(TokenIterator tokens) {
+                ParseResult<T> result = rule.parse(tokens);
                 if (result.anyErrors()) {
                     if (result.noMatch()) {
-                        return success(Option.<T>none(), Collections.<Result<?>>emptyList());                        
+                        return success(Option.<T>none(), Collections.<ParseResult<?>>emptyList());                        
                     } else {
                         return result.changeValue(null);
                     }
@@ -196,12 +196,12 @@ public class Rules {
     public static Rule<String> tokenOfType(final TokenType type) {
         return new Rule<String>() {
             @Override
-            public Result<String> parse(TokenIterator tokens) {
+            public ParseResult<String> parse(TokenIterator tokens) {
                 TokenPosition firstToken = tokens.peek();
                 if (firstToken.getToken().getType() != type) {
-                    return error(tokens, type, Result.Type.NO_MATCH);
+                    return error(tokens, type, ParseResult.Type.NO_MATCH);
                 }
-                return success(tokens.next().getToken().getValue(), Collections.<Result<?>>emptyList());
+                return success(tokens.next().getToken().getValue(), Collections.<ParseResult<?>>emptyList());
             }
         };
     }
@@ -209,13 +209,13 @@ public class Rules {
     public static Rule<Void> token(final Token expectedToken) {
         return new Rule<Void>() {
             @Override
-            public Result<Void> parse(TokenIterator tokens) {
+            public ParseResult<Void> parse(TokenIterator tokens) {
                 TokenPosition firstToken = tokens.peek();
                 if (!firstToken.getToken().equals(expectedToken)) {
-                    return error(tokens, expectedToken, Result.Type.NO_MATCH);
+                    return error(tokens, expectedToken, ParseResult.Type.NO_MATCH);
                 }
                 tokens.next();
-                return success(null, Collections.<Result<?>>emptyList());
+                return success(null, Collections.<ParseResult<?>>emptyList());
             }
         };
     }
@@ -224,32 +224,32 @@ public class Rules {
         return new Rule<T>() {
             @SuppressWarnings("unchecked")
             @Override
-            public Result<T> parse(TokenIterator tokens) {
+            public ParseResult<T> parse(TokenIterator tokens) {
                 for (Rule<? extends T> rule : rules) {
-                    Result<? extends T> result = rule.parse(tokens);
+                    ParseResult<? extends T> result = rule.parse(tokens);
                     if (!result.noMatch()) {
-                        return (Result<T>) result;
+                        return (ParseResult<T>) result;
                     }
                 }
-                return error(tokens, name, Result.Type.NO_MATCH);
+                return error(tokens, name, ParseResult.Type.NO_MATCH);
             }
         };
     }
     
-    private static <T> Result<T> error(TokenIterator startOfError, TokenType tokenType, Result.Type type) {
+    private static <T> ParseResult<T> error(TokenIterator startOfError, TokenType tokenType, ParseResult.Type type) {
         return error(startOfError, tokenType.name().toLowerCase(), type);
     }
     
-    private static <T> Result<T> error(TokenIterator startOfError, Token token, Result.Type type) {
+    private static <T> ParseResult<T> error(TokenIterator startOfError, Token token, ParseResult.Type type) {
         return error(startOfError, token.describe(), type);
     }
     
-    private static <T> Result<T> error(TokenIterator startOfError, Object expected, Result.Type type) {
+    private static <T> ParseResult<T> error(TokenIterator startOfError, Object expected, ParseResult.Type type) {
         TokenPosition actual = startOfError.peek();
         TokenPosition endOfError = startOfError.hasNext(1) ? startOfError.peek(1) : actual;
         Token actualToken = actual.getToken();
         String message = format("Expected %s but got %s", expected, actualToken.describe());
-        return new Result<T>(
+        return new ParseResult<T>(
             null,
             asList(new CompilerError(
                 actual.getPosition(), endOfError.getPosition(), message

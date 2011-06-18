@@ -20,34 +20,34 @@ import static java.util.Arrays.asList;
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
-public class Result<T> implements HasErrors {
-    public static Iterable<Result<?>> subResults(Result<?>... results) {
+public class ParseResult<T> implements HasErrors {
+    public static Iterable<ParseResult<?>> subResults(ParseResult<?>... results) {
         return asList(results);
     }
     
-    public static <T> Result<T> success(T value, Iterable<? extends Result<?>> subResults) {
-        return new Result<T>(value, Collections.<CompilerError>emptyList(), Type.SUCCESS, resultsToNodePositions(subResults));
+    public static <T> ParseResult<T> success(T value, Iterable<? extends ParseResult<?>> subResults) {
+        return new ParseResult<T>(value, Collections.<CompilerError>emptyList(), Type.SUCCESS, resultsToNodePositions(subResults));
     }
     
-    public static <T> Result<T> fatal(List<CompilerError> errors, Iterable<? extends Result<?>> subResults) {
-        return new Result<T>(null, errors, Type.FATAL, resultsToNodePositions(subResults));
+    public static <T> ParseResult<T> fatal(List<CompilerError> errors, Iterable<? extends ParseResult<?>> subResults) {
+        return new ParseResult<T>(null, errors, Type.FATAL, resultsToNodePositions(subResults));
     }
     
-    public static <T> Result<T> errorRecoveredWithValue(T value, List<CompilerError> errors, Iterable<? extends Result<?>> subResults) {
-        return new Result<T>(value, errors, Type.ERROR_RECOVERED_WITH_VALUE, resultsToNodePositions(subResults));
+    public static <T> ParseResult<T> errorRecoveredWithValue(T value, List<CompilerError> errors, Iterable<? extends ParseResult<?>> subResults) {
+        return new ParseResult<T>(value, errors, Type.ERROR_RECOVERED_WITH_VALUE, resultsToNodePositions(subResults));
     }
     
-    public static <T> Result<T> errorRecovered(List<CompilerError> errors, Iterable<? extends Result<?>> subResults) {
-        return new Result<T>(null, errors, Type.ERROR_RECOVERED, resultsToNodePositions(subResults));
+    public static <T> ParseResult<T> errorRecovered(List<CompilerError> errors, Iterable<? extends ParseResult<?>> subResults) {
+        return new ParseResult<T>(null, errors, Type.ERROR_RECOVERED, resultsToNodePositions(subResults));
     }
     
-    public static <T> Result<T> result(T value, List<CompilerError> errors, Type type, Iterable<? extends Result<?>> subResults) {
-        return new Result<T>(value, errors, type, resultsToNodePositions(subResults));
+    public static <T> ParseResult<T> result(T value, List<CompilerError> errors, Type type, Iterable<? extends ParseResult<?>> subResults) {
+        return new ParseResult<T>(value, errors, type, resultsToNodePositions(subResults));
     }
     
-    private static Map<SyntaxNodeIdentifier, SourceRange> resultsToNodePositions(Iterable<? extends Result<?>> subResults) {
+    private static Map<SyntaxNodeIdentifier, SourceRange> resultsToNodePositions(Iterable<? extends ParseResult<?>> subResults) {
         ImmutableMap.Builder<SyntaxNodeIdentifier, SourceRange> nodePositions = ImmutableMap.builder();
-        for (Result<?> subResult : subResults) {
+        for (ParseResult<?> subResult : subResults) {
             nodePositions.putAll(subResult.nodePositions);            
         }
         return nodePositions.build();
@@ -62,11 +62,11 @@ public class Result<T> implements HasErrors {
         return !errors.isEmpty();
     }
     
-    public <U> Result<U> changeValue(U value) {
-        return new Result<U>(value, errors, type, nodePositions);
+    public <U> ParseResult<U> changeValue(U value) {
+        return new ParseResult<U>(value, errors, type, nodePositions);
     }
     
-    public <U extends SyntaxNode> Result<U> changeValue(U value, SourceRange position) {
+    public <U extends SyntaxNode> ParseResult<U> changeValue(U value, SourceRange position) {
         Map<SyntaxNodeIdentifier, SourceRange> newPositions = new HashMap<SyntaxNodeIdentifier, SourceRange>();
         newPositions.putAll(nodePositions);
         SyntaxNodeIdentifier nodeIdentifier = new SyntaxNodeIdentifier(value);
@@ -78,11 +78,11 @@ public class Result<T> implements HasErrors {
             newPositions.put(nodeIdentifier, position);
         }
         
-        return new Result<U>(value, errors, type, newPositions);
+        return new ParseResult<U>(value, errors, type, newPositions);
     }
     
-    public <U> Result<U> toType(U value, Type type) {
-        return new Result<U>(value, errors, type, nodePositions);
+    public <U> ParseResult<U> toType(U value, Type type) {
+        return new ParseResult<U>(value, errors, type, nodePositions);
     }
     
     public T get() {

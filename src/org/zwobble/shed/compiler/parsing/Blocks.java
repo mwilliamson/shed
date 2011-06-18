@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 
-import static org.zwobble.shed.compiler.parsing.Result.errorRecovered;
-import static org.zwobble.shed.compiler.parsing.Result.subResults;
+import static org.zwobble.shed.compiler.parsing.ParseResult.errorRecovered;
+import static org.zwobble.shed.compiler.parsing.ParseResult.subResults;
 import static org.zwobble.shed.compiler.parsing.Rules.guard;
 import static org.zwobble.shed.compiler.parsing.Rules.optional;
 import static org.zwobble.shed.compiler.parsing.Rules.sequence;
@@ -23,7 +23,7 @@ public class Blocks {
         return then(
             new Rule<RuleValues>() {
                 @Override
-                public Result<RuleValues> parse(TokenIterator tokens) {
+                public ParseResult<RuleValues> parse(TokenIterator tokens) {
                     Rule<RuleValues> sequence = sequence(OnError.FINISH,
                         guard(symbol("{")),
                         optional(whitespace()),
@@ -31,7 +31,7 @@ public class Blocks {
                         optional(whitespace()),
                         symbol("}")
                     );
-                    Result<RuleValues> result = sequence.parse(tokens);
+                    ParseResult<RuleValues> result = sequence.parse(tokens);
                     if (!result.isFatal()) {
                         return result;
                     }

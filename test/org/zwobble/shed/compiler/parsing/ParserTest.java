@@ -12,7 +12,7 @@ public class ParserTest {
     
     @Test public void
     parsingReturnsMapFromNodesToSourceRanges() {
-        Result<SourceNode> parseResult = parser.parse(tokens("package shed.example;\npublic answer;\nval answer = 1;"));
+        ParseResult<SourceNode> parseResult = parser.parse(tokens("package shed.example;\npublic answer;\nval answer = 1;"));
         
         SourceNode sourceNode = parseResult.get();
         assertThat(

@@ -11,15 +11,15 @@ public class ParserTesting {
         return new TokenIterator(new Tokeniser().tokenise(input));
     }
     
-    public static Matcher<Result<?>> isSuccessWithNode(final SyntaxNode node) {
-        return new TypeSafeDiagnosingMatcher<Result<?>>() {
+    public static Matcher<ParseResult<?>> isSuccessWithNode(final SyntaxNode node) {
+        return new TypeSafeDiagnosingMatcher<ParseResult<?>>() {
             @Override
             public void describeTo(Description description) {
                 description.appendText("Success with node " + node);
             }
 
             @Override
-            protected boolean matchesSafely(Result<?> item, Description mismatchDescription) {
+            protected boolean matchesSafely(ParseResult<?> item, Description mismatchDescription) {
                 boolean result = item.isSuccess() && node.equals(item.get());
                 if (!result) {
                     mismatchDescription.appendText("got " + item);

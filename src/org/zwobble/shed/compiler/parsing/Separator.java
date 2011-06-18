@@ -28,7 +28,7 @@ public class Separator<T> implements Rule<T> {
     }
 
     @Override
-    public Result<T> parse(TokenIterator tokens) {
+    public ParseResult<T> parse(TokenIterator tokens) {
         return rule.parse(tokens);
     }
 }

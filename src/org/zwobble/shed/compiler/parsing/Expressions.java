@@ -30,7 +30,7 @@ public class Expressions {
     public static Rule<ExpressionNode> expression() {
         return new Rule<ExpressionNode>() {
             @Override
-            public Result<ExpressionNode> parse(TokenIterator tokens) {
+            public ParseResult<ExpressionNode> parse(TokenIterator tokens) {
                 return Rules.firstOf("expression",
                     longLambdaExpression(),
                     shortLambdaExpression(),

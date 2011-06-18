@@ -24,7 +24,7 @@ public class TypeReferences {
     public static Rule<TypeReferenceNode> typeReference() {
         return new Rule<TypeReferenceNode>() {
             @Override
-            public Result<TypeReferenceNode> parse(TokenIterator tokens) {
+            public ParseResult<TypeReferenceNode> parse(TokenIterator tokens) {
                 return firstOf("type reference",
                     typeApplication(),
                     typeIdentifier()
