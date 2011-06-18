@@ -1,21 +1,26 @@
 package org.zwobble.shed.compiler.parsing;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.Separator.Type;
+import org.zwobble.shed.compiler.parsing.nodes.SyntaxNodeIdentifier;
 import org.zwobble.shed.compiler.tokeniser.Keyword;
 import org.zwobble.shed.compiler.tokeniser.Token;
 import org.zwobble.shed.compiler.tokeniser.TokenPosition;
 import org.zwobble.shed.compiler.tokeniser.TokenType;
 
-import static org.zwobble.shed.compiler.Option.some;
-import static org.zwobble.shed.compiler.parsing.Result.success;
-import static org.zwobble.shed.compiler.tokeniser.TokenType.WHITESPACE;
+import com.google.common.collect.ImmutableMap;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static org.zwobble.shed.compiler.Option.some;
+import static org.zwobble.shed.compiler.parsing.Result.errorRecoveredWithValue;
+import static org.zwobble.shed.compiler.parsing.Result.fatal;
+import static org.zwobble.shed.compiler.parsing.Result.success;
+import static org.zwobble.shed.compiler.tokeniser.TokenType.WHITESPACE;
 
 public class Rules {
     public static <T, U> Rule<T> then(final Rule<U> originalRule, final ParseAction<U, T> action) {
@@ -39,9 +44,11 @@ public class Rules {
                 TokenIterator startPosition = tokens.currentState();
                 RuleValues values = new RuleValues();
                 List<CompilerError> errors = new ArrayList<CompilerError>();
+                List<Result<?>> subResults = new ArrayList<Result<?>>();
                 
                 for (Rule<?> rule : rules) {
                     Result<?> result = rule.parse(tokens);
+                    subResults.add(result);
                     if (result.anyErrors()) {
                         if (rule instanceof GuardRule && result.noMatch() && errors.isEmpty()) {
                             tokens.reset(startPosition);
@@ -50,15 +57,15 @@ public class Rules {
 
                         errors.addAll(result.getErrors());
                         if (!result.ruleDidFinish() || recovery == OnError.FINISH) {
-                            return new Result<RuleValues>(null, errors, Result.Type.FATAL);                                
+                            return fatal(errors, subResults);                                
                         }
                     }
                     values.add(rule, result.get());
                 }
                 if (errors.isEmpty()) {
-                    return success(values);                    
+                    return success(values, subResults);                    
                 } else {
-                    return new Result<RuleValues>(values, errors, Result.Type.ERROR_RECOVERED_WITH_VALUE);
+                    return errorRecoveredWithValue(values, errors, subResults);
                 }
                 
             }
@@ -78,11 +85,14 @@ public class Rules {
             @Override
             public Result<List<T>> parse(TokenIterator tokens) {
                 List<T> values = new ArrayList<T>();
+                List<Result<?>> subResults = new ArrayList<Result<?>>();
                 List<CompilerError> errors = new ArrayList<CompilerError>();
+                
                 Result<T> firstResult = rule.parse(tokens);
+                subResults.add(firstResult);
                 if (firstResult.anyErrors()) {
                     if (allowEmpty && firstResult.noMatch()) {
-                        return success(values);
+                        return success(values, subResults);
                     }
                     if (!firstResult.ruleDidFinish()) {
                         return firstResult.changeValue(null);
@@ -95,25 +105,28 @@ public class Rules {
                 while (true) {
                     TokenIterator positionBeforeSeparator = tokens.currentState();
                     Result<?> separatorResult = separator.parse(tokens);
+                    subResults.add(separatorResult);
                     if (separatorResult.anyErrors()) {
                         if (separatorResult.noMatch()) {
                             if (errors.isEmpty()) {
-                                return success(values);                    
+                                return success(values, subResults);                    
                             } else {
-                                return new Result<List<T>>(values, errors, Result.Type.ERROR_RECOVERED);
+                                // TODO: check that we should be returning a value
+                                return errorRecoveredWithValue(values, errors, subResults);
                             }
                         }
                         return firstResult.changeValue(values);
                     }
                     
                     Result<T> ruleResult = rule.parse(tokens);
+                    subResults.add(ruleResult);
                     if (ruleResult.anyErrors()) {
                         if (separator.getType() == Type.SOFT && ruleResult.noMatch()) {
                             tokens.reset(positionBeforeSeparator);
                             if (errors.isEmpty()) {
-                                return success(values);                    
+                                return success(values, subResults);                    
                             } else {
-                                return new Result<List<T>>(values, errors, Result.Type.ERROR_RECOVERED);
+                                return errorRecoveredWithValue(values, errors, subResults);
                             }
                         }
                         if (!firstResult.ruleDidFinish()) {
@@ -136,12 +149,12 @@ public class Rules {
                 Result<T> result = rule.parse(tokens);
                 if (result.anyErrors()) {
                     if (result.noMatch()) {
-                        return success(Option.<T>none());                        
+                        return success(Option.<T>none(), Collections.<Result<?>>emptyList());                        
                     } else {
                         return result.changeValue(null);
                     }
                 }
-                return success(some(result.get()));
+                return success(some(result.get()), asList(result));
             }
         };
     }
@@ -179,7 +192,7 @@ public class Rules {
                 if (firstToken.getToken().getType() != type) {
                     return error(tokens, type, Result.Type.NO_MATCH);
                 }
-                return success(tokens.next().getToken().getValue());
+                return success(tokens.next().getToken().getValue(), Collections.<Result<?>>emptyList());
             }
         };
     }
@@ -193,7 +206,7 @@ public class Rules {
                     return error(tokens, expectedToken, Result.Type.NO_MATCH);
                 }
                 tokens.next();
-                return success(null);
+                return success(null, Collections.<Result<?>>emptyList());
             }
         };
     }
@@ -232,7 +245,8 @@ public class Rules {
             asList(new CompilerError(
                 actual.getPosition(), endOfError.getPosition(), message
             )),
-            type
+            type,
+            ImmutableMap.<SyntaxNodeIdentifier, SourceRange>of()
         );
     }
 }

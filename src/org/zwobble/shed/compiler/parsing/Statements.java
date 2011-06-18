@@ -11,6 +11,8 @@ import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.tokeniser.Keyword;
 
+import static java.util.Arrays.asList;
+
 import static org.zwobble.shed.compiler.parsing.Expressions.expression;
 import static org.zwobble.shed.compiler.parsing.Rules.firstOf;
 import static org.zwobble.shed.compiler.parsing.Rules.guard;
@@ -82,7 +84,7 @@ public class Statements {
                     return result;
                 }
                 tokens.seekToEndOfStatement();
-                return new Result<RuleValues>(null, result.getErrors(), Result.Type.ERROR_RECOVERED);
+                return Result.errorRecovered(result.getErrors(), asList(result));
             }
         };
     }

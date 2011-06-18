@@ -3,13 +3,12 @@ package org.zwobble.shed.compiler;
 import java.util.List;
 
 import org.zwobble.shed.compiler.parsing.CompilerError;
-import org.zwobble.shed.compiler.parsing.Result;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 public class CompilerTesting {
-    public static List<String> errorStrings(Result<?> result) {
+    public static List<String> errorStrings(HasErrors result) {
         return Lists.transform(result.getErrors(), toErrorString());
     }
     

@@ -12,11 +12,17 @@ public class ParserTest {
     
     @Test public void
     parsingReturnsMapFromNodesToSourceRanges() {
-        ParseResult<SourceNode> parseResult = parser.parse(tokens("package shed.example;\npublic answer;\nval answer = 1;"));
+        Result<SourceNode> parseResult = parser.parse(tokens("package shed.example;\npublic answer;\nval answer = 1;"));
         
+        SourceNode sourceNode = parseResult.get();
         assertThat(
-            parseResult.positionOf(parseResult.getNode()),
+            parseResult.positionOf(sourceNode),
             is(new SourceRange(new SourcePosition(1, 1), new SourcePosition(3, 16)))
         );
+        
+//        assertThat(
+//            parseResult.positionOf(sourceNode.getPackageDeclaration()),
+//            is(new SourceRange(new SourcePosition(1, 1), new SourcePosition(1, 21)))
+//        );
     }
 }

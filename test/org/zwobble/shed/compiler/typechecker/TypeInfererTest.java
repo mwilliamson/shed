@@ -3,7 +3,6 @@ package org.zwobble.shed.compiler.typechecker;
 import java.util.Collections;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.parsing.Result;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
@@ -22,8 +21,8 @@ import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
-import static org.zwobble.shed.compiler.parsing.Result.success;
 import static org.zwobble.shed.compiler.typechecker.TypeInferer.inferType;
+import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 public class TypeInfererTest {
     @Test public void
@@ -52,8 +51,8 @@ public class TypeInfererTest {
     @Test public void
     cannotReferToVariableNotInContext() {
         StaticContext context = new StaticContext();
-        Result<Type> result = inferType(new VariableIdentifierNode("value"), context);
-        assertThat(result.isFatal(), is(true));
+        TypeResult result = inferType(new VariableIdentifierNode("value"), context);
+        assertThat(result.isSuccess(), is(false));
         assertThat(errorStrings(result), is(asList("No variable \"value\" in scope")));
     }
     
@@ -65,9 +64,9 @@ public class TypeInfererTest {
             none(TypeReferenceNode.class),
             new NumberLiteralNode("42")
         );
-        Result<Type> result = inferType(functionExpression, context);
+        TypeResult result = inferType(functionExpression, context);
         assertThat(result, is(success(
-            (Type) new TypeApplication(CoreTypes.functionType(0), asList(CoreTypes.NUMBER))
+            new TypeApplication(CoreTypes.functionType(0), asList(CoreTypes.NUMBER))
         )));
     }
     
@@ -79,7 +78,7 @@ public class TypeInfererTest {
             none(TypeReferenceNode.class),
             new VariableIdentifierNode("blah")
         );
-        Result<Type> result = inferType(functionExpression, context);
+        TypeResult result = inferType(functionExpression, context);
         assertThat(errorStrings(result), is(asList("No variable \"blah\" in scope")));
     }
     
@@ -92,7 +91,7 @@ public class TypeInfererTest {
             some((TypeReferenceNode)new TypeIdentifierNode("String")),
             new NumberLiteralNode("42")
         );
-        Result<Type> result = inferType(functionExpression, context);
+        TypeResult result = inferType(functionExpression, context);
         assertThat(errorStrings(result), is(asList("Type mismatch: expected expression of type \"String\" but was of type \"Number\"")));
     }
     
@@ -104,7 +103,7 @@ public class TypeInfererTest {
             some((TypeReferenceNode)new TypeIdentifierNode("String")),
             new NumberLiteralNode("42")
         );
-        Result<Type> result = inferType(functionExpression, context);
+        TypeResult result = inferType(functionExpression, context);
         assertThat(errorStrings(result), is(asList("No variable \"String\" in scope")));
     }
     
@@ -121,7 +120,7 @@ public class TypeInfererTest {
             none(TypeReferenceNode.class),
             new BooleanLiteralNode(true)
         );
-        Result<Type> result = inferType(functionExpression, context);
+        TypeResult result = inferType(functionExpression, context);
         assertThat(result, is(success(
             (Type) new TypeApplication(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN))
         )));

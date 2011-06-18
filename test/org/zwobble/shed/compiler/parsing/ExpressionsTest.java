@@ -16,6 +16,8 @@ import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
+import static org.zwobble.shed.compiler.parsing.ParserTesting.isSuccessWithNode;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -26,14 +28,18 @@ import static org.zwobble.shed.compiler.parsing.ParserTesting.tokens;
 public class ExpressionsTest {
     @Test public void
     numberLiteralIsExpression() {
-        assertThat(Expressions.expression().parse(tokens("42")),
-            is((Object)Result.success(new NumberLiteralNode("42"))));
+        assertThat(
+            Expressions.expression().parse(tokens("42")),
+            isSuccessWithNode(new NumberLiteralNode("42"))
+        );
     }
     
     @Test public void
     stringLiteralIsExpression() {
-        assertThat(Expressions.expression().parse(tokens("\"Nom nom nom\"")),
-            is((Object)Result.success(new StringLiteralNode("Nom nom nom"))));
+        assertThat(
+            Expressions.expression().parse(tokens("\"Nom nom nom\"")),
+            isSuccessWithNode(new StringLiteralNode("Nom nom nom"))
+        );
     }
     
     @Test public void
@@ -48,11 +54,11 @@ public class ExpressionsTest {
     canParseShortLambdaExpressionWithNoArguments() {
         assertThat(
             Expressions.expression().parse(tokens("() => 2")),
-            is((Object)Result.success(new ShortLambdaExpressionNode(
+            isSuccessWithNode(new ShortLambdaExpressionNode(
                 Collections.<FormalArgumentNode>emptyList(),
                 none(TypeReferenceNode.class),
                 new NumberLiteralNode("2")
-            )))
+            ))
         );
     }
     
@@ -60,11 +66,11 @@ public class ExpressionsTest {
     canParseShortLambdaExpressionWithOneArgument() {
         assertThat(
             Expressions.expression().parse(tokens("(num : Integer) => 2")),
-            is((Object)Result.success(new ShortLambdaExpressionNode(
+            isSuccessWithNode(new ShortLambdaExpressionNode(
                 asList(new FormalArgumentNode("num", new TypeIdentifierNode("Integer"))),
                 none(TypeReferenceNode.class),
                 new NumberLiteralNode("2")
-            )))
+            ))
         );
     }
     
@@ -72,14 +78,14 @@ public class ExpressionsTest {
     canParseShortLambdaExpressionWithMultipleArguments() {
         assertThat(
             Expressions.expression().parse(tokens("(num : Integer, name: String) => 2")),
-            is((Object)Result.success(new ShortLambdaExpressionNode(
+            isSuccessWithNode(new ShortLambdaExpressionNode(
                 asList(
                     new FormalArgumentNode("num", new TypeIdentifierNode("Integer")),
                     new FormalArgumentNode("name", new TypeIdentifierNode("String"))
                 ),
                 none(TypeReferenceNode.class),
                 new NumberLiteralNode("2")
-            )))
+            ))
         );
     }
     
@@ -87,14 +93,14 @@ public class ExpressionsTest {
     canParseLongLambdaExpressionWithNoArguments() {
         assertThat(
             Expressions.expression().parse(tokens("() : String => { val x = 2; return 3; }")),
-            is((Object)Result.success(new LongLambdaExpressionNode(
+            isSuccessWithNode(new LongLambdaExpressionNode(
                 Collections.<FormalArgumentNode>emptyList(),
                 new TypeIdentifierNode("String"),
                 asList(
                     new ImmutableVariableNode("x", Option.<TypeReferenceNode>none(), new NumberLiteralNode("2")),
                     new ReturnNode(new NumberLiteralNode("3"))
                 )
-            )))
+            ))
         );
     }
     
@@ -102,7 +108,7 @@ public class ExpressionsTest {
     canEncloseExpressionInParens() {
         assertThat(
             Expressions.expression().parse(tokens("(3)")),
-            is((Object)Result.success(new NumberLiteralNode("3")))
+            isSuccessWithNode(new NumberLiteralNode("3"))
         );
     }
     
@@ -110,7 +116,7 @@ public class ExpressionsTest {
     canReferenceVariableByIdentifier() {
         assertThat(
             Expressions.expression().parse(tokens("value")),
-            is((Object)(Result.success(new VariableIdentifierNode("value"))))
+            isSuccessWithNode(new VariableIdentifierNode("value"))
         );
     }
     
@@ -118,7 +124,7 @@ public class ExpressionsTest {
     canParseTrueLiteral() {
         assertThat(
             Expressions.expression().parse(tokens("true")),
-            is((Object)(Result.success(new BooleanLiteralNode(true))))
+            isSuccessWithNode(new BooleanLiteralNode(true))
         );
     }
     
@@ -126,7 +132,7 @@ public class ExpressionsTest {
     canParseFalseLiteral() {
         assertThat(
             Expressions.expression().parse(tokens("false")),
-            is((Object)(Result.success(new BooleanLiteralNode(false))))
+            isSuccessWithNode(new BooleanLiteralNode(false))
         );
     }
 }

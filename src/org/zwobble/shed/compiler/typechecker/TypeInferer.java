@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.CompilerError;
-import org.zwobble.shed.compiler.parsing.Result;
 import org.zwobble.shed.compiler.parsing.SourcePosition;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
@@ -20,13 +19,13 @@ import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
 
 import static java.util.Arrays.asList;
-import static org.zwobble.shed.compiler.parsing.Result.fatal;
-import static org.zwobble.shed.compiler.parsing.Result.success;
+import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
+import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 import static org.zwobble.shed.compiler.types.TypeLookup.lookupTypeReference;
 import static org.zwobble.shed.compiler.types.VariableLookup.lookupVariableReference;
 
 public class TypeInferer {
-    public static Result<Type> inferType(ExpressionNode expression, StaticContext context) {
+    public static TypeResult inferType(ExpressionNode expression, StaticContext context) {
         if (expression instanceof BooleanLiteralNode) {
             return success(CoreTypes.BOOLEAN);            
         }
@@ -45,29 +44,29 @@ public class TypeInferer {
         throw new RuntimeException("Cannot infer type of expression: " + expression);
     }
 
-    private static Result<Type> inferType(ShortLambdaExpressionNode lambdaExpression, StaticContext context) {
+    private static TypeResult inferType(ShortLambdaExpressionNode lambdaExpression, StaticContext context) {
         List<Type> typeParameters = new ArrayList<Type>();
         for (FormalArgumentNode argument : lambdaExpression.getArguments()) {
-            Result<Type> argumentType = lookupTypeReference(argument.getType(), context);
-            if (argumentType.anyErrors()) {
+            TypeResult argumentType = lookupTypeReference(argument.getType(), context);
+            if (!argumentType.isSuccess()) {
                 throw new RuntimeException(argumentType.toString());
             }
             typeParameters.add(argumentType.get());
         }
         
         // TODO: add arguments to context
-        Result<Type> expressionTypeResult = inferType(lambdaExpression.getBody(), context);
-        if (expressionTypeResult.anyErrors()) {
-            return expressionTypeResult.changeValue(null);
+        TypeResult expressionTypeResult = inferType(lambdaExpression.getBody(), context);
+        if (!expressionTypeResult.isSuccess()) {
+            return expressionTypeResult;
         }
         Option<TypeReferenceNode> returnTypeReference = lambdaExpression.getReturnType();
         if (returnTypeReference.hasValue()) {
-            Result<Type> returnType = lookupTypeReference(returnTypeReference.get(), context);
-            if (returnType.anyErrors()) {
+            TypeResult returnType = lookupTypeReference(returnTypeReference.get(), context);
+            if (!returnType.isSuccess()) {
                 return returnType;
             }
             if (!expressionTypeResult.get().equals(returnType.get())) {
-                return fatal(asList(new CompilerError(
+                return failure(asList(new CompilerError(
                     new SourcePosition(-1, -1),
                     new SourcePosition(-1, -1),
                     "Type mismatch: expected expression of type \"" + returnType.get().shortName() +

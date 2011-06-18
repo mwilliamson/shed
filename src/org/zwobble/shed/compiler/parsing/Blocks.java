@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 
+import static java.util.Arrays.asList;
+import static org.zwobble.shed.compiler.parsing.Result.errorRecovered;
 import static org.zwobble.shed.compiler.parsing.Rules.guard;
 import static org.zwobble.shed.compiler.parsing.Rules.optional;
 import static org.zwobble.shed.compiler.parsing.Rules.sequence;
@@ -34,7 +36,7 @@ public class Blocks {
                         return result;
                     }
                     tokens.seekToEndOfBlock();
-                    return new Result<RuleValues>(null, result.getErrors(), Result.Type.ERROR_RECOVERED);
+                    return errorRecovered(result.getErrors(), asList(result));
                 }
             },
             
