@@ -4,7 +4,6 @@ import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
 
-import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNodeIdentifier;
 
@@ -17,7 +16,7 @@ public class ParseResult<T extends SyntaxNode> {
         return node;
     }
     
-    public SourceRange positionOf(SourceNode node) {
+    public SourceRange positionOf(SyntaxNode node) {
         return nodePositions.get(new SyntaxNodeIdentifier(node));
     }
 }
