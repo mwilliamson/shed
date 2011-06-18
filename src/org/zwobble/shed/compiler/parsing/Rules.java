@@ -40,7 +40,7 @@ public class Rules {
         return new Rule<RuleValues>() {
             @Override
             public Result<RuleValues> parse(TokenIterator tokens) {
-                TokenIterator startPosition = tokens.currentPosition();
+                TokenIterator startPosition = tokens.currentState();
                 RuleValues values = new RuleValues();
                 List<CompilerError> errors = new ArrayList<CompilerError>();
                 
@@ -48,7 +48,7 @@ public class Rules {
                     Result<?> result = rule.parse(tokens);
                     if (result.anyErrors()) {
                         if (rule instanceof GuardRule && result.noMatch() && errors.isEmpty()) {
-                            tokens.resetPosition(startPosition);
+                            tokens.reset(startPosition);
                             return result.toType(null, Result.Type.NO_MATCH);                            
                         }
 
@@ -97,7 +97,7 @@ public class Rules {
                     values.add(firstResult.get());                    
                 }
                 while (true) {
-                    TokenIterator positionBeforeSeparator = tokens.currentPosition();
+                    TokenIterator positionBeforeSeparator = tokens.currentState();
                     Result<?> separatorResult = separator.parse(tokens);
                     if (separatorResult.anyErrors()) {
                         if (separatorResult.noMatch()) {
@@ -113,7 +113,7 @@ public class Rules {
                     Result<T> ruleResult = rule.parse(tokens);
                     if (ruleResult.anyErrors()) {
                         if (separator.getType() == Type.SOFT && ruleResult.noMatch()) {
-                            tokens.resetPosition(positionBeforeSeparator);
+                            tokens.reset(positionBeforeSeparator);
                             if (errors.isEmpty()) {
                                 return success(values);                    
                             } else {

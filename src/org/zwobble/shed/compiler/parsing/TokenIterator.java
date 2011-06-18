@@ -75,11 +75,18 @@ public class TokenIterator {
         return nextTokenPosition;
     }
 
-    public TokenIterator currentPosition() {
+    public SourcePosition currentPosition() {
+        if (!hasNext()) {
+            return tokens.get(tokens.size() - 1).getPosition();
+        }
+        return peek().getPosition();
+    }
+    
+    public TokenIterator currentState() {
         return new TokenIterator(tokens, new ArrayList<ScopeType>(scopes), nextIndex);
     }
     
-    public void resetPosition(TokenIterator position) {
+    public void reset(TokenIterator position) {
         nextIndex = position.nextIndex;
         scopes.clear();
         scopes.addAll(position.scopes);
