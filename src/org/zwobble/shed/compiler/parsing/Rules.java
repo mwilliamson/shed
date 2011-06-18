@@ -14,6 +14,8 @@ import org.zwobble.shed.compiler.tokeniser.TokenType;
 
 import com.google.common.collect.ImmutableMap;
 
+import static org.zwobble.shed.compiler.parsing.Result.subResults;
+
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.Option.some;
@@ -154,7 +156,7 @@ public class Rules {
                         return result.changeValue(null);
                     }
                 }
-                return success(some(result.get()), asList(result));
+                return success(some(result.get()), subResults(result));
             }
         };
     }

@@ -14,13 +14,15 @@ import org.zwobble.shed.compiler.parsing.nodes.SyntaxNodeIdentifier;
 
 import com.google.common.collect.ImmutableMap;
 
+import static java.util.Arrays.asList;
+
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
 public class Result<T> implements HasErrors {
-//    public static <T> Result<T> success(T value, Result<?>... subResults) {
-//        return success(value, asList(subResults));
-//    }
+    public static Iterable<Result<?>> subResults(Result<?>... results) {
+        return asList(results);
+    }
     
     public static <T> Result<T> success(T value, Iterable<? extends Result<?>> subResults) {
         return new Result<T>(value, Collections.<CompilerError>emptyList(), Type.SUCCESS, resultsToNodePositions(subResults));
