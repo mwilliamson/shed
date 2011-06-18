@@ -10,6 +10,8 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.PeekingIterator;
 
+import static org.zwobble.shed.compiler.tokeniser.Token.token;
+
 import static com.google.common.base.Predicates.not;
 import static com.google.common.base.Predicates.or;
 import static com.google.common.collect.Iterators.peekingIterator;
@@ -53,25 +55,28 @@ public class Tokeniser {
         Character firstCharacter = characters.peek();
         
         if (isWhitespace().apply(firstCharacter)) {
-            return new Token(TokenType.WHITESPACE, takeWhile(characters, isWhitespace()));
+            return token(TokenType.WHITESPACE, takeWhile(characters, isWhitespace()));
         } else if (symbols.contains(firstCharacter.toString())) {
             characters.next();
             if (characters.hasNext() && symbols.contains(firstCharacter.toString() + characters.peek().toString())) {
-                return new Token(TokenType.SYMBOL, firstCharacter.toString() + characters.next().toString());
+                return token(TokenType.SYMBOL, firstCharacter.toString() + characters.next().toString());
             }
-            return new Token(TokenType.SYMBOL, firstCharacter.toString());
+            return token(TokenType.SYMBOL, firstCharacter.toString());
         } else if (isDigit().apply(firstCharacter)) {
-            return new Token(TokenType.NUMBER, takeWhile(characters, isDigit()));
+            return token(TokenType.NUMBER, takeWhile(characters, isDigit()));
         } else if (previousTokenType == TokenType.NUMBER) {
-            return new Token(TokenType.ERROR, takeWhile(characters, isIdentifierCharacter()));
+            return token(TokenType.ERROR, takeWhile(characters, isIdentifierCharacter()));
         } else if (firstCharacter == stringDelimiter) {
             TokenType type = TokenType.STRING;
-            characters.next();
+            StringBuilder original = new StringBuilder();
+            original.append(characters.next());
             StringBuilder value = new StringBuilder();
             while (characters.hasNext() && characters.peek() != newLine && characters.peek() != stringDelimiter) {
                 char next = characters.next();
+                original.append(next);
                 if (next == '\\') {
                     char escapeCharacter = characters.next();
+                    original.append(escapeCharacter);
                     if (escapeCharacters.containsKey(escapeCharacter)) {
                         value.append(escapeCharacters.get(escapeCharacter));
                     } else {
@@ -82,16 +87,16 @@ public class Tokeniser {
                 }
             }
             if (!characters.hasNext() || characters.peek() == newLine) {
-                return new Token(TokenType.UNTERMINATED_STRING, value.toString());
+                return new Token(TokenType.UNTERMINATED_STRING, value.toString(), original.toString());
             }
-            characters.next();
-            return new Token(type, value.toString());
+            original.append(characters.next());
+            return new Token(type, value.toString(), original.toString());
         } else {
             String value = takeWhile(characters, isIdentifierCharacter());
             if (isKeyword(value)) {
-                return new Token(TokenType.KEYWORD, value);
+                return token(TokenType.KEYWORD, value);
             } else {
-                return new Token(TokenType.IDENTIFIER, value);
+                return token(TokenType.IDENTIFIER, value);
             }
         }
     }

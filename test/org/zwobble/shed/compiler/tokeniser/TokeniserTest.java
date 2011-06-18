@@ -3,13 +3,13 @@ package org.zwobble.shed.compiler.tokeniser;
 import java.util.List;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.tokeniser.Token;
-import org.zwobble.shed.compiler.tokeniser.TokenPosition;
-import org.zwobble.shed.compiler.tokeniser.TokenType;
-import org.zwobble.shed.compiler.tokeniser.Tokeniser;
 
 import com.google.common.base.Function;
 
+import static com.google.common.collect.Lists.transform;
+import static java.util.Arrays.asList;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 import static org.zwobble.shed.compiler.tokeniser.Keyword.PACKAGE;
 import static org.zwobble.shed.compiler.tokeniser.Token.error;
 import static org.zwobble.shed.compiler.tokeniser.Token.identifier;
@@ -17,16 +17,9 @@ import static org.zwobble.shed.compiler.tokeniser.Token.keyword;
 import static org.zwobble.shed.compiler.tokeniser.Token.number;
 import static org.zwobble.shed.compiler.tokeniser.Token.string;
 import static org.zwobble.shed.compiler.tokeniser.Token.symbol;
+import static org.zwobble.shed.compiler.tokeniser.Token.token;
 import static org.zwobble.shed.compiler.tokeniser.Token.unterminatedString;
 import static org.zwobble.shed.compiler.tokeniser.Token.whitespace;
-
-
-
-
-import static com.google.common.collect.Lists.transform;
-import static java.util.Arrays.asList;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 public class TokeniserTest {
     private final Tokeniser tokeniser = new Tokeniser();
@@ -38,27 +31,27 @@ public class TokeniserTest {
     
     @Test public void
     tokeniseKeyword() {
-        assertThat(tokens("package"), is(asList(new Token(TokenType.KEYWORD, "package"), Token.end())));
+        assertThat(tokens("package"), is(asList(token(TokenType.KEYWORD, "package"), Token.end())));
     }
     
     @Test public void
     tokeniseIdentifier() {
-        assertThat(tokens("bob"), is(asList(new Token(TokenType.IDENTIFIER, "bob"), Token.end())));
+        assertThat(tokens("bob"), is(asList(token(TokenType.IDENTIFIER, "bob"), Token.end())));
     }
     
     @Test public void
     tokeniseSymbol() {
-        assertThat(tokens("."), is(asList(new Token(TokenType.SYMBOL, "."), Token.end())));
+        assertThat(tokens("."), is(asList(token(TokenType.SYMBOL, "."), Token.end())));
     }
     
     @Test public void
     consecutiveSymbolsAreTreatedAsSeparateSymbols() {
-        assertThat(tokens("()"), is(asList(new Token(TokenType.SYMBOL, "("), new Token(TokenType.SYMBOL, ")"), Token.end())));
+        assertThat(tokens("()"), is(asList(token(TokenType.SYMBOL, "("), token(TokenType.SYMBOL, ")"), Token.end())));
     }
     
     @Test public void
     canParseMultiCharacterSymbols() {
-        assertThat(tokens("=>"), is(asList(new Token(TokenType.SYMBOL, "=>"), Token.end())));
+        assertThat(tokens("=>"), is(asList(token(TokenType.SYMBOL, "=>"), Token.end())));
     }
     
     @Test public void
@@ -98,27 +91,27 @@ public class TokeniserTest {
     
     @Test public void
     simpleStrings() {
-        assertThat(tokens("\"Hello!\""), is(asList(string("Hello!"), Token.end())));
+        assertThat(tokens("\"Hello!\""), is(asList(string("Hello!", "\"Hello!\""), Token.end())));
     }
     
     @Test public void
     unterminatedStringsDueToEndOfInput() {
-        assertThat(tokens("\"Hello!"), is(asList(unterminatedString("Hello!"), Token.end())));
+        assertThat(tokens("\"Hello!"), is(asList(unterminatedString("Hello!", "\"Hello!"), Token.end())));
     }
     
     @Test public void
     unterminatedStringsDueNewLine() {
-        assertThat(tokens("\"Hello!\n"), is(asList(unterminatedString("Hello!"), whitespace("\n"), Token.end())));
+        assertThat(tokens("\"Hello!\n"), is(asList(unterminatedString("Hello!", "\"Hello!"), whitespace("\n"), Token.end())));
     }
     
     @Test public void
     escapingSpecialCharactersInStrings() {
-        assertThat(tokens("\"\\\"\\b\\t\\n\\f\\r\\'\\\\\""), is(asList(string("\"\b\t\n\f\r'\\"), Token.end())));
+        assertThat(tokens("\"\\\"\\b\\t\\n\\f\\r\\'\\\\\""), is(asList(string("\"\b\t\n\f\r'\\", "\"\\\"\\b\\t\\n\\f\\r\\'\\\\\""), Token.end())));
     }
     
     @Test public void
     invalidStringEscapeCodes() {
-        assertThat(tokens("\" 53\\yz\""), is(asList(Token.stringWithInvalidEscapeCodes(" 53z"), Token.end())));
+        assertThat(tokens("\" 53\\yz\""), is(asList(Token.stringWithInvalidEscapeCodes(" 53z", "\" 53\\yz\""), Token.end())));
     }
     
     private List<Token> tokens(String input) {
