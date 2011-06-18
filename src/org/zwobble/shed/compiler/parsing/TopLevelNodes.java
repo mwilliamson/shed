@@ -30,8 +30,8 @@ import static org.zwobble.shed.compiler.tokeniser.Keyword.PACKAGE;
 import static org.zwobble.shed.compiler.tokeniser.TokenType.IDENTIFIER;
 
 
-public class Parser {
-    public Rule<SourceNode> source() {
+public class TopLevelNodes {
+    public static Rule<SourceNode> source() {
         final Rule<PackageDeclarationNode> packageDeclaration;
         final Rule<List<ImportNode>> imports;
         final Rule<PublicDeclarationNode> publicDeclaration;
@@ -62,7 +62,7 @@ public class Parser {
         );
     }
     
-    public Rule<PackageDeclarationNode> packageDeclaration() {
+    public static Rule<PackageDeclarationNode> packageDeclaration() {
         final Rule<List<String>> names;
         return then(
             aStatement(
@@ -79,7 +79,7 @@ public class Parser {
         );
     }
 
-    public Rule<ImportNode> importNode() {
+    public static Rule<ImportNode> importNode() {
         final Rule<List<String>> names;
         return then(
             aStatement(
@@ -96,7 +96,7 @@ public class Parser {
         );
     }
     
-    public Rule<PublicDeclarationNode> publicDeclaration() {
+    public static Rule<PublicDeclarationNode> publicDeclaration() {
         Rule<RuleValues> comma = sequence(OnError.FINISH, optional(whitespace()), symbol(","), optional(whitespace()));
         final Rule<List<String>> identifiers = oneOrMoreWithSeparator(tokenOfType(IDENTIFIER), hardSeparator(comma));
         return then( 
@@ -114,7 +114,7 @@ public class Parser {
         );
     }
     
-    private Rule<List<String>> dotSeparatedIdentifiers() {
+    private static Rule<List<String>> dotSeparatedIdentifiers() {
         return oneOrMoreWithSeparator(tokenOfType(IDENTIFIER), hardSeparator(symbol(".")));
     }
     

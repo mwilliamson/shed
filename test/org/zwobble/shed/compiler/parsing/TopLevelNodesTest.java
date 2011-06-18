@@ -22,26 +22,24 @@ import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.parsing.ParserTesting.isSuccessWithNode;
 import static org.zwobble.shed.compiler.parsing.ParserTesting.tokens;
 
-public class ParserTest {
-    private final Parser parser = new Parser();
-    
+public class TopLevelNodesTest {
     @Test public void
     canParseEmptyString() {
-        assertThat(parser.source().parse(tokens("")).anyErrors(),
+        assertThat(TopLevelNodes.source().parse(tokens("")).anyErrors(),
                    is(true));
     }
     
     @Test public void
     packageDeclarationIsListOfIdentifiersJoinedByDots() {
         assertThat(
-            parser.packageDeclaration().parse(tokens("package shed.util.collections;")),
+            TopLevelNodes.packageDeclaration().parse(tokens("package shed.util.collections;")),
             isSuccessWithNode(new PackageDeclarationNode(asList("shed", "util", "collections")))
         );
     }
     
     @Test public void
     sourceNodeCanHaveNoImportNodes() {
-        assertThat(parser.source().parse(tokens("package shed.util.collections;\n\npublic List;\nval x = 1;")),
+        assertThat(TopLevelNodes.source().parse(tokens("package shed.util.collections;\n\npublic List;\nval x = 1;")),
             isSuccessWithNode(new SourceNode(
                 new PackageDeclarationNode(asList("shed", "util", "collections")),
                 Collections.<ImportNode>emptyList(),
@@ -55,7 +53,7 @@ public class ParserTest {
     sourceNodeHasPackageDeclarationAndImportNodesAndPublicDeclarationAndStatements() {
         String source = "package shed.util.collections;\n\nimport shed.util;\npublic List, Set;" +
                 "val x = 1; var y = 2;";
-        assertThat(parser.source().parse(tokens(source)),
+        assertThat(TopLevelNodes.source().parse(tokens(source)),
             isSuccessWithNode(new SourceNode(
                 new PackageDeclarationNode(asList("shed", "util", "collections")),
                 asList(
@@ -72,7 +70,7 @@ public class ParserTest {
     
     @Test public void
     errorsHaveLineNumbersAndCharacterNumbers() {
-        assertThat(parser.source().parse(tokens("packag shed.util.collections; import shed import shed.collections;\nblah")).getErrors(),
+        assertThat(TopLevelNodes.source().parse(tokens("packag shed.util.collections; import shed import shed.collections;\nblah")).getErrors(),
             is(asList(
                 new CompilerError(new SourcePosition(1, 1), new SourcePosition(1, 7), "Expected keyword \"package\" but got identifier \"packag\""),
                 new CompilerError(new SourcePosition(1, 43), new SourcePosition(1, 49), "Expected symbol \";\" but got keyword \"import\""),
@@ -85,7 +83,7 @@ public class ParserTest {
     
     @Test public void
     errorsAreCombinedIfPackageDeclarationAndImportsHaveErrors() {
-        assertThat(errorStrings(parser.source().parse(tokens("packag shed.util.collections; import shed import shed.collections;\nblah"))),
+        assertThat(errorStrings(TopLevelNodes.source().parse(tokens("packag shed.util.collections; import shed import shed.collections;\nblah"))),
             is(asList(
                 "Expected keyword \"package\" but got identifier \"packag\"",
                 "Expected symbol \";\" but got keyword \"import\"",
@@ -98,7 +96,7 @@ public class ParserTest {
     @Test public void
     sourceNodeAttemptsToParseUpToEnd() {
         assertThat(
-            errorStrings(parser.source().parse(tokens("package shed.util.collections; public x;\nval x = 1; a"))),
+            errorStrings(TopLevelNodes.source().parse(tokens("package shed.util.collections; public x;\nval x = 1; a"))),
             is(asList(
                 "Expected end of source but got identifier \"a\""
             ))
@@ -108,7 +106,7 @@ public class ParserTest {
     @Test public void
     errorsIfImportIsMissingSemicolon() {
         assertThat(
-            errorStrings(parser.source().parse(tokens("package shed.util.collections; import shed import shed.collections;public List;val x = 1;"))),
+            errorStrings(TopLevelNodes.source().parse(tokens("package shed.util.collections; import shed import shed.collections;public List;val x = 1;"))),
             is(asList("Expected symbol \";\" but got keyword \"import\""))
         );
     }
@@ -117,7 +115,7 @@ public class ParserTest {
     parserAttemptsToParseRestOfSourceFileIfErrorIsFound() {
         String source = "package shed.util.collections; import shed import shed.collections; import shed.stuff; val x; val y = 2;";
         assertThat(
-            parser.source().parse(tokens(source)).get(),
+            TopLevelNodes.source().parse(tokens(source)).get(),
             is(new SourceNode(
                 new PackageDeclarationNode(asList("shed", "util", "collections")),
                 asList(new ImportNode(asList("shed", "stuff"))),
@@ -129,19 +127,19 @@ public class ParserTest {
     
     @Test public void
     errorIsRaisedIfPackageDeclarationDoesNotStartWithPackageKeyword() {
-        assertThat(errorStrings(parser.packageDeclaration().parse(tokens("packag shed.util.collections;"))),
+        assertThat(errorStrings(TopLevelNodes.packageDeclaration().parse(tokens("packag shed.util.collections;"))),
                    is(asList("Expected keyword \"package\" but got identifier \"packag\"")));
     }
     
     @Test public void
     errorInPackageDeclarationIsRaisedIfWhitespaceIsEncounteredInsteadOfDot() {
-        assertThat(errorStrings(parser.packageDeclaration().parse(tokens("package shed .util.collections;"))),
+        assertThat(errorStrings(TopLevelNodes.packageDeclaration().parse(tokens("package shed .util.collections;"))),
                    is(asList("Expected symbol \";\" but got symbol \".\"")));
     }
     
     @Test public void
     errorInPackageDeclarationIsRaisedIfWhitespaceIsEncounteredInsteadOfIdentifier() {
-        assertThat(errorStrings(parser.packageDeclaration().parse(tokens("package shed. util.collections;"))),
+        assertThat(errorStrings(TopLevelNodes.packageDeclaration().parse(tokens("package shed. util.collections;"))),
             is(asList(
                 "Expected identifier but got whitespace \" \""
             ))
@@ -150,7 +148,7 @@ public class ParserTest {
     
     @Test public void
     errorsInStatementsAreReported() {
-        assertThat(errorStrings(parser.source().parse(tokens("package blah; public blah; val x = 2; val y 3;"))),
+        assertThat(errorStrings(TopLevelNodes.source().parse(tokens("package blah; public blah; val x = 2; val y 3;"))),
             is(asList(
                 "Expected symbol \"=\" but got number \"3\""
             ))
@@ -160,7 +158,7 @@ public class ParserTest {
     @Test public void
     canImportPackages() {
         assertThat(
-            parser.importNode().parse(tokens("import shed.util.collections;")),
+            TopLevelNodes.importNode().parse(tokens("import shed.util.collections;")),
             isSuccessWithNode(new ImportNode(asList("shed", "util", "collections")))
         );
     }
@@ -168,7 +166,7 @@ public class ParserTest {
     @Test public void
     canDeclarePublicVariables() {
         assertThat(
-            parser.publicDeclaration().parse(tokens("public List, Set;")),
+            TopLevelNodes.publicDeclaration().parse(tokens("public List, Set;")),
             isSuccessWithNode(new PublicDeclarationNode(asList("List", "Set")))
         );
     }
@@ -176,7 +174,7 @@ public class ParserTest {
     @Test public void
     closingBraceEndsCurrentStatement() {
         assertThat(
-            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) : Integer => { return 4 }; va y = 4;"))),
+            errorStrings(TopLevelNodes.source().parse(tokens("package blah; public x; val x = (x :Integer) : Integer => { return 4 }; va y = 4;"))),
             containsInAnyOrder(
                 "Expected symbol \";\" but got symbol \"}\"",
                 "Expected end of source but got identifier \"va\""
@@ -187,7 +185,7 @@ public class ParserTest {
     @Test public void
     matchingClosingBraceEndsCurrentStatement() {
         assertThat(
-            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) : Integer => { return 4 {} }; va y = 4;"))),
+            errorStrings(TopLevelNodes.source().parse(tokens("package blah; public x; val x = (x :Integer) : Integer => { return 4 {} }; va y = 4;"))),
             containsInAnyOrder(
                 "Expected symbol \";\" but got symbol \"{\"",
                 "Expected end of source but got identifier \"va\""
@@ -198,7 +196,7 @@ public class ParserTest {
     @Test public void
     matchingClosingBraceEndsCurrentBlock() {
         assertThat(
-            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) : Integer => { {} }; va y = 4;"))),
+            errorStrings(TopLevelNodes.source().parse(tokens("package blah; public x; val x = (x :Integer) : Integer => { {} }; va y = 4;"))),
             containsInAnyOrder(
                 "Expected symbol \"}\" but got symbol \"{\"",
                 "Expected end of source but got identifier \"va\""
@@ -209,7 +207,7 @@ public class ParserTest {
     @Test public void
     closingBracketClosesAnyEnclosedBraces() {
         assertThat(
-            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer)  : Integer => { { ({)  } }; va y = 4;"))),
+            errorStrings(TopLevelNodes.source().parse(tokens("package blah; public x; val x = (x :Integer)  : Integer => { { ({)  } }; va y = 4;"))),
             containsInAnyOrder(
                 "Expected symbol \"}\" but got symbol \"{\"",
                 "Expected end of source but got identifier \"va\""
@@ -220,7 +218,7 @@ public class ParserTest {
     @Test public void
     closingBraceClosesAnyEnclosedBrackets() {
         assertThat(
-            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) : Integer => { {(} }; va y = 4;"))),
+            errorStrings(TopLevelNodes.source().parse(tokens("package blah; public x; val x = (x :Integer) : Integer => { {(} }; va y = 4;"))),
             containsInAnyOrder(
                 "Expected symbol \"}\" but got symbol \"{\"",
                 "Expected end of source but got identifier \"va\""
@@ -231,7 +229,7 @@ public class ParserTest {
     @Test public void
     semicolonEndsStatementAndClosesAnyOpenParensInBlockScope() {
         assertThat(
-            errorStrings(parser.source().parse(tokens("package blah; public x; val x = (x :Integer) : Integer => { ({(; )}; va y = 4;"))),
+            errorStrings(TopLevelNodes.source().parse(tokens("package blah; public x; val x = (x :Integer) : Integer => { ({(; )}; va y = 4;"))),
             containsInAnyOrder(
                 "Expected symbol \"}\" but got symbol \"(\"",
                 "Expected end of source but got identifier \"va\""
