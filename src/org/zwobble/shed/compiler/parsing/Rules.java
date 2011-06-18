@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.Separator.Type;
+import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNodeIdentifier;
 import org.zwobble.shed.compiler.tokeniser.Keyword;
 import org.zwobble.shed.compiler.tokeniser.Token;
@@ -27,14 +28,21 @@ import static org.zwobble.shed.compiler.tokeniser.TokenType.WHITESPACE;
 public class Rules {
     public static <T, U> Rule<T> then(final Rule<U> originalRule, final ParseAction<U, T> action) {
         return new Rule<T>() {
+            @SuppressWarnings("unchecked")
             @Override
             public Result<T> parse(TokenIterator tokens) {
+                SourcePosition start = tokens.currentPosition();
                 Result<U> result = originalRule.parse(tokens);
                 if (!result.hasValue()) {
                     return result.changeValue(null);
                 }
                 T actionResult = action.apply(result.get());
-                return result.changeValue(actionResult);
+                SourcePosition end = tokens.currentPosition();
+                if (actionResult instanceof SyntaxNode) {
+                    return (Result<T>)result.changeValue((SyntaxNode)actionResult, new SourceRange(start, end));
+                } else {
+                    return result.changeValue(actionResult);
+                }
             }
         };
     }

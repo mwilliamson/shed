@@ -20,9 +20,9 @@ public class ParserTest {
             is(new SourceRange(new SourcePosition(1, 1), new SourcePosition(3, 16)))
         );
         
-//        assertThat(
-//            parseResult.positionOf(sourceNode.getPackageDeclaration()),
-//            is(new SourceRange(new SourcePosition(1, 1), new SourcePosition(1, 21)))
-//        );
+        assertThat(
+            parseResult.positionOf(sourceNode.getPackageDeclaration()),
+            is(new SourceRange(new SourcePosition(1, 1), new SourcePosition(1, 22)))
+        );
     }
 }

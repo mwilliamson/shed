@@ -1,6 +1,7 @@
 package org.zwobble.shed.compiler.parsing;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -63,6 +64,18 @@ public class Result<T> implements HasErrors {
     
     public <U> Result<U> changeValue(U value) {
         return new Result<U>(value, errors, type, nodePositions);
+    }
+    
+    public <U extends SyntaxNode> Result<U> changeValue(U value, SourceRange position) {
+        Map<SyntaxNodeIdentifier, SourceRange> newPositions = new HashMap<SyntaxNodeIdentifier, SourceRange>();
+        newPositions.putAll(nodePositions);
+        SyntaxNodeIdentifier nodeIdentifier = new SyntaxNodeIdentifier(value);
+        if (newPositions.containsKey(nodeIdentifier)) {
+        } else {
+            newPositions.put(nodeIdentifier, position);
+        }
+        
+        return new Result<U>(value, errors, type, newPositions);
     }
     
     public <U> Result<U> toType(U value, Type type) {

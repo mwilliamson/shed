@@ -1,5 +1,8 @@
 package org.zwobble.shed.compiler.parsing.nodes;
 
+import lombok.ToString;
+
+@ToString
 public class SyntaxNodeIdentifier {
     private final SyntaxNode node;
 
