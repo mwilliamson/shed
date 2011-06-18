@@ -19,8 +19,8 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.Option.none;
+import static org.zwobble.shed.compiler.parsing.ParserTesting.isSuccessWithNode;
 import static org.zwobble.shed.compiler.parsing.ParserTesting.tokens;
-import static org.zwobble.shed.compiler.parsing.Result.success;
 
 public class ParserTest {
     private final Parser parser = new Parser();
@@ -33,27 +33,30 @@ public class ParserTest {
     
     @Test public void
     packageDeclarationIsListOfIdentifiersJoinedByDots() {
-        assertThat(parser.packageDeclaration().parse(tokens("package shed.util.collections;")),
-                   is(success(new PackageDeclarationNode(asList("shed", "util", "collections")))));
+        assertThat(
+            parser.packageDeclaration().parse(tokens("package shed.util.collections;")),
+            isSuccessWithNode(new PackageDeclarationNode(asList("shed", "util", "collections")))
+        );
     }
     
     @Test public void
     sourceNodeCanHaveNoImportNodes() {
         assertThat(parser.source().parse(tokens("package shed.util.collections;\n\npublic List;\nval x = 1;")),
-            is(success(new SourceNode(
+            isSuccessWithNode(new SourceNode(
                 new PackageDeclarationNode(asList("shed", "util", "collections")),
                 Collections.<ImportNode>emptyList(),
                 new PublicDeclarationNode(asList("List")),
                 asList((StatementNode)new ImmutableVariableNode("x", none(TypeReferenceNode.class), new NumberLiteralNode("1")))
-            )))
+            ))
         );
     }
     
     @Test public void
     sourceNodeHasPackageDeclarationAndImportNodesAndPublicDeclarationAndStatements() {
-        assertThat(parser.source().parse(tokens("package shed.util.collections;\n\nimport shed.util;\npublic List, Set;" +
-                "val x = 1; var y = 2;")),
-            is(success(new SourceNode(
+        String source = "package shed.util.collections;\n\nimport shed.util;\npublic List, Set;" +
+                "val x = 1; var y = 2;";
+        assertThat(parser.source().parse(tokens(source)),
+            isSuccessWithNode(new SourceNode(
                 new PackageDeclarationNode(asList("shed", "util", "collections")),
                 asList(
                     new ImportNode(asList("shed", "util"))
@@ -63,7 +66,7 @@ public class ParserTest {
                     new ImmutableVariableNode("x", none(TypeReferenceNode.class), new NumberLiteralNode("1")),
                     new MutableVariableNode("y", none(TypeReferenceNode.class), new NumberLiteralNode("2"))
                 )
-            )))
+            ))
         );
     }
     
@@ -94,7 +97,8 @@ public class ParserTest {
     
     @Test public void
     sourceNodeAttemptsToParseUpToEnd() {
-        assertThat(errorStrings(parser.source().parse(tokens("package shed.util.collections; public x;\nval x = 1; a"))),
+        assertThat(
+            errorStrings(parser.source().parse(tokens("package shed.util.collections; public x;\nval x = 1; a"))),
             is(asList(
                 "Expected end of source but got identifier \"a\""
             ))
@@ -112,7 +116,8 @@ public class ParserTest {
     @Test public void
     parserAttemptsToParseRestOfSourceFileIfErrorIsFound() {
         String source = "package shed.util.collections; import shed import shed.collections; import shed.stuff; val x; val y = 2;";
-        assertThat(parser.source().parse(tokens(source)).get(),
+        assertThat(
+            parser.source().parse(tokens(source)).get(),
             is(new SourceNode(
                 new PackageDeclarationNode(asList("shed", "util", "collections")),
                 asList(new ImportNode(asList("shed", "stuff"))),
@@ -154,15 +159,17 @@ public class ParserTest {
     
     @Test public void
     canImportPackages() {
-        assertThat(parser.importNode().parse(tokens("import shed.util.collections;")),
-                   is(success(new ImportNode(asList("shed", "util", "collections")))));
+        assertThat(
+            parser.importNode().parse(tokens("import shed.util.collections;")),
+            isSuccessWithNode(new ImportNode(asList("shed", "util", "collections")))
+        );
     }
     
     @Test public void
     canDeclarePublicVariables() {
         assertThat(
             parser.publicDeclaration().parse(tokens("public List, Set;")),
-            is(success(new PublicDeclarationNode(asList("List", "Set"))))
+            isSuccessWithNode(new PublicDeclarationNode(asList("List", "Set")))
         );
     }
     
