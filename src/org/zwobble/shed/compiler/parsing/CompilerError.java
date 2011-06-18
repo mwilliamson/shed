@@ -4,7 +4,6 @@ import lombok.Data;
 
 @Data
 public class CompilerError {
-    private final SourcePosition start;
-    private final SourcePosition end;
+    private final SourceRange location;
     private final String description;
 }

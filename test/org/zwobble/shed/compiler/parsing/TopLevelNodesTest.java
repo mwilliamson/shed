@@ -13,6 +13,10 @@ import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 
+import static org.zwobble.shed.compiler.parsing.SourceRange.range;
+
+import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -72,10 +76,10 @@ public class TopLevelNodesTest {
     errorsHaveLineNumbersAndCharacterNumbers() {
         assertThat(TopLevelNodes.source().parse(tokens("packag shed.util.collections; import shed import shed.collections;\nblah")).getErrors(),
             is(asList(
-                new CompilerError(new SourcePosition(1, 1), new SourcePosition(1, 7), "Expected keyword \"package\" but got identifier \"packag\""),
-                new CompilerError(new SourcePosition(1, 43), new SourcePosition(1, 49), "Expected symbol \";\" but got keyword \"import\""),
-                new CompilerError(new SourcePosition(2, 1), new SourcePosition(2, 5), "Expected keyword \"public\" but got identifier \"blah\""),
-                new CompilerError(new SourcePosition(2, 5), new SourcePosition(2, 5), "Expected statement but got end of source")
+                new CompilerError(range(position(1, 1), position(1, 7)), "Expected keyword \"package\" but got identifier \"packag\""),
+                new CompilerError(range(position(1, 43), position(1, 49)), "Expected symbol \";\" but got keyword \"import\""),
+                new CompilerError(range(position(2, 1), position(2, 5)), "Expected keyword \"public\" but got identifier \"blah\""),
+                new CompilerError(range(position(2, 5), position(2, 5)), "Expected statement but got end of source")
                 
             ))
         );

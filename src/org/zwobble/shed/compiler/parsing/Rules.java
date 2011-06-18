@@ -252,7 +252,7 @@ public class Rules {
         return new ParseResult<T>(
             null,
             asList(new CompilerError(
-                actual.getPosition(), endOfError.getPosition(), message
+                new SourceRange(actual.getPosition(), endOfError.getPosition()), message
             )),
             type,
             ImmutableMap.<SyntaxNodeIdentifier, SourceRange>of()

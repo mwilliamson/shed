@@ -1,13 +1,14 @@
 package org.zwobble.shed.compiler.types;
 
 import org.zwobble.shed.compiler.parsing.CompilerError;
-import org.zwobble.shed.compiler.parsing.SourcePosition;
 import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 
 import static java.util.Arrays.asList;
+import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
+import static org.zwobble.shed.compiler.parsing.SourceRange.range;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 import static org.zwobble.shed.compiler.types.VariableLookup.lookupVariableReference;
@@ -25,8 +26,7 @@ public class TypeLookup {
             if (!(variableType.get() instanceof TypeApplication) || 
                     !((TypeApplication)variableType.get()).getTypeFunction().equals(CoreTypes.CLASS)) {
                 return failure(asList(new CompilerError(
-                    new SourcePosition(-1, -1),
-                    new SourcePosition(-1, -1),
+                    range(position(-1, -1), position(-1, -1)),
                     "\"" + identifier + "\" is not a type but an instance of \"" + variableType.get().shortName() + "\""
                 )));
             }

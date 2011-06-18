@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.CompilerError;
-import org.zwobble.shed.compiler.parsing.SourcePosition;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
@@ -19,6 +18,8 @@ import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
 
 import static java.util.Arrays.asList;
+import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
+import static org.zwobble.shed.compiler.parsing.SourceRange.range;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 import static org.zwobble.shed.compiler.types.TypeLookup.lookupTypeReference;
@@ -67,8 +68,7 @@ public class TypeInferer {
             }
             if (!expressionTypeResult.get().equals(returnType.get())) {
                 return failure(asList(new CompilerError(
-                    new SourcePosition(-1, -1),
-                    new SourcePosition(-1, -1),
+                    range(position(-1, -1), position(-1, -1)),
                     "Type mismatch: expected expression of type \"" + returnType.get().shortName() +
                         "\" but was of type \"" + expressionTypeResult.get().shortName() + "\""
                 )));
