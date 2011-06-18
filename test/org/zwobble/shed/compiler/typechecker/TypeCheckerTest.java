@@ -62,7 +62,7 @@ public class TypeCheckerTest {
             typeChecker.typeCheck(source, staticContext),
             is(TypeResult.<Void>failure(asList(new CompilerError(
                 range(position(4, 12), position(6, 6)),
-                "Cannot initialise variable of type \"String\" with expression of type \"Boolean\"))"
+                "Cannot initialise variable of type \"String\" with expression of type \"Boolean\""
             ))))
         );
     }
