@@ -3,6 +3,7 @@ package org.zwobble.shed.compiler.typechecker;
 import java.util.Collections;
 
 import org.junit.Test;
+import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
@@ -21,39 +22,50 @@ import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
+import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
+import static org.zwobble.shed.compiler.parsing.SourceRange.range;
 import static org.zwobble.shed.compiler.typechecker.TypeInferer.inferType;
+import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 public class TypeInfererTest {
+    private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
+    
     @Test public void
     canInferTypeOfBooleanLiteralsAsBoolean() {
-        assertThat(inferType(new BooleanLiteralNode(true), null), is(success(CoreTypes.BOOLEAN)));
-        assertThat(inferType(new BooleanLiteralNode(false), null), is(success(CoreTypes.BOOLEAN)));
+        assertThat(inferType(new BooleanLiteralNode(true), nodeLocations, null), is(success(CoreTypes.BOOLEAN)));
+        assertThat(inferType(new BooleanLiteralNode(false), nodeLocations, null), is(success(CoreTypes.BOOLEAN)));
     }
     
     @Test public void
     canInferTypeOfNumberLiteralsAsNumber() {
-        assertThat(inferType(new NumberLiteralNode("2.2"), null), is(success(CoreTypes.NUMBER)));
+        assertThat(inferType(new NumberLiteralNode("2.2"), nodeLocations, null), is(success(CoreTypes.NUMBER)));
     }
     
     @Test public void
     canInferTypeOfStringLiteralsAsString() {
-        assertThat(inferType(new StringLiteralNode("Everything's as if we never said"), null), is(success(CoreTypes.STRING)));
+        assertThat(inferType(new StringLiteralNode("Everything's as if we never said"), nodeLocations, null), is(success(CoreTypes.STRING)));
     }
     
     @Test public void
     variableReferencesHaveTypeOfVariable() {
         StaticContext context = new StaticContext();
         context.add("value", CoreTypes.STRING);
-        assertThat(inferType(new VariableIdentifierNode("value"), context), is(success(CoreTypes.STRING)));
+        assertThat(inferType(new VariableIdentifierNode("value"), nodeLocations, context), is(success(CoreTypes.STRING)));
     }
     
     @Test public void
     cannotReferToVariableNotInContext() {
         StaticContext context = new StaticContext();
-        TypeResult result = inferType(new VariableIdentifierNode("value"), context);
-        assertThat(result.isSuccess(), is(false));
-        assertThat(errorStrings(result), is(asList("No variable \"value\" in scope")));
+        VariableIdentifierNode node = new VariableIdentifierNode("value");
+        nodeLocations.put(node, range(position(3, 5), position(7, 4)));
+        TypeResult result = inferType(node, nodeLocations, context);
+        assertThat(result, is(
+            failure(asList(new CompilerError(
+                range(position(3, 5), position(7, 4)),
+                "No variable \"value\" in scope"
+            )))
+        ));
     }
     
     @Test public void
@@ -64,7 +76,7 @@ public class TypeInfererTest {
             none(TypeReferenceNode.class),
             new NumberLiteralNode("42")
         );
-        TypeResult result = inferType(functionExpression, context);
+        TypeResult result = inferType(functionExpression, nodeLocations, context);
         assertThat(result, is(success(
             new TypeApplication(CoreTypes.functionType(0), asList(CoreTypes.NUMBER))
         )));
@@ -78,7 +90,7 @@ public class TypeInfererTest {
             none(TypeReferenceNode.class),
             new VariableIdentifierNode("blah")
         );
-        TypeResult result = inferType(functionExpression, context);
+        TypeResult result = inferType(functionExpression, nodeLocations, context);
         assertThat(errorStrings(result), is(asList("No variable \"blah\" in scope")));
     }
     
@@ -86,13 +98,21 @@ public class TypeInfererTest {
     errorIfTypeSpecifierAndTypeBodyOfShortLambdaExpressionDoNotAgree() {
         StaticContext context = new StaticContext();
         context.add("String", new TypeApplication(CoreTypes.CLASS, asList(CoreTypes.STRING)));
+        NumberLiteralNode body = new NumberLiteralNode("42");
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
             some((TypeReferenceNode)new TypeIdentifierNode("String")),
-            new NumberLiteralNode("42")
+            body
         );
-        TypeResult result = inferType(functionExpression, context);
-        assertThat(errorStrings(result), is(asList("Type mismatch: expected expression of type \"String\" but was of type \"Number\"")));
+        nodeLocations.put(body, range(position(3, 5), position(7, 4)));
+        TypeResult result = inferType(functionExpression, nodeLocations, context);
+        assertThat(
+            result.getErrors(),
+            is(asList(new CompilerError(
+                range(position(3, 5), position(7, 4)),
+                "Type mismatch: expected expression of type \"String\" but was of type \"Number\""
+            )))
+        );
     }
     
     @Test public void
@@ -103,7 +123,7 @@ public class TypeInfererTest {
             some((TypeReferenceNode)new TypeIdentifierNode("String")),
             new NumberLiteralNode("42")
         );
-        TypeResult result = inferType(functionExpression, context);
+        TypeResult result = inferType(functionExpression, nodeLocations, context);
         assertThat(errorStrings(result), is(asList("No variable \"String\" in scope")));
     }
     
@@ -120,7 +140,7 @@ public class TypeInfererTest {
             none(TypeReferenceNode.class),
             new BooleanLiteralNode(true)
         );
-        TypeResult result = inferType(functionExpression, context);
+        TypeResult result = inferType(functionExpression, nodeLocations, context);
         assertThat(result, is(success(
             (Type) new TypeApplication(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN))
         )));

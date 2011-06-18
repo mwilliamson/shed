@@ -20,7 +20,7 @@ import static java.util.Arrays.asList;
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
-public class ParseResult<T> implements HasErrors {
+public class ParseResult<T> implements HasErrors, NodeLocations {
     public static Iterable<ParseResult<?>> subResults(ParseResult<?>... results) {
         return asList(results);
     }
@@ -89,7 +89,8 @@ public class ParseResult<T> implements HasErrors {
         return value;
     }
     
-    public SourceRange positionOf(SyntaxNode node) {
+    @Override
+    public SourceRange locate(SyntaxNode node) {
         return nodePositions.get(new SyntaxNodeIdentifier(node));
     }
     

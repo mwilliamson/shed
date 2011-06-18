@@ -1,23 +1,24 @@
-package org.zwobble.shed.compiler.types;
+package org.zwobble.shed.compiler.typechecker;
 
 import org.zwobble.shed.compiler.parsing.CompilerError;
+import org.zwobble.shed.compiler.parsing.NodeLocations;
+import org.zwobble.shed.compiler.parsing.SourceRange;
 import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
-import org.zwobble.shed.compiler.typechecker.StaticContext;
-import org.zwobble.shed.compiler.typechecker.TypeResult;
+import org.zwobble.shed.compiler.types.CoreTypes;
+import org.zwobble.shed.compiler.types.TypeApplication;
 
 import static java.util.Arrays.asList;
-import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
-import static org.zwobble.shed.compiler.parsing.SourceRange.range;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
-import static org.zwobble.shed.compiler.types.VariableLookup.lookupVariableReference;
+import static org.zwobble.shed.compiler.typechecker.VariableLookup.lookupVariableReference;
 
 public class TypeLookup {
-    public static TypeResult lookupTypeReference(TypeReferenceNode typeReference, StaticContext context) {
+    public static TypeResult lookupTypeReference(TypeReferenceNode typeReference, NodeLocations nodeLocations, StaticContext context) {
         if (typeReference instanceof TypeIdentifierNode) {
             String identifier = ((TypeIdentifierNode)typeReference).getIdentifier();
-            TypeResult variableType = lookupVariableReference(identifier, context);
+            SourceRange nodeLocation = nodeLocations.locate(typeReference);
+            TypeResult variableType = lookupVariableReference(identifier, nodeLocation, context);
             
             if (!variableType.hasValue()) {
                 return variableType;
@@ -26,7 +27,7 @@ public class TypeLookup {
             if (!(variableType.get() instanceof TypeApplication) || 
                     !((TypeApplication)variableType.get()).getTypeFunction().equals(CoreTypes.CLASS)) {
                 return failure(asList(new CompilerError(
-                    range(position(-1, -1), position(-1, -1)),
+                    nodeLocation,
                     "\"" + identifier + "\" is not a type but an instance of \"" + variableType.get().shortName() + "\""
                 )));
             }

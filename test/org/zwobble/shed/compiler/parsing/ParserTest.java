@@ -16,12 +16,12 @@ public class ParserTest {
         
         SourceNode sourceNode = parseResult.get();
         assertThat(
-            parseResult.positionOf(sourceNode),
+            parseResult.locate(sourceNode),
             is(new SourceRange(new SourcePosition(1, 1), new SourcePosition(3, 16)))
         );
         
         assertThat(
-            parseResult.positionOf(sourceNode.getPackageDeclaration()),
+            parseResult.locate(sourceNode.getPackageDeclaration()),
             is(new SourceRange(new SourcePosition(1, 1), new SourcePosition(1, 22)))
         );
     }
