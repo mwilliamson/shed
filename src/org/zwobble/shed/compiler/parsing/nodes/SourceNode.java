@@ -5,7 +5,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class SourceNode {
+public class SourceNode implements SyntaxNode {
     private final PackageDeclarationNode packageDeclaration;
     private final List<ImportNode> imports;
     private final PublicDeclarationNode publicDeclaration;

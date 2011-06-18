@@ -1,5 +1,5 @@
 package org.zwobble.shed.compiler.parsing.nodes;
 
-public interface ExpressionNode extends SyntaxNode {
+public interface SyntaxNode {
 
 }

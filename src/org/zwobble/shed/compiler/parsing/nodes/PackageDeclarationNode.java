@@ -5,6 +5,6 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class PackageDeclarationNode {
+public class PackageDeclarationNode implements SyntaxNode {
     private final List<String> packageNames;
 }
