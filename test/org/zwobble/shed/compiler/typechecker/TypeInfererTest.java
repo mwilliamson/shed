@@ -116,6 +116,23 @@ public class TypeInfererTest {
     }
     
     @Test public void
+    errorIfCannotFindArgumentType() {
+        StaticContext context = new StaticContext();
+        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
+        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
+            asList(
+                new FormalArgumentNode("name", new TypeIdentifierNode("Name")),
+                new FormalArgumentNode("age", new TypeIdentifierNode("Number")),
+                new FormalArgumentNode("address", new TypeIdentifierNode("Address"))
+            ),
+            none(TypeReferenceNode.class),
+            new BooleanLiteralNode(true)
+        );
+        TypeResult result = inferType(functionExpression, nodeLocations, context);
+        assertThat(errorStrings(result), is(asList("No variable \"Name\" in scope", "No variable \"Address\" in scope")));
+    }
+    
+    @Test public void
     errorIfCannotFindReturnType() {
         StaticContext context = new StaticContext();
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(

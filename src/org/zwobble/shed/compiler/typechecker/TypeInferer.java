@@ -46,34 +46,35 @@ public class TypeInferer {
 
     private static TypeResult inferType(ShortLambdaExpressionNode lambdaExpression, NodeLocations nodeLocations, StaticContext context) {
         List<Type> typeParameters = new ArrayList<Type>();
+        List<CompilerError> errors = new ArrayList<CompilerError>();
         for (FormalArgumentNode argument : lambdaExpression.getArguments()) {
             TypeResult argumentType = lookupTypeReference(argument.getType(), nodeLocations, context);
-            if (!argumentType.isSuccess()) {
-                throw new RuntimeException(argumentType.toString());
-            }
+            errors.addAll(argumentType.getErrors());
             typeParameters.add(argumentType.get());
         }
         
         // TODO: add arguments to context
         TypeResult expressionTypeResult = inferType(lambdaExpression.getBody(), nodeLocations, context);
-        if (!expressionTypeResult.isSuccess()) {
-            return expressionTypeResult;
-        }
+        errors.addAll(expressionTypeResult.getErrors());
+        
         Option<TypeReferenceNode> returnTypeReference = lambdaExpression.getReturnType();
         if (returnTypeReference.hasValue()) {
-            TypeResult returnType = lookupTypeReference(returnTypeReference.get(), nodeLocations, context);
-            if (!returnType.isSuccess()) {
-                return returnType;
-            }
-            if (!expressionTypeResult.get().equals(returnType.get())) {
-                return failure(asList(new CompilerError(
+            TypeResult returnTypeResult = lookupTypeReference(returnTypeReference.get(), nodeLocations, context);
+            errors.addAll(returnTypeResult.getErrors());
+            if (returnTypeResult.isSuccess() && !expressionTypeResult.get().equals(returnTypeResult.get())) {
+                errors.add(new CompilerError(
                     nodeLocations.locate(lambdaExpression.getBody()),
-                    "Type mismatch: expected expression of type \"" + returnType.get().shortName() +
+                    "Type mismatch: expected expression of type \"" + returnTypeResult.get().shortName() +
                         "\" but was of type \"" + expressionTypeResult.get().shortName() + "\""
-                )));
+                ));
             }
         }
         typeParameters.add(expressionTypeResult.get());
-        return success((Type)new TypeApplication(CoreTypes.functionType(lambdaExpression.getArguments().size()), typeParameters));
+        
+        if (!errors.isEmpty()) {
+            return failure(errors);
+        }
+        
+        return success(new TypeApplication(CoreTypes.functionType(lambdaExpression.getArguments().size()), typeParameters));
     }
 }
