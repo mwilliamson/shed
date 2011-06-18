@@ -71,7 +71,7 @@ public class Result<T> implements HasErrors {
         newPositions.putAll(nodePositions);
         SyntaxNodeIdentifier nodeIdentifier = new SyntaxNodeIdentifier(value);
         if (newPositions.containsKey(nodeIdentifier)) {
-            if (newPositions.get(nodeIdentifier).equals(position)) {
+            if (!position.contains(newPositions.get(nodeIdentifier))) {
                 throw new RuntimeException("The same node cannot appear in two places");
             }
         } else {
