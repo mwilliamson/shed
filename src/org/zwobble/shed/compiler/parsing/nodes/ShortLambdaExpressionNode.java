@@ -7,8 +7,8 @@ import org.zwobble.shed.compiler.Option;
 import lombok.Data;
 
 @Data
-public class ShortLambdaExpressionNode implements ExpressionNode {
-    private final List<FormalArgumentNode> arguments;
+public class ShortLambdaExpressionNode implements LambdaExpressionNode {
+    private final List<FormalArgumentNode> formalArguments;
     private final Option<TypeReferenceNode> returnType;
     private final ExpressionNode body;
 }

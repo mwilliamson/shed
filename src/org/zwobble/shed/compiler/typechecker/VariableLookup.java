@@ -10,7 +10,7 @@ import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 public class VariableLookup {
-    public static TypeResult lookupVariableReference(String identifier, SourceRange nodeLocation, StaticContext context) {
+    public static TypeResult<Type> lookupVariableReference(String identifier, SourceRange nodeLocation, StaticContext context) {
         Option<Type> type = context.get(identifier);
         if (type.hasValue()) {
             return success(type.get());

@@ -9,6 +9,7 @@ import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
+import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
@@ -18,14 +19,13 @@ import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
 
-import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.typechecker.TypeLookup.lookupTypeReference;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 import static org.zwobble.shed.compiler.typechecker.VariableLookup.lookupVariableReference;
 
 public class TypeInferer {
-    public static TypeResult inferType(ExpressionNode expression, NodeLocations nodeLocations, StaticContext context) {
+    public static TypeResult<Type> inferType(ExpressionNode expression, NodeLocations nodeLocations, StaticContext context) {
         if (expression instanceof BooleanLiteralNode) {
             return success(CoreTypes.BOOLEAN);            
         }
@@ -41,25 +41,24 @@ public class TypeInferer {
         if (expression instanceof ShortLambdaExpressionNode) {
             return inferType((ShortLambdaExpressionNode)expression, nodeLocations, context);
         }
+        if (expression instanceof LongLambdaExpressionNode) {
+            return inferLongLambdaExpressionType((LongLambdaExpressionNode)expression, nodeLocations, context);
+        }
         throw new RuntimeException("Cannot infer type of expression: " + expression);
     }
 
-    private static TypeResult inferType(ShortLambdaExpressionNode lambdaExpression, NodeLocations nodeLocations, StaticContext context) {
-        List<Type> typeParameters = new ArrayList<Type>();
+    private static TypeResult<Type> inferType(ShortLambdaExpressionNode lambdaExpression, NodeLocations nodeLocations, StaticContext context) {
         List<CompilerError> errors = new ArrayList<CompilerError>();
-        for (FormalArgumentNode argument : lambdaExpression.getArguments()) {
-            TypeResult argumentType = lookupTypeReference(argument.getType(), nodeLocations, context);
-            errors.addAll(argumentType.getErrors());
-            typeParameters.add(argumentType.get());
-        }
+
+        TypeResult<List<Type>> typeParametersResult = inferArgumentTypes(lambdaExpression.getFormalArguments(), nodeLocations, context);
+        errors.addAll(typeParametersResult.getErrors());
         
-        // TODO: add arguments to context
-        TypeResult expressionTypeResult = inferType(lambdaExpression.getBody(), nodeLocations, context);
+        TypeResult<Type> expressionTypeResult = inferType(lambdaExpression.getBody(), nodeLocations, context);
         errors.addAll(expressionTypeResult.getErrors());
         
         Option<TypeReferenceNode> returnTypeReference = lambdaExpression.getReturnType();
         if (returnTypeReference.hasValue()) {
-            TypeResult returnTypeResult = lookupTypeReference(returnTypeReference.get(), nodeLocations, context);
+            TypeResult<Type> returnTypeResult = lookupTypeReference(returnTypeReference.get(), nodeLocations, context);
             errors.addAll(returnTypeResult.getErrors());
             if (returnTypeResult.isSuccess() && !expressionTypeResult.get().equals(returnTypeResult.get())) {
                 errors.add(new CompilerError(
@@ -69,12 +68,49 @@ public class TypeInferer {
                 ));
             }
         }
-        typeParameters.add(expressionTypeResult.get());
         
         if (!errors.isEmpty()) {
             return failure(errors);
         }
+        List<Type> typeParameters = typeParametersResult.get();
+        typeParameters.add(expressionTypeResult.get());
         
-        return success(new TypeApplication(CoreTypes.functionType(lambdaExpression.getArguments().size()), typeParameters));
+        return success((Type)new TypeApplication(CoreTypes.functionType(lambdaExpression.getFormalArguments().size()), typeParameters));
     }
+
+    private static TypeResult<Type> inferLongLambdaExpressionType(
+            LongLambdaExpressionNode lambdaExpression, NodeLocations nodeLocations, StaticContext context) {
+        List<CompilerError> errors = new ArrayList<CompilerError>();
+
+        TypeResult<List<Type>> typeParametersResult = inferArgumentTypes(lambdaExpression.getFormalArguments(), nodeLocations, context);
+        errors.addAll(typeParametersResult.getErrors());
+        
+        TypeResult<Type> returnTypeResult = lookupTypeReference(lambdaExpression.getReturnType(), nodeLocations, context);
+        errors.addAll(returnTypeResult.getErrors());
+        
+        if (errors.isEmpty()) {
+            List<Type> typeParameters = typeParametersResult.get();
+            typeParameters.add(returnTypeResult.get());
+            return success((Type)new TypeApplication(CoreTypes.functionType(lambdaExpression.getFormalArguments().size()), typeParameters));
+        } else {
+            return failure(errors);
+        }
+    }
+    
+    private static TypeResult<List<Type>> inferArgumentTypes(
+            List<FormalArgumentNode> formalArguments, NodeLocations nodeLocations, StaticContext context) {
+        List<Type> typeParameters = new ArrayList<Type>();
+        List<CompilerError> errors = new ArrayList<CompilerError>();
+        for (FormalArgumentNode argument : formalArguments) {
+            TypeResult<Type> argumentType = lookupTypeReference(argument.getType(), nodeLocations, context);
+            errors.addAll(argumentType.getErrors());
+            typeParameters.add(argumentType.get());
+        }
+        if (errors.isEmpty()) {
+            return success(typeParameters);
+        } else {
+            return failure(errors);
+        }
+    }
+    
 }

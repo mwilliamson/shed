@@ -9,6 +9,7 @@ import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
+import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
 import org.zwobble.shed.compiler.types.TypeFunction;
 
@@ -31,7 +32,7 @@ public class TypeLookupTest {
         StaticContext context = new StaticContext();
         context.add("String", new TypeApplication(CoreTypes.CLASS, asList(CoreTypes.STRING)));
 
-        TypeResult result = lookupTypeReference(new TypeIdentifierNode("String"), nodeLocations, context);
+        TypeResult<Type> result = lookupTypeReference(new TypeIdentifierNode("String"), nodeLocations, context);
         assertThat(result, is(success(CoreTypes.STRING)));
     }
     
@@ -39,7 +40,7 @@ public class TypeLookupTest {
     errorIfVariableDoesNotReferenceAFunctionTypeInCurrentContext() {
         StaticContext context = new StaticContext();
         context.add("String", CoreTypes.NUMBER);
-        TypeResult result = lookupTypeReference(new TypeIdentifierNode("String"), nodeLocations, context);
+        TypeResult<Type> result = lookupTypeReference(new TypeIdentifierNode("String"), nodeLocations, context);
         assertThat(errorStrings(result), is(asList("\"String\" is not a type but an instance of \"Number\"")));
     }
     
@@ -49,7 +50,7 @@ public class TypeLookupTest {
         context.add("String", CoreTypes.NUMBER);
         TypeIdentifierNode node = new TypeIdentifierNode("String");
         nodeLocations.put(node, range(position(3, 5), position(7, 4)));
-        TypeResult result = lookupTypeReference(node, nodeLocations, context);
+        TypeResult<Type> result = lookupTypeReference(node, nodeLocations, context);
         assertThat(
             result.getErrors(),
             is(asList(new CompilerError(range(position(3, 5), position(7, 4)), "\"String\" is not a type but an instance of \"Number\"")))
@@ -62,7 +63,7 @@ public class TypeLookupTest {
         TypeFunction listType = new TypeFunction(Collections.<String>emptyList(), "List", asList(new FormalTypeParameter("E")));
         TypeApplication type = new TypeApplication(listType, asList(CoreTypes.NUMBER));
         context.add("String", type);
-        TypeResult result = lookupTypeReference(new TypeIdentifierNode("String"), nodeLocations, context);
+        TypeResult<Type> result = lookupTypeReference(new TypeIdentifierNode("String"), nodeLocations, context);
         assertThat(errorStrings(result), is(asList("\"String\" is not a type but an instance of \"List[Number]\"")));
     }
 }
