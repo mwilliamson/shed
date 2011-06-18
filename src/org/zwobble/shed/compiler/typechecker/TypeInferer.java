@@ -19,13 +19,20 @@ import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
 
-import static org.zwobble.shed.compiler.typechecker.TypeLookup.lookupTypeReference;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 import static org.zwobble.shed.compiler.typechecker.VariableLookup.lookupVariableReference;
 
 public class TypeInferer {
-    public static TypeResult<Type> inferType(ExpressionNode expression, NodeLocations nodeLocations, StaticContext context) {
+    private final NodeLocations nodeLocations;
+    private final TypeLookup typeLookup;
+
+    public TypeInferer(NodeLocations nodeLocations, TypeLookup typeLookup) {
+        this.nodeLocations = nodeLocations;
+        this.typeLookup = typeLookup;
+    }
+    
+    public TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
         if (expression instanceof BooleanLiteralNode) {
             return success(CoreTypes.BOOLEAN);            
         }
@@ -39,26 +46,26 @@ public class TypeInferer {
             return lookupVariableReference(((VariableIdentifierNode)expression).getIdentifier(), nodeLocations.locate(expression), context);
         }
         if (expression instanceof ShortLambdaExpressionNode) {
-            return inferType((ShortLambdaExpressionNode)expression, nodeLocations, context);
+            return inferType((ShortLambdaExpressionNode)expression, context);
         }
         if (expression instanceof LongLambdaExpressionNode) {
-            return inferLongLambdaExpressionType((LongLambdaExpressionNode)expression, nodeLocations, context);
+            return inferLongLambdaExpressionType((LongLambdaExpressionNode)expression, context);
         }
         throw new RuntimeException("Cannot infer type of expression: " + expression);
     }
 
-    private static TypeResult<Type> inferType(ShortLambdaExpressionNode lambdaExpression, NodeLocations nodeLocations, StaticContext context) {
+    private TypeResult<Type> inferType(ShortLambdaExpressionNode lambdaExpression, StaticContext context) {
         List<CompilerError> errors = new ArrayList<CompilerError>();
 
-        TypeResult<List<Type>> typeParametersResult = inferArgumentTypes(lambdaExpression.getFormalArguments(), nodeLocations, context);
+        TypeResult<List<Type>> typeParametersResult = inferArgumentTypes(lambdaExpression.getFormalArguments(), context);
         errors.addAll(typeParametersResult.getErrors());
         
-        TypeResult<Type> expressionTypeResult = inferType(lambdaExpression.getBody(), nodeLocations, context);
+        TypeResult<Type> expressionTypeResult = inferType(lambdaExpression.getBody(), context);
         errors.addAll(expressionTypeResult.getErrors());
         
         Option<TypeReferenceNode> returnTypeReference = lambdaExpression.getReturnType();
         if (returnTypeReference.hasValue()) {
-            TypeResult<Type> returnTypeResult = lookupTypeReference(returnTypeReference.get(), nodeLocations, context);
+            TypeResult<Type> returnTypeResult = typeLookup.lookupTypeReference(returnTypeReference.get(), context);
             errors.addAll(returnTypeResult.getErrors());
             if (returnTypeResult.isSuccess() && !expressionTypeResult.get().equals(returnTypeResult.get())) {
                 errors.add(new CompilerError(
@@ -78,14 +85,13 @@ public class TypeInferer {
         return success((Type)new TypeApplication(CoreTypes.functionType(lambdaExpression.getFormalArguments().size()), typeParameters));
     }
 
-    private static TypeResult<Type> inferLongLambdaExpressionType(
-            LongLambdaExpressionNode lambdaExpression, NodeLocations nodeLocations, StaticContext context) {
+    private TypeResult<Type> inferLongLambdaExpressionType(LongLambdaExpressionNode lambdaExpression, StaticContext context) {
         List<CompilerError> errors = new ArrayList<CompilerError>();
 
-        TypeResult<List<Type>> typeParametersResult = inferArgumentTypes(lambdaExpression.getFormalArguments(), nodeLocations, context);
+        TypeResult<List<Type>> typeParametersResult = inferArgumentTypes(lambdaExpression.getFormalArguments(), context);
         errors.addAll(typeParametersResult.getErrors());
         
-        TypeResult<Type> returnTypeResult = lookupTypeReference(lambdaExpression.getReturnType(), nodeLocations, context);
+        TypeResult<Type> returnTypeResult = typeLookup.lookupTypeReference(lambdaExpression.getReturnType(), context);
         errors.addAll(returnTypeResult.getErrors());
         
         if (errors.isEmpty()) {
@@ -97,12 +103,11 @@ public class TypeInferer {
         }
     }
     
-    private static TypeResult<List<Type>> inferArgumentTypes(
-            List<FormalArgumentNode> formalArguments, NodeLocations nodeLocations, StaticContext context) {
+    private TypeResult<List<Type>> inferArgumentTypes(List<FormalArgumentNode> formalArguments, StaticContext context) {
         List<Type> typeParameters = new ArrayList<Type>();
         List<CompilerError> errors = new ArrayList<CompilerError>();
         for (FormalArgumentNode argument : formalArguments) {
-            TypeResult<Type> argumentType = lookupTypeReference(argument.getType(), nodeLocations, context);
+            TypeResult<Type> argumentType = typeLookup.lookupTypeReference(argument.getType(), context);
             errors.addAll(argumentType.getErrors());
             typeParameters.add(argumentType.get());
         }
