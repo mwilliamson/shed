@@ -6,6 +6,7 @@ import java.util.List;
 import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
+import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.types.Type;
@@ -26,6 +27,13 @@ public class TypeChecker {
 
     public TypeResult<Void> typeCheck(SourceNode source, StaticContext staticContext) {
         List<CompilerError> errors = new ArrayList<CompilerError>();
+        
+        for (ImportNode importNode : source.getImports()) {
+            List<String> identifiers = importNode.getNames();
+            String identifier = identifiers.get(identifiers.size() - 1);
+            staticContext.add(identifier, staticContext.lookupGlobal(identifiers));
+        }
+        
         for (StatementNode statement : source.getStatements()) {
             TypeResult<Void> result = typeCheckStatement(statement, staticContext);
             errors.addAll(result.getErrors());

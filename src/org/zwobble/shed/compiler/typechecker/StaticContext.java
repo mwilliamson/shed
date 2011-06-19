@@ -1,6 +1,7 @@
 package org.zwobble.shed.compiler.typechecker;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.zwobble.shed.compiler.Option;
@@ -18,6 +19,7 @@ public class StaticContext {
     }
     
     private final Map<String, Type> values = new HashMap<String, Type>();
+    private final Map<List<String>, Type> global = new HashMap<List<String>, Type>();
     
     public void add(String identifier, Type type) {
         values.put(identifier, type);
@@ -29,5 +31,13 @@ public class StaticContext {
         } else {
             return Option.none();
         }
+    }
+
+    public void addGlobal(List<String> identifiers, Type type) {
+        global.put(identifiers, type);
+    }
+    
+    public Type lookupGlobal(List<String> identifiers) {
+        return global.get(identifiers);
     }
 }
