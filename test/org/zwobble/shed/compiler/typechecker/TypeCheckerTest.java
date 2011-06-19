@@ -140,4 +140,26 @@ public class TypeCheckerTest {
             is(asList("The variable \"DateTime\" has already been declared in this scope"))
         );
     }
+    
+    @Test public void
+    canOverrideCoreTypeWithImport() {
+        Type customString = new ScalarType(asList("shed", "custom"), "String");
+        staticContext.addGlobal(asList("shed", "custom", "String"), CoreTypes.classOf(customString));
+        
+        staticContext.add("String", CoreTypes.STRING);
+        SourceNode source = new SourceNode(
+            new PackageDeclarationNode(asList("shed", "example")),
+            asList(new ImportNode(asList("shed", "custom", "String"))),
+            new PublicDeclarationNode(asList("x")),
+            asList((StatementNode)new ImmutableVariableNode(
+                "x",
+                none(TypeReferenceNode.class),
+                new BooleanLiteralNode(true)
+            ))
+        );
+        assertThat(
+            typeChecker.typeCheck(source, staticContext),
+            is(TypeResult.<Void>success(null))
+        );
+    }
 }

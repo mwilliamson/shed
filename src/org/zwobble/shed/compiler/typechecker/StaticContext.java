@@ -1,5 +1,6 @@
 package org.zwobble.shed.compiler.typechecker;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,23 +23,28 @@ public class StaticContext {
         return staticContext;
     }
     
-    private final Map<String, Type> values = new HashMap<String, Type>();
+    private final List<StaticScope> scopes = new ArrayList<StaticScope>();
     private final Map<List<String>, Type> global = new HashMap<List<String>, Type>();
     
+    public StaticContext() {
+        scopes.add(new StaticScope());
+    }
+    
     public void add(String identifier, Type type) {
-        values.put(identifier, type);
+        currentScope().add(identifier, type);
     }
     
     public Option<Type> get(String identifier) {
-        if (values.containsKey(identifier)) {
-            return some(values.get(identifier));
-        } else {
-            return none();
+        for (StaticScope scope : scopes) {
+            if (scope.isDeclared(identifier)) {
+                return some(scope.get(identifier));
+            }   
         }
+        return none();
     }
     
     public boolean isDeclaredInCurrentScope(String identifier) {
-        return values.containsKey(identifier);
+        return currentScope().isDeclared(identifier);
     }
 
     public void addGlobal(List<String> identifiers, Type type) {
@@ -51,5 +57,13 @@ public class StaticContext {
         } else {
             return none();
         }
+    }
+
+    public void newScope() {
+        scopes.add(new StaticScope());
+    }
+
+    private StaticScope currentScope() {
+        return scopes.get(scopes.size() - 1);
     }
 }

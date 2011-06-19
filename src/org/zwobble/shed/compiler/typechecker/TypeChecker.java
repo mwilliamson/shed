@@ -29,6 +29,7 @@ public class TypeChecker {
     }
 
     public TypeResult<Void> typeCheck(SourceNode source, StaticContext staticContext) {
+        staticContext.newScope();
         List<CompilerError> errors = new ArrayList<CompilerError>();
         
         for (ImportNode importNode : source.getImports()) {
