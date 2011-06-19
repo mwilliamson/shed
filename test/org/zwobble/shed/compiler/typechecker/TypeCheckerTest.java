@@ -22,6 +22,7 @@ import org.zwobble.shed.compiler.types.Type;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
@@ -93,6 +94,24 @@ public class TypeCheckerTest {
         assertThat(
             typeChecker.typeCheck(source, staticContext),
             is(TypeResult.<Void>success(null))
+        );
+    }
+    
+    @Test public void
+    errorIfTryingToImportNonExistentGlobal() {
+        SourceNode source = new SourceNode(
+            new PackageDeclarationNode(asList("shed", "example")),
+            asList(new ImportNode(asList("shed", "time", "DateTime"))),
+            new PublicDeclarationNode(asList("x")),
+            asList((StatementNode)new ImmutableVariableNode(
+                "x",
+                none(TypeReferenceNode.class),
+                new BooleanLiteralNode(true)
+            ))
+        );
+        assertThat(
+            errorStrings(typeChecker.typeCheck(source, staticContext)),
+            is(asList("The import \"shed.time.DateTime\" cannot be resolved"))
         );
     }
 }

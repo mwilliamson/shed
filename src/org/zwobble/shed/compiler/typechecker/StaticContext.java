@@ -8,6 +8,10 @@ import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
 
+import static org.zwobble.shed.compiler.Option.none;
+
+import static org.zwobble.shed.compiler.Option.some;
+
 public class StaticContext {
     public static StaticContext defaultContext() {
         StaticContext staticContext = new StaticContext();
@@ -27,9 +31,9 @@ public class StaticContext {
     
     public Option<Type> get(String identifier) {
         if (values.containsKey(identifier)) {
-            return Option.some(values.get(identifier));
+            return some(values.get(identifier));
         } else {
-            return Option.none();
+            return none();
         }
     }
 
@@ -37,7 +41,11 @@ public class StaticContext {
         global.put(identifiers, type);
     }
     
-    public Type lookupGlobal(List<String> identifiers) {
-        return global.get(identifiers);
+    public Option<Type> lookupGlobal(List<String> identifiers) {
+        if (global.containsKey(identifiers)) {
+            return some(global.get(identifiers));
+        } else {
+            return none();
+        }
     }
 }
