@@ -36,7 +36,14 @@ public class TypeChecker {
             String identifier = identifiers.get(identifiers.size() - 1);
             Option<Type> importedValueType = staticContext.lookupGlobal(identifiers);
             if (importedValueType.hasValue()) {
-                staticContext.add(identifier, importedValueType.get());
+                if (staticContext.isDeclaredInCurrentScope(identifier)) {
+                    errors.add(new CompilerError(
+                        nodeLocations.locate(importNode),
+                        "The variable \"" + identifier + "\" has already been declared in this scope"
+                    ));
+                } else {
+                    staticContext.add(identifier, importedValueType.get());                    
+                }
             } else {
                 errors.add(new CompilerError(
                     nodeLocations.locate(importNode),

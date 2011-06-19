@@ -36,6 +36,10 @@ public class StaticContext {
             return none();
         }
     }
+    
+    public boolean isDeclaredInCurrentScope(String identifier) {
+        return values.containsKey(identifier);
+    }
 
     public void addGlobal(List<String> identifiers, Type type) {
         global.put(identifiers, type);

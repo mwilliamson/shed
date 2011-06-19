@@ -101,7 +101,9 @@ public class TypeCheckerTest {
     errorIfTryingToImportNonExistentGlobal() {
         SourceNode source = new SourceNode(
             new PackageDeclarationNode(asList("shed", "example")),
-            asList(new ImportNode(asList("shed", "time", "DateTime"))),
+            asList(
+                new ImportNode(asList("shed", "time", "DateTime"))
+            ),
             new PublicDeclarationNode(asList("x")),
             asList((StatementNode)new ImmutableVariableNode(
                 "x",
@@ -112,6 +114,30 @@ public class TypeCheckerTest {
         assertThat(
             errorStrings(typeChecker.typeCheck(source, staticContext)),
             is(asList("The import \"shed.time.DateTime\" cannot be resolved"))
+        );
+    }
+    
+    @Test public void
+    errorIfImportingTwoValuesWithTheSameName() {
+        Type dateTime = new ScalarType(asList("shed", "time"), "DateTime");
+        staticContext.addGlobal(asList("shed", "time", "DateTime"), CoreTypes.classOf(dateTime));
+        
+        SourceNode source = new SourceNode(
+            new PackageDeclarationNode(asList("shed", "example")),
+            asList(
+                new ImportNode(asList("shed", "time", "DateTime")),
+                new ImportNode(asList("shed", "time", "DateTime"))
+            ),
+            new PublicDeclarationNode(asList("x")),
+            asList((StatementNode)new ImmutableVariableNode(
+                "x",
+                none(TypeReferenceNode.class),
+                new BooleanLiteralNode(true)
+            ))
+        );
+        assertThat(
+            errorStrings(typeChecker.typeCheck(source, staticContext)),
+            is(asList("The variable \"DateTime\" has already been declared in this scope"))
         );
     }
 }
