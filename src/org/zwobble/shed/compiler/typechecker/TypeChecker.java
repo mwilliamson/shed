@@ -6,6 +6,7 @@ import java.util.List;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
+import org.zwobble.shed.compiler.parsing.SourceRange;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
@@ -38,10 +39,7 @@ public class TypeChecker {
             Option<Type> importedValueType = staticContext.lookupGlobal(identifiers);
             if (importedValueType.hasValue()) {
                 if (staticContext.isDeclaredInCurrentScope(identifier)) {
-                    errors.add(new CompilerError(
-                        nodeLocations.locate(importNode),
-                        "The variable \"" + identifier + "\" has already been declared in this scope"
-                    ));
+                    errors.add(duplicateIdentifierError(identifier, nodeLocations.locate(importNode)));
                 } else {
                     staticContext.add(identifier, importedValueType.get());                    
                 }
@@ -84,12 +82,24 @@ public class TypeChecker {
                 }
             }
             
+            if (staticContext.isDeclaredInCurrentScope(immutableVariable.getIdentifier())) {
+                errors.add(duplicateIdentifierError(immutableVariable.getIdentifier(), nodeLocations.locate(immutableVariable)));
+            }
+            
             if (errors.isEmpty()) {
+                staticContext.add(immutableVariable.getIdentifier(), valueTypeResult.get());
                 return success(null);
             } else {
                 return failure(errors);
             }
         }
         throw new RuntimeException("Cannot check type of statement: " + statement);
+    }
+
+    private CompilerError duplicateIdentifierError(String identifier, SourceRange nodeLocation) {
+        return new CompilerError(
+            nodeLocation,
+            "The variable \"" + identifier + "\" has already been declared in this scope"
+        );
     }
 }

@@ -73,6 +73,25 @@ public class TypeCheckerTest {
     }
     
     @Test public void
+    errorsIfDeclaringTwoVariablesWithSameName() {
+        StatementNode firstVariableNode = new ImmutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true));
+        StatementNode secondVariableNode = new ImmutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true));
+        nodeLocations.put(firstVariableNode, range(position(4, 12), position(6, 6)));
+        nodeLocations.put(secondVariableNode, range(position(7, 2), position(7, 14)));
+        
+        SourceNode source = new SourceNode(
+            new PackageDeclarationNode(asList("shed", "example")),
+            Collections.<ImportNode>emptyList(),
+            new PublicDeclarationNode(asList("x")),
+            asList(firstVariableNode, secondVariableNode)
+        );
+        assertThat(
+            errorStrings(typeChecker.typeCheck(source, staticContext)),
+            is(asList("The variable \"x\" has already been declared in this scope"))
+        );
+    }
+    
+    @Test public void
     canImportValues() {
         Type dateTime = new ScalarType(asList("shed", "time"), "DateTime");
         staticContext.addGlobal(asList("shed", "time", "DateTime"), CoreTypes.classOf(dateTime));
