@@ -18,6 +18,7 @@ import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
+import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.Type;
@@ -214,16 +215,19 @@ public class TypeCheckerTest {
     @Test public void
     cannotReturnFromTopLevel() {
         StatementNode returnStatement = new ReturnNode(new BooleanLiteralNode(true));
-        SourceNode source = new SourceNode(
-            new PackageDeclarationNode(asList("shed", "example")),
-            Collections.<ImportNode>emptyList(),
-            new PublicDeclarationNode(asList("x")),
-            asList(returnStatement)
-        );
-        
         assertThat(
-            errorStrings(typeCheck(source)),
+            errorStrings(TypeChecker.typeCheckStatement(returnStatement, nodeLocations, staticContext)),
             is(asList("Cannot return from this scope"))
+        );
+    }
+    
+    @Test public void
+    returnExpressionIsTypeChecked() {
+        StatementNode returnStatement = new ReturnNode(new VariableIdentifierNode("x"));
+        staticContext.enterNewScope(some(CoreTypes.STRING));
+        assertThat(
+            errorStrings(TypeChecker.typeCheckStatement(returnStatement, nodeLocations, staticContext)),
+            is(asList("No variable \"x\" in scope"))
         );
     }
     

@@ -75,6 +75,9 @@ public class TypeChecker {
             }
             ExpressionNode expression = ((ReturnNode) statement).getExpression();
             TypeResult<Type> expressionType = inferType(expression, nodeLocations, context);
+            if (!expressionType.isSuccess()) {
+                return failure(expressionType.getErrors());
+            }
             if (expressionType.get().equals(expectedReturnType.get())) {
                 return success(null);
             } else {
