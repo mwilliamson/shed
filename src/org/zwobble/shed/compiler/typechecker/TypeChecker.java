@@ -61,7 +61,7 @@ public class TypeChecker {
 
     public static TypeResult<Void> typeCheckStatement(StatementNode statement, NodeLocations nodeLocations, StaticContext context) {
         if (statement instanceof ImmutableVariableNode) {
-            return typeCheckImmutableVariableDeclaration(statement, nodeLocations, context);
+            return typeCheckImmutableVariableDeclaration((ImmutableVariableNode)statement, nodeLocations, context);
         }
         if (statement instanceof ReturnNode) {
             Option<Type> expectedReturnType = context.currentScope().getReturnType();
@@ -84,9 +84,8 @@ public class TypeChecker {
     }
 
     private static TypeResult<Void>
-    typeCheckImmutableVariableDeclaration(StatementNode statement, NodeLocations nodeLocations, StaticContext staticContext) {
+    typeCheckImmutableVariableDeclaration(ImmutableVariableNode immutableVariable, NodeLocations nodeLocations, StaticContext staticContext) {
         List<CompilerError> errors = new ArrayList<CompilerError>();
-        ImmutableVariableNode immutableVariable = (ImmutableVariableNode)statement;
         
         TypeResult<Type> valueTypeResult = inferType(immutableVariable.getValue(), nodeLocations, staticContext);
         errors.addAll(valueTypeResult.getErrors());
@@ -97,7 +96,7 @@ public class TypeChecker {
             errors.addAll(typeResult.getErrors());
             if (errors.isEmpty() && !valueTypeResult.get().equals(typeResult.get())) {
                 errors.add(new CompilerError(
-                    nodeLocations.locate(statement),
+                    nodeLocations.locate(immutableVariable.getValue()),
                     "Cannot initialise variable of type \"" + typeResult.get().shortName() +
                         "\" with expression of type \"" + valueTypeResult.get().shortName() + "\""
                 ));

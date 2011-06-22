@@ -48,12 +48,13 @@ public class TypeCheckerTest {
     
     @Test public void
     errorsIfAttemptingToInitialiseAVariableWithExpressionOfWrongType() {
+        BooleanLiteralNode booleanNode = new BooleanLiteralNode(true);
         StatementNode variableNode = new ImmutableVariableNode(
             "x",
             some((TypeReferenceNode)new TypeIdentifierNode("String")),
-            new BooleanLiteralNode(true)
+            booleanNode
         );
-        nodeLocations.put(variableNode, range(position(4, 12), position(6, 6)));
+        nodeLocations.put(booleanNode, range(position(4, 12), position(6, 6)));
         
         SourceNode source = new SourceNode(
             new PackageDeclarationNode(asList("shed", "example")),
