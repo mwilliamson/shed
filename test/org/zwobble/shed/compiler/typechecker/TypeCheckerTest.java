@@ -62,6 +62,18 @@ public class TypeCheckerTest {
     }
     
     @Test public void
+    sourceScopeIsClosed() {
+        SourceNode source = new SourceNode(
+            new PackageDeclarationNode(asList("shed", "example")),
+            Collections.<ImportNode>emptyList(),
+            new PublicDeclarationNode(asList("x")),
+            asList((StatementNode)new ImmutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true)))
+        );
+        typeCheck(source);
+        assertThat(staticContext.isDeclaredInCurrentScope("x"), is(false));
+    }
+    
+    @Test public void
     lambdaExpressionDefinesANewScope() {
         staticContext.add("String", CoreTypes.classOf(CoreTypes.STRING));
         SourceNode source = new SourceNode(

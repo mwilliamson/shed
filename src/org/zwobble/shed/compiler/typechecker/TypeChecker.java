@@ -33,6 +33,7 @@ public class TypeChecker {
             TypeResult<Void> result = typeCheckStatement(statement, nodeLocations, staticContext);
             errors.addAll(result.getErrors());
         }
+        staticContext.exitScope();
         if (errors.isEmpty()) {
             return success(null);
         } else {
