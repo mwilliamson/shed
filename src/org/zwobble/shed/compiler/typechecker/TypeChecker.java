@@ -7,6 +7,7 @@ import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.SourceRange;
+import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
@@ -17,6 +18,8 @@ import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.base.Joiner;
 
+import static java.util.Arrays.asList;
+import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.typechecker.TypeInferer.inferType;
 import static org.zwobble.shed.compiler.typechecker.TypeLookup.lookupTypeReference;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
@@ -24,7 +27,7 @@ import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 public class TypeChecker {
     public static TypeResult<Void> typeCheck(SourceNode source, NodeLocations nodeLocations, StaticContext staticContext) {
-        staticContext.enterNewScope();
+        staticContext.enterNewScope(none(Type.class));
         List<CompilerError> errors = new ArrayList<CompilerError>();
         
         for (ImportNode importNode : source.getImports()) {
@@ -56,12 +59,26 @@ public class TypeChecker {
         }
     }
 
-    public static TypeResult<Void> typeCheckStatement(StatementNode statement, NodeLocations nodeLocations, StaticContext staticContext) {
+    public static TypeResult<Void> typeCheckStatement(StatementNode statement, NodeLocations nodeLocations, StaticContext context) {
         if (statement instanceof ImmutableVariableNode) {
-            return typeCheckImmutableVariableDeclaration(statement, nodeLocations, staticContext);
+            return typeCheckImmutableVariableDeclaration(statement, nodeLocations, context);
         }
         if (statement instanceof ReturnNode) {
-            return TypeResult.<Void>success(null);
+            Option<Type> expectedReturnType = context.currentScope().getReturnType();
+            ExpressionNode expression = ((ReturnNode) statement).getExpression();
+            TypeResult<Type> expressionType = inferType(expression, nodeLocations, context);
+            if (expressionType.get().equals(expectedReturnType.get())) {
+                return success(null);
+            } else {
+                String expectedName = expectedReturnType.get().shortName();
+                String actualName = expressionType.get().shortName();
+                return failure(asList(
+                    new CompilerError(
+                        nodeLocations.locate(expression),
+                        "Expected return expression of type \"" + expectedName + "\" but was of type \"" + actualName + "\""
+                    )
+                ));
+            }
         }
         throw new RuntimeException("Cannot check type of statement: " + statement);
     }

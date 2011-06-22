@@ -20,6 +20,8 @@ import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
 
+import static org.zwobble.shed.compiler.Option.some;
+
 import static org.zwobble.shed.compiler.typechecker.TypeChecker.typeCheckStatement;
 
 import static org.zwobble.shed.compiler.typechecker.TypeLookup.lookupTypeReference;
@@ -91,13 +93,15 @@ public class TypeInferer {
         
         TypeResult<Type> returnTypeResult = lookupTypeReference(lambdaExpression.getReturnType(), nodeLocations, context);
         errors.addAll(returnTypeResult.getErrors());
-        
-        context.enterNewScope();
-        for (StatementNode statement : lambdaExpression.getBody()) {
-            TypeResult<Void> statementResult = typeCheckStatement(statement, nodeLocations, context);
-            errors.addAll(statementResult.getErrors());
+
+        if (returnTypeResult.hasValue()) {
+            context.enterNewScope(some(returnTypeResult.get()));
+            for (StatementNode statement : lambdaExpression.getBody()) {
+                TypeResult<Void> statementResult = typeCheckStatement(statement, nodeLocations, context);
+                errors.addAll(statementResult.getErrors());
+            }
+            context.exitScope();
         }
-        context.exitScope();
         
         if (errors.isEmpty()) {
             List<Type> typeParameters = typeParametersResult.get();

@@ -27,7 +27,7 @@ public class StaticContext {
     private final Map<List<String>, Type> global = new HashMap<List<String>, Type>();
     
     public StaticContext() {
-        scopes.add(new StaticScope());
+        scopes.add(new StaticScope(none(Type.class)));
     }
     
     public void add(String identifier, Type type) {
@@ -59,15 +59,15 @@ public class StaticContext {
         }
     }
 
-    public void enterNewScope() {
-        scopes.add(new StaticScope());
+    public void enterNewScope(Option<Type> type) {
+        scopes.add(new StaticScope(type));
     }
     
     public void exitScope() {
         scopes.remove(scopes.size() - 1);
     }
 
-    private StaticScope currentScope() {
+    public StaticScope currentScope() {
         return scopes.get(scopes.size() - 1);
     }
 }

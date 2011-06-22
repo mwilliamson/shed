@@ -1,5 +1,6 @@
 package org.zwobble.shed.compiler.typechecker;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Test;
@@ -207,6 +208,21 @@ public class TypeInfererTest {
         );
         TypeResult<Type> result = inferType(functionExpression, context);
         assertThat(errorStrings(result), is(asList("Cannot initialise variable of type \"String\" with expression of type \"Boolean\"")));
+    }
+    
+    @Test public void
+    bodyOfLongLambdaExpressionMustReturnExpressionOfTypeSpecifiedInSignature() {
+        StaticContext context = new StaticContext();
+        context.add("Boolean", CoreTypes.classOf(CoreTypes.BOOLEAN));
+        LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
+            Collections.<FormalArgumentNode>emptyList(),
+            new TypeIdentifierNode("Boolean"),
+            Arrays.<StatementNode>asList(
+                new ReturnNode(new NumberLiteralNode("4.2"))
+            )
+        );
+        TypeResult<Type> result = inferType(functionExpression, context);
+        assertThat(errorStrings(result), is(asList("Expected return expression of type \"Boolean\" but was of type \"Number\"")));
     }
     
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
