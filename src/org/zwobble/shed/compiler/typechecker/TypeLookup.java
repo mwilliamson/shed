@@ -15,13 +15,8 @@ import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 import static org.zwobble.shed.compiler.typechecker.VariableLookup.lookupVariableReference;
 
 public class TypeLookup {
-    private final NodeLocations nodeLocations;
-
-    public TypeLookup(NodeLocations nodeLocations) {
-        this.nodeLocations = nodeLocations;
-    }
-    
-    public TypeResult<Type> lookupTypeReference(TypeReferenceNode typeReference, StaticContext context) {
+    public static TypeResult<Type>
+    lookupTypeReference(TypeReferenceNode typeReference, NodeLocations nodeLocations, StaticContext context) {
         if (typeReference instanceof TypeIdentifierNode) {
             String identifier = ((TypeIdentifierNode)typeReference).getIdentifier();
             SourceRange nodeLocation = nodeLocations.locate(typeReference);

@@ -7,6 +7,7 @@ import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
+import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
@@ -186,8 +187,29 @@ public class TypeInfererTest {
         )));
     }
     
+    @Test public void
+    bodyOfLongLambdaExpressionIsTypeChecked() {
+        StaticContext context = new StaticContext();
+        context.add("String", CoreTypes.classOf(CoreTypes.STRING));
+        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
+        context.add("Boolean", CoreTypes.classOf(CoreTypes.BOOLEAN));
+        LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
+            Collections.<FormalArgumentNode>emptyList(),
+            new TypeIdentifierNode("Boolean"),
+            asList(
+                new ImmutableVariableNode(
+                    "x",
+                    some((TypeReferenceNode)new TypeIdentifierNode("String")),
+                    new BooleanLiteralNode(true)
+                ),
+                new ReturnNode(new BooleanLiteralNode(true))
+            )
+        );
+        TypeResult<Type> result = inferType(functionExpression, context);
+        assertThat(errorStrings(result), is(asList("Cannot initialise variable of type \"String\" with expression of type \"Boolean\"")));
+    }
+    
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
-        TypeLookup typeLookup = new TypeLookup(nodeLocations);
-        return new TypeInferer(nodeLocations, typeLookup).inferType(expression, context);
+        return TypeInferer.inferType(expression, nodeLocations, context);
     }
 }

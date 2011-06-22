@@ -59,8 +59,12 @@ public class StaticContext {
         }
     }
 
-    public void newScope() {
+    public void enterNewScope() {
         scopes.add(new StaticScope());
+    }
+    
+    public void exitScope() {
+        scopes.remove(scopes.size() - 1);
     }
 
     private StaticScope currentScope() {

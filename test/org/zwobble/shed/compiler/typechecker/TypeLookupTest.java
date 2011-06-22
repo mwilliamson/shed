@@ -64,6 +64,6 @@ public class TypeLookupTest {
     }
     
     private TypeResult<Type> lookupTypeReference(TypeReferenceNode typeReference, StaticContext context) {
-        return new TypeLookup(nodeLocations).lookupTypeReference(typeReference, context);
+        return TypeLookup.lookupTypeReference(typeReference, nodeLocations, context);
     }
 }
