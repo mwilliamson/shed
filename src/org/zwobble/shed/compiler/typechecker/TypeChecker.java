@@ -65,6 +65,14 @@ public class TypeChecker {
         }
         if (statement instanceof ReturnNode) {
             Option<Type> expectedReturnType = context.currentScope().getReturnType();
+            if (!expectedReturnType.hasValue()) {
+                return failure(asList(
+                    new CompilerError(
+                        nodeLocations.locate(statement),
+                        "Cannot return from this scope"
+                    )
+                ));
+            }
             ExpressionNode expression = ((ReturnNode) statement).getExpression();
             TypeResult<Type> expressionType = inferType(expression, nodeLocations, context);
             if (expressionType.get().equals(expectedReturnType.get())) {

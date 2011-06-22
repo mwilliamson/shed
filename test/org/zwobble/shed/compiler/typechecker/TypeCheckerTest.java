@@ -12,6 +12,7 @@ import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
@@ -207,6 +208,22 @@ public class TypeCheckerTest {
         assertThat(
             typeCheck(source),
             is(TypeResult.<Void>success(null))
+        );
+    }
+    
+    @Test public void
+    cannotReturnFromTopLevel() {
+        StatementNode returnStatement = new ReturnNode(new BooleanLiteralNode(true));
+        SourceNode source = new SourceNode(
+            new PackageDeclarationNode(asList("shed", "example")),
+            Collections.<ImportNode>emptyList(),
+            new PublicDeclarationNode(asList("x")),
+            asList(returnStatement)
+        );
+        
+        assertThat(
+            errorStrings(typeCheck(source)),
+            is(asList("Cannot return from this scope"))
         );
     }
     
