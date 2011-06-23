@@ -25,6 +25,7 @@ import org.zwobble.shed.compiler.types.TypeApplication;
 import com.google.common.base.Function;
 
 import static com.google.common.collect.Lists.transform;
+import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.typechecker.TypeChecker.typeCheckStatement;
@@ -57,38 +58,43 @@ public class TypeInferer {
         throw new RuntimeException("Cannot infer type of expression: " + expression);
     }
 
-    private static TypeResult<Type> inferType(ShortLambdaExpressionNode lambdaExpression, NodeLocations nodeLocations, StaticContext context) {
-        List<CompilerError> errors = new ArrayList<CompilerError>();
-        context.enterNewScope(none(Type.class));
-        
+    private static TypeResult<Type> inferType(final ShortLambdaExpressionNode lambdaExpression, final NodeLocations nodeLocations, StaticContext context) {
         List<TypeResult<FormalArgumentType>> argumentTypesResult = inferArgumentTypes(lambdaExpression.getFormalArguments(), nodeLocations, context);
 
+        context.enterNewScope(none(Type.class));
         for (TypeResult<FormalArgumentType> argumentTypeResult : argumentTypesResult) {
             argumentTypeResult.ifValueThen(addArgumentToContext(context));
-            errors.addAll(argumentTypeResult.getErrors());
         }
-        
-        TypeResult<Type> expressionTypeResult = inferType(lambdaExpression.getBody(), nodeLocations, context);
-        errors.addAll(expressionTypeResult.getErrors());
+        final TypeResult<Type> expressionTypeResult = inferType(lambdaExpression.getBody(), nodeLocations, context);
         context.exitScope();
+        
+        TypeResult<List<FormalArgumentType>> result = combine(argumentTypesResult).withErrorsFrom(expressionTypeResult);
         
         Option<TypeReferenceNode> returnTypeReference = lambdaExpression.getReturnType();
         if (returnTypeReference.hasValue()) {
             TypeResult<Type> returnTypeResult = lookupTypeReference(returnTypeReference.get(), nodeLocations, context);
-            errors.addAll(returnTypeResult.getErrors());
-            if (returnTypeResult.hasValue() && expressionTypeResult.hasValue() && !expressionTypeResult.get().equals(returnTypeResult.get())) {
-                errors.add(new CompilerError(
-                    nodeLocations.locate(lambdaExpression.getBody()),
-                    "Type mismatch: expected expression of type \"" + returnTypeResult.get().shortName() +
-                        "\" but was of type \"" + expressionTypeResult.get().shortName() + "\""
-                ));
-            }
+            result = result.withErrorsFrom(returnTypeResult.ifValueThen(new Function<Type, TypeResult<Void>>() {
+                @Override
+                public TypeResult<Void> apply(final Type returnType) {
+                    return expressionTypeResult.use(new Function<Type, TypeResult<Void>>() {
+                        @Override
+                        public TypeResult<Void> apply(Type expressionType) {
+                            if (expressionType.equals(returnType)) {
+                                return success(null);
+                            } else {
+                                return failure(asList(new CompilerError(
+                                    nodeLocations.locate(lambdaExpression.getBody()),
+                                    "Type mismatch: expected expression of type \"" + returnType.shortName() +
+                                        "\" but was of type \"" + expressionType.shortName() + "\""
+                                )));
+                            }
+                        }
+                    });
+                }
+            }));
         }
         
-        if (!errors.isEmpty()) {
-            return failure(errors);
-        }
-        return combine(argumentTypesResult).ifValueThen(buildFunctionType(expressionTypeResult.get()));
+        return result.ifValueThen(buildFunctionType(expressionTypeResult.get()));
     }
 
     private static TypeResult<Type>
