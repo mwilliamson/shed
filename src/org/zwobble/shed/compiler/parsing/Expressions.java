@@ -130,7 +130,7 @@ public class Expressions {
     }
     
     private static Rule<List<FormalArgumentNode>> formalArgumentList() {
-        final Rule<?> comma = sequence(OnError.FINISH, optional(whitespace()), symbol(","), optional(whitespace()));
+        final Rule<?> comma = sequence(OnError.FINISH, optional(whitespace()), guard(symbol(",")), optional(whitespace()));
         final Rule<List<FormalArgumentNode>> formalArguments = zeroOrMoreWithSeparator(formalArgument(), hardSeparator(comma));
         return then(
             sequence(OnError.FINISH,

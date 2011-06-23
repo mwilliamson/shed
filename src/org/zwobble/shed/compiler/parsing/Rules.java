@@ -15,13 +15,12 @@ import org.zwobble.shed.compiler.tokeniser.TokenType;
 
 import com.google.common.collect.ImmutableMap;
 
-import static org.zwobble.shed.compiler.parsing.ParseResult.subResults;
-
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.parsing.ParseResult.errorRecoveredWithValue;
 import static org.zwobble.shed.compiler.parsing.ParseResult.fatal;
+import static org.zwobble.shed.compiler.parsing.ParseResult.subResults;
 import static org.zwobble.shed.compiler.parsing.ParseResult.success;
 import static org.zwobble.shed.compiler.tokeniser.TokenType.WHITESPACE;
 

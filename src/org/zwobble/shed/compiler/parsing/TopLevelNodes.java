@@ -96,7 +96,7 @@ public class TopLevelNodes {
     }
     
     public static Rule<PublicDeclarationNode> publicDeclaration() {
-        Rule<RuleValues> comma = sequence(OnError.FINISH, optional(whitespace()), symbol(","), optional(whitespace()));
+        Rule<RuleValues> comma = sequence(OnError.FINISH, optional(whitespace()), guard(symbol(",")), optional(whitespace()));
         final Rule<List<String>> identifiers = oneOrMoreWithSeparator(tokenOfType(IDENTIFIER), hardSeparator(comma));
         return then( 
             aStatement(

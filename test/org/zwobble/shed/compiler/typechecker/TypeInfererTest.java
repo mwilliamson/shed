@@ -281,16 +281,16 @@ public class TypeInfererTest {
     @Test public void
     shortLambdaExpressionHandlesUnrecognisedArgumentTypes() {
         StaticContext context = new StaticContext();
-        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             asList(
-                new FormalArgumentNode("name", new TypeIdentifierNode("Strink"))
+                new FormalArgumentNode("name", new TypeIdentifierNode("Strink")),
+                new FormalArgumentNode("age", new TypeIdentifierNode("Numer"))
             ),
             none(TypeReferenceNode.class),
             new NumberLiteralNode("4")
         );
         TypeResult<Type> result = inferType(functionExpression, context);
-        assertThat(errorStrings(result), is(asList("No variable \"Strink\" in scope")));
+        assertThat(errorStrings(result), is(asList("No variable \"Strink\" in scope", "No variable \"Numer\" in scope")));
     }
     
     @Test public void
