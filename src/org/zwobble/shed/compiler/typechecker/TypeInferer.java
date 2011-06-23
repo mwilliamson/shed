@@ -23,7 +23,6 @@ import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
 
 import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 
 import static com.google.common.collect.Lists.transform;
 import static org.zwobble.shed.compiler.Option.none;
@@ -96,16 +95,15 @@ public class TypeInferer {
     inferLongLambdaExpressionType(final LongLambdaExpressionNode lambdaExpression, final NodeLocations nodeLocations, final StaticContext context) {
         final List<TypeResult<FormalArgumentType>> argumentTypesResult = inferArgumentTypes(lambdaExpression.getFormalArguments(), nodeLocations, context);
         TypeResult<Type> returnTypeResult = lookupTypeReference(lambdaExpression.getReturnType(), nodeLocations, context);
-        return returnTypeResult.ifValueThen(new Function<Type, TypeResult<Type>>() {
+        TypeResult<Void> bodyResult = returnTypeResult.use(new Function<Type, TypeResult<Void>>() {
             @Override
-            public TypeResult<Type> apply(Type returnType) {
+            public TypeResult<Void> apply(Type returnType) {
                 context.enterNewScope(some(returnType));
                 for (TypeResult<FormalArgumentType> argumentTypeResult : argumentTypesResult) {
                     argumentTypeResult.ifValueThen(addArgumentToContext(context));
                 }
-                TypeResult<Type> result = combine(argumentTypesResult)
-                    .ifValueThen(buildFunctionType(returnType));
                 
+                TypeResult<Void> result = success(null);
                 for (StatementNode statement : lambdaExpression.getBody()) {
                     TypeResult<Void> statementResult = typeCheckStatement(statement, nodeLocations, context);
                     result = result.withErrorsFrom(statementResult);
@@ -114,6 +112,13 @@ public class TypeInferer {
                 return result;
             }
         });
+        
+        return returnTypeResult.ifValueThen(new Function<Type, TypeResult<Type>>() {
+            @Override
+            public TypeResult<Type> apply(Type returnType) {
+                return combine(argumentTypesResult).ifValueThen(buildFunctionType(returnType));
+            }
+        }).withErrorsFrom(bodyResult);
     }
     
     private static Function<List<FormalArgumentType>, TypeResult<Type>> buildFunctionType(final Type returnType) {

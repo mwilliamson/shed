@@ -24,11 +24,11 @@ public class TypeResult<T> implements HasErrors {
         return new TypeResult<T>(false, null, errors);
     }
     
-    public static <T> TypeResult<List<T>> combine(List<? extends TypeResult<T>> results) {
+    public static <T> TypeResult<List<T>> combine(Iterable<? extends TypeResult<? extends T>> results) {
         List<T> values = new ArrayList<T>();
         List<CompilerError> errors = new ArrayList<CompilerError>();
         boolean success = true;
-        for (TypeResult<T> result : results) {
+        for (TypeResult<? extends T> result : results) {
             success &= result.success;
             errors.addAll(result.getErrors());
             values.add(result.value);
@@ -68,6 +68,15 @@ public class TypeResult<T> implements HasErrors {
         TypeResult<R> result = function.apply();
         return thenResult(result);
     }
+    
+    public <R> TypeResult<R> use(Function<T, TypeResult<R>> function) {
+        if (hasValue()) {
+            return function.apply(value);
+        } else {
+            return new TypeResult<R>(false, null, Collections.<CompilerError>emptyList());
+        }
+    }
+    
     
     public <R> TypeResult<R> ifValueThen(Function<T, TypeResult<R>> function) {
         if (hasValue()) {
