@@ -20,6 +20,8 @@ import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
 
+import static org.zwobble.shed.compiler.Option.none;
+
 import static org.zwobble.shed.compiler.Option.some;
 
 import static org.zwobble.shed.compiler.typechecker.TypeChecker.typeCheckStatement;
@@ -56,17 +58,25 @@ public class TypeInferer {
     private static TypeResult<Type> inferType(ShortLambdaExpressionNode lambdaExpression, NodeLocations nodeLocations, StaticContext context) {
         List<CompilerError> errors = new ArrayList<CompilerError>();
 
-        TypeResult<List<Type>> typeParametersResult = inferArgumentTypes(lambdaExpression.getFormalArguments(), nodeLocations, context);
-        errors.addAll(typeParametersResult.getErrors());
+        TypeResult<List<Type>> argumentTypesResult = inferArgumentTypes(lambdaExpression.getFormalArguments(), nodeLocations, context);
+        errors.addAll(argumentTypesResult.getErrors());
         
+        context.enterNewScope(none(Type.class));
+        if (argumentTypesResult.hasValue()) {
+            for (int argumentIndex = 0; argumentIndex < lambdaExpression.getFormalArguments().size(); argumentIndex++) {
+                String argumentName = lambdaExpression.getFormalArguments().get(argumentIndex).getName();
+                context.add(argumentName, argumentTypesResult.get().get(argumentIndex));
+            }
+        }
         TypeResult<Type> expressionTypeResult = inferType(lambdaExpression.getBody(), nodeLocations, context);
         errors.addAll(expressionTypeResult.getErrors());
+        context.exitScope();
         
         Option<TypeReferenceNode> returnTypeReference = lambdaExpression.getReturnType();
         if (returnTypeReference.hasValue()) {
             TypeResult<Type> returnTypeResult = lookupTypeReference(returnTypeReference.get(), nodeLocations, context);
             errors.addAll(returnTypeResult.getErrors());
-            if (returnTypeResult.isSuccess() && !expressionTypeResult.get().equals(returnTypeResult.get())) {
+            if (returnTypeResult.hasValue() && expressionTypeResult.hasValue() && !expressionTypeResult.get().equals(returnTypeResult.get())) {
                 errors.add(new CompilerError(
                     nodeLocations.locate(lambdaExpression.getBody()),
                     "Type mismatch: expected expression of type \"" + returnTypeResult.get().shortName() +
@@ -78,7 +88,7 @@ public class TypeInferer {
         if (!errors.isEmpty()) {
             return failure(errors);
         }
-        List<Type> typeParameters = typeParametersResult.get();
+        List<Type> typeParameters = argumentTypesResult.get();
         typeParameters.add(expressionTypeResult.get());
         
         return success((Type)new TypeApplication(CoreTypes.functionType(lambdaExpression.getFormalArguments().size()), typeParameters));
@@ -88,14 +98,18 @@ public class TypeInferer {
     inferLongLambdaExpressionType(LongLambdaExpressionNode lambdaExpression, NodeLocations nodeLocations, StaticContext context) {
         List<CompilerError> errors = new ArrayList<CompilerError>();
 
-        TypeResult<List<Type>> typeParametersResult = inferArgumentTypes(lambdaExpression.getFormalArguments(), nodeLocations, context);
-        errors.addAll(typeParametersResult.getErrors());
+        TypeResult<List<Type>> argumentTypesResult = inferArgumentTypes(lambdaExpression.getFormalArguments(), nodeLocations, context);
+        errors.addAll(argumentTypesResult.getErrors());
         
         TypeResult<Type> returnTypeResult = lookupTypeReference(lambdaExpression.getReturnType(), nodeLocations, context);
         errors.addAll(returnTypeResult.getErrors());
 
-        if (returnTypeResult.hasValue()) {
+        if (returnTypeResult.hasValue() && argumentTypesResult.hasValue()) {
             context.enterNewScope(some(returnTypeResult.get()));
+            for (int argumentIndex = 0; argumentIndex < lambdaExpression.getFormalArguments().size(); argumentIndex++) {
+                String argumentName = lambdaExpression.getFormalArguments().get(argumentIndex).getName();
+                context.add(argumentName, argumentTypesResult.get().get(argumentIndex));
+            }
             for (StatementNode statement : lambdaExpression.getBody()) {
                 TypeResult<Void> statementResult = typeCheckStatement(statement, nodeLocations, context);
                 errors.addAll(statementResult.getErrors());
@@ -104,7 +118,7 @@ public class TypeInferer {
         }
         
         if (errors.isEmpty()) {
-            List<Type> typeParameters = typeParametersResult.get();
+            List<Type> typeParameters = argumentTypesResult.get();
             typeParameters.add(returnTypeResult.get());
             return success((Type)new TypeApplication(CoreTypes.functionType(lambdaExpression.getFormalArguments().size()), typeParameters));
         } else {

@@ -225,6 +225,89 @@ public class TypeInfererTest {
         assertThat(errorStrings(result), is(asList("Expected return expression of type \"Boolean\" but was of type \"Number\"")));
     }
     
+    @Test public void
+    longLambdaExpressionAddsArgumentsToFunctionScope() {
+        StaticContext context = new StaticContext();
+        context.add("String", CoreTypes.classOf(CoreTypes.STRING));
+        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
+        LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
+            asList(
+                new FormalArgumentNode("name", new TypeIdentifierNode("String")),
+                new FormalArgumentNode("age", new TypeIdentifierNode("Number"))
+            ),
+            new TypeIdentifierNode("Number"),
+            asList((StatementNode)new ReturnNode(new VariableIdentifierNode("age")))
+        );
+        TypeResult<Type> result = inferType(functionExpression, context);
+        assertThat(result, is(success(
+            (Type) new TypeApplication(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.NUMBER))
+        )));
+    }
+    
+    @Test public void
+    longLambdaExpressionHandlesUnrecognisedArgumentTypes() {
+        StaticContext context = new StaticContext();
+        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
+        LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
+            asList(
+                new FormalArgumentNode("name", new TypeIdentifierNode("Strink"))
+            ),
+            new TypeIdentifierNode("Number"),
+            asList((StatementNode)new ReturnNode(new NumberLiteralNode("4")))
+        );
+        TypeResult<Type> result = inferType(functionExpression, context);
+        assertThat(errorStrings(result), is(asList("No variable \"Strink\" in scope")));
+    }
+    
+    @Test public void
+    shortLambdaExpressionAddsArgumentsToFunctionScope() {
+        StaticContext context = new StaticContext();
+        context.add("String", CoreTypes.classOf(CoreTypes.STRING));
+        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
+        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
+            asList(
+                new FormalArgumentNode("name", new TypeIdentifierNode("String")),
+                new FormalArgumentNode("age", new TypeIdentifierNode("Number"))
+            ),
+            none(TypeReferenceNode.class),
+            new VariableIdentifierNode("age")
+        );
+        TypeResult<Type> result = inferType(functionExpression, context);
+        assertThat(result, is(success(
+            (Type) new TypeApplication(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.NUMBER))
+        )));
+    }
+    
+    @Test public void
+    shortLambdaExpressionHandlesUnrecognisedArgumentTypes() {
+        StaticContext context = new StaticContext();
+        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
+        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
+            asList(
+                new FormalArgumentNode("name", new TypeIdentifierNode("Strink"))
+            ),
+            none(TypeReferenceNode.class),
+            new NumberLiteralNode("4")
+        );
+        TypeResult<Type> result = inferType(functionExpression, context);
+        assertThat(errorStrings(result), is(asList("No variable \"Strink\" in scope")));
+    }
+    
+    @Test public void
+    shortLambdaExpressionHandlesUnrecognisedUntypeableBodyWhenReturnTypeIsExplicit() {
+        StaticContext context = new StaticContext();
+        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
+        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
+            asList(
+                new FormalArgumentNode("age", new TypeIdentifierNode("Number"))
+            ),
+            some((TypeReferenceNode)new TypeIdentifierNode("Number")),
+            new VariableIdentifierNode("blah")
+        );
+        TypeResult<Type> result = inferType(functionExpression, context);
+        assertThat(errorStrings(result), is(asList("No variable \"blah\" in scope")));
+    }
+    
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
         return TypeInferer.inferType(expression, nodeLocations, context);
     }
