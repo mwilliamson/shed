@@ -60,15 +60,17 @@ public class TypeInferer {
 
     private static TypeResult<Type> inferType(final ShortLambdaExpressionNode lambdaExpression, final NodeLocations nodeLocations, StaticContext context) {
         List<TypeResult<FormalArgumentType>> argumentTypesResult = inferArgumentTypes(lambdaExpression.getFormalArguments(), nodeLocations, context);
-
+        TypeResult<List<FormalArgumentType>> result = combine(argumentTypesResult);
+        
         context.enterNewScope(none(Type.class));
         for (TypeResult<FormalArgumentType> argumentTypeResult : argumentTypesResult) {
-            argumentTypeResult.ifValueThen(addArgumentToContext(context));
+            TypeResult<Void> addArgumentToContextResult = argumentTypeResult.use(addArgumentToContext(context, nodeLocations));
+            result = result.withErrorsFrom(addArgumentToContextResult);
         }
         final TypeResult<Type> expressionTypeResult = inferType(lambdaExpression.getBody(), nodeLocations, context);
         context.exitScope();
         
-        TypeResult<List<FormalArgumentType>> result = combine(argumentTypesResult).withErrorsFrom(expressionTypeResult);
+        result = result.withErrorsFrom(expressionTypeResult);
         
         Option<TypeReferenceNode> returnTypeReference = lambdaExpression.getReturnType();
         if (returnTypeReference.hasValue()) {
@@ -106,7 +108,7 @@ public class TypeInferer {
             public TypeResult<Void> apply(Type returnType) {
                 context.enterNewScope(some(returnType));
                 for (TypeResult<FormalArgumentType> argumentTypeResult : argumentTypesResult) {
-                    argumentTypeResult.ifValueThen(addArgumentToContext(context));
+                    argumentTypeResult.ifValueThen(addArgumentToContext(context, nodeLocations));
                 }
                 
                 TypeResult<Void> result = success(null);
@@ -158,16 +160,16 @@ public class TypeInferer {
             @Override
             public TypeResult<FormalArgumentType> apply(FormalArgumentNode argument) {
                 TypeResult<Type> lookupTypeReference = lookupTypeReference(argument.getType(), nodeLocations, context);
-                return lookupTypeReference.ifValueThen(buildFormalArgumentType(argument.getName()));
+                return lookupTypeReference.ifValueThen(buildFormalArgumentType(argument));
             }
         };
     }
     
-    private static Function<Type, TypeResult<FormalArgumentType>> buildFormalArgumentType(final String name) {
+    private static Function<Type, TypeResult<FormalArgumentType>> buildFormalArgumentType(final FormalArgumentNode node) {
         return new Function<Type, TypeResult<FormalArgumentType>>() {
             @Override
             public TypeResult<FormalArgumentType> apply(Type type) {
-                return success(new FormalArgumentType(name, type));
+                return success(new FormalArgumentType(node.getName(), type, node));
             }
         };
     }
@@ -176,14 +178,23 @@ public class TypeInferer {
     private static class FormalArgumentType {
         private final String name;
         private final Type type;
+        private final FormalArgumentNode node;
     }
 
-    private static Function<FormalArgumentType, TypeResult<Void>> addArgumentToContext(final StaticContext context) {
+    private static Function<FormalArgumentType, TypeResult<Void>>
+    addArgumentToContext(final StaticContext context, final NodeLocations nodeLocations) {
         return new Function<FormalArgumentType, TypeResult<Void>>() {
             @Override
             public TypeResult<Void> apply(FormalArgumentType argument) {
-                context.add(argument.getName(), argument.getType());
-                return success(null);
+                if (context.isDeclaredInCurrentScope(argument.getName())) {
+                    return failure(asList(new CompilerError(
+                        nodeLocations.locate(argument.getNode()),
+                        "Duplicate argument name \"" + argument.getName() + "\""
+                    )));
+                } else {
+                    context.add(argument.getName(), argument.getType());
+                    return success(null);
+                }
             }
         };
     }
