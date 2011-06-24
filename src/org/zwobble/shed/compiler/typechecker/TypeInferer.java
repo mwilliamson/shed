@@ -101,17 +101,22 @@ public class TypeInferer {
 
     private static TypeResult<Type>
     inferLongLambdaExpressionType(final LongLambdaExpressionNode lambdaExpression, final NodeLocations nodeLocations, final StaticContext context) {
-        final List<TypeResult<FormalArgumentType>> argumentTypesResult = inferArgumentTypes(lambdaExpression.getFormalArguments(), nodeLocations, context);
+        final List<TypeResult<FormalArgumentType>> argumentTypeResults = inferArgumentTypes(lambdaExpression.getFormalArguments(), nodeLocations, context);
+        final TypeResult<List<FormalArgumentType>> combinedArgumentTypesResult = combine(argumentTypeResults);
         TypeResult<Type> returnTypeResult = lookupTypeReference(lambdaExpression.getReturnType(), nodeLocations, context);
+
+        TypeResult<?> result = combinedArgumentTypesResult.withErrorsFrom(returnTypeResult);
         TypeResult<Void> bodyResult = returnTypeResult.use(new Function<Type, TypeResult<Void>>() {
             @Override
             public TypeResult<Void> apply(Type returnType) {
+                TypeResult<Void> result = success(null);
+                
                 context.enterNewScope(some(returnType));
-                for (TypeResult<FormalArgumentType> argumentTypeResult : argumentTypesResult) {
-                    argumentTypeResult.ifValueThen(addArgumentToContext(context, nodeLocations));
+                for (TypeResult<FormalArgumentType> argumentTypeResult : argumentTypeResults) {
+                    TypeResult<Void> addArgumentToContextResult = argumentTypeResult.use(addArgumentToContext(context, nodeLocations));
+                    result = result.withErrorsFrom(addArgumentToContextResult);
                 }
                 
-                TypeResult<Void> result = success(null);
                 for (StatementNode statement : lambdaExpression.getBody()) {
                     TypeResult<Void> statementResult = typeCheckStatement(statement, nodeLocations, context);
                     result = result.withErrorsFrom(statementResult);
@@ -120,13 +125,14 @@ public class TypeInferer {
                 return result;
             }
         });
+        result = result.withErrorsFrom(bodyResult);
         
-        return returnTypeResult.ifValueThen(new Function<Type, TypeResult<Type>>() {
+        return returnTypeResult.use(new Function<Type, TypeResult<Type>>() {
             @Override
             public TypeResult<Type> apply(Type returnType) {
-                return combine(argumentTypesResult).ifValueThen(buildFunctionType(returnType));
+                return combinedArgumentTypesResult.use(buildFunctionType(returnType));
             }
-        }).withErrorsFrom(bodyResult);
+        }).withErrorsFrom(result);
     }
     
     private static Function<List<FormalArgumentType>, TypeResult<Type>> buildFunctionType(final Type returnType) {

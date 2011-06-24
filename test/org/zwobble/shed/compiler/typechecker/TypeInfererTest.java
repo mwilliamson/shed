@@ -324,6 +324,22 @@ public class TypeInfererTest {
         assertThat(errorStrings(result), is(asList("Duplicate argument name \"age\"")));
     }
     
+    @Test public void
+    longLambdaExpressionCannotHaveTwoArgumentsWithSameName() {
+        StaticContext context = new StaticContext();
+        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
+        LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
+            asList(
+                new FormalArgumentNode("age", new TypeIdentifierNode("Number")),
+                new FormalArgumentNode("age", new TypeIdentifierNode("Number"))
+            ),
+            new TypeIdentifierNode("Number"),
+            asList((StatementNode)new ReturnNode(new NumberLiteralNode("4")))
+        );
+        TypeResult<Type> result = inferType(functionExpression, context);
+        assertThat(errorStrings(result), is(asList("Duplicate argument name \"age\"")));
+    }
+    
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
         return TypeInferer.inferType(expression, nodeLocations, context);
     }
