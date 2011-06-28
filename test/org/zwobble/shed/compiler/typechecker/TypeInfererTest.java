@@ -340,6 +340,19 @@ public class TypeInfererTest {
         assertThat(errorStrings(result), is(asList("Duplicate argument name \"age\"")));
     }
     
+    @Test public void
+    bodyOfLongLambdaExpressionMustReturn() {
+        StaticContext context = new StaticContext();
+        context.add("Boolean", CoreTypes.classOf(CoreTypes.BOOLEAN));
+        LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
+            Collections.<FormalArgumentNode>emptyList(),
+            new TypeIdentifierNode("Boolean"),
+            Collections.<StatementNode>emptyList()
+        );
+        TypeResult<Type> result = inferType(functionExpression, context);
+        assertThat(errorStrings(result), is(asList("Expected return statement")));
+    }
+    
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
         return TypeInferer.inferType(expression, nodeLocations, context);
     }

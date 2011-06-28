@@ -13,6 +13,7 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
@@ -116,12 +117,22 @@ public class TypeInferer {
                     TypeResult<Void> addArgumentToContextResult = argumentTypeResult.use(addArgumentToContext(context, nodeLocations));
                     result = result.withErrorsFrom(addArgumentToContextResult);
                 }
-                
+
+                boolean hasReturned = false;
                 for (StatementNode statement : lambdaExpression.getBody()) {
                     TypeResult<Void> statementResult = typeCheckStatement(statement, nodeLocations, context);
                     result = result.withErrorsFrom(statementResult);
+                    if (statement instanceof ReturnNode) {
+                        hasReturned = true;
+                    }
                 }
                 context.exitScope();
+                if (!hasReturned) {
+                    result = result.withErrorsFrom(TypeResult.<Type>failure(asList(new CompilerError(
+                        nodeLocations.locate(lambdaExpression),
+                        "Expected return statement"
+                    ))));
+                }
                 return result;
             }
         });

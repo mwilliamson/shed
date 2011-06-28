@@ -11,8 +11,10 @@ import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -89,7 +91,8 @@ public class TypeCheckerTest {
                         Collections.<FormalArgumentNode>emptyList(),
                         new TypeIdentifierNode("String"),
                         Arrays.<StatementNode>asList(
-                            new ImmutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true))
+                            new ImmutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true)),
+                            new ReturnNode(new StringLiteralNode("Stop!"))
                         )
                     )
                 )
