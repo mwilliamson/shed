@@ -16,7 +16,7 @@ import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
 import static org.zwobble.shed.compiler.parsing.SourceRange.range;
-import static org.zwobble.shed.compiler.typechecker.VariableDeclarationTypeChecker.typeCheckImmutableVariableDeclaration;
+import static org.zwobble.shed.compiler.typechecker.VariableDeclarationTypeChecker.typeCheckVariableDeclaration;
 
 public class VariableDeclarationTypeCheckerTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
@@ -32,7 +32,7 @@ public class VariableDeclarationTypeCheckerTest {
         
         staticContext.add("Boolean", CoreTypes.classOf(CoreTypes.BOOLEAN));
         assertThat(
-            typeCheckImmutableVariableDeclaration(variableNode, nodeLocations, staticContext),
+            typeCheckVariableDeclaration(variableNode, nodeLocations, staticContext),
             is(TypeResult.<Void>success(null))
         );
         assertThat(staticContext.get("x"), is(some(CoreTypes.BOOLEAN)));
@@ -50,7 +50,7 @@ public class VariableDeclarationTypeCheckerTest {
         
         staticContext.add("String", CoreTypes.classOf(CoreTypes.STRING));
         assertThat(
-            typeCheckImmutableVariableDeclaration(variableNode, nodeLocations, staticContext),
+            typeCheckVariableDeclaration(variableNode, nodeLocations, staticContext),
             is(TypeResult.<Void>failure(asList(new CompilerError(
                 range(position(4, 12), position(6, 6)),
                 "Cannot initialise variable of type \"String\" with expression of type \"Boolean\""
@@ -66,7 +66,7 @@ public class VariableDeclarationTypeCheckerTest {
         staticContext.add("x", CoreTypes.BOOLEAN);
         
         assertThat(
-            errorStrings(typeCheckImmutableVariableDeclaration(variableNode, nodeLocations, staticContext)),
+            errorStrings(typeCheckVariableDeclaration(variableNode, nodeLocations, staticContext)),
             is(asList("The variable \"x\" has already been declared in this scope"))
         );
     }

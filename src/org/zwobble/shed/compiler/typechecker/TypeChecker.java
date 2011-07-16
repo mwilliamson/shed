@@ -5,19 +5,19 @@ import java.util.List;
 
 import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
-import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.types.Type;
 
 import static org.zwobble.shed.compiler.Option.none;
-import static org.zwobble.shed.compiler.typechecker.VariableDeclarationTypeChecker.typeCheckImmutableVariableDeclaration;
 import static org.zwobble.shed.compiler.typechecker.ImportStatementTypeChecker.typeCheckImportStatement;
 import static org.zwobble.shed.compiler.typechecker.ReturnStatementTypeChecker.typeCheckReturnStatement;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.typechecker.VariableDeclarationTypeChecker.typeCheckVariableDeclaration;
 
 public class TypeChecker {
     public static TypeResult<Void> typeCheck(SourceNode source, NodeLocations nodeLocations, StaticContext staticContext) {
@@ -42,8 +42,8 @@ public class TypeChecker {
     }
     
     public static TypeResult<Void> typeCheckStatement(StatementNode statement, NodeLocations nodeLocations, StaticContext context) {
-        if (statement instanceof ImmutableVariableNode) {
-            return typeCheckImmutableVariableDeclaration((ImmutableVariableNode)statement, nodeLocations, context);
+        if (statement instanceof VariableDeclarationNode) {
+            return typeCheckVariableDeclaration((VariableDeclarationNode)statement, nodeLocations, context);
         }
         if (statement instanceof ReturnNode) {
             return typeCheckReturnStatement((ReturnNode)statement, nodeLocations, context);
