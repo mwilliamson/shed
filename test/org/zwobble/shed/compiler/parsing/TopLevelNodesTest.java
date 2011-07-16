@@ -1,5 +1,6 @@
 package org.zwobble.shed.compiler.parsing;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Test;
@@ -64,7 +65,7 @@ public class TopLevelNodesTest {
                     new ImportNode(asList("shed", "util"))
                 ),
                 new PublicDeclarationNode(asList("List", "Set")),
-                asList(
+                Arrays.<StatementNode>asList(
                     new ImmutableVariableNode("x", none(TypeReferenceNode.class), new NumberLiteralNode("1")),
                     new MutableVariableNode("y", none(TypeReferenceNode.class), new NumberLiteralNode("2"))
                 )

@@ -15,7 +15,7 @@ import static org.zwobble.shed.compiler.typechecker.TypeLookup.lookupTypeReferen
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
-public class ImmutableVariableDeclarationTypeChecker {
+public class VariableDeclarationTypeChecker {
     public static TypeResult<Void>
     typeCheckImmutableVariableDeclaration(ImmutableVariableNode immutableVariable, NodeLocations nodeLocations, StaticContext staticContext) {
         List<CompilerError> errors = new ArrayList<CompilerError>();

@@ -16,9 +16,9 @@ import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
 import static org.zwobble.shed.compiler.parsing.SourceRange.range;
-import static org.zwobble.shed.compiler.typechecker.ImmutableVariableDeclarationTypeChecker.typeCheckImmutableVariableDeclaration;
+import static org.zwobble.shed.compiler.typechecker.VariableDeclarationTypeChecker.typeCheckImmutableVariableDeclaration;
 
-public class ImmutableVariableDeclarationTypeCheckerTest {
+public class VariableDeclarationTypeCheckerTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
     private final StaticContext staticContext = new StaticContext();
 

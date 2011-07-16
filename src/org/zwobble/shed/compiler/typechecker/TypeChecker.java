@@ -13,7 +13,7 @@ import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.types.Type;
 
 import static org.zwobble.shed.compiler.Option.none;
-import static org.zwobble.shed.compiler.typechecker.ImmutableVariableDeclarationTypeChecker.typeCheckImmutableVariableDeclaration;
+import static org.zwobble.shed.compiler.typechecker.VariableDeclarationTypeChecker.typeCheckImmutableVariableDeclaration;
 import static org.zwobble.shed.compiler.typechecker.ImportStatementTypeChecker.typeCheckImportStatement;
 import static org.zwobble.shed.compiler.typechecker.ReturnStatementTypeChecker.typeCheckReturnStatement;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
