@@ -5,7 +5,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class ScalarType implements Type {
+public class ClassType implements Type {
     private final List<String> scope;
     private final String name;
     

@@ -13,13 +13,13 @@ import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.IntRange.range;
 
 public class CoreTypes {
-    public static final Type BOOLEAN = new ScalarType(Collections.<String>emptyList(), "Boolean");
-    public static final Type NUMBER = new ScalarType(Collections.<String>emptyList(), "Number");
-    public static final Type STRING = new ScalarType(Collections.<String>emptyList(), "String");
-    public static final Type UNIT = new ScalarType(Collections.<String>emptyList(), "Unit");
+    public static final Type BOOLEAN = new ClassType(Collections.<String>emptyList(), "Boolean");
+    public static final Type NUMBER = new ClassType(Collections.<String>emptyList(), "Number");
+    public static final Type STRING = new ClassType(Collections.<String>emptyList(), "String");
+    public static final Type UNIT = new ClassType(Collections.<String>emptyList(), "Unit");
     
     public static final TypeFunction CLASS = new TypeFunction(
-        new ScalarType(Collections.<String>emptyList(), "Class"),
+        new ClassType(Collections.<String>emptyList(), "Class"),
         asList(new FormalTypeParameter("C"))
     );
     
@@ -34,7 +34,7 @@ public class CoreTypes {
             List<FormalTypeParameter> formalTypeParameters = newArrayList(transform(range(arguments), toFormalTypeParameter()));
             formalTypeParameters.add(new FormalTypeParameter("TResult"));
             TypeFunction functionType = new TypeFunction(
-                new ScalarType(Collections.<String>emptyList(), "Function" + arguments),
+                new ClassType(Collections.<String>emptyList(), "Function" + arguments),
                 formalTypeParameters
             );
             functionTypes.put(arguments, functionType);
