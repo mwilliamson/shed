@@ -7,6 +7,8 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.types.Type;
 
+import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
+
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.typechecker.TypeInferer.inferType;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
@@ -28,7 +30,7 @@ public class ReturnStatementTypeChecker {
         if (!expressionType.isSuccess()) {
             return failure(expressionType.getErrors());
         }
-        if (expressionType.get().equals(expectedReturnType.get())) {
+        if (isSubType(expressionType.get(), expectedReturnType.get())) {
             return success(null);
         } else {
             String expectedName = expectedReturnType.get().shortName();

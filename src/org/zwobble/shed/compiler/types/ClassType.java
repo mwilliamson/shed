@@ -18,6 +18,6 @@ public class ClassType implements ScalarType {
     
     @Override
     public Set<InterfaceType> superTypes() {
-        return null;
+        return superTypes;
     }
 }
