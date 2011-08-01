@@ -1,9 +1,12 @@
 package org.zwobble.shed.compiler.typechecker;
 
+import java.util.Collections;
+
 import org.junit.Test;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ClassType;
+import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Type;
 
 import static java.util.Arrays.asList;
@@ -19,7 +22,7 @@ public class ImportStatementTypeCheckerTest {
     
     @Test public void
     importingValuesAddsThemToCurrentScope() {
-        Type dateTime = new ClassType(asList("shed", "time"), "DateTime");
+        Type dateTime = new ClassType(asList("shed", "time"), "DateTime", Collections.<InterfaceType>emptySet());
         staticContext.addGlobal(asList("shed", "time", "DateTime"), CoreTypes.classOf(dateTime));
         
         ImportNode importStatement = new ImportNode(asList("shed", "time", "DateTime"));
@@ -42,7 +45,7 @@ public class ImportStatementTypeCheckerTest {
     
     @Test public void
     errorIfImportingTwoValuesWithTheSameName() {
-        Type dateTime = new ClassType(asList("shed", "time"), "DateTime");
+        Type dateTime = new ClassType(asList("shed", "time"), "DateTime", Collections.<InterfaceType>emptySet());
         staticContext.addGlobal(asList("shed", "time", "DateTime"), CoreTypes.classOf(dateTime));
         staticContext.add("DateTime", CoreTypes.classOf(dateTime));
         

@@ -1,5 +1,7 @@
 package org.zwobble.shed.compiler.types;
 
-public interface ScalarType extends Type {
+import java.util.Set;
 
+public interface ScalarType extends Type {
+    Set<InterfaceType> superTypes();
 }

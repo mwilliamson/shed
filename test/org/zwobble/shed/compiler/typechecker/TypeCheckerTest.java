@@ -18,6 +18,7 @@ import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ClassType;
+import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Type;
 
 import static java.util.Arrays.asList;
@@ -41,7 +42,7 @@ public class TypeCheckerTest {
     
     @Test public void
     newScopeIsCreatedBySource() {
-        Type customString = new ClassType(asList("shed", "custom"), "String");
+        Type customString = new ClassType(asList("shed", "custom"), "String", Collections.<InterfaceType>emptySet());
         staticContext.addGlobal(asList("shed", "custom", "String"), CoreTypes.classOf(customString));
         
         staticContext.add("String", CoreTypes.STRING);
