@@ -8,6 +8,5 @@ import lombok.Data;
 public class SourceNode implements SyntaxNode {
     private final PackageDeclarationNode packageDeclaration;
     private final List<ImportNode> imports;
-    private final PublicDeclarationNode publicDeclaration;
     private final List<StatementNode> statements;
 }

@@ -4,10 +4,8 @@ import java.util.List;
 
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.PackageDeclarationNode;
-import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
-import org.zwobble.shed.compiler.tokeniser.Keyword;
 import org.zwobble.shed.compiler.tokeniser.Token;
 
 import static org.zwobble.shed.compiler.parsing.Rules.guard;
@@ -33,15 +31,12 @@ public class TopLevelNodes {
     public static Rule<SourceNode> source() {
         final Rule<PackageDeclarationNode> packageDeclaration;
         final Rule<List<ImportNode>> imports;
-        final Rule<PublicDeclarationNode> publicDeclaration;
         final Rule<List<StatementNode>> statements;
         return then(
             sequence(OnError.CONTINUE,
                 packageDeclaration = packageDeclaration(),
                 optional(whitespace()),
                 imports = zeroOrMoreWithSeparator(importNode(), softSeparator(whitespace())),
-                optional(whitespace()),
-                publicDeclaration = publicDeclaration(),
                 optional(whitespace()),
                 statements = oneOrMoreWithSeparator(statement(), softSeparator(whitespace())),
                 optional(whitespace()),
@@ -53,7 +48,6 @@ public class TopLevelNodes {
                     return new SourceNode(
                         result.get(packageDeclaration),
                         result.get(imports),
-                        result.get(publicDeclaration),
                         result.get(statements)
                     );
                 }
@@ -90,24 +84,6 @@ public class TopLevelNodes {
                 @Override
                 public ImportNode apply(RuleValues result) {
                     return new ImportNode(result.get(names));
-                }
-            }
-        );
-    }
-    
-    public static Rule<PublicDeclarationNode> publicDeclaration() {
-        Rule<RuleValues> comma = sequence(OnError.FINISH, optional(whitespace()), guard(symbol(",")), optional(whitespace()));
-        final Rule<List<String>> identifiers = oneOrMoreWithSeparator(tokenOfType(IDENTIFIER), hardSeparator(comma));
-        return then( 
-            aStatement(
-                keyword(Keyword.PUBLIC),
-                whitespace(),
-                identifiers
-            ),
-            new ParseAction<RuleValues, PublicDeclarationNode>() {
-                @Override
-                public PublicDeclarationNode apply(RuleValues result) {
-                    return new PublicDeclarationNode(result.get(identifiers));
                 }
             }
         );

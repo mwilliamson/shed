@@ -10,7 +10,6 @@ import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.PackageDeclarationNode;
-import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
@@ -35,7 +34,6 @@ public class TypeCheckerTest {
         SourceNode source = new SourceNode(
             new PackageDeclarationNode(asList("shed", "example")),
             Collections.<ImportNode>emptyList(),
-            new PublicDeclarationNode(asList("x")),
             asList((StatementNode)new ImmutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true)))
         );
         assertThat(typeCheck(source).isSuccess(), is(true));
@@ -50,7 +48,6 @@ public class TypeCheckerTest {
         SourceNode source = new SourceNode(
             new PackageDeclarationNode(asList("shed", "example")),
             asList(new ImportNode(asList("shed", "custom", "String"))),
-            new PublicDeclarationNode(asList("x")),
             asList((StatementNode)new ImmutableVariableNode(
                 "x",
                 none(TypeReferenceNode.class),
@@ -68,7 +65,6 @@ public class TypeCheckerTest {
         SourceNode source = new SourceNode(
             new PackageDeclarationNode(asList("shed", "example")),
             Collections.<ImportNode>emptyList(),
-            new PublicDeclarationNode(asList("x")),
             asList((StatementNode)new ImmutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true)))
         );
         typeCheck(source);
@@ -81,7 +77,6 @@ public class TypeCheckerTest {
         SourceNode source = new SourceNode(
             new PackageDeclarationNode(asList("shed", "example")),
             Collections.<ImportNode>emptyList(),
-            new PublicDeclarationNode(asList("x")),
             Arrays.<StatementNode>asList(
                 new ImmutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true)),
                 new ImmutableVariableNode(
