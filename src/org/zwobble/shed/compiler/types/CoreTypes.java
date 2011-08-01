@@ -18,7 +18,10 @@ public class CoreTypes {
     public static final Type STRING = new ScalarType(Collections.<String>emptyList(), "String");
     public static final Type UNIT = new ScalarType(Collections.<String>emptyList(), "Unit");
     
-    public static final TypeFunction CLASS = new TypeFunction(Collections.<String>emptyList(), "Class", asList(new FormalTypeParameter("C")));
+    public static final TypeFunction CLASS = new TypeFunction(
+        new ScalarType(Collections.<String>emptyList(), "Class"),
+        asList(new FormalTypeParameter("C"))
+    );
     
     public static TypeApplication classOf(Type type) {
         return new TypeApplication(CLASS, asList(type));
@@ -30,7 +33,10 @@ public class CoreTypes {
         if (!functionTypes.containsKey(arguments)) {
             List<FormalTypeParameter> formalTypeParameters = newArrayList(transform(range(arguments), toFormalTypeParameter()));
             formalTypeParameters.add(new FormalTypeParameter("TResult"));
-            TypeFunction functionType = new TypeFunction(Collections.<String>emptyList(), "Function" + arguments, formalTypeParameters);
+            TypeFunction functionType = new TypeFunction(
+                new ScalarType(Collections.<String>emptyList(), "Function" + arguments),
+                formalTypeParameters
+            );
             functionTypes.put(arguments, functionType);
         }
         return functionTypes.get(arguments);

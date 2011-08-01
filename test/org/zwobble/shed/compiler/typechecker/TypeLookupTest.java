@@ -8,6 +8,7 @@ import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
+import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
 import org.zwobble.shed.compiler.types.TypeFunction;
@@ -56,7 +57,7 @@ public class TypeLookupTest {
     @Test public void
     errorIfVariableDoesNotReferenceTypeInCurrentContext() {
         StaticContext context = new StaticContext();
-        TypeFunction listType = new TypeFunction(Collections.<String>emptyList(), "List", asList(new FormalTypeParameter("E")));
+        TypeFunction listType = new TypeFunction(new ScalarType(Collections.<String>emptyList(), "List"), asList(new FormalTypeParameter("E")));
         TypeApplication type = new TypeApplication(listType, asList(CoreTypes.NUMBER));
         context.add("String", type);
         TypeResult<Type> result = lookupTypeReference(new TypeIdentifierNode("String"), context);
