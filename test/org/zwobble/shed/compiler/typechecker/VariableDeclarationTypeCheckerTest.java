@@ -6,8 +6,12 @@ import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
+import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
+import org.zwobble.shed.compiler.types.InterfaceType;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -55,6 +59,25 @@ public class VariableDeclarationTypeCheckerTest {
                 range(position(4, 12), position(6, 6)),
                 "Cannot initialise variable of type \"String\" with expression of type \"Boolean\""
             ))))
+        );
+    }
+
+    @Test public void
+    canInstantiateVariableWithSubType() {
+        InterfaceType iterableType = new InterfaceType(asList("shed", "util"), "Iterable");
+        ClassType listType = new ClassType(asList("shed", "util"), "List", newHashSet(iterableType));
+        staticContext.add("myList", listType);
+        staticContext.add("Iterable", CoreTypes.classOf(iterableType));
+        
+        ImmutableVariableNode variableNode = new ImmutableVariableNode(
+            "x",
+            some(new TypeIdentifierNode("Iterable")),
+            new VariableIdentifierNode("myList")
+        );
+        
+        assertThat(
+            typeCheckVariableDeclaration(variableNode, nodeLocations, staticContext),
+            is(TypeResult.<Void>success(null))
         );
     }
     

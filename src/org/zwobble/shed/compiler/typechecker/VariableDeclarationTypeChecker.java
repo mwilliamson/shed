@@ -9,6 +9,8 @@ import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.types.Type;
 
+import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
+
 import static org.zwobble.shed.compiler.typechecker.TypeErrors.duplicateIdentifierError;
 import static org.zwobble.shed.compiler.typechecker.TypeInferer.inferType;
 import static org.zwobble.shed.compiler.typechecker.TypeLookup.lookupTypeReference;
@@ -27,7 +29,7 @@ public class VariableDeclarationTypeChecker {
             TypeReferenceNode typeReference = variableDeclaration.getTypeReference().get();
             TypeResult<Type> typeResult = lookupTypeReference(typeReference, nodeLocations, staticContext);
             errors.addAll(typeResult.getErrors());
-            if (errors.isEmpty() && !valueTypeResult.get().equals(typeResult.get())) {
+            if (errors.isEmpty() && !isSubType(valueTypeResult.get(), typeResult.get())) {
                 errors.add(new CompilerError(
                     nodeLocations.locate(variableDeclaration.getValue()),
                     "Cannot initialise variable of type \"" + typeResult.get().shortName() +
