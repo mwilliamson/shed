@@ -5,6 +5,7 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
@@ -31,6 +32,10 @@ public class JavaScriptGenerator {
         if (node instanceof ShortLambdaExpressionNode) {
             ShortLambdaExpressionNode lambda = (ShortLambdaExpressionNode)node;
             return js.func(transform(lambda.getFormalArguments(), toFormalArgumentName()), asList(generate(lambda.getBody())));
+        }
+        if (node instanceof ReturnNode) {
+            ReturnNode returnNode = (ReturnNode)node;
+            return js.ret(generate(returnNode.getExpression()));
         }
         return null;
     }

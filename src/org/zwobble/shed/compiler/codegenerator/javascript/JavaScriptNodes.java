@@ -28,4 +28,8 @@ public class JavaScriptNodes {
     public JavaScriptFunctionNode func(List<String> arguments, List<JavaScriptNode> statements) {
         return new JavaScriptFunctionNode(arguments, statements);
     }
+    
+    public JavaScriptReturnNode ret(JavaScriptNode value) {
+        return new JavaScriptReturnNode(value);
+    }
 }

@@ -10,6 +10,7 @@ import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
@@ -74,6 +75,12 @@ public class JavaScriptGeneratorTest {
             new BooleanLiteralNode(true)
         );
         assertGeneratedJavaScript(source, js.func(asList("name", "age"), asList(generator.generate(new BooleanLiteralNode(true)))));
+    }
+    
+    @Test public void
+    returnStatementIsConvertedToJavaScriptReturn() {
+        ReturnNode source = new ReturnNode(new BooleanLiteralNode(true));
+        assertGeneratedJavaScript(source, js.ret(generator.generate(new BooleanLiteralNode(true))));
     }
     
     private void assertGeneratedJavaScript(SyntaxNode source, JavaScriptNode expectedJavaScript) {
