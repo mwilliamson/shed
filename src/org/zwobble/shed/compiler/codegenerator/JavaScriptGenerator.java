@@ -11,6 +11,7 @@ import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 
@@ -28,6 +29,9 @@ public class JavaScriptGenerator {
         }
         if (node instanceof NumberLiteralNode) {
             return js.call(js.id("SHED.shed.lang.Number"), js.number(((NumberLiteralNode)node).getValue()));
+        }
+        if (node instanceof StringLiteralNode) {
+            return js.call(js.id("SHED.shed.lang.String"), js.string(((StringLiteralNode)node).getValue()));
         }
         if (node instanceof VariableDeclarationNode) {
             VariableDeclarationNode immutableVariable = (VariableDeclarationNode)node;

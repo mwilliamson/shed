@@ -1,8 +1,8 @@
 package org.zwobble.shed.compiler.codegenerator.javascript;
 
-import static java.util.Arrays.asList;
-
 import java.util.List;
+
+import static java.util.Arrays.asList;
 
 public class JavaScriptNodes {
     public JavaScriptBooleanLiteralNode bool(boolean value) {
@@ -31,5 +31,9 @@ public class JavaScriptNodes {
     
     public JavaScriptReturnNode ret(JavaScriptNode value) {
         return new JavaScriptReturnNode(value);
+    }
+
+    public JavaScriptStringLiteralNode string(String value) {
+        return new JavaScriptStringLiteralNode(value);
     }
 }

@@ -13,6 +13,7 @@ import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
@@ -41,6 +42,12 @@ public class JavaScriptGeneratorTest {
     numberLiteralsAreConvertedToBoxedNumbers() {
         NumberLiteralNode source = new NumberLiteralNode("4.2");
         assertGeneratedJavaScript(source, js.call(js.id("SHED.shed.lang.Number"), js.number("4.2")));
+    }
+    
+    @Test public void
+    stringLiteralsAreConvertedToBoxedStrings() {
+        StringLiteralNode source = new StringLiteralNode("Stop giving me verses");
+        assertGeneratedJavaScript(source, js.call(js.id("SHED.shed.lang.String"), js.string("Stop giving me verses")));
     }
     
     @Test public void
