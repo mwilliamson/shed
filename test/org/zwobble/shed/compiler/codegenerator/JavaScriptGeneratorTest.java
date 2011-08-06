@@ -1,15 +1,20 @@
 package org.zwobble.shed.compiler.codegenerator;
 
+import java.util.Collections;
+
 import org.junit.Test;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.Option.none;
@@ -45,6 +50,16 @@ public class JavaScriptGeneratorTest {
     mutableVariableNodesAreConvertedToVariableDeclarations() {
         MutableVariableNode source = new MutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true));
         assertGeneratedJavaScript(source, js.var("x", generator.generate(new BooleanLiteralNode(true))));
+    }
+    
+    @Test public void
+    shortLambdaExpressionWithoutArgumentsIsConvertedIntoJavaScriptAnonymousFunction() {
+        ShortLambdaExpressionNode source = new ShortLambdaExpressionNode(
+            Collections.<FormalArgumentNode>emptyList(),
+            none(TypeReferenceNode.class),
+            new BooleanLiteralNode(true)
+        );
+        assertGeneratedJavaScript(source, js.func(asList(generator.generate(new BooleanLiteralNode(true)))));
     }
     
     private void assertGeneratedJavaScript(SyntaxNode source, JavaScriptNode expectedJavaScript) {

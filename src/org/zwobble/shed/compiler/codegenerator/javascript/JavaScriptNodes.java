@@ -2,6 +2,8 @@ package org.zwobble.shed.compiler.codegenerator.javascript;
 
 import static java.util.Arrays.asList;
 
+import java.util.List;
+
 public class JavaScriptNodes {
     public JavaScriptBooleanLiteralNode bool(boolean value) {
         return new JavaScriptBooleanLiteralNode(value);
@@ -21,5 +23,9 @@ public class JavaScriptNodes {
 
     public JavaScriptVariableDeclarationNode var(String name, JavaScriptNode initialValue) {
         return new JavaScriptVariableDeclarationNode(name, initialValue);
+    }
+    
+    public JavaScriptFunctionNode func(List<JavaScriptNode> statements) {
+        return new JavaScriptFunctionNode(statements);
     }
 }
