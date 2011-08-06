@@ -7,6 +7,10 @@ public class JavaScriptNodes {
         return new JavaScriptBooleanLiteralNode(value);
     }
     
+    public JavaScriptNumberLiteralNode number(String value) {
+        return new JavaScriptNumberLiteralNode(value);
+    }
+    
     public JavaScriptFunctionCallNode call(JavaScriptNode function, JavaScriptNode... arguments) {
         return new JavaScriptFunctionCallNode(function, asList(arguments));
     }
