@@ -5,6 +5,7 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
+import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
@@ -37,6 +38,12 @@ public class JavaScriptGeneratorTest {
     @Test public void
     immutableVariableNodesAreConvertedToVariableDeclarations() {
         ImmutableVariableNode source = new ImmutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true));
+        assertGeneratedJavaScript(source, js.var("x", generator.generate(new BooleanLiteralNode(true))));
+    }
+    
+    @Test public void
+    mutableVariableNodesAreConvertedToVariableDeclarations() {
+        MutableVariableNode source = new MutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true));
         assertGeneratedJavaScript(source, js.var("x", generator.generate(new BooleanLiteralNode(true))));
     }
     
