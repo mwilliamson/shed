@@ -1,4 +1,4 @@
-package org.zwobble.shed.compiler.parsing.nodes;
+package org.zwobble.shed.compiler.codegenerator.javascript;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -7,7 +7,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
-public class BooleanLiteralNode implements ExpressionNode {
+public class JavaScriptBooleanLiteralNode implements JavaScriptNode {
     private final boolean value;
     
     public boolean getValue() {
