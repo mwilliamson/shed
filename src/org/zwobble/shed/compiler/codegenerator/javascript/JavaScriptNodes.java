@@ -18,4 +18,8 @@ public class JavaScriptNodes {
     public JavaScriptIdentifierNode id(String identifier) {
         return new JavaScriptIdentifierNode(identifier);
     }
+
+    public JavaScriptVariableDeclarationNode var(String name, JavaScriptNode initialValue) {
+        return new JavaScriptVariableDeclarationNode(name, initialValue);
+    }
 }
