@@ -8,6 +8,7 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
+import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
@@ -81,6 +82,24 @@ public class JavaScriptGeneratorTest {
     returnStatementIsConvertedToJavaScriptReturn() {
         ReturnNode source = new ReturnNode(new BooleanLiteralNode(true));
         assertGeneratedJavaScript(source, js.ret(generator.generate(new BooleanLiteralNode(true))));
+    }
+    
+    @Test public void
+    longLambdaExpressionIsConvertedIntoJavaScriptAnonymousFunction() {
+        ImmutableVariableNode variableNode = new ImmutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true));
+        ReturnNode returnNode = new ReturnNode(new NumberLiteralNode("42"));
+        LongLambdaExpressionNode source = new LongLambdaExpressionNode(
+            asList(
+                new FormalArgumentNode("name", new TypeIdentifierNode("String")),
+                new FormalArgumentNode("age", new TypeIdentifierNode("Number"))
+            ),
+            new TypeIdentifierNode("Number"),
+            asList(variableNode, returnNode)
+        );
+        assertGeneratedJavaScript(
+            source,
+            js.func(asList("name", "age"), asList(generator.generate(variableNode), generator.generate(returnNode)))
+        );
     }
     
     private void assertGeneratedJavaScript(SyntaxNode source, JavaScriptNode expectedJavaScript) {

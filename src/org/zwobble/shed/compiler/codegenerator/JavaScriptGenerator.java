@@ -1,12 +1,16 @@
 package org.zwobble.shed.compiler.codegenerator;
 
+import java.util.List;
+
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
+import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 
@@ -31,7 +35,15 @@ public class JavaScriptGenerator {
         }
         if (node instanceof ShortLambdaExpressionNode) {
             ShortLambdaExpressionNode lambda = (ShortLambdaExpressionNode)node;
-            return js.func(transform(lambda.getFormalArguments(), toFormalArgumentName()), asList(generate(lambda.getBody())));
+            List<String> argumentNames = transform(lambda.getFormalArguments(), toFormalArgumentName());
+            List<JavaScriptNode> javaScriptBody = asList(generate(lambda.getBody()));
+            return js.func(argumentNames, javaScriptBody);
+        }
+        if (node instanceof LongLambdaExpressionNode) {
+            LongLambdaExpressionNode lambda = (LongLambdaExpressionNode)node;
+            List<JavaScriptNode> javaScriptBody = transform(lambda.getBody(), toJavaScriptStatement());
+            List<String> argumentNames = transform(lambda.getFormalArguments(), toFormalArgumentName());
+            return js.func(argumentNames, javaScriptBody);
         }
         if (node instanceof ReturnNode) {
             ReturnNode returnNode = (ReturnNode)node;
@@ -45,6 +57,15 @@ public class JavaScriptGenerator {
             @Override
             public String apply(FormalArgumentNode input) {
                 return input.getName();
+            }
+        };
+    }
+
+    private Function<StatementNode, JavaScriptNode> toJavaScriptStatement() {
+        return new Function<StatementNode, JavaScriptNode>() {
+            @Override
+            public JavaScriptNode apply(StatementNode input) {
+                return generate(input);
             }
         };
     }
