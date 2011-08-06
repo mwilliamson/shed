@@ -3,11 +3,15 @@ package org.zwobble.shed.compiler.codegenerator;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 
+import com.google.common.base.Function;
+
+import static com.google.common.collect.Lists.transform;
 import static java.util.Arrays.asList;
 
 public class JavaScriptGenerator {
@@ -26,8 +30,17 @@ public class JavaScriptGenerator {
         }
         if (node instanceof ShortLambdaExpressionNode) {
             ShortLambdaExpressionNode lambda = (ShortLambdaExpressionNode)node;
-            return js.func(asList(generate(lambda.getBody())));
+            return js.func(transform(lambda.getFormalArguments(), toFormalArgumentName()), asList(generate(lambda.getBody())));
         }
         return null;
+    }
+
+    private Function<FormalArgumentNode, String> toFormalArgumentName() {
+        return new Function<FormalArgumentNode, String>() {
+            @Override
+            public String apply(FormalArgumentNode input) {
+                return input.getName();
+            }
+        };
     }
 }

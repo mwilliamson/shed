@@ -12,6 +12,7 @@ import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
+import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 
 import static java.util.Arrays.asList;
@@ -59,7 +60,20 @@ public class JavaScriptGeneratorTest {
             none(TypeReferenceNode.class),
             new BooleanLiteralNode(true)
         );
-        assertGeneratedJavaScript(source, js.func(asList(generator.generate(new BooleanLiteralNode(true)))));
+        assertGeneratedJavaScript(source, js.func(Collections.<String>emptyList(), asList(generator.generate(new BooleanLiteralNode(true)))));
+    }
+    
+    @Test public void
+    shortLambdaExpressionWithArgumentsIsConvertedIntoJavaScriptAnonymousFunction() {
+        ShortLambdaExpressionNode source = new ShortLambdaExpressionNode(
+            asList(
+                new FormalArgumentNode("name", new TypeIdentifierNode("String")),
+                new FormalArgumentNode("age", new TypeIdentifierNode("Number"))
+            ),
+            none(TypeReferenceNode.class),
+            new BooleanLiteralNode(true)
+        );
+        assertGeneratedJavaScript(source, js.func(asList("name", "age"), asList(generator.generate(new BooleanLiteralNode(true)))));
     }
     
     private void assertGeneratedJavaScript(SyntaxNode source, JavaScriptNode expectedJavaScript) {

@@ -25,7 +25,7 @@ public class JavaScriptNodes {
         return new JavaScriptVariableDeclarationNode(name, initialValue);
     }
     
-    public JavaScriptFunctionNode func(List<JavaScriptNode> statements) {
-        return new JavaScriptFunctionNode(statements);
+    public JavaScriptFunctionNode func(List<String> arguments, List<JavaScriptNode> statements) {
+        return new JavaScriptFunctionNode(arguments, statements);
     }
 }
