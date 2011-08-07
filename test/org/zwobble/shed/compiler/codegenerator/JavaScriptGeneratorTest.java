@@ -24,7 +24,7 @@ import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.Option.none;
 
 public class JavaScriptGeneratorTest {
-    private final JavaScriptGenerator generator = new JavaScriptGenerator();
+    private final JavaScriptGenerator generator = new JavaScriptGenerator(null);
     private final JavaScriptNodes js = new JavaScriptNodes();
     
     @Test public void

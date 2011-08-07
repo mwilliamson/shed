@@ -22,6 +22,11 @@ import static java.util.Arrays.asList;
 
 public class JavaScriptGenerator {
     private final JavaScriptNodes js = new JavaScriptNodes();
+    private final JavaScriptImportGenerator importGenerator;
+    
+    public JavaScriptGenerator(JavaScriptImportGenerator importGenerator) {
+        this.importGenerator = importGenerator;
+    }
     
     public JavaScriptNode generate(SyntaxNode node) {
         if (node instanceof BooleanLiteralNode) {
