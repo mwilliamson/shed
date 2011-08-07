@@ -126,6 +126,7 @@ public class JavaScriptGeneratorTest {
         assertThat(
             generator.generate(source),
             is((JavaScriptNode)js.statements(
+                js.var("__shed", importGenerator.generateExpression(packageDeclaration, JavaScriptGenerator.CORE_TYPES_IMPORT_NODE)),
                 js.var("DateTime", importGenerator.generateExpression(packageDeclaration, importNode)),
                 generator.generate(statement)
             ))

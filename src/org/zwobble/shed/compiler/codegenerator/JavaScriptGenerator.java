@@ -5,6 +5,7 @@ import java.util.List;
 import org.zwobble.shed.compiler.ShedSymbols;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptVariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
@@ -24,8 +25,11 @@ import com.google.common.collect.Iterables;
 
 import static com.google.common.collect.Lists.transform;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
 
 public class JavaScriptGenerator {
+    public static final ImportNode CORE_TYPES_IMPORT_NODE = new ImportNode(asList("shed", "core")); 
+    
     private static final String CORE_TYPES_OBJECT_NAME = ShedSymbols.INTERNAL_PREFIX + "shed"; 
     private final JavaScriptNodes js = new JavaScriptNodes();
     private final JavaScriptImportGenerator importGenerator;
@@ -66,10 +70,13 @@ public class JavaScriptGenerator {
         }
         if (node instanceof SourceNode) {
             SourceNode source = (SourceNode)node;
-            Function<ImportNode, JavaScriptNode> toJavaScriptImport = toJavaScriptImport(source.getPackageDeclaration());
+            PackageDeclarationNode packageDeclaration = source.getPackageDeclaration();
+            JavaScriptNode coreTypesImportExpression = importGenerator.generateExpression(packageDeclaration, CORE_TYPES_IMPORT_NODE);
+            JavaScriptVariableDeclarationNode coreTypesImport = js.var(CORE_TYPES_OBJECT_NAME, coreTypesImportExpression);
+            Function<ImportNode, JavaScriptNode> toJavaScriptImport = toJavaScriptImport(packageDeclaration);
             Iterable<JavaScriptNode> importStatments = Iterables.transform(source.getImports(), toJavaScriptImport);
             Iterable<JavaScriptNode> sourceStatements = Iterables.transform(source.getStatements(), toJavaScriptStatement());
-            return js.statements(Iterables.concat(importStatments, sourceStatements));
+            return js.statements(Iterables.concat(singleton(coreTypesImport), importStatments, sourceStatements));
         }
         return null;
     }
