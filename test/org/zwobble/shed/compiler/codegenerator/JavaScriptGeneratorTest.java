@@ -29,7 +29,7 @@ import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.Option.none;
 
 public class JavaScriptGeneratorTest {
-    private final JavaScriptGenerator generator = new JavaScriptGenerator(null);
+    private final JavaScriptGenerator generator = new JavaScriptGenerator(null, new IdentityModuleWrapper());
     private final JavaScriptNodes js = new JavaScriptNodes();
     
     @Test public void
@@ -117,7 +117,7 @@ public class JavaScriptGeneratorTest {
     @Test public void
     canGenerateJavaScriptForSourceFile() {
         JavaScriptImportGenerator importGenerator = new NodeJsImportGenerator();
-        JavaScriptGenerator generator = new JavaScriptGenerator(importGenerator);
+        JavaScriptGenerator generator = new JavaScriptGenerator(importGenerator, new IdentityModuleWrapper());
         
         PackageDeclarationNode packageDeclaration = new PackageDeclarationNode(asList("shed", "example"));
         ImportNode importNode = new ImportNode(asList("shed", "DateTime"));
@@ -129,6 +129,33 @@ public class JavaScriptGeneratorTest {
                 js.var("__shed", importGenerator.generateExpression(packageDeclaration, JavaScriptGenerator.CORE_TYPES_IMPORT_NODE)),
                 js.var("DateTime", importGenerator.generateExpression(packageDeclaration, importNode)),
                 generator.generate(statement)
+            ))
+        );
+    }
+    
+    @Test public void
+    moduleIsWrappedUsingModuleWrapper() {
+        JavaScriptModuleWrapper wrapper = new JavaScriptModuleWrapper() {
+            @Override
+            public JavaScriptNode wrap(JavaScriptNode module) {
+                return js.func(Collections.<String>emptyList(), asList(module));
+            }
+        };
+        
+        JavaScriptImportGenerator importGenerator = new NodeJsImportGenerator();
+        JavaScriptGenerator generator = new JavaScriptGenerator(importGenerator, wrapper);
+        
+        PackageDeclarationNode packageDeclaration = new PackageDeclarationNode(asList("shed", "example"));
+        StatementNode statement = new ImmutableVariableNode("magic", Option.none(TypeReferenceNode.class), new NumberLiteralNode("42"));
+        SourceNode source = new SourceNode(packageDeclaration, Collections.<ImportNode>emptyList(), asList(statement));
+        assertThat(
+            generator.generate(source),
+            is((JavaScriptNode)js.func(
+                Collections.<String>emptyList(),
+                asList((JavaScriptNode)js.statements(
+                    js.var("__shed", importGenerator.generateExpression(packageDeclaration, JavaScriptGenerator.CORE_TYPES_IMPORT_NODE)),
+                    generator.generate(statement)
+                ))
             ))
         );
     }

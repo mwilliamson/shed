@@ -5,6 +5,7 @@ import java.util.List;
 import org.zwobble.shed.compiler.ShedSymbols;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatements;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptVariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
@@ -33,9 +34,11 @@ public class JavaScriptGenerator {
     private static final String CORE_TYPES_OBJECT_NAME = ShedSymbols.INTERNAL_PREFIX + "shed"; 
     private final JavaScriptNodes js = new JavaScriptNodes();
     private final JavaScriptImportGenerator importGenerator;
+    private final JavaScriptModuleWrapper wrapper;
     
-    public JavaScriptGenerator(JavaScriptImportGenerator importGenerator) {
+    public JavaScriptGenerator(JavaScriptImportGenerator importGenerator, JavaScriptModuleWrapper wrapper) {
         this.importGenerator = importGenerator;
+        this.wrapper = wrapper;
     }
     
     public JavaScriptNode generate(SyntaxNode node) {
@@ -76,7 +79,9 @@ public class JavaScriptGenerator {
             Function<ImportNode, JavaScriptNode> toJavaScriptImport = toJavaScriptImport(packageDeclaration);
             Iterable<JavaScriptNode> importStatments = Iterables.transform(source.getImports(), toJavaScriptImport);
             Iterable<JavaScriptNode> sourceStatements = Iterables.transform(source.getStatements(), toJavaScriptStatement());
-            return js.statements(Iterables.concat(singleton(coreTypesImport), importStatments, sourceStatements));
+            JavaScriptStatements statements = js.statements(Iterables.concat(singleton(coreTypesImport), importStatments, sourceStatements));
+            
+            return wrapper.wrap(statements);
         }
         return null;
     }
