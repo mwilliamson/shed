@@ -6,16 +6,21 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
+import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 
 import static com.google.common.collect.Lists.transform;
 import static java.util.Arrays.asList;
@@ -58,7 +63,25 @@ public class JavaScriptGenerator {
             ReturnNode returnNode = (ReturnNode)node;
             return js.ret(generate(returnNode.getExpression()));
         }
+        if (node instanceof SourceNode) {
+            SourceNode source = (SourceNode)node;
+            Function<ImportNode, JavaScriptNode> toJavaScriptImport = toJavaScriptImport(source.getPackageDeclaration());
+            Iterable<JavaScriptNode> importStatments = Iterables.transform(source.getImports(), toJavaScriptImport);
+            Iterable<JavaScriptNode> sourceStatements = Iterables.transform(source.getStatements(), toJavaScriptStatement());
+            return js.statements(Iterables.concat(importStatments, sourceStatements));
+        }
         return null;
+    }
+
+    private Function<ImportNode, JavaScriptNode> toJavaScriptImport(final PackageDeclarationNode packageDeclaration) {
+        return new Function<ImportNode, JavaScriptNode>() {
+            @Override
+            public JavaScriptNode apply(ImportNode input) {
+                List<String> importNames = input.getNames();
+                String name = importNames.get(importNames.size() - 1);
+                return js.var(name, importGenerator.generateExpression(packageDeclaration, input));
+            }
+        };
     }
 
     private Function<FormalArgumentNode, String> toFormalArgumentName() {

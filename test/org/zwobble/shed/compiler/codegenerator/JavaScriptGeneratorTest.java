@@ -3,16 +3,21 @@ package org.zwobble.shed.compiler.codegenerator;
 import java.util.Collections;
 
 import org.junit.Test;
+import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
+import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
+import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
@@ -106,6 +111,24 @@ public class JavaScriptGeneratorTest {
         assertGeneratedJavaScript(
             source,
             js.func(asList("name", "age"), asList(generator.generate(variableNode), generator.generate(returnNode)))
+        );
+    }
+    
+    @Test public void
+    canGenerateJavaScriptForSourceFile() {
+        JavaScriptImportGenerator importGenerator = new NodeJsImportGenerator();
+        JavaScriptGenerator generator = new JavaScriptGenerator(importGenerator);
+        
+        PackageDeclarationNode packageDeclaration = new PackageDeclarationNode(asList("shed", "example"));
+        ImportNode importNode = new ImportNode(asList("shed", "DateTime"));
+        StatementNode statement = new ImmutableVariableNode("magic", Option.none(TypeReferenceNode.class), new NumberLiteralNode("42"));
+        SourceNode source = new SourceNode(packageDeclaration, asList(importNode), asList(statement));
+        assertThat(
+            generator.generate(source),
+            is((JavaScriptNode)js.statements(
+                js.var("DateTime", importGenerator.generateExpression(packageDeclaration, importNode)),
+                generator.generate(statement)
+            ))
         );
     }
     

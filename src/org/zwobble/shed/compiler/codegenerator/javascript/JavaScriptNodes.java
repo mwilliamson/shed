@@ -2,6 +2,8 @@ package org.zwobble.shed.compiler.codegenerator.javascript;
 
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
+
 import static java.util.Arrays.asList;
 
 public class JavaScriptNodes {
@@ -35,5 +37,13 @@ public class JavaScriptNodes {
 
     public JavaScriptStringLiteralNode string(String value) {
         return new JavaScriptStringLiteralNode(value);
+    }
+    
+    public JavaScriptStatements statements(JavaScriptNode... statements) {
+        return new JavaScriptStatements(asList(statements));
+    }
+    
+    public JavaScriptStatements statements(Iterable<JavaScriptNode> statements) {
+        return new JavaScriptStatements(ImmutableList.copyOf(statements));
     }
 }
