@@ -2,6 +2,7 @@ package org.zwobble.shed.compiler.codegenerator;
 
 import java.util.List;
 
+import org.zwobble.shed.compiler.ShedSymbols;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
@@ -25,6 +26,7 @@ import static com.google.common.collect.Lists.transform;
 import static java.util.Arrays.asList;
 
 public class JavaScriptGenerator {
+    private static final String CORE_TYPES_OBJECT_NAME = ShedSymbols.INTERNAL_PREFIX + "shed"; 
     private final JavaScriptNodes js = new JavaScriptNodes();
     private final JavaScriptImportGenerator importGenerator;
     
@@ -34,13 +36,13 @@ public class JavaScriptGenerator {
     
     public JavaScriptNode generate(SyntaxNode node) {
         if (node instanceof BooleanLiteralNode) {
-            return js.call(js.id("SHED.shed.lang.Boolean"), js.bool(((BooleanLiteralNode)node).getValue()));
+            return js.call(js.id(CORE_TYPES_OBJECT_NAME + ".Boolean"), js.bool(((BooleanLiteralNode)node).getValue()));
         }
         if (node instanceof NumberLiteralNode) {
-            return js.call(js.id("SHED.shed.lang.Number"), js.number(((NumberLiteralNode)node).getValue()));
+            return js.call(js.id(CORE_TYPES_OBJECT_NAME + ".Number"), js.number(((NumberLiteralNode)node).getValue()));
         }
         if (node instanceof StringLiteralNode) {
-            return js.call(js.id("SHED.shed.lang.String"), js.string(((StringLiteralNode)node).getValue()));
+            return js.call(js.id(CORE_TYPES_OBJECT_NAME + ".String"), js.string(((StringLiteralNode)node).getValue()));
         }
         if (node instanceof VariableDeclarationNode) {
             VariableDeclarationNode immutableVariable = (VariableDeclarationNode)node;

@@ -40,19 +40,19 @@ public class JavaScriptGeneratorTest {
     
     private void booleanLiteralIsConvertedToBoxedBooleansWhenBooleanIs(boolean value) {
         BooleanLiteralNode source = new BooleanLiteralNode(value);
-        assertGeneratedJavaScript(source, js.call(js.id("SHED.shed.lang.Boolean"), js.bool(value)));
+        assertGeneratedJavaScript(source, js.call(js.id("__shed.Boolean"), js.bool(value)));
     }
     
     @Test public void
     numberLiteralsAreConvertedToBoxedNumbers() {
         NumberLiteralNode source = new NumberLiteralNode("4.2");
-        assertGeneratedJavaScript(source, js.call(js.id("SHED.shed.lang.Number"), js.number("4.2")));
+        assertGeneratedJavaScript(source, js.call(js.id("__shed.Number"), js.number("4.2")));
     }
     
     @Test public void
     stringLiteralsAreConvertedToBoxedStrings() {
         StringLiteralNode source = new StringLiteralNode("Stop giving me verses");
-        assertGeneratedJavaScript(source, js.call(js.id("SHED.shed.lang.String"), js.string("Stop giving me verses")));
+        assertGeneratedJavaScript(source, js.call(js.id("__shed.String"), js.string("Stop giving me verses")));
     }
     
     @Test public void
