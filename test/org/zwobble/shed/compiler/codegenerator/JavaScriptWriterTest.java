@@ -79,4 +79,20 @@ public class JavaScriptWriterTest {
             is("function(telegraph, road) {\n}")
         );
     }
+    
+    @Test public void
+    bodiesOfFunctionsAreIndented() {
+        assertThat(
+            writer.write(js.func(Collections.<String>emptyList(), asList(
+                js.var("listeningTo", js.func(Collections.<String>emptyList(), asList((JavaScriptNode)js.ret(js.string("Boys of Summer"))))),
+                js.ret(js.call(js.id("listeningTo")))
+            ))),
+            is("function() {\n" +
+               "    var listeningTo = function() {\n" +
+               "        return \"Boys of Summer\";\n" +
+               "    };\n" +
+               "    return listeningTo();\n" +
+               "}")
+        );
+    }
 }

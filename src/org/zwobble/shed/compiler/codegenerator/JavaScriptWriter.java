@@ -13,6 +13,7 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptVariableDecl
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 import static com.google.common.collect.Iterables.transform;
@@ -20,11 +21,11 @@ import static com.google.common.collect.Iterables.transform;
 public class JavaScriptWriter {
     public String write(JavaScriptNode node) {
         StringBuilder builder = new StringBuilder();
-        write(node, builder);
+        write(node, builder, 0);
         return builder.toString();
     }
     
-    public void write(JavaScriptNode node, StringBuilder builder) {
+    public void write(JavaScriptNode node, StringBuilder builder, int indentationLevel) {
         if (node instanceof JavaScriptBooleanLiteralNode) {
             builder.append(((JavaScriptBooleanLiteralNode) node).getValue() ? "true" : "false");
             return;
@@ -49,44 +50,62 @@ public class JavaScriptWriter {
         }
         if (node instanceof JavaScriptFunctionCallNode) {
             JavaScriptFunctionCallNode call = (JavaScriptFunctionCallNode) node;
-            write(call.getFunction(), builder);
+            write(call.getFunction(), builder, indentationLevel);
             builder.append("(");
-            Joiner.on(", ").appendTo(builder, transform(call.getArguments(), stringify()));
+            Joiner.on(", ").appendTo(builder, transform(call.getArguments(), stringify(indentationLevel)));
             builder.append(")");
             return;
         }
         if (node instanceof JavaScriptReturnNode) {
+            builder.append(indentationAtLevel(indentationLevel));
             builder.append("return ");
-            write(((JavaScriptReturnNode) node).getValue(), builder);
+            write(((JavaScriptReturnNode) node).getValue(), builder, indentationLevel);
             builder.append(";");
             return;
         }
         if (node instanceof JavaScriptVariableDeclarationNode) {
             JavaScriptVariableDeclarationNode declaration = (JavaScriptVariableDeclarationNode)node;
+            builder.append(indentationAtLevel(indentationLevel));
             builder.append("var ");
             builder.append(declaration.getName());
             builder.append(" = ");
-            write(declaration.getInitialValue(), builder);
+            write(declaration.getInitialValue(), builder, indentationLevel);
             builder.append(";");
             return;
         }
         if (node instanceof JavaScriptStatements) {
-            Joiner.on("\n").appendTo(builder, transform(((JavaScriptStatements) node).getStatements(), stringify()));
+            Joiner.on("\n").appendTo(builder, transform(((JavaScriptStatements) node).getStatements(), stringify(indentationLevel)));
             return;
         }
         if (node instanceof JavaScriptFunctionNode) {
+            JavaScriptFunctionNode function = (JavaScriptFunctionNode) node;
+            
             builder.append("function(");
-            Joiner.on(", ").appendTo(builder, ((JavaScriptFunctionNode) node).getArguments());
-            builder.append(") {\n}");
-            return;
+            Joiner.on(", ").appendTo(builder, function.getArguments());
+            builder.append(") {\n");
+            if (function.getStatements().size() == 0) {
+                builder.append("}");
+            } else {
+                Joiner.on("\n").appendTo(builder, transform(function.getStatements(), stringify(indentationLevel + 1)));
+                builder.append("\n");
+                builder.append(indentationAtLevel(indentationLevel));
+                builder.append("}");
+                return;   
+            }
         }
     }
 
-    private Function<JavaScriptNode, String> stringify() {
+    private String indentationAtLevel(int indentationLevel) {
+        return Strings.repeat(" ", indentationLevel * 4);
+    }
+
+    private Function<JavaScriptNode, String> stringify(final int indentationLevel) {
         return new Function<JavaScriptNode, String>() {
             @Override
             public String apply(JavaScriptNode input) {
-                return write(input);
+                StringBuilder builder = new StringBuilder();
+                write(input, builder, indentationLevel);
+                return builder.toString();
             }
         };
     }
