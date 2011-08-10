@@ -51,4 +51,12 @@ public class JavaScriptWriterTest {
             is("return true;")
         );
     }
+    
+    @Test public void
+    variableDeclarationsIncludeVariableNameAndInitialValue() {
+        assertThat(
+            writer.write(js.var("theLoneliestNumber", js.number("1"))),
+            is("var theLoneliestNumber = 1;")
+        );
+    }
 }
