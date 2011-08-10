@@ -2,6 +2,7 @@ package org.zwobble.shed.compiler.codegenerator;
 
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptBooleanLiteralNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptFunctionCallNode;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptFunctionNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptIdentifierNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNumberLiteralNode;
@@ -71,6 +72,12 @@ public class JavaScriptWriter {
         }
         if (node instanceof JavaScriptStatements) {
             Joiner.on("\n").appendTo(builder, transform(((JavaScriptStatements) node).getStatements(), stringify()));
+            return;
+        }
+        if (node instanceof JavaScriptFunctionNode) {
+            builder.append("function(");
+            Joiner.on(", ").appendTo(builder, ((JavaScriptFunctionNode) node).getArguments());
+            builder.append(") {\n}");
             return;
         }
     }

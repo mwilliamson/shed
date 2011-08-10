@@ -1,8 +1,12 @@
 package org.zwobble.shed.compiler.codegenerator;
 
+import java.util.Collections;
+
 import org.junit.Test;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -65,6 +69,14 @@ public class JavaScriptWriterTest {
         assertThat(
             writer.write(js.statements(js.var("it", js.string("what")), js.ret(js.bool(true)))),
             is("var it = \"what\";\nreturn true;")
+        );
+    }
+    
+    @Test public void
+    functionDeclarationsIncludeArgumentsAndClosingBraceOnNewLine() {
+        assertThat(
+            writer.write(js.func(asList("telegraph", "road"), Collections.<JavaScriptNode>emptyList())),
+            is("function(telegraph, road) {\n}")
         );
     }
 }
