@@ -43,4 +43,12 @@ public class JavaScriptWriterTest {
             is("_.map(cushions, embroidered)")
         );
     }
+    
+    @Test public void
+    returnHasReturnKeywordWithValue() {
+        assertThat(
+            writer.write(js.ret(js.bool(true))),
+            is("return true;")
+        );
+    }
 }
