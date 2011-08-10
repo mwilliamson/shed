@@ -1,36 +1,64 @@
 package org.zwobble.shed.compiler.codegenerator;
 
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptBooleanLiteralNode;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptFunctionCallNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptIdentifierNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNumberLiteralNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStringLiteralNode;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+
+import static com.google.common.collect.Iterables.transform;
 
 public class JavaScriptWriter {
     public String write(JavaScriptNode node) {
+        StringBuilder builder = new StringBuilder();
+        write(node, builder);
+        return builder.toString();
+    }
+    
+    public void write(JavaScriptNode node, StringBuilder builder) {
         if (node instanceof JavaScriptBooleanLiteralNode) {
-            return ((JavaScriptBooleanLiteralNode) node).getValue() ? "true" : "false";
+            builder.append(((JavaScriptBooleanLiteralNode) node).getValue() ? "true" : "false");
+            return;
         }
         if (node instanceof JavaScriptNumberLiteralNode) {
-            return ((JavaScriptNumberLiteralNode) node).getValue();
+            builder.append(((JavaScriptNumberLiteralNode) node).getValue());
+            return;
         }
         if (node instanceof JavaScriptStringLiteralNode) {
-            StringBuilder buffer = new StringBuilder();
-            buffer.append("\"");
+            builder.append("\"");
 
             for (char c : Lists.charactersOf(((JavaScriptStringLiteralNode) node).getValue())) {
-                buffer.append(escapedCharacter(c));
+                builder.append(escapedCharacter(c));
             }
             
-            buffer.append("\"");
-            return buffer.toString();
+            builder.append("\"");
+            return;
         }
         if (node instanceof JavaScriptIdentifierNode) {
-            return ((JavaScriptIdentifierNode) node).getValue();
+            builder.append(((JavaScriptIdentifierNode) node).getValue());
+            return;
         }
-        return "";
+        if (node instanceof JavaScriptFunctionCallNode) {
+            JavaScriptFunctionCallNode call = (JavaScriptFunctionCallNode) node;
+            write(call.getFunction(), builder);
+            builder.append("(");
+            Joiner.on(", ").appendTo(builder, transform(call.getArguments(), stringify()));
+            builder.append(")");
+        }
+    }
+
+    private Function<JavaScriptNode, String> stringify() {
+        return new Function<JavaScriptNode, String>() {
+            @Override
+            public String apply(JavaScriptNode input) {
+                return write(input);
+            }
+        };
     }
 
     private String escapedCharacter(char c) {

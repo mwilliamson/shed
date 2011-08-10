@@ -1,40 +1,46 @@
 package org.zwobble.shed.compiler.codegenerator;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptBooleanLiteralNode;
-import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptIdentifierNode;
-import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNumberLiteralNode;
-import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStringLiteralNode;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 public class JavaScriptWriterTest {
     private final JavaScriptWriter writer = new JavaScriptWriter();
+    private final JavaScriptNodes js = new JavaScriptNodes();
     
     @Test public void
     booleanIsWrittenAsTrueOrFalseKeywords() {
-        assertThat(writer.write(new JavaScriptBooleanLiteralNode(true)), is("true"));
-        assertThat(writer.write(new JavaScriptBooleanLiteralNode(false)), is("false"));
+        assertThat(writer.write(js.bool(true)), is("true"));
+        assertThat(writer.write(js.bool(false)), is("false"));
     }
     
     @Test public void
     numberIsWrittenAsValue() {
-        assertThat(writer.write(new JavaScriptNumberLiteralNode("-4.2")), is("-4.2"));
+        assertThat(writer.write(js.number("-4.2")), is("-4.2"));
     }
     
     @Test public void
     stringIsEnclosedInDoubleQuotes() {
-        assertThat(writer.write(new JavaScriptStringLiteralNode("Dustbowl Dance")), is("\"Dustbowl Dance\""));
+        assertThat(writer.write(js.string("Dustbowl Dance")), is("\"Dustbowl Dance\""));
     }
     
     @Test public void
     stringsAreEscaped() {
-        assertThat(writer.write(new JavaScriptStringLiteralNode("\"Invisible\nLight\"")), is("\"\\\"Invisible\\nLight\\\"\""));
+        assertThat(writer.write(js.string("\"Invisible\nLight\"")), is("\"\\\"Invisible\\nLight\\\"\""));
     }
     
     @Test public void
     identifiersWriteOutIdentifiersVerbatim() {
-        assertThat(writer.write(new JavaScriptIdentifierNode("this.is.the.life")), is("this.is.the.life"));
+        assertThat(writer.write(js.id("this.is.the.life")), is("this.is.the.life"));
+    }
+    
+    @Test public void
+    functionCallsIncludeObjectAndArguments() {
+        assertThat(
+            writer.write(js.call(js.id("_.map"), js.id("cushions"), js.id("embroidered"))),
+            is("_.map(cushions, embroidered)")
+        );
     }
 }
