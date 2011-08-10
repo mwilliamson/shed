@@ -1,6 +1,7 @@
 package org.zwobble.shed.compiler.codegenerator;
 
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptBooleanLiteralNode;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptIdentifierNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNumberLiteralNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStringLiteralNode;
@@ -25,6 +26,9 @@ public class JavaScriptWriter {
             
             buffer.append("\"");
             return buffer.toString();
+        }
+        if (node instanceof JavaScriptIdentifierNode) {
+            return ((JavaScriptIdentifierNode) node).getValue();
         }
         return "";
     }

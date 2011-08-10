@@ -2,6 +2,7 @@ package org.zwobble.shed.compiler.codegenerator;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptBooleanLiteralNode;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptIdentifierNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNumberLiteralNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStringLiteralNode;
 
@@ -30,5 +31,10 @@ public class JavaScriptWriterTest {
     @Test public void
     stringsAreEscaped() {
         assertThat(writer.write(new JavaScriptStringLiteralNode("\"Invisible\nLight\"")), is("\"\\\"Invisible\\nLight\\\"\""));
+    }
+    
+    @Test public void
+    identifiersWriteOutIdentifiersVerbatim() {
+        assertThat(writer.write(new JavaScriptIdentifierNode("this.is.the.life")), is("this.is.the.life"));
     }
 }
