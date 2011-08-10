@@ -6,6 +6,7 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptIdentifierNo
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNumberLiteralNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptReturnNode;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatements;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStringLiteralNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptVariableDeclarationNode;
 
@@ -66,6 +67,10 @@ public class JavaScriptWriter {
             builder.append(" = ");
             write(declaration.getInitialValue(), builder);
             builder.append(";");
+            return;
+        }
+        if (node instanceof JavaScriptStatements) {
+            Joiner.on("\n").appendTo(builder, transform(((JavaScriptStatements) node).getStatements(), stringify()));
             return;
         }
     }

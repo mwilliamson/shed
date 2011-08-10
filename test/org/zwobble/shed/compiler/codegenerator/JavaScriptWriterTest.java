@@ -59,4 +59,12 @@ public class JavaScriptWriterTest {
             is("var theLoneliestNumber = 1;")
         );
     }
+    
+    @Test public void
+    listOfStatementsIsConvertedWithNewlinesBetweenStatements() {
+        assertThat(
+            writer.write(js.statements(js.var("it", js.string("what")), js.ret(js.bool(true)))),
+            is("var it = \"what\";\nreturn true;")
+        );
+    }
 }
