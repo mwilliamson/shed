@@ -157,12 +157,22 @@ public class TypeInferer {
             @Override
             public TypeResult<Type> apply(Type calledType) {
                 if (!(calledType instanceof TypeApplication) || !CoreTypes.isFunction(((TypeApplication)calledType).getTypeFunction())) {
-                    return TypeResult.failure(asList(new CompilerError(nodeLocations.locate(expression), "Cannot call objects that aren't functions")));
+                    CompilerError error = new CompilerError(nodeLocations.locate(expression), "Cannot call objects that aren't functions");
+                    return TypeResult.failure(asList(error));
                 }
                 TypeApplication functionType = (TypeApplication)calledType;
                 final List<Type> typeParameters = functionType.getTypeParameters();
-                TypeResult<Type> result = success(typeParameters.get(typeParameters.size() - 1));
-                for (int i = 0; i < typeParameters.size() - 1; i++) {
+                
+                int numberOfFormalAguments = typeParameters.size() - 1;
+                int numberOfActualArguments = expression.getArguments().size();
+                if (numberOfFormalAguments != numberOfActualArguments) {
+                    String errorMessage = "Function requires " + numberOfFormalAguments + " arguments, but is called with " + numberOfActualArguments;
+                    CompilerError error = new CompilerError(nodeLocations.locate(expression), errorMessage);
+                    return TypeResult.failure(asList(error));
+                }
+                
+                TypeResult<Type> result = success(typeParameters.get(numberOfFormalAguments));
+                for (int i = 0; i < numberOfFormalAguments; i++) {
                     final int index = i;
                     final ExpressionNode argument = expression.getArguments().get(i);
                     result = result.withErrorsFrom(inferType(argument, nodeLocations, context).ifValueThen(new Function<Type, TypeResult<Void>>() {

@@ -424,6 +424,18 @@ public class TypeInfererTest {
         );
     }
     
+    @Test public void
+    errorIfCallingFunctionWithWrongNumberOfArguments() {
+        StaticContext context = new StaticContext();
+        context.add("isLength", new TypeApplication(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
+        CallNode call = Nodes.call(Nodes.id("isLength"), Nodes.number("4"));
+        TypeResult<Type> result = inferType(call, context);
+        assertThat(
+            errorStrings(result),
+            is(asList("Function requires 2 arguments, but is called with 1"))
+        );
+    }
+    
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
         return TypeInferer.inferType(expression, nodeLocations, context);
     }
