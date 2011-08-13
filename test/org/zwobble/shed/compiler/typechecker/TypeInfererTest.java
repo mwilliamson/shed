@@ -374,6 +374,22 @@ public class TypeInfererTest {
         assertThat(result, is(success(CoreTypes.BOOLEAN)));
     }
     
+    @Test public void
+    errorIfActualArgumentsAreNotAssignableToFormalArguments() {
+        StaticContext context = new StaticContext();
+        // isLength: (String, Number) -> Boolean 
+        context.add("isLength", new TypeApplication(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
+        CallNode call = Nodes.call(Nodes.id("isLength"), Nodes.number("4"), Nodes.string("Blah"));
+        TypeResult<Type> result = inferType(call, context);
+        assertThat(
+            errorStrings(result),
+            is(asList(
+                "Expected expression of type String as argument 1, but got expression of type Number",
+                "Expected expression of type Number as argument 2, but got expression of type String"
+            ))
+        );
+    }
+    
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
         return TypeInferer.inferType(expression, nodeLocations, context);
     }

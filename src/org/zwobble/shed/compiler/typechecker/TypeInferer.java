@@ -26,6 +26,8 @@ import org.zwobble.shed.compiler.types.TypeApplication;
 
 import com.google.common.base.Function;
 
+import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
+
 import static com.google.common.collect.Lists.transform;
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.Option.none;
@@ -150,12 +152,31 @@ public class TypeInferer {
         }).withErrorsFrom(result);
     }
 
-    private static TypeResult<Type> inferCallType(CallNode expression, NodeLocations nodeLocations, StaticContext context) {
+    private static TypeResult<Type> inferCallType(final CallNode expression, final NodeLocations nodeLocations, final StaticContext context) {
         return inferType(expression.getFunction(), nodeLocations, context).ifValueThen(new Function<Type, TypeResult<Type>>() {
             @Override
             public TypeResult<Type> apply(Type functionType) {
-                List<Type> typeParameters = ((TypeApplication)functionType).getTypeParameters();
-                return success(typeParameters.get(typeParameters.size() - 1));
+                final List<Type> typeParameters = ((TypeApplication)functionType).getTypeParameters();
+                TypeResult<Type> result = success(typeParameters.get(typeParameters.size() - 1));
+                for (int i = 0; i < typeParameters.size() - 1; i++) {
+                    final int index = i;
+                    final ExpressionNode argument = expression.getArguments().get(i);
+                    result = result.withErrorsFrom(inferType(argument, nodeLocations, context).ifValueThen(new Function<Type, TypeResult<Void>>() {
+                        @Override
+                        public TypeResult<Void> apply(Type actualArgumentType) {
+                            if (isSubType(actualArgumentType, typeParameters.get(index))) {
+                                return success(null);
+                            } else {
+                                return failure(asList(new CompilerError(
+                                    nodeLocations.locate(argument),
+                                    "Expected expression of type " + typeParameters.get(index).shortName() +
+                                        " as argument " + (index + 1) + ", but got expression of type " + actualArgumentType.shortName()
+                                )));
+                            }
+                        }
+                    }));
+                }
+                return result;
             }
         });
     }
