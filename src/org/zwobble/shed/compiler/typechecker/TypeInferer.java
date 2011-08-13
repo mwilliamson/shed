@@ -151,7 +151,7 @@ public class TypeInferer {
     }
 
     private static TypeResult<Type> inferCallType(CallNode expression, NodeLocations nodeLocations, StaticContext context) {
-        return inferType(expression.getFunction(), nodeLocations, context).use(new Function<Type, TypeResult<Type>>() {
+        return inferType(expression.getFunction(), nodeLocations, context).ifValueThen(new Function<Type, TypeResult<Type>>() {
             @Override
             public TypeResult<Type> apply(Type functionType) {
                 return success(((TypeApplication)functionType).getTypeParameters().get(0));
