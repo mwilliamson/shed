@@ -49,6 +49,15 @@ public class JavaScriptWriterTest {
     }
     
     @Test public void
+    anonymousFunctionsAreWrappedInParenthesesBeforeCall() {
+        JavaScriptNode node = js.func(Collections.<String>emptyList(), Collections.<JavaScriptNode>emptyList());
+        assertThat(
+            writer.write(js.call(node)),
+            is("(function() {\n})()")
+        );
+    }
+    
+    @Test public void
     returnHasReturnKeywordWithValue() {
         assertThat(
             writer.write(js.ret(js.bool(true))),

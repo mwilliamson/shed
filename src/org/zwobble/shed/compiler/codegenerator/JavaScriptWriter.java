@@ -50,7 +50,14 @@ public class JavaScriptWriter {
         }
         if (node instanceof JavaScriptFunctionCallNode) {
             JavaScriptFunctionCallNode call = (JavaScriptFunctionCallNode) node;
+            boolean functionRequiresParentheses = call.getFunction() instanceof JavaScriptFunctionNode;
+            if (functionRequiresParentheses) {
+                builder.append("(");
+            }
             write(call.getFunction(), builder, indentationLevel);
+            if (functionRequiresParentheses) {
+                builder.append(")");
+            }
             builder.append("(");
             Joiner.on(", ").appendTo(builder, transform(call.getArguments(), stringify(indentationLevel)));
             builder.append(")");
