@@ -6,10 +6,12 @@ import java.util.Collections;
 import org.junit.Test;
 import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
@@ -351,6 +353,15 @@ public class TypeInfererTest {
         );
         TypeResult<Type> result = inferType(functionExpression, context);
         assertThat(errorStrings(result), is(asList("Expected return statement")));
+    }
+    
+    @Test public void
+    functionCallsHaveTypeOfReturnTypeOfFunction() {
+        StaticContext context = new StaticContext();
+        context.add("magic", new TypeApplication(CoreTypes.functionType(0), asList(CoreTypes.NUMBER)));
+        CallNode call = Nodes.call(Nodes.id("magic"));
+        TypeResult<Type> result = inferType(call, context);
+        assertThat(result, is(success(CoreTypes.NUMBER)));
     }
     
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {

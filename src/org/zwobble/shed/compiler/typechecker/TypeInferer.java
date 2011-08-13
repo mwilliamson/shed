@@ -9,6 +9,7 @@ import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
@@ -55,6 +56,9 @@ public class TypeInferer {
         }
         if (expression instanceof LongLambdaExpressionNode) {
             return inferLongLambdaExpressionType((LongLambdaExpressionNode)expression, nodeLocations, context);
+        }
+        if (expression instanceof CallNode) {
+            return inferCallType((CallNode)expression, nodeLocations, context);
         }
         throw new RuntimeException("Cannot infer type of expression: " + expression);
     }
@@ -144,6 +148,15 @@ public class TypeInferer {
                 return combinedArgumentTypesResult.use(buildFunctionType(returnType));
             }
         }).withErrorsFrom(result);
+    }
+
+    private static TypeResult<Type> inferCallType(CallNode expression, NodeLocations nodeLocations, StaticContext context) {
+        return inferType(expression.getFunction(), nodeLocations, context).use(new Function<Type, TypeResult<Type>>() {
+            @Override
+            public TypeResult<Type> apply(Type functionType) {
+                return success(((TypeApplication)functionType).getTypeParameters().get(0));
+            }
+        });
     }
     
     private static Function<List<FormalArgumentType>, TypeResult<Type>> buildFunctionType(final Type returnType) {
