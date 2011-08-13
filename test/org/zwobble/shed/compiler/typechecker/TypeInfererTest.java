@@ -20,9 +20,13 @@ import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
+import org.zwobble.shed.compiler.types.FormalTypeParameter;
+import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
+import org.zwobble.shed.compiler.types.TypeFunction;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -386,6 +390,36 @@ public class TypeInfererTest {
             is(asList(
                 "Expected expression of type String as argument 1, but got expression of type Number",
                 "Expected expression of type Number as argument 2, but got expression of type String"
+            ))
+        );
+    }
+    
+    @Test public void
+    cannotCallNonFunctionTypeApplications() {
+        StaticContext context = new StaticContext();
+        ClassType classType = new ClassType(asList("example"), "List", Collections.<InterfaceType>emptySet());
+        TypeFunction typeFunction = new TypeFunction(classType, asList(new FormalTypeParameter("T")));
+        context.add("isLength", new TypeApplication(typeFunction, asList(CoreTypes.STRING)));
+        CallNode call = Nodes.call(Nodes.id("isLength"));
+        TypeResult<Type> result = inferType(call, context);
+        assertThat(
+            errorStrings(result),
+            is(asList(
+                "Cannot call objects that aren't functions"
+            ))
+        );
+    }
+    
+    @Test public void
+    cannotCallTypesThatArentFunctionApplications() {
+        StaticContext context = new StaticContext();
+        context.add("isLength", CoreTypes.BOOLEAN);
+        CallNode call = Nodes.call(Nodes.id("isLength"));
+        TypeResult<Type> result = inferType(call, context);
+        assertThat(
+            errorStrings(result),
+            is(asList(
+                "Cannot call objects that aren't functions"
             ))
         );
     }

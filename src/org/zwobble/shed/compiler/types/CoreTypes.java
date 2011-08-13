@@ -33,6 +33,10 @@ public class CoreTypes {
     
     private static Map<Integer, TypeFunction> functionTypes = new HashMap<Integer, TypeFunction>();
     
+    public static boolean isFunction(Type type) {
+        return functionTypes.containsValue(type);
+    }
+    
     public static TypeFunction functionType(int arguments) {
         if (!functionTypes.containsKey(arguments)) {
             List<FormalTypeParameter> formalTypeParameters = newArrayList(transform(range(arguments), toFormalTypeParameter()));

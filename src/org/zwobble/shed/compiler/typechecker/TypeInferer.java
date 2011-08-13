@@ -155,8 +155,12 @@ public class TypeInferer {
     private static TypeResult<Type> inferCallType(final CallNode expression, final NodeLocations nodeLocations, final StaticContext context) {
         return inferType(expression.getFunction(), nodeLocations, context).ifValueThen(new Function<Type, TypeResult<Type>>() {
             @Override
-            public TypeResult<Type> apply(Type functionType) {
-                final List<Type> typeParameters = ((TypeApplication)functionType).getTypeParameters();
+            public TypeResult<Type> apply(Type calledType) {
+                if (!(calledType instanceof TypeApplication) || !CoreTypes.isFunction(((TypeApplication)calledType).getTypeFunction())) {
+                    return TypeResult.failure(asList(new CompilerError(null, "Cannot call objects that aren't functions")));
+                }
+                TypeApplication functionType = (TypeApplication)calledType;
+                final List<Type> typeParameters = functionType.getTypeParameters();
                 TypeResult<Type> result = success(typeParameters.get(typeParameters.size() - 1));
                 for (int i = 0; i < typeParameters.size() - 1; i++) {
                     final int index = i;
