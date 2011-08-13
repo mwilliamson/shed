@@ -432,7 +432,7 @@ public class TypeInfererTest {
         TypeResult<Type> result = inferType(call, context);
         assertThat(
             errorStrings(result),
-            is(asList("Function requires 2 arguments, but is called with 1"))
+            is(asList("Function requires 2 argument(s), but is called with 1"))
         );
     }
     

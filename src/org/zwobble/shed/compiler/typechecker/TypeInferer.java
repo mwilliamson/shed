@@ -166,7 +166,7 @@ public class TypeInferer {
                 int numberOfFormalAguments = typeParameters.size() - 1;
                 int numberOfActualArguments = expression.getArguments().size();
                 if (numberOfFormalAguments != numberOfActualArguments) {
-                    String errorMessage = "Function requires " + numberOfFormalAguments + " arguments, but is called with " + numberOfActualArguments;
+                    String errorMessage = "Function requires " + numberOfFormalAguments + " argument(s), but is called with " + numberOfActualArguments;
                     CompilerError error = new CompilerError(nodeLocations.locate(expression), errorMessage);
                     return TypeResult.failure(asList(error));
                 }
