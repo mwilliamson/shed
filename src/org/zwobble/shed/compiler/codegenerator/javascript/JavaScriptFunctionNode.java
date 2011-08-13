@@ -5,7 +5,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class JavaScriptFunctionNode implements JavaScriptNode {
+public class JavaScriptFunctionNode implements JavaScriptExpressionNode {
     private final List<String> arguments;
-    private final List<JavaScriptNode> statements;
+    private final List<JavaScriptStatementNode> statements;
 }

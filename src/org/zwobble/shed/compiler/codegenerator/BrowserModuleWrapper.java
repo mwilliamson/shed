@@ -4,14 +4,19 @@ import java.util.Collections;
 
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
-
-import static java.util.Arrays.asList;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatements;
 
 public class BrowserModuleWrapper implements JavaScriptModuleWrapper {
     private final JavaScriptNodes js = new JavaScriptNodes();
     
     @Override
-    public JavaScriptNode wrap(JavaScriptNode module) {
-        return js.call(js.func(Collections.<String>emptyList(), asList(module)));
+    public JavaScriptNode wrap(JavaScriptStatements module) {
+        return js.statements(
+            js.expressionStatement(
+                js.call(
+                    js.func(Collections.<String>emptyList(), module.getStatements())
+                )
+            )
+        );
     }
 }

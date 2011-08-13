@@ -3,8 +3,9 @@ package org.zwobble.shed.compiler.codegenerator;
 import java.util.Collections;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptExpressionNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNode;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -50,7 +51,7 @@ public class JavaScriptWriterTest {
     
     @Test public void
     anonymousFunctionsAreWrappedInParenthesesBeforeCall() {
-        JavaScriptNode node = js.func(Collections.<String>emptyList(), Collections.<JavaScriptNode>emptyList());
+        JavaScriptExpressionNode node = js.func(Collections.<String>emptyList(), Collections.<JavaScriptStatementNode>emptyList());
         assertThat(
             writer.write(js.call(node)),
             is("(function() {\n})()")
@@ -84,7 +85,7 @@ public class JavaScriptWriterTest {
     @Test public void
     functionDeclarationsIncludeArgumentsAndClosingBraceOnNewLine() {
         assertThat(
-            writer.write(js.func(asList("telegraph", "road"), Collections.<JavaScriptNode>emptyList())),
+            writer.write(js.func(asList("telegraph", "road"), Collections.<JavaScriptStatementNode>emptyList())),
             is("function(telegraph, road) {\n}")
         );
     }
@@ -93,7 +94,7 @@ public class JavaScriptWriterTest {
     bodiesOfFunctionsAreIndented() {
         assertThat(
             writer.write(js.func(Collections.<String>emptyList(), asList(
-                js.var("listeningTo", js.func(Collections.<String>emptyList(), asList((JavaScriptNode)js.ret(js.string("Boys of Summer"))))),
+                js.var("listeningTo", js.func(Collections.<String>emptyList(), asList((JavaScriptStatementNode)js.ret(js.string("Boys of Summer"))))),
                 js.ret(js.call(js.id("listeningTo")))
             ))),
             is("function() {\n" +
@@ -102,6 +103,14 @@ public class JavaScriptWriterTest {
                "    };\n" +
                "    return listeningTo();\n" +
                "}")
+        );
+    }
+    
+    @Test public void
+    expressionStatementsAreAsExpressionButWithTrailingSemiColon() {
+        assertThat(
+            writer.write(js.expressionStatement(js.bool(true))),
+            is("true;")
         );
     }
 }

@@ -5,6 +5,7 @@ import java.util.Collections;
 import org.junit.Test;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptVariableDeclarationNode;
 
 import static java.util.Arrays.asList;
@@ -18,12 +19,16 @@ public class BrowserModuleWrapperTest {
     @Test public void
     packageIsDefinedAndModuleIsWrappedInAnonymousFunction() {
         JavaScriptVariableDeclarationNode original = js.var("x", js.number("0"));
-        JavaScriptNode wrapped = wrapper.wrap(original);
+        JavaScriptNode wrapped = wrapper.wrap(js.statements(original));
         assertThat(wrapped, is(
-            (JavaScriptNode)js.call(
-                js.func(
-                    Collections.<String>emptyList(),
-                    asList((JavaScriptNode)original)
+            (JavaScriptNode)js.statements(
+                js.expressionStatement(
+                    js.call(
+                        js.func(
+                            Collections.<String>emptyList(),
+                            asList((JavaScriptStatementNode)original)
+                        )
+                    )
                 )
             )
         ));

@@ -15,7 +15,7 @@ public class JavaScriptNodes {
         return new JavaScriptNumberLiteralNode(value);
     }
     
-    public JavaScriptFunctionCallNode call(JavaScriptNode function, JavaScriptNode... arguments) {
+    public JavaScriptFunctionCallNode call(JavaScriptExpressionNode function, JavaScriptExpressionNode... arguments) {
         return new JavaScriptFunctionCallNode(function, asList(arguments));
     }
     
@@ -27,7 +27,7 @@ public class JavaScriptNodes {
         return new JavaScriptVariableDeclarationNode(name, initialValue);
     }
     
-    public JavaScriptFunctionNode func(List<String> arguments, List<JavaScriptNode> statements) {
+    public JavaScriptFunctionNode func(List<String> arguments, List<JavaScriptStatementNode> statements) {
         return new JavaScriptFunctionNode(arguments, statements);
     }
     
@@ -39,11 +39,15 @@ public class JavaScriptNodes {
         return new JavaScriptStringLiteralNode(value);
     }
     
-    public JavaScriptStatements statements(JavaScriptNode... statements) {
+    public JavaScriptStatements statements(JavaScriptStatementNode... statements) {
         return new JavaScriptStatements(asList(statements));
     }
     
-    public JavaScriptStatements statements(Iterable<JavaScriptNode> statements) {
+    public JavaScriptStatements statements(Iterable<JavaScriptStatementNode> statements) {
         return new JavaScriptStatements(ImmutableList.copyOf(statements));
+    }
+    
+    public JavaScriptExpressionStatement expressionStatement(JavaScriptExpressionNode expression) {
+        return new JavaScriptExpressionStatement(expression);
     }
 }

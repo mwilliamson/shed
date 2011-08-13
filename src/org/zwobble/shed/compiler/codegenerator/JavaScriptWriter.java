@@ -1,6 +1,7 @@
 package org.zwobble.shed.compiler.codegenerator;
 
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptBooleanLiteralNode;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptExpressionStatement;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptFunctionCallNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptFunctionNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptIdentifierNode;
@@ -80,6 +81,12 @@ public class JavaScriptWriter {
             builder.append(";");
             return;
         }
+        if (node instanceof JavaScriptExpressionStatement) {
+            builder.append(indentationAtLevel(indentationLevel));
+            write(((JavaScriptExpressionStatement) node).getExpression(), builder, indentationLevel);
+            builder.append(";");
+            return;
+        }
         if (node instanceof JavaScriptStatements) {
             Joiner.on("\n").appendTo(builder, transform(((JavaScriptStatements) node).getStatements(), stringify(indentationLevel)));
             return;
@@ -97,9 +104,10 @@ public class JavaScriptWriter {
                 builder.append("\n");
                 builder.append(indentationAtLevel(indentationLevel));
                 builder.append("}");
-                return;   
             }
+            return;   
         }
+        throw new RuntimeException("Don't know how to write JavaScript node: " + node);
     }
 
     private String indentationAtLevel(int indentationLevel) {

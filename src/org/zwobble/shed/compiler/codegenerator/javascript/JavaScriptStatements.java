@@ -6,5 +6,5 @@ import lombok.Data;
 
 @Data
 public class JavaScriptStatements implements JavaScriptNode {
-    private final List<JavaScriptNode> statements;
+    private final List<JavaScriptStatementNode> statements;
 }

@@ -6,6 +6,8 @@ import org.junit.Test;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNode;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatements;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
@@ -74,7 +76,13 @@ public class JavaScriptGeneratorTest {
             none(TypeReferenceNode.class),
             new BooleanLiteralNode(true)
         );
-        assertGeneratedJavaScript(source, js.func(Collections.<String>emptyList(), asList(generator.generate(new BooleanLiteralNode(true)))));
+        assertGeneratedJavaScript(
+            source,
+            js.func(
+                Collections.<String>emptyList(),
+                asList((JavaScriptStatementNode)js.ret(generator.generate(new BooleanLiteralNode(true))))
+            )
+        );
     }
     
     @Test public void
@@ -87,7 +95,13 @@ public class JavaScriptGeneratorTest {
             none(TypeReferenceNode.class),
             new BooleanLiteralNode(true)
         );
-        assertGeneratedJavaScript(source, js.func(asList("name", "age"), asList(generator.generate(new BooleanLiteralNode(true)))));
+        assertGeneratedJavaScript(
+            source, 
+            js.func(
+                asList("name", "age"), 
+                asList((JavaScriptStatementNode)js.ret(generator.generate(new BooleanLiteralNode(true))))
+            )
+        );
     }
     
     @Test public void
@@ -110,7 +124,7 @@ public class JavaScriptGeneratorTest {
         );
         assertGeneratedJavaScript(
             source,
-            js.func(asList("name", "age"), asList(generator.generate(variableNode), generator.generate(returnNode)))
+            js.func(asList("name", "age"), asList(generator.generateStatement(variableNode), generator.generateStatement(returnNode)))
         );
     }
     
@@ -128,7 +142,7 @@ public class JavaScriptGeneratorTest {
             is((JavaScriptNode)js.statements(
                 js.var("__shed", importGenerator.generateExpression(packageDeclaration, JavaScriptGenerator.CORE_TYPES_IMPORT_NODE)),
                 js.var("DateTime", importGenerator.generateExpression(packageDeclaration, importNode)),
-                generator.generate(statement)
+                generator.generateStatement(statement)
             ))
         );
     }
@@ -137,8 +151,8 @@ public class JavaScriptGeneratorTest {
     moduleIsWrappedUsingModuleWrapper() {
         JavaScriptModuleWrapper wrapper = new JavaScriptModuleWrapper() {
             @Override
-            public JavaScriptNode wrap(JavaScriptNode module) {
-                return js.func(Collections.<String>emptyList(), asList(module));
+            public JavaScriptNode wrap(JavaScriptStatements module) {
+                return js.func(Collections.<String>emptyList(), module.getStatements());
             }
         };
         
@@ -152,10 +166,10 @@ public class JavaScriptGeneratorTest {
             generator.generate(source),
             is((JavaScriptNode)js.func(
                 Collections.<String>emptyList(),
-                asList((JavaScriptNode)js.statements(
+                asList(
                     js.var("__shed", importGenerator.generateExpression(packageDeclaration, JavaScriptGenerator.CORE_TYPES_IMPORT_NODE)),
-                    generator.generate(statement)
-                ))
+                    generator.generateStatement(statement)
+                )
             ))
         );
     }

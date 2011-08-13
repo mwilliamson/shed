@@ -7,7 +7,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
-public class JavaScriptBooleanLiteralNode implements JavaScriptNode {
+public class JavaScriptBooleanLiteralNode implements JavaScriptExpressionNode {
     private final boolean value;
     
     public boolean getValue() {
