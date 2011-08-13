@@ -162,4 +162,12 @@ public class ExpressionsTest {
             isSuccessWithNode(Nodes.call(Nodes.id("max"), Nodes.number("4"), Nodes.number("10")))
         );
     }
+    
+    @Test public void
+    canParseRepeatedFunctionCallsWithArguments() {
+        assertThat(
+            Expressions.expression().parse(tokens("self(1)(2, 3)")),
+            isSuccessWithNode(Nodes.call(Nodes.call(Nodes.id("self"), Nodes.number("1")), Nodes.number("2"), Nodes.number("3")))
+        );
+    }
 }
