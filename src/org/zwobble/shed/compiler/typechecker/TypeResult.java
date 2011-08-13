@@ -73,7 +73,7 @@ public class TypeResult<T> implements HasErrors {
         if (hasValue()) {
             return function.apply(value);
         } else {
-            return new TypeResult<R>(false, null, Collections.<CompilerError>emptyList());
+            return new TypeResult<R>(false, null, errors);
         }
     }
     
