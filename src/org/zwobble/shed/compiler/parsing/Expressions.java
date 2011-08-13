@@ -58,7 +58,8 @@ public class Expressions {
                         @Override
                         public ExpressionNode apply(RuleValues values) {
                             ExpressionNode result = values.get(left);
-                            if (values.get(functionCalls).size() > 0) {
+                            List<RuleValues> calls = values.get(functionCalls);
+                            for (int i = 0; i < calls.size(); i += 1) {
                                 result = new CallNode(result, Collections.<ExpressionNode>emptyList());
                             }
                             return result;

@@ -145,4 +145,21 @@ public class ExpressionsTest {
             isSuccessWithNode(new CallNode(new VariableIdentifierNode("now"), Collections.<ExpressionNode>emptyList()))
         );
     }
+    
+    @Test public void
+    canParseRepeatedFunctionCallsWithNoArguments() {
+        assertThat(
+            Expressions.expression().parse(tokens("self()()()")),
+            isSuccessWithNode(new CallNode(
+                new CallNode(
+                    new CallNode(
+                        new VariableIdentifierNode("self"),
+                        Collections.<ExpressionNode>emptyList()
+                    ),
+                    Collections.<ExpressionNode>emptyList()
+                ),
+                Collections.<ExpressionNode>emptyList()
+            ))
+        );
+    }
 }
