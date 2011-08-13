@@ -9,11 +9,13 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatements;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
+import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
@@ -24,6 +26,7 @@ import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
+import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -58,6 +61,12 @@ public class JavaScriptGeneratorTest {
     }
     
     @Test public void
+    variableIdentifiersAreConvertedToJavaScriptIdentifierWithSameName() {
+        VariableIdentifierNode source = Nodes.id("blah");
+        assertGeneratedJavaScript(source, js.id("blah"));
+    }
+    
+    @Test public void
     immutableVariableNodesAreConvertedToVariableDeclarations() {
         ImmutableVariableNode source = new ImmutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true));
         assertGeneratedJavaScript(source, js.var("x", generator.generate(new BooleanLiteralNode(true))));
@@ -67,6 +76,12 @@ public class JavaScriptGeneratorTest {
     mutableVariableNodesAreConvertedToVariableDeclarations() {
         MutableVariableNode source = new MutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true));
         assertGeneratedJavaScript(source, js.var("x", generator.generate(new BooleanLiteralNode(true))));
+    }
+    
+    @Test public void
+    functionCallsWithNoArgumentsAreConverted() {
+        CallNode source = Nodes.call(Nodes.id("now"));
+        assertGeneratedJavaScript(source, js.call(js.id("now")));
     }
     
     @Test public void

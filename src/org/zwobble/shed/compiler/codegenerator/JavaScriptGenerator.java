@@ -10,6 +10,7 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNod
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatements;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptVariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
@@ -23,6 +24,7 @@ import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
@@ -76,6 +78,9 @@ public class JavaScriptGenerator {
         if (node instanceof StringLiteralNode) {
             return js.call(js.id(CORE_TYPES_OBJECT_NAME + ".String"), js.string(((StringLiteralNode)node).getValue()));
         }
+        if (node instanceof VariableIdentifierNode) {
+            return js.id(((VariableIdentifierNode) node).getIdentifier());
+        }
         if (node instanceof ShortLambdaExpressionNode) {
             ShortLambdaExpressionNode lambda = (ShortLambdaExpressionNode)node;
             List<String> argumentNames = transform(lambda.getFormalArguments(), toFormalArgumentName());
@@ -87,6 +92,9 @@ public class JavaScriptGenerator {
             List<JavaScriptStatementNode> javaScriptBody = transform(lambda.getBody(), toJavaScriptStatement());
             List<String> argumentNames = transform(lambda.getFormalArguments(), toFormalArgumentName());
             return js.func(argumentNames, javaScriptBody);
+        }
+        if (node instanceof CallNode) {
+            return js.call(generateExpression(((CallNode) node).getFunction()));
         }
         return null;
     }
