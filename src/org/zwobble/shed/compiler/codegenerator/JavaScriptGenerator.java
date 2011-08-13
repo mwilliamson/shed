@@ -94,7 +94,9 @@ public class JavaScriptGenerator {
             return js.func(argumentNames, javaScriptBody);
         }
         if (node instanceof CallNode) {
-            return js.call(generateExpression(((CallNode) node).getFunction()));
+            CallNode call = (CallNode) node;
+            List<JavaScriptExpressionNode> jsArguments = transform(((CallNode) node).getArguments(), toJavaScriptExpression());
+            return js.call(generateExpression(call.getFunction()), jsArguments);
         }
         return null;
     }
@@ -137,6 +139,15 @@ public class JavaScriptGenerator {
             @Override
             public JavaScriptStatementNode apply(StatementNode input) {
                 return generateStatement(input);
+            }
+        };
+    }
+
+    private Function<ExpressionNode, JavaScriptExpressionNode> toJavaScriptExpression() {
+        return new Function<ExpressionNode, JavaScriptExpressionNode>() {
+            @Override
+            public JavaScriptExpressionNode apply(ExpressionNode input) {
+                return generateExpression(input);
             }
         };
     }

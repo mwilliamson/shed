@@ -85,6 +85,14 @@ public class JavaScriptGeneratorTest {
     }
     
     @Test public void
+    functionCallsWithArgumentsAreConverted() {
+        NumberLiteralNode firstArgument = Nodes.number("2");
+        NumberLiteralNode secondArgument = Nodes.number("8");
+        CallNode source = Nodes.call(Nodes.id("max"), firstArgument, secondArgument);
+        assertGeneratedJavaScript(source, js.call(js.id("max"), generator.generateExpression(firstArgument), generator.generateExpression(secondArgument)));
+    }
+    
+    @Test public void
     shortLambdaExpressionWithoutArgumentsIsConvertedIntoJavaScriptAnonymousFunction() {
         ShortLambdaExpressionNode source = new ShortLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),

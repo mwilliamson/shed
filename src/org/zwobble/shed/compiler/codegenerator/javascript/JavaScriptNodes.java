@@ -19,6 +19,10 @@ public class JavaScriptNodes {
         return new JavaScriptFunctionCallNode(function, asList(arguments));
     }
     
+    public JavaScriptFunctionCallNode call(JavaScriptExpressionNode function, List<JavaScriptExpressionNode> arguments) {
+        return new JavaScriptFunctionCallNode(function, arguments);
+    }
+    
     public JavaScriptIdentifierNode id(String identifier) {
         return new JavaScriptIdentifierNode(identifier);
     }
