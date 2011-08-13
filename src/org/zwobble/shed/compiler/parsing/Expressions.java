@@ -1,6 +1,5 @@
 package org.zwobble.shed.compiler.parsing;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.zwobble.shed.compiler.Option;
@@ -35,7 +34,7 @@ public class Expressions {
         return new Rule<ExpressionNode>() {
             @Override
             public ParseResult<ExpressionNode> parse(TokenIterator tokens) {
-                final Rule<ExpressionNode> left = firstOf("expression",
+                final Rule<ExpressionNode> left = guard(firstOf("expression",
                     longLambdaExpression(),
                     shortLambdaExpression(),
                     variableIdentifier(),
@@ -43,9 +42,11 @@ public class Expressions {
                     Literals.stringLiteral(),
                     Literals.booleanLiteral(),
                     expressionInParens()
-                ); 
+                )); 
+                final Rule<?> comma = sequence(OnError.FINISH, optional(whitespace()), guard(symbol(",")), optional(whitespace()));
+                final Rule<List<ExpressionNode>> arguments = zeroOrMoreWithSeparator(expression(), softSeparator(comma));
                 final Rule<List<RuleValues>> functionCalls = zeroOrMoreWithSeparator(
-                    sequence(OnError.FINISH, guard(symbol("(")), symbol(")")),
+                    sequence(OnError.FINISH, guard(symbol("(")), arguments, symbol(")")),
                     softSeparator(optional(whitespace()))
                 );
                 return then(
@@ -60,7 +61,8 @@ public class Expressions {
                             ExpressionNode result = values.get(left);
                             List<RuleValues> calls = values.get(functionCalls);
                             for (int i = 0; i < calls.size(); i += 1) {
-                                result = new CallNode(result, Collections.<ExpressionNode>emptyList());
+                                RuleValues callValues = calls.get(i);
+                                result = new CallNode(result, callValues.get(arguments));
                             }
                             return result;
                         }

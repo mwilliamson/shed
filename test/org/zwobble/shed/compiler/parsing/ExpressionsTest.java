@@ -10,6 +10,7 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
@@ -150,16 +151,15 @@ public class ExpressionsTest {
     canParseRepeatedFunctionCallsWithNoArguments() {
         assertThat(
             Expressions.expression().parse(tokens("self()()()")),
-            isSuccessWithNode(new CallNode(
-                new CallNode(
-                    new CallNode(
-                        new VariableIdentifierNode("self"),
-                        Collections.<ExpressionNode>emptyList()
-                    ),
-                    Collections.<ExpressionNode>emptyList()
-                ),
-                Collections.<ExpressionNode>emptyList()
-            ))
+            isSuccessWithNode(Nodes.call(Nodes.call(Nodes.call(Nodes.id("self")))))
+        );
+    }
+    
+    @Test public void
+    canParseSingleFunctionCallWithArguments() {
+        assertThat(
+            Expressions.expression().parse(tokens("max(4, 10)")),
+            isSuccessWithNode(Nodes.call(Nodes.id("max"), Nodes.number("4"), Nodes.number("10")))
         );
     }
 }
