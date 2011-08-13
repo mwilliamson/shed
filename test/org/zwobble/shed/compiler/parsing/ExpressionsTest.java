@@ -5,6 +5,8 @@ import java.util.Collections;
 import org.junit.Test;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.CallNode;
+import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
@@ -133,6 +135,14 @@ public class ExpressionsTest {
         assertThat(
             Expressions.expression().parse(tokens("false")),
             isSuccessWithNode(new BooleanLiteralNode(false))
+        );
+    }
+    
+    @Test public void
+    canParseSingleFunctionCallWithNoArguments() {
+        assertThat(
+            Expressions.expression().parse(tokens("now()")),
+            isSuccessWithNode(new CallNode(new VariableIdentifierNode("now"), Collections.<ExpressionNode>emptyList()))
         );
     }
 }

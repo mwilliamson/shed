@@ -1,8 +1,10 @@
 package org.zwobble.shed.compiler.parsing;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
@@ -12,6 +14,7 @@ import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
 import static org.zwobble.shed.compiler.parsing.Blocks.block;
+import static org.zwobble.shed.compiler.parsing.Rules.firstOf;
 import static org.zwobble.shed.compiler.parsing.Rules.guard;
 import static org.zwobble.shed.compiler.parsing.Rules.optional;
 import static org.zwobble.shed.compiler.parsing.Rules.sequence;
@@ -21,6 +24,7 @@ import static org.zwobble.shed.compiler.parsing.Rules.tokenOfType;
 import static org.zwobble.shed.compiler.parsing.Rules.whitespace;
 import static org.zwobble.shed.compiler.parsing.Rules.zeroOrMoreWithSeparator;
 import static org.zwobble.shed.compiler.parsing.Separator.hardSeparator;
+import static org.zwobble.shed.compiler.parsing.Separator.softSeparator;
 import static org.zwobble.shed.compiler.parsing.TypeReferences.typeSpecifier;
 import static org.zwobble.shed.compiler.tokeniser.TokenType.IDENTIFIER;
 
@@ -31,7 +35,7 @@ public class Expressions {
         return new Rule<ExpressionNode>() {
             @Override
             public ParseResult<ExpressionNode> parse(TokenIterator tokens) {
-                return Rules.firstOf("expression",
+                final Rule<ExpressionNode> left = firstOf("expression",
                     longLambdaExpression(),
                     shortLambdaExpression(),
                     variableIdentifier(),
@@ -39,7 +43,28 @@ public class Expressions {
                     Literals.stringLiteral(),
                     Literals.booleanLiteral(),
                     expressionInParens()
-                ).parse(tokens);
+                ); 
+                final Rule<List<RuleValues>> functionCalls = zeroOrMoreWithSeparator(
+                    sequence(OnError.FINISH, guard(symbol("(")), symbol(")")),
+                    softSeparator(optional(whitespace()))
+                );
+                return then(
+                    sequence(OnError.FINISH,
+                        left,
+                        optional(whitespace()),
+                        functionCalls
+                    ),
+                    new ParseAction<RuleValues, ExpressionNode>() {
+                        @Override
+                        public ExpressionNode apply(RuleValues values) {
+                            ExpressionNode result = values.get(left);
+                            if (values.get(functionCalls).size() > 0) {
+                                result = new CallNode(result, Collections.<ExpressionNode>emptyList());
+                            }
+                            return result;
+                        }
+                    }
+                 ).parse(tokens);
             }
         };
     }
