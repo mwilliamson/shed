@@ -154,7 +154,8 @@ public class TypeInferer {
         return inferType(expression.getFunction(), nodeLocations, context).ifValueThen(new Function<Type, TypeResult<Type>>() {
             @Override
             public TypeResult<Type> apply(Type functionType) {
-                return success(((TypeApplication)functionType).getTypeParameters().get(0));
+                List<Type> typeParameters = ((TypeApplication)functionType).getTypeParameters();
+                return success(typeParameters.get(typeParameters.size() - 1));
             }
         });
     }

@@ -14,4 +14,8 @@ public class Nodes {
     public static NumberLiteralNode number(String value) {
         return new NumberLiteralNode(value);
     }
+
+    public static StringLiteralNode string(String value) {
+        return new StringLiteralNode(value);
+    }
 }

@@ -356,12 +356,22 @@ public class TypeInfererTest {
     }
     
     @Test public void
-    functionCallsHaveTypeOfReturnTypeOfFunction() {
+    functionCallsHaveTypeOfReturnTypeOfFunctionWithNoArguments() {
         StaticContext context = new StaticContext();
         context.add("magic", new TypeApplication(CoreTypes.functionType(0), asList(CoreTypes.NUMBER)));
         CallNode call = Nodes.call(Nodes.id("magic"));
         TypeResult<Type> result = inferType(call, context);
         assertThat(result, is(success(CoreTypes.NUMBER)));
+    }
+    
+    @Test public void
+    functionCallsHaveTypeOfReturnTypeOfFunctionWithCorrectArguments() {
+        StaticContext context = new StaticContext();
+        // isLength: (String, Number) -> Boolean 
+        context.add("isLength", new TypeApplication(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
+        CallNode call = Nodes.call(Nodes.id("isLength"), Nodes.string("Blah"), Nodes.number("4"));
+        TypeResult<Type> result = inferType(call, context);
+        assertThat(result, is(success(CoreTypes.BOOLEAN)));
     }
     
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
