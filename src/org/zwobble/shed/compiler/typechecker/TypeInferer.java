@@ -157,7 +157,7 @@ public class TypeInferer {
             @Override
             public TypeResult<Type> apply(Type calledType) {
                 if (!(calledType instanceof TypeApplication) || !CoreTypes.isFunction(((TypeApplication)calledType).getTypeFunction())) {
-                    return TypeResult.failure(asList(new CompilerError(null, "Cannot call objects that aren't functions")));
+                    return TypeResult.failure(asList(new CompilerError(nodeLocations.locate(expression), "Cannot call objects that aren't functions")));
                 }
                 TypeApplication functionType = (TypeApplication)calledType;
                 final List<Type> typeParameters = functionType.getTypeParameters();
