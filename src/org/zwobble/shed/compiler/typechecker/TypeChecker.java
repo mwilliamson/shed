@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
+import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
@@ -47,6 +48,10 @@ public class TypeChecker {
         }
         if (statement instanceof ReturnNode) {
             return typeCheckReturnStatement((ReturnNode)statement, nodeLocations, context);
+        }
+        if (statement instanceof ExpressionStatementNode) {
+            TypeResult<Type> result = TypeInferer.inferType(((ExpressionStatementNode) statement).getExpression(), nodeLocations, context);
+            return TypeResult.<Void>success(null).withErrorsFrom(result);
         }
         throw new RuntimeException("Cannot check type of statement: " + statement);
     }

@@ -9,6 +9,7 @@ import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
@@ -20,6 +21,8 @@ import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Type;
+
+import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -97,6 +100,19 @@ public class TypeCheckerTest {
         assertThat(
             typeCheck(source),
             is(TypeResult.<Void>success(null))
+        );
+    }
+    
+    @Test public void
+    expressionStatementIsTypeCheckedByInferringTypeOfExpression() {
+        SourceNode source = new SourceNode(
+            new PackageDeclarationNode(asList("shed", "example")),
+            Collections.<ImportNode>emptyList(),
+            asList((StatementNode)Nodes.expressionStatement(Nodes.call(Nodes.string(""))))
+        );
+        assertThat(
+            errorStrings(typeCheck(source)),
+            is(asList("Cannot call objects that aren't functions"))
         );
     }
     
