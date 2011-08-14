@@ -10,6 +10,7 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNod
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatements;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
+import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
@@ -198,6 +199,12 @@ public class JavaScriptGeneratorTest {
                 )
             ))
         );
+    }
+    
+    @Test public void
+    expressionStatementsAreConvertedToJavaScriptExpressionStatements() {
+        ExpressionStatementNode source = Nodes.expressionStatement(Nodes.call(Nodes.id("go")));
+        assertGeneratedJavaScript(source, js.expressionStatement(js.call(js.id("go"))));
     }
     
     private void assertGeneratedJavaScript(SyntaxNode source, JavaScriptNode expectedJavaScript) {

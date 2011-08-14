@@ -12,6 +12,7 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptVariableDecl
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
@@ -110,6 +111,9 @@ public class JavaScriptGenerator {
         if (node instanceof ReturnNode) {
             ReturnNode returnNode = (ReturnNode)node;
             return js.ret(generate(returnNode.getExpression()));
+        }
+        if (node instanceof ExpressionStatementNode) {
+            return js.expressionStatement(generateExpression(((ExpressionStatementNode) node).getExpression()));
         }
         return null;
     }
