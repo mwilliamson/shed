@@ -3,6 +3,7 @@ package org.zwobble.shed.compiler.parsing;
 import org.junit.Test;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
+import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
@@ -43,6 +44,14 @@ public class StatementsTest {
         assertThat(
             Statements.mutableVariable().parse(tokens("var magic : Integer = 42;")),
             isSuccessWithNode(new MutableVariableNode("magic", some(new TypeIdentifierNode("Integer")), new NumberLiteralNode("42")))
+        );
+    }
+    
+    @Test public void
+    canUseExpressionsFollowedByStatementTerminatorAsStatements() {
+        assertThat(
+            Statements.statement().parse(tokens("alert(\"Full Circle\");")),
+            isSuccessWithNode(Nodes.expressionStatement(Nodes.call(Nodes.id("alert"), Nodes.string("Full Circle"))))
         );
     }
 }

@@ -74,7 +74,7 @@ public class TopLevelNodesTest {
             is(asList(
                 new CompilerError(range(position(1, 1), position(1, 7)), "Expected keyword \"package\" but got identifier \"packag\""),
                 new CompilerError(range(position(1, 43), position(1, 49)), "Expected symbol \";\" but got keyword \"import\""),
-                new CompilerError(range(position(2, 1), position(2, 5)), "Expected statement but got identifier \"blah\"")
+                new CompilerError(range(position(2, 5), position(2, 5)), "Expected symbol \";\" but got end of source")
                 
             ))
         );
@@ -86,7 +86,7 @@ public class TopLevelNodesTest {
             is(asList(
                 "Expected keyword \"package\" but got identifier \"packag\"",
                 "Expected symbol \";\" but got keyword \"import\"",
-                "Expected statement but got identifier \"blah\""
+                "Expected symbol \";\" but got end of source"
             ))
         );
     }
@@ -94,9 +94,9 @@ public class TopLevelNodesTest {
     @Test public void
     sourceNodeAttemptsToParseUpToEnd() {
         assertThat(
-            errorStrings(TopLevelNodes.source().parse(tokens("package shed.util.collections; \nval x = 1; a"))),
+            errorStrings(TopLevelNodes.source().parse(tokens("package shed.util.collections; \nval x = 1; *"))),
             is(asList(
-                "Expected end of source but got identifier \"a\""
+                "Expected end of source but got symbol \"*\""
             ))
         );
     }
@@ -166,7 +166,7 @@ public class TopLevelNodesTest {
             errorStrings(TopLevelNodes.source().parse(tokens("package blah; val x = (x :Integer) : Integer => { return 4 }; va y = 4;"))),
             containsInAnyOrder(
                 "Expected symbol \";\" but got symbol \"}\"",
-                "Expected end of source but got identifier \"va\""
+                "Expected symbol \";\" but got identifier \"y\""
             )
         );
     }
@@ -177,7 +177,7 @@ public class TopLevelNodesTest {
             errorStrings(TopLevelNodes.source().parse(tokens("package blah; val x = (x :Integer) : Integer => { return 4 {} }; va y = 4;"))),
             containsInAnyOrder(
                 "Expected symbol \";\" but got symbol \"{\"",
-                "Expected end of source but got identifier \"va\""
+                "Expected symbol \";\" but got identifier \"y\""
             )
         );
     }
@@ -188,7 +188,7 @@ public class TopLevelNodesTest {
             errorStrings(TopLevelNodes.source().parse(tokens("package blah; val x = (x :Integer) : Integer => { {} }; va y = 4;"))),
             containsInAnyOrder(
                 "Expected symbol \"}\" but got symbol \"{\"",
-                "Expected end of source but got identifier \"va\""
+                "Expected symbol \";\" but got identifier \"y\""
             )
         );
     }
@@ -199,7 +199,7 @@ public class TopLevelNodesTest {
             errorStrings(TopLevelNodes.source().parse(tokens("package blah; val x = (x :Integer)  : Integer => { { ({)  } }; va y = 4;"))),
             containsInAnyOrder(
                 "Expected symbol \"}\" but got symbol \"{\"",
-                "Expected end of source but got identifier \"va\""
+                "Expected symbol \";\" but got identifier \"y\""
             )
         );
     }
@@ -210,7 +210,7 @@ public class TopLevelNodesTest {
             errorStrings(TopLevelNodes.source().parse(tokens("package blah; val x = (x :Integer) : Integer => { {(} }; va y = 4;"))),
             containsInAnyOrder(
                 "Expected symbol \"}\" but got symbol \"{\"",
-                "Expected end of source but got identifier \"va\""
+                "Expected symbol \";\" but got identifier \"y\""
             )
         );
     }
@@ -218,10 +218,31 @@ public class TopLevelNodesTest {
     @Test public void
     semicolonEndsStatementAndClosesAnyOpenParensInBlockScope() {
         assertThat(
-            errorStrings(TopLevelNodes.source().parse(tokens("package blah; val x = (x :Integer) : Integer => { ({(; )}; va y = 4;"))),
+            errorStrings(TopLevelNodes.source().parse(tokens("package blah; val x = (x :Integer) : Integer => { ({(;} )}; va y = 4;"))),
             containsInAnyOrder(
-                "Expected symbol \"}\" but got symbol \"(\"",
-                "Expected end of source but got identifier \"va\""
+                "Expected expression but got symbol \"{\"",
+                "Expected symbol \";\" but got identifier \"y\""
+            )
+        );
+    }
+    
+    @Test(timeout=1000) public void
+    canDealWithUnmatchedClosingParens() {
+        assertThat(
+            errorStrings(TopLevelNodes.source().parse(tokens("package blah; val x = 1; val y = );"))),
+            containsInAnyOrder(
+                "Expected expression but got symbol \")\""
+            )
+        );
+    }
+    
+    @Test(timeout=1000) public void
+    canDealWithUnmatchedClosingBrace() {
+        assertThat(
+            errorStrings(TopLevelNodes.source().parse(tokens("package blah; val x = 1; val y = };"))),
+            containsInAnyOrder(
+                "Expected expression but got symbol \"}\"",
+                "Expected end of source but got symbol \"}\""
             )
         );
     }

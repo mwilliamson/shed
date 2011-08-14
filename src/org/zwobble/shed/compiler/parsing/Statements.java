@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
@@ -32,7 +33,8 @@ public class Statements {
         return firstOf("statement",
             immutableVariable(),
             mutableVariable(),
-            returnStatement()
+            returnStatement(),
+            expressionStatement()
         );
     }
     
@@ -66,6 +68,21 @@ public class Statements {
                 @Override
                 public ReturnNode apply(RuleValues result) {
                     return new ReturnNode(result.get(expression));
+                }
+            }
+        );
+    }
+    
+    public static Rule<ExpressionStatementNode> expressionStatement() {
+        final Rule<ExpressionNode> expression = guard(expression());
+        return then( 
+            aStatement(
+                expression
+            ),
+            new ParseAction<RuleValues, ExpressionStatementNode>() {
+                @Override
+                public ExpressionStatementNode apply(RuleValues result) {
+                    return new ExpressionStatementNode(result.get(expression));
                 }
             }
         );

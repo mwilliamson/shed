@@ -3,10 +3,12 @@ package org.zwobble.shed.compiler.parsing;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.zwobble.shed.compiler.parsing.ScopeType;
 import org.zwobble.shed.compiler.tokeniser.Token;
 import org.zwobble.shed.compiler.tokeniser.TokenPosition;
 
+import com.google.common.base.Predicate;
+
+import static com.google.common.collect.Iterables.any;
 import static org.zwobble.shed.compiler.tokeniser.Token.symbol;
 
 
@@ -61,10 +63,7 @@ public class TokenIterator {
             scopes.add(ScopeType.PARENS);
         }
         if (nextToken.equals(symbol(")"))) {
-            while (currentScope() != ScopeType.PARENS) {
-                popScope();                
-            }
-            popScope();
+            popParensScope();
         }
         if (nextToken.equals(symbol(";"))) {
             while (currentScope() != ScopeType.BRACES) {
@@ -73,6 +72,24 @@ public class TokenIterator {
         }
         nextIndex += 1;
         return nextTokenPosition;
+    }
+
+    private void popParensScope() {
+        if (any(scopes, isScopeType(ScopeType.PARENS))) {
+            while (currentScope() != ScopeType.PARENS) {
+                popScope();
+            }
+            popScope();   
+        }
+    }
+
+    private Predicate<ScopeType> isScopeType(final ScopeType scopeType) {
+        return new Predicate<ScopeType>() {
+            @Override
+            public boolean apply(ScopeType input) {
+                return input == scopeType;
+            }
+        };
     }
 
     public SourcePosition currentPosition() {
@@ -119,8 +136,6 @@ public class TokenIterator {
     }
     
     private void popScope() {
-        if (!scopes.isEmpty()) {
-            scopes.remove(scopes.size() - 1);
-        }
+        scopes.remove(scopes.size() - 1);
     }
 }

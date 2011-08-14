@@ -18,4 +18,8 @@ public class Nodes {
     public static StringLiteralNode string(String value) {
         return new StringLiteralNode(value);
     }
+    
+    public static ExpressionStatementNode expressionStatement(ExpressionNode expression) {
+        return new ExpressionStatementNode(expression);
+    }
 }
