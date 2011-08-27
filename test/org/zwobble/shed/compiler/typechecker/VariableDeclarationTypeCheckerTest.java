@@ -10,6 +10,9 @@ import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
+import org.zwobble.shed.compiler.types.Type;
+
+import com.google.common.collect.ImmutableMap;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
@@ -64,7 +67,7 @@ public class VariableDeclarationTypeCheckerTest {
 
     @Test public void
     canInstantiateVariableWithSubType() {
-        InterfaceType iterableType = new InterfaceType(asList("shed", "util"), "Iterable");
+        InterfaceType iterableType = new InterfaceType(asList("shed", "util"), "Iterable", ImmutableMap.<String, Type>of());
         ClassType listType = new ClassType(asList("shed", "util"), "List", newHashSet(iterableType));
         staticContext.add("myList", listType);
         staticContext.add("Iterable", CoreTypes.classOf(iterableType));

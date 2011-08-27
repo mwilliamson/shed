@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableMap;
 
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
@@ -17,7 +18,7 @@ public class CoreTypes {
     public static final Type NUMBER = coreType("Number");
     public static final Type STRING = coreType("String");
     public static final Type UNIT = coreType("Unit");
-    public static final Type OBJECT = new InterfaceType(Collections.<String>emptyList(), "Object");
+    public static final Type OBJECT = new InterfaceType(Collections.<String>emptyList(), "Object", ImmutableMap.<String, Type>of());
     
     private static Type coreType(String name) {
         return new ClassType(Collections.<String>emptyList(), name, Collections.<InterfaceType>emptySet());

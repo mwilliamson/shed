@@ -1,6 +1,7 @@
 package org.zwobble.shed.compiler.types;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import lombok.Data;
@@ -19,5 +20,10 @@ public class ClassType implements ScalarType {
     @Override
     public Set<InterfaceType> superTypes() {
         return superTypes;
+    }
+    
+    @Override
+    public Map<String, Type> getMembers() {
+        return null;
     }
 }

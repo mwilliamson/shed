@@ -8,12 +8,16 @@ import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
-import org.zwobble.shed.compiler.types.CoreTypes;
+import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Type;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.typechecker.ImportStatementTypeChecker.typeCheckImportStatement;
@@ -58,6 +62,9 @@ public class TypeChecker {
         if (statement instanceof ObjectDeclarationNode) {
             return typeCheckObjectDeclaration((ObjectDeclarationNode)statement, nodeLocations, context);
         }
+        if (statement instanceof PublicDeclarationNode) {
+            return typeCheckStatement(((PublicDeclarationNode) statement).getDeclaration(), nodeLocations, context);
+        }
         throw new RuntimeException("Cannot check type of statement: " + statement);
     }
 
@@ -73,9 +80,33 @@ public class TypeChecker {
             TypeResult<Void> statementResult = typeCheckStatement(statement, nodeLocations, context);
             result = result.withErrorsFrom(statementResult);
         }
-        context.exitScope();
-        TypeResult<Void> addResult = StaticContexts.tryAdd(context, objectDeclaration.getName(), CoreTypes.OBJECT, nodeLocations.locate(objectDeclaration));
-        return result.withErrorsFrom(addResult);
+        
+        if (result.isSuccess()) {
+            Builder<String, Type> typeBuilder = ImmutableMap.builder();
+
+            for (StatementNode statement : objectDeclaration.getStatements()) {
+                if (statement instanceof PublicDeclarationNode) {
+                    String identifier = ((PublicDeclarationNode) statement).getDeclaration().getIdentifier();
+                    typeBuilder.put(identifier, context.get(identifier).get());
+                }
+            }
+            
+            InterfaceType type = new InterfaceType(null, "", typeBuilder.build());
+
+            context.exitScope();
+            
+            TypeResult<Void> addResult = StaticContexts.tryAdd(
+                context,
+                objectDeclaration.getIdentifier(),
+                type,
+                nodeLocations.locate(objectDeclaration)
+            );            
+            result = result.withErrorsFrom(addResult);
+        } else {
+            context.exitScope();
+        }
+        
+        return result;
     }
 
 }

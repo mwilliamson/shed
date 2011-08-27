@@ -9,6 +9,8 @@ import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Type;
 
+import com.google.common.collect.ImmutableMap;
+
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -43,7 +45,7 @@ public class ReturnStatementTypeCheckerTest {
     @Test public void
     returnExpressionCanBeSubTypeOfReturnType() {
         ReturnNode returnStatement = new ReturnNode(new VariableIdentifierNode("x"));
-        InterfaceType iterableType = new InterfaceType(asList("shed", "util"), "Iterable");
+        InterfaceType iterableType = new InterfaceType(asList("shed", "util"), "Iterable", ImmutableMap.<String, Type>of());
         ClassType listType = new ClassType(asList("shed", "util"), "List", newHashSet(iterableType));
         staticContext.enterNewScope(some((Type)iterableType));
         staticContext.add("x", listType);

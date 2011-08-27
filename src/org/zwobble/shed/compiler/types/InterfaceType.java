@@ -2,6 +2,7 @@ package org.zwobble.shed.compiler.types;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import lombok.Data;
@@ -10,6 +11,7 @@ import lombok.Data;
 public class InterfaceType implements ScalarType {
     private final List<String> scope;
     private final String name;
+    private final Map<String, Type> members;
     
     @Override
     public String shortName() {
