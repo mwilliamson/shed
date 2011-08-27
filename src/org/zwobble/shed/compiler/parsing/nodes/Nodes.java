@@ -42,4 +42,8 @@ public class Nodes {
     public static ObjectDeclarationNode object(String name, List<StatementNode> statements) {
         return new ObjectDeclarationNode(name, statements);
     }
+
+    public static PublicDeclarationNode publik(DeclarationNode declaration) {
+        return new PublicDeclarationNode(declaration);
+    }
 }

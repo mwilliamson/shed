@@ -4,11 +4,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
@@ -36,16 +38,41 @@ public class Statements {
             @Override
             public ParseResult<StatementNode> parse(TokenIterator tokens) {
                 return firstOf("statement",
-                    immutableVariable(),
-                    mutableVariable(),
+                    publicDeclaration(),
+                    declaration(),
                     returnStatement(),
-                    objectDeclaration(),
                     expressionStatement()
                 ).parse(tokens);
             }
         };
     }
     
+    public static Rule<PublicDeclarationNode> publicDeclaration() {
+        final Rule<DeclarationNode> declaration = declaration();
+        return then(
+            sequence(OnError.FINISH,
+                guard(keyword(Keyword.PUBLIC)),
+                optional(whitespace()),
+                declaration
+            ),
+            new ParseAction<RuleValues, PublicDeclarationNode>() {
+                @Override
+                public PublicDeclarationNode apply(RuleValues result) {
+                    return new PublicDeclarationNode(result.get(declaration));
+                }
+            }
+        );
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static Rule<DeclarationNode> declaration() {
+        return firstOf("declaration",
+            immutableVariable(),
+            mutableVariable(),
+            objectDeclaration()
+        );
+    }
+
     public static Rule<ImmutableVariableNode> immutableVariable() {
         return variable(Keyword.VAL, new VariableNodeConstructor<ImmutableVariableNode>() {
             @Override

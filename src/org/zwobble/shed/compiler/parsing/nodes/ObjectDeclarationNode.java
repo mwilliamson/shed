@@ -5,7 +5,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class ObjectDeclarationNode implements StatementNode {
+public class ObjectDeclarationNode implements DeclarationNode {
     private final String name;
     private final List<StatementNode> statements;
 }

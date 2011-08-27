@@ -74,4 +74,20 @@ public class StatementsTest {
             isSuccessWithNode(Nodes.object("browser", asList(Statements.statement().parse(tokens("val x = 1;")).get())))
         );
     }
+    
+    @Test public void
+    canDeclarePublicObjects() {
+        assertThat(
+            Statements.statement().parse(tokens("public object browser { }")),
+            isSuccessWithNode(Nodes.publik(Nodes.object("browser", Collections.<StatementNode>emptyList())))
+        );
+    }
+    
+    @Test public void
+    canDeclarePublicVariables() {
+        assertThat(
+            Statements.statement().parse(tokens("public val magic = 42;")),
+            isSuccessWithNode(Nodes.publik(Nodes.immutableVar("magic", Nodes.number("42"))))
+        );
+    }
 }
