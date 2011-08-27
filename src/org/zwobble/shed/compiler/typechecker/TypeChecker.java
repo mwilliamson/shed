@@ -7,10 +7,12 @@ import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
+import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
+import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
 
 import static org.zwobble.shed.compiler.Option.none;
@@ -54,6 +56,14 @@ public class TypeChecker {
             return TypeResult.<Void>success(null).withErrorsFrom(result);
         }
         throw new RuntimeException("Cannot check type of statement: " + statement);
+    }
+
+    public static TypeResult<Void> typeCheckObjectDeclaration(
+        ObjectDeclarationNode objectDeclaration,
+        NodeLocations nodeLocations,
+        StaticContext context)
+    {
+        return StaticContexts.tryAdd(context, objectDeclaration.getName(), CoreTypes.OBJECT, nodeLocations.locate(objectDeclaration));
     }
 
 }

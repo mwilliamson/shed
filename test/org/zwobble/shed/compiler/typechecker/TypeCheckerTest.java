@@ -10,6 +10,7 @@ import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
+import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
@@ -17,17 +18,17 @@ import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
-import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ClassType;
+import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Type;
-
-import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.Option.none;
+import static org.zwobble.shed.compiler.Option.some;
 
 public class TypeCheckerTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
@@ -114,6 +115,15 @@ public class TypeCheckerTest {
             errorStrings(typeCheck(source)),
             is(asList("Cannot call objects that aren't functions"))
         );
+    }
+    
+    @Test public void
+    declaringObjectAddsItToScope() {
+        ObjectDeclarationNode objectDeclarationNode = 
+            new ObjectDeclarationNode("browser", asList((StatementNode)Nodes.immutableVar("version", Nodes.number("1.2"))));
+        TypeResult<Void> result = TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext);
+        assertThat(result, is(TypeResult.<Void>success(null)));
+        assertThat(staticContext.get("browser"), is(some(CoreTypes.OBJECT)));
     }
     
     private TypeResult<Void> typeCheck(SourceNode source) {
