@@ -8,7 +8,8 @@ public enum Keyword {
     PUBLIC,
     RETURN,
     TRUE,
-    FALSE;
+    FALSE,
+    OBJECT;
     
     public String keywordName() {
         return name().toLowerCase();
