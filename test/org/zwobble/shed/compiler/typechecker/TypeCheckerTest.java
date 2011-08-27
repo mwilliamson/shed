@@ -126,6 +126,24 @@ public class TypeCheckerTest {
         assertThat(staticContext.get("browser"), is(some(CoreTypes.OBJECT)));
     }
     
+    @Test public void
+    bodyOfObjectIsTypeChecked() {
+        ObjectDeclarationNode objectDeclarationNode = new ObjectDeclarationNode(
+            "browser",
+            asList((StatementNode)Nodes.immutableVar("version", Nodes.typeId("String"), Nodes.number("1.2")))
+        );
+        TypeResult<Void> result = TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext);
+        assertThat(result.isSuccess(), is(false));
+    }
+    
+    @Test public void
+    bodyOfObjectIsInSeparateScope() {
+        ObjectDeclarationNode objectDeclarationNode = 
+            new ObjectDeclarationNode("browser", asList((StatementNode)Nodes.immutableVar("browser", Nodes.number("1.2"))));
+        TypeResult<Void> result = TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext);
+        assertThat(result, is(TypeResult.<Void>success(null)));
+    }
+    
     private TypeResult<Void> typeCheck(SourceNode source) {
         return TypeChecker.typeCheck(source, nodeLocations, staticContext);
     }

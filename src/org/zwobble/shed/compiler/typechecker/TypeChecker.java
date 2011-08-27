@@ -55,6 +55,9 @@ public class TypeChecker {
             TypeResult<Type> result = TypeInferer.inferType(((ExpressionStatementNode) statement).getExpression(), nodeLocations, context);
             return TypeResult.<Void>success(null).withErrorsFrom(result);
         }
+        if (statement instanceof ObjectDeclarationNode) {
+            return typeCheckObjectDeclaration((ObjectDeclarationNode)statement, nodeLocations, context);
+        }
         throw new RuntimeException("Cannot check type of statement: " + statement);
     }
 
@@ -63,7 +66,16 @@ public class TypeChecker {
         NodeLocations nodeLocations,
         StaticContext context)
     {
-        return StaticContexts.tryAdd(context, objectDeclaration.getName(), CoreTypes.OBJECT, nodeLocations.locate(objectDeclaration));
+        TypeResult<Void> result = TypeResult.success(null);
+        context.enterNewScope(none(Type.class));
+
+        for (StatementNode statement : objectDeclaration.getStatements()) {
+            TypeResult<Void> statementResult = typeCheckStatement(statement, nodeLocations, context);
+            result = result.withErrorsFrom(statementResult);
+        }
+        context.exitScope();
+        TypeResult<Void> addResult = StaticContexts.tryAdd(context, objectDeclaration.getName(), CoreTypes.OBJECT, nodeLocations.locate(objectDeclaration));
+        return result.withErrorsFrom(addResult);
     }
 
 }

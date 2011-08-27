@@ -1,9 +1,10 @@
 package org.zwobble.shed.compiler.parsing.nodes;
 
+import java.util.List;
+
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.Option.none;
-
-import java.util.List;
+import static org.zwobble.shed.compiler.Option.some;
 
 public class Nodes {
     public static VariableIdentifierNode id(String identifier) {
@@ -28,6 +29,14 @@ public class Nodes {
     
     public static ImmutableVariableNode immutableVar(String name, ExpressionNode expression) {
         return new ImmutableVariableNode(name, none(TypeReferenceNode.class), expression);
+    }
+    
+    public static ImmutableVariableNode immutableVar(String name, TypeReferenceNode type, ExpressionNode expression) {
+        return new ImmutableVariableNode(name, some(type), expression);
+    }
+    
+    public static TypeIdentifierNode typeId(String identifier) {
+        return new TypeIdentifierNode(identifier);
     }
 
     public static ObjectDeclarationNode object(String name, List<StatementNode> statements) {
