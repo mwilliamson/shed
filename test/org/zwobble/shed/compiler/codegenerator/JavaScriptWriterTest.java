@@ -7,6 +7,8 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptExpressionNo
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNode;
 
+import com.google.common.collect.ImmutableMap;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -111,6 +113,22 @@ public class JavaScriptWriterTest {
         assertThat(
             writer.write(js.expressionStatement(js.bool(true))),
             is("true;")
+        );
+    }
+    
+    @Test public void
+    emptyObjectIsOpeningAndClosingBraceWithoutSeparatingWhitespace() {
+        assertThat(
+            writer.write(js.object(ImmutableMap.<String, JavaScriptExpressionNode>of())),
+            is("{}")
+        );
+    }
+    
+    @Test public void
+    objectIsCommaSeparatedPropertiesSurroundedByBraces() {
+        assertThat(
+            writer.write(js.object(ImmutableMap.<String, JavaScriptExpressionNode>of("name", js.id("name")))),
+            is("{\n    \"name\": name\n}")
         );
     }
 }

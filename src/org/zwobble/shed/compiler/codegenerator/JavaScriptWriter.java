@@ -1,12 +1,16 @@
 package org.zwobble.shed.compiler.codegenerator;
 
+import java.util.Map;
+
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptBooleanLiteralNode;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptExpressionNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptExpressionStatement;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptFunctionCallNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptFunctionNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptIdentifierNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNumberLiteralNode;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptObjectLiteralNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptReturnNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatements;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStringLiteralNode;
@@ -36,13 +40,7 @@ public class JavaScriptWriter {
             return;
         }
         if (node instanceof JavaScriptStringLiteralNode) {
-            builder.append("\"");
-
-            for (char c : Lists.charactersOf(((JavaScriptStringLiteralNode) node).getValue())) {
-                builder.append(escapedCharacter(c));
-            }
-            
-            builder.append("\"");
+            writeJavaScriptString(((JavaScriptStringLiteralNode) node).getValue(), builder);
             return;
         }
         if (node instanceof JavaScriptIdentifierNode) {
@@ -107,7 +105,36 @@ public class JavaScriptWriter {
             }
             return;   
         }
+        if (node instanceof JavaScriptObjectLiteralNode) {
+            builder.append("{");
+            Map<String, JavaScriptExpressionNode> properties = ((JavaScriptObjectLiteralNode) node).getProperties();
+            if (properties.size() == 0) {
+                builder.append("}");
+            } else {
+                for (Map.Entry<String, JavaScriptExpressionNode> property : properties.entrySet()) {
+                    builder.append("\n");
+                    builder.append(indentationAtLevel(indentationLevel + 1));
+                    writeJavaScriptString(property.getKey(), builder);
+                    builder.append(": ");
+                    write(property.getValue(), builder, indentationLevel + 1);
+                }
+                builder.append("\n");
+                builder.append(indentationAtLevel(indentationLevel));
+                builder.append("}");
+            }
+            return;
+        }
         throw new RuntimeException("Don't know how to write JavaScript node: " + node);
+    }
+
+    private void writeJavaScriptString(String value, StringBuilder builder) {
+        builder.append("\"");
+
+        for (char c : Lists.charactersOf(value)) {
+            builder.append(escapedCharacter(c));
+        }
+        
+        builder.append("\"");
     }
 
     private String indentationAtLevel(int indentationLevel) {
