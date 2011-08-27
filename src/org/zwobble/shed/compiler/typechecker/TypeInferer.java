@@ -3,8 +3,6 @@ package org.zwobble.shed.compiler.typechecker;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Data;
-
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
@@ -14,25 +12,22 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
-import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
-import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+import org.zwobble.shed.compiler.typechecker.BlockTypeChecker.Result;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
 
 import com.google.common.base.Function;
 
-import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
-
 import static com.google.common.collect.Lists.transform;
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
-import static org.zwobble.shed.compiler.typechecker.TypeChecker.typeCheckStatement;
+import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
 import static org.zwobble.shed.compiler.typechecker.TypeLookup.lookupTypeReference;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.combine;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
@@ -117,28 +112,24 @@ public class TypeInferer {
             @Override
             public TypeResult<Void> apply(Type returnType) {
                 TypeResult<Void> result = success(null);
-                
+
                 context.enterNewScope(some(returnType));
                 for (TypeResult<FormalArgumentType> argumentTypeResult : argumentTypeResults) {
                     TypeResult<Void> addArgumentToContextResult = argumentTypeResult.use(addArgumentToContext(context, nodeLocations));
                     result = result.withErrorsFrom(addArgumentToContextResult);
                 }
-
-                boolean hasReturned = false;
-                for (StatementNode statement : lambdaExpression.getBody()) {
-                    TypeResult<Void> statementResult = typeCheckStatement(statement, nodeLocations, context);
-                    result = result.withErrorsFrom(statementResult);
-                    if (statement instanceof ReturnNode) {
-                        hasReturned = true;
-                    }
-                }
-                context.exitScope();
-                if (!hasReturned) {
+                
+                TypeResult<Result> blockResult = new BlockTypeChecker().typeCheckBlock(lambdaExpression.getBody(), context, nodeLocations);
+                
+                result = result.withErrorsFrom(blockResult);
+                
+                if (!blockResult.get().hasReturned()) {
                     result = result.withErrorsFrom(TypeResult.<Type>failure(asList(new CompilerError(
                         nodeLocations.locate(lambdaExpression),
                         "Expected return statement"
                     ))));
                 }
+                context.exitScope();
                 return result;
             }
         });
@@ -207,7 +198,7 @@ public class TypeInferer {
     }
 
     private static Function<FormalArgumentType, Type> toType() {
-        return new Function<TypeInferer.FormalArgumentType, Type>() {
+        return new Function<FormalArgumentType, Type>() {
             @Override
             public Type apply(FormalArgumentType argument) {
                 return argument.getType();
@@ -238,13 +229,6 @@ public class TypeInferer {
                 return success(new FormalArgumentType(node.getName(), type, node));
             }
         };
-    }
-
-    @Data
-    private static class FormalArgumentType {
-        private final String name;
-        private final Type type;
-        private final FormalArgumentNode node;
     }
 
     private static Function<FormalArgumentType, TypeResult<Void>>

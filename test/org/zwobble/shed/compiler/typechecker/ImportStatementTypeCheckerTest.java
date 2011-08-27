@@ -4,8 +4,8 @@ import java.util.Collections;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
-import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ClassType;
+import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Type;
 
@@ -13,7 +13,6 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
-import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.typechecker.ImportStatementTypeChecker.typeCheckImportStatement;
 
 public class ImportStatementTypeCheckerTest {
@@ -31,7 +30,7 @@ public class ImportStatementTypeCheckerTest {
             typeCheckImportStatement(importStatement, nodeLocations, staticContext),
             is(TypeResult.<Void>success(null))
         );
-        assertThat(staticContext.get("DateTime"), is(some((Type)CoreTypes.classOf(dateTime))));
+        assertThat(staticContext.get("DateTime"), is(VariableLookupResult.success(CoreTypes.classOf(dateTime))));
     }
     
     @Test public void

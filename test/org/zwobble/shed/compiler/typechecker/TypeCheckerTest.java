@@ -155,8 +155,22 @@ public class TypeCheckerTest {
             ));
         TypeResult<Void> result = TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext);
         assertThat(result, is(TypeResult.<Void>success(null)));
-        ScalarType browserType = (ScalarType)staticContext.get("browser").get();
+        ScalarType browserType = (ScalarType)staticContext.get("browser").getType();
         assertThat(browserType.getMembers(), is((Object)ImmutableMap.of("name", CoreTypes.STRING)));
+    }
+    
+    @Test public void
+    cannotAccessVariableFromSuperScopeIfCurrentScopeDefinesVariableWithSameNameLater() {
+        ObjectDeclarationNode objectDeclarationNode = 
+            Nodes.object("person", Arrays.<StatementNode>asList(
+                Nodes.immutableVar("name", Nodes.string("Bob")),
+                Nodes.object("parent", Arrays.<StatementNode>asList(
+                    Nodes.immutableVar("identifier", Nodes.id("name")),
+                    Nodes.immutableVar("name", Nodes.string("Jim"))
+                ))
+            ));
+        TypeResult<Void> result = TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext);
+        assertThat(errorStrings(result), is((asList("Cannot access variable \"name\" before it is declared"))));
     }
     
     private TypeResult<Void> typeCheck(SourceNode source) {

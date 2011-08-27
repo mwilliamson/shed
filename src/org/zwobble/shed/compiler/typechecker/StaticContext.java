@@ -6,8 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.typechecker.VariableLookupResult.Status;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
+
+import com.google.common.collect.Lists;
 
 import static org.zwobble.shed.compiler.Option.none;
 
@@ -33,14 +36,19 @@ public class StaticContext {
     public void add(String identifier, Type type) {
         currentScope().add(identifier, type);
     }
+
+    public void declaredSoon(String identifier) {
+        currentScope().declaredSoon(identifier);
+    }
     
-    public Option<Type> get(String identifier) {
-        for (StaticScope scope : scopes) {
-            if (scope.isDeclared(identifier)) {
-                return some(scope.get(identifier));
-            }   
+    public VariableLookupResult get(String identifier) {
+        for (StaticScope scope : Lists.reverse(scopes)) {
+            VariableLookupResult result = scope.get(identifier);
+            if (result.getStatus() != Status.NOT_DECLARED) {
+                return result;
+            }
         }
-        return none();
+        return new VariableLookupResult(Status.NOT_DECLARED, null);
     }
     
     public boolean isDeclaredInCurrentScope(String identifier) {

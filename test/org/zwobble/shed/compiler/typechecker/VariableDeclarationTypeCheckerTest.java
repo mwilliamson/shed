@@ -42,7 +42,7 @@ public class VariableDeclarationTypeCheckerTest {
             typeCheckVariableDeclaration(variableNode, nodeLocations, staticContext),
             is(TypeResult.<Void>success(null))
         );
-        assertThat(staticContext.get("x"), is(some(CoreTypes.BOOLEAN)));
+        assertThat(staticContext.get("x"), is(VariableLookupResult.success(CoreTypes.BOOLEAN)));
     }
     
     @Test public void

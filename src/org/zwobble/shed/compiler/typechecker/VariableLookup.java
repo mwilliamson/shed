@@ -1,8 +1,8 @@
 package org.zwobble.shed.compiler.typechecker;
 
-import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.SourceRange;
+import org.zwobble.shed.compiler.typechecker.VariableLookupResult.Status;
 import org.zwobble.shed.compiler.types.Type;
 
 import static java.util.Arrays.asList;
@@ -11,9 +11,14 @@ import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 public class VariableLookup {
     public static TypeResult<Type> lookupVariableReference(String identifier, SourceRange nodeLocation, StaticContext context) {
-        Option<Type> type = context.get(identifier);
-        if (type.hasValue()) {
-            return success(type.get());
+        VariableLookupResult result = context.get(identifier);
+        if (result.getStatus() == Status.SUCCESS) {
+            return success(result.getType());
+        } else if (result.getStatus() == Status.NOT_DECLARED_YET) {
+            return failure(asList(new CompilerError(
+                nodeLocation,
+                "Cannot access variable \"" + identifier + "\" before it is declared"
+            )));
         } else {
             return failure(asList(new CompilerError(
                 nodeLocation,
