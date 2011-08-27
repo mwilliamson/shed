@@ -1,12 +1,14 @@
 package org.zwobble.shed.compiler.parsing;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
+import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
@@ -30,12 +32,18 @@ import static org.zwobble.shed.compiler.tokeniser.TokenType.IDENTIFIER;
 public class Statements {
     @SuppressWarnings("unchecked")
     public static Rule<StatementNode> statement() {
-        return firstOf("statement",
-            immutableVariable(),
-            mutableVariable(),
-            returnStatement(),
-            expressionStatement()
-        );
+        return new Rule<StatementNode>() {
+            @Override
+            public ParseResult<StatementNode> parse(TokenIterator tokens) {
+                return firstOf("statement",
+                    immutableVariable(),
+                    mutableVariable(),
+                    returnStatement(),
+                    objectDeclaration(),
+                    expressionStatement()
+                ).parse(tokens);
+            }
+        };
     }
     
     public static Rule<ImmutableVariableNode> immutableVariable() {
@@ -83,6 +91,28 @@ public class Statements {
                 @Override
                 public ExpressionStatementNode apply(RuleValues result) {
                     return new ExpressionStatementNode(result.get(expression));
+                }
+            }
+        );
+    }
+    
+    public static Rule<ObjectDeclarationNode> objectDeclaration() {
+        final Rule<String> identifier = tokenOfType(IDENTIFIER);
+        final Rule<List<StatementNode>> body = Blocks.block();
+        return then(
+            sequence(OnError.FINISH,
+                guard(keyword(Keyword.OBJECT)),
+                optional(whitespace()),
+                identifier,
+                optional(whitespace()),
+                body
+            ),
+            new ParseAction<RuleValues, ObjectDeclarationNode>() {
+                @Override
+                public ObjectDeclarationNode apply(RuleValues result) {
+                    String objectName = result.get(identifier);
+                    List<StatementNode> statements = result.get(body);
+                    return new ObjectDeclarationNode(objectName, statements);
                 }
             }
         );

@@ -1,13 +1,17 @@
 package org.zwobble.shed.compiler.parsing;
 
+import java.util.Collections;
+
 import org.junit.Test;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertThat;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
@@ -52,6 +56,22 @@ public class StatementsTest {
         assertThat(
             Statements.statement().parse(tokens("alert(\"Full Circle\");")),
             isSuccessWithNode(Nodes.expressionStatement(Nodes.call(Nodes.id("alert"), Nodes.string("Full Circle"))))
+        );
+    }
+    
+    @Test public void
+    canDeclareAnEmptyObject() {
+        assertThat(
+            Statements.statement().parse(tokens("object browser { }")),
+            isSuccessWithNode(Nodes.object("browser", Collections.<StatementNode>emptyList()))
+        );
+    }
+    
+    @Test public void
+    canDeclareObjectWithStatements() {
+        assertThat(
+            Statements.statement().parse(tokens("object browser { val x = 1; }")),
+            isSuccessWithNode(Nodes.object("browser", asList(Statements.statement().parse(tokens("val x = 1;")).get())))
         );
     }
 }
