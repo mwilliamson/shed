@@ -1,6 +1,7 @@
 package org.zwobble.shed.compiler.codegenerator.javascript;
 
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.collect.ImmutableList;
 
@@ -53,5 +54,9 @@ public class JavaScriptNodes {
     
     public JavaScriptExpressionStatement expressionStatement(JavaScriptExpressionNode expression) {
         return new JavaScriptExpressionStatement(expression);
+    }
+
+    public JavaScriptNode object(Map<String, JavaScriptExpressionNode> properties) {
+        return new JavaScriptObjectLiteralNode(properties);
     }
 }

@@ -1,6 +1,11 @@
 package org.zwobble.shed.compiler.codegenerator;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.zwobble.shed.compiler.ShedSymbols;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptExpressionNode;
@@ -17,7 +22,9 @@ import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PackageDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
@@ -30,6 +37,7 @@ import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.transform;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
@@ -102,7 +110,6 @@ public class JavaScriptGenerator {
         return null;
     }
 
-    
     public JavaScriptStatementNode generateStatement(StatementNode node) {
         if (node instanceof VariableDeclarationNode) {
             VariableDeclarationNode immutableVariable = (VariableDeclarationNode)node;
@@ -114,6 +121,32 @@ public class JavaScriptGenerator {
         }
         if (node instanceof ExpressionStatementNode) {
             return js.expressionStatement(generateExpression(((ExpressionStatementNode) node).getExpression()));
+        }
+        if (node instanceof PublicDeclarationNode) {
+            return generateStatement(((PublicDeclarationNode) node).getDeclaration());
+        }
+        if (node instanceof ObjectDeclarationNode) {
+            ObjectDeclarationNode objectDeclaration = (ObjectDeclarationNode) node;
+            List<StatementNode> statements = objectDeclaration.getStatements();
+            List<JavaScriptStatementNode> javaScriptBody = newArrayList(transform(statements, toJavaScriptStatement()));
+
+            Set<String> publicMembers = new HashSet<String>();
+            for (StatementNode statement : statements) {
+                if (statement instanceof PublicDeclarationNode) {
+                    publicMembers.add(((PublicDeclarationNode) statement).getDeclaration().getIdentifier());
+                }
+            }
+            
+            Map<String, JavaScriptExpressionNode> javaScriptProperties = new HashMap<String, JavaScriptExpressionNode>();
+            for (String publicMember : publicMembers) {
+                javaScriptProperties.put(publicMember, js.id(publicMember));
+            }
+            
+            javaScriptBody.add(js.ret(js.object(javaScriptProperties)));
+            return js.var(objectDeclaration.getIdentifier(), js.call(js.func(
+                Collections.<String>emptyList(),
+                javaScriptBody
+            )));
         }
         return null;
     }

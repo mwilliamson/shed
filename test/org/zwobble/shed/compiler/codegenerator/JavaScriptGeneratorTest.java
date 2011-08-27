@@ -4,6 +4,7 @@ import java.util.Collections;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptExpressionNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNode;
@@ -18,6 +19,7 @@ import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
@@ -28,6 +30,8 @@ import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+
+import com.google.common.collect.ImmutableMap;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -205,6 +209,32 @@ public class JavaScriptGeneratorTest {
     expressionStatementsAreConvertedToJavaScriptExpressionStatements() {
         ExpressionStatementNode source = Nodes.expressionStatement(Nodes.call(Nodes.id("go")));
         assertGeneratedJavaScript(source, js.expressionStatement(js.call(js.id("go"))));
+    }
+    
+    @Test public void
+    objectIsExpressedAsObjectLiteralReturnedFromImmediatelyCalledAnonymousFunction() {
+        ImmutableVariableNode nameDeclaration = Nodes.immutableVar("name", Nodes.string("Bob"));
+        ImmutableVariableNode ageDeclaration = Nodes.immutableVar("age", Nodes.number("22"));
+        ObjectDeclarationNode source = new ObjectDeclarationNode(
+            "person",
+            asList(
+                Nodes.publik(nameDeclaration),
+                ageDeclaration
+            )
+        );
+        assertGeneratedJavaScript(
+            source, 
+            js.var("person", js.call(
+                js.func(
+                    Collections.<String>emptyList(),
+                    asList(
+                        generator.generateStatement(nameDeclaration),
+                        generator.generateStatement(ageDeclaration),
+                        js.ret(js.object(ImmutableMap.<String, JavaScriptExpressionNode>of("name", js.id("name"))))
+                    )
+                )
+            ))
+        );
     }
     
     private void assertGeneratedJavaScript(SyntaxNode source, JavaScriptNode expectedJavaScript) {
