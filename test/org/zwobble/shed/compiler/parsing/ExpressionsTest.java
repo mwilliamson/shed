@@ -170,4 +170,12 @@ public class ExpressionsTest {
             isSuccessWithNode(Nodes.call(Nodes.call(Nodes.id("self"), Nodes.number("1")), Nodes.number("2"), Nodes.number("3")))
         );
     }
+    
+    @Test public void
+    canParseMemberAccess() {
+        assertThat(
+            Expressions.expression().parse(tokens("person.name")),
+            isSuccessWithNode(Nodes.member(Nodes.id("person"), "name"))
+        );
+    }
 }

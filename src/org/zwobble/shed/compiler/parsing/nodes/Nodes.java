@@ -46,4 +46,8 @@ public class Nodes {
     public static PublicDeclarationNode publik(DeclarationNode declaration) {
         return new PublicDeclarationNode(declaration);
     }
+    
+    public static MemberAccessNode member(ExpressionNode expression, String memberName) {
+        return new MemberAccessNode(expression, memberName);
+    }
 }

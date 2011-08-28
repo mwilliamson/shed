@@ -7,6 +7,7 @@ import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
@@ -29,6 +30,10 @@ import static org.zwobble.shed.compiler.tokeniser.TokenType.IDENTIFIER;
 
 
 public class Expressions {
+    private static interface PartialCallExpression {
+        ExpressionNode complete(ExpressionNode expression);
+    }
+    
     @SuppressWarnings("unchecked")
     public static Rule<ExpressionNode> expression() {
         return new Rule<ExpressionNode>() {
@@ -45,24 +50,66 @@ public class Expressions {
                 )); 
                 final Rule<?> comma = sequence(OnError.FINISH, optional(whitespace()), guard(symbol(",")), optional(whitespace()));
                 final Rule<List<ExpressionNode>> arguments = zeroOrMoreWithSeparator(expression(), softSeparator(comma));
-                final Rule<List<RuleValues>> functionCalls = zeroOrMoreWithSeparator(
-                    sequence(OnError.FINISH, guard(symbol("(")), arguments, symbol(")")),
+                
+                final Rule<String> memberName = tokenOfType(IDENTIFIER);
+                Rule<PartialCallExpression> memberAccess = then(
+                    sequence(OnError.FINISH,
+                        guard(symbol(".")),
+                        optional(whitespace()),
+                        memberName
+                    ),
+                    new ParseAction<RuleValues, PartialCallExpression>() {
+                        @Override
+                        public PartialCallExpression apply(final RuleValues result) {
+                            return new PartialCallExpression() {
+                                @Override
+                                public ExpressionNode complete(ExpressionNode expression) {
+                                    return new MemberAccessNode(expression, result.get(memberName));
+                                }
+                            };
+                        }
+                    }
+                );
+                
+                Rule<PartialCallExpression> functionCall = then(
+                    sequence(OnError.FINISH,
+                        guard(symbol("(")),
+                        arguments,
+                        symbol(")")
+                    ),
+                    new ParseAction<RuleValues, PartialCallExpression>() {
+                        @Override
+                        public PartialCallExpression apply(final RuleValues result) {
+                            return new PartialCallExpression() {
+                                @Override
+                                public ExpressionNode complete(ExpressionNode expression) {
+                                    return new CallNode(expression, result.get(arguments));
+                                }
+                            };
+                        }
+                    }
+                );
+                
+                final Rule<List<PartialCallExpression>> calls = zeroOrMoreWithSeparator(
+                    firstOf("function call or member access",
+                        functionCall,
+                        memberAccess
+                    ),
                     softSeparator(optional(whitespace()))
                 );
                 return then(
                     sequence(OnError.FINISH,
                         left,
                         optional(whitespace()),
-                        functionCalls
+                        calls
                     ),
                     new ParseAction<RuleValues, ExpressionNode>() {
                         @Override
                         public ExpressionNode apply(RuleValues values) {
                             ExpressionNode result = values.get(left);
-                            List<RuleValues> calls = values.get(functionCalls);
-                            for (int i = 0; i < calls.size(); i += 1) {
-                                RuleValues callValues = calls.get(i);
-                                result = new CallNode(result, callValues.get(arguments));
+                            List<PartialCallExpression> callExpressions = values.get(calls);
+                            for (PartialCallExpression callExpression : callExpressions) {
+                                result = callExpression.complete(result);
                             }
                             return result;
                         }
