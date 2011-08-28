@@ -48,52 +48,11 @@ public class Expressions {
                     Literals.booleanLiteral(),
                     expressionInParens()
                 )); 
-                final Rule<?> comma = sequence(OnError.FINISH, optional(whitespace()), guard(symbol(",")), optional(whitespace()));
-                final Rule<List<ExpressionNode>> arguments = zeroOrMoreWithSeparator(expression(), softSeparator(comma));
-                
-                final Rule<String> memberName = tokenOfType(IDENTIFIER);
-                Rule<PartialCallExpression> memberAccess = then(
-                    sequence(OnError.FINISH,
-                        guard(symbol(".")),
-                        optional(whitespace()),
-                        memberName
-                    ),
-                    new ParseAction<RuleValues, PartialCallExpression>() {
-                        @Override
-                        public PartialCallExpression apply(final RuleValues result) {
-                            return new PartialCallExpression() {
-                                @Override
-                                public ExpressionNode complete(ExpressionNode expression) {
-                                    return new MemberAccessNode(expression, result.get(memberName));
-                                }
-                            };
-                        }
-                    }
-                );
-                
-                Rule<PartialCallExpression> functionCall = then(
-                    sequence(OnError.FINISH,
-                        guard(symbol("(")),
-                        arguments,
-                        symbol(")")
-                    ),
-                    new ParseAction<RuleValues, PartialCallExpression>() {
-                        @Override
-                        public PartialCallExpression apply(final RuleValues result) {
-                            return new PartialCallExpression() {
-                                @Override
-                                public ExpressionNode complete(ExpressionNode expression) {
-                                    return new CallNode(expression, result.get(arguments));
-                                }
-                            };
-                        }
-                    }
-                );
                 
                 final Rule<List<PartialCallExpression>> calls = zeroOrMoreWithSeparator(
                     firstOf("function call or member access",
-                        functionCall,
-                        memberAccess
+                        functionCall(),
+                        memberAccess()
                     ),
                     softSeparator(optional(whitespace()))
                 );
@@ -117,6 +76,52 @@ public class Expressions {
                  ).parse(tokens);
             }
         };
+    }
+    
+    private static Rule<PartialCallExpression> functionCall() {
+        final Rule<?> comma = sequence(OnError.FINISH, optional(whitespace()), guard(symbol(",")), optional(whitespace()));
+        final Rule<List<ExpressionNode>> arguments = zeroOrMoreWithSeparator(expression(), softSeparator(comma));
+        
+        return then(
+            sequence(OnError.FINISH,
+                guard(symbol("(")),
+                arguments,
+                symbol(")")
+            ),
+            new ParseAction<RuleValues, PartialCallExpression>() {
+                @Override
+                public PartialCallExpression apply(final RuleValues result) {
+                    return new PartialCallExpression() {
+                        @Override
+                        public ExpressionNode complete(ExpressionNode expression) {
+                            return new CallNode(expression, result.get(arguments));
+                        }
+                    };
+                }
+            }
+        );
+    }
+    
+    private static Rule<PartialCallExpression> memberAccess() {
+        final Rule<String> memberName = tokenOfType(IDENTIFIER);
+        return then(
+            sequence(OnError.FINISH,
+                guard(symbol(".")),
+                optional(whitespace()),
+                memberName
+            ),
+            new ParseAction<RuleValues, PartialCallExpression>() {
+                @Override
+                public PartialCallExpression apply(final RuleValues result) {
+                    return new PartialCallExpression() {
+                        @Override
+                        public ExpressionNode complete(ExpressionNode expression) {
+                            return new MemberAccessNode(expression, result.get(memberName));
+                        }
+                    };
+                }
+            }
+        );
     }
 
     private static Rule<ExpressionNode> variableIdentifier() {
