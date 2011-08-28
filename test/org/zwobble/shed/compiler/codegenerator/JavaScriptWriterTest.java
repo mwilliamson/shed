@@ -131,4 +131,12 @@ public class JavaScriptWriterTest {
             is("{\n    \"name\": name\n}")
         );
     }
+    
+    @Test public void
+    propertyAccessIsExpressionAndPropertyNameSeparatedByDot() {
+        assertThat(
+            writer.write(js.propertyAccess(js.id("user"), "height")),
+            is("user.height")
+        );
+    }
 }

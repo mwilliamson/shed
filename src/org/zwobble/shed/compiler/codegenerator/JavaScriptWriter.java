@@ -11,6 +11,7 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptIdentifierNo
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNumberLiteralNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptObjectLiteralNode;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptPropertyAccessNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptReturnNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatements;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStringLiteralNode;
@@ -122,6 +123,15 @@ public class JavaScriptWriter {
                 builder.append(indentationAtLevel(indentationLevel));
                 builder.append("}");
             }
+            return;
+        }
+        if (node instanceof JavaScriptPropertyAccessNode) {
+            JavaScriptPropertyAccessNode propertyAccess = (JavaScriptPropertyAccessNode) node;
+            JavaScriptExpressionNode expression = propertyAccess.getExpression();
+            String propertyName = propertyAccess.getPropertyName();
+            write(expression, builder, indentationLevel);
+            builder.append(".");
+            builder.append(propertyName);
             return;
         }
         throw new RuntimeException("Don't know how to write JavaScript node: " + node);

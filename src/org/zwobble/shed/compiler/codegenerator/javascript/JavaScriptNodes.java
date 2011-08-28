@@ -59,4 +59,8 @@ public class JavaScriptNodes {
     public JavaScriptNode object(Map<String, JavaScriptExpressionNode> properties) {
         return new JavaScriptObjectLiteralNode(properties);
     }
+
+    public JavaScriptNode propertyAccess(JavaScriptExpressionNode expression, String propertyName) {
+        return new JavaScriptPropertyAccessNode(expression, propertyName);
+    }
 }
