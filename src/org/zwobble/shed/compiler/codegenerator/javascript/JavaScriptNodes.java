@@ -60,7 +60,7 @@ public class JavaScriptNodes {
         return new JavaScriptObjectLiteralNode(properties);
     }
 
-    public JavaScriptNode propertyAccess(JavaScriptExpressionNode expression, String propertyName) {
+    public JavaScriptExpressionNode propertyAccess(JavaScriptExpressionNode expression, String propertyName) {
         return new JavaScriptPropertyAccessNode(expression, propertyName);
     }
 }

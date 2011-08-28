@@ -16,6 +16,7 @@ import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
@@ -235,6 +236,12 @@ public class JavaScriptGeneratorTest {
                 )
             ))
         );
+    }
+    
+    @Test public void
+    memberAccessIsConvertedToJavaScriptPropertyAccess() {
+        MemberAccessNode source = Nodes.member(Nodes.id("ball"), "confusion");
+        assertGeneratedJavaScript(source, js.propertyAccess(js.id("ball"), "confusion"));
     }
     
     private void assertGeneratedJavaScript(SyntaxNode source, JavaScriptNode expectedJavaScript) {

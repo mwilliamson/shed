@@ -21,6 +21,7 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PackageDeclarationNode;
@@ -106,6 +107,12 @@ public class JavaScriptGenerator {
             CallNode call = (CallNode) node;
             List<JavaScriptExpressionNode> jsArguments = transform(((CallNode) node).getArguments(), toJavaScriptExpression());
             return js.call(generateExpression(call.getFunction()), jsArguments);
+        }
+        if (node instanceof MemberAccessNode) {
+            MemberAccessNode memberAccess = (MemberAccessNode) node;
+            ExpressionNode expression = memberAccess.getExpression();
+            String memberName = memberAccess.getMemberName();
+            return js.propertyAccess(generateExpression(expression), memberName);
         }
         return null;
     }
