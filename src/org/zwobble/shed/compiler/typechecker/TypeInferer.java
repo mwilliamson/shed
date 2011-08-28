@@ -2,6 +2,7 @@ package org.zwobble.shed.compiler.typechecker;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.CompilerError;
@@ -11,6 +12,7 @@ import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
@@ -18,6 +20,7 @@ import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.typechecker.BlockTypeChecker.Result;
 import org.zwobble.shed.compiler.types.CoreTypes;
+import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
 
@@ -56,6 +59,9 @@ public class TypeInferer {
         }
         if (expression instanceof CallNode) {
             return inferCallType((CallNode)expression, nodeLocations, context);
+        }
+        if (expression instanceof MemberAccessNode) {
+            return inferMemberAccessType((MemberAccessNode)expression, nodeLocations, context);
         }
         throw new RuntimeException("Cannot infer type of expression: " + expression);
     }
@@ -182,6 +188,26 @@ public class TypeInferer {
                     }));
                 }
                 return result;
+            }
+        });
+    }
+
+    private static TypeResult<Type> inferMemberAccessType(
+        final MemberAccessNode memberAccess,
+        final NodeLocations nodeLocations,
+        StaticContext context
+    ) {
+        return inferType(memberAccess.getExpression(), nodeLocations, context).ifValueThen(new Function<Type, TypeResult<Type>>() {
+            @Override
+            public TypeResult<Type> apply(Type leftType) {
+                String name = memberAccess.getMemberName();
+                Map<String, Type> members = ((ScalarType)leftType).getMembers();
+                
+                if (members.containsKey(name)) {
+                    return TypeResult.success(members.get(name));
+                } else {
+                    return TypeResult.failure(asList(new CompilerError(nodeLocations.locate(memberAccess), "No such member: " + name)));
+                }
             }
         });
     }

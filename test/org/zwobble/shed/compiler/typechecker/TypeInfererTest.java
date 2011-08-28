@@ -11,6 +11,7 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
@@ -27,6 +28,8 @@ import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
 import org.zwobble.shed.compiler.types.TypeFunction;
+
+import com.google.common.collect.ImmutableMap;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -433,6 +436,37 @@ public class TypeInfererTest {
         assertThat(
             errorStrings(result),
             is(asList("Function requires 2 argument(s), but is called with 1"))
+        );
+    }
+    
+    @Test public void
+    memberAccessHasTypeOfMember() {
+        StaticContext context = new StaticContext();
+        InterfaceType interfaceType = new InterfaceType(
+            asList("shed", "example"),
+            "Brother",
+            ImmutableMap.<String, Type>of("age", CoreTypes.NUMBER)
+        );
+        context.add("heAintHeavy", interfaceType);
+        MemberAccessNode memberAccess = Nodes.member(Nodes.id("heAintHeavy"), "age");
+        TypeResult<Type> result = inferType(memberAccess, context);
+        assertThat(result, is(success(CoreTypes.NUMBER)));
+    }
+    
+    @Test public void
+    memberAccessFailsIfInterfaceDoesNotHaveSpecifiedMember() {
+        StaticContext context = new StaticContext();
+        InterfaceType interfaceType = new InterfaceType(
+            asList("shed", "example"),
+            "Brother",
+            ImmutableMap.<String, Type>of("age", CoreTypes.NUMBER)
+        );
+        context.add("heAintHeavy", interfaceType);
+        MemberAccessNode memberAccess = Nodes.member(Nodes.id("heAintHeavy"), "height");
+        TypeResult<Type> result = inferType(memberAccess, context);
+        assertThat(
+            errorStrings(result),
+            is(asList("No such member: height"))
         );
     }
     
