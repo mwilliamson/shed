@@ -23,7 +23,7 @@ import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
-import org.zwobble.shed.compiler.types.TypeFunction;
+import org.zwobble.shed.compiler.types.ParameterisedType;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
@@ -226,7 +226,7 @@ public class TypeInferer {
             @Override
             public TypeResult<Type> apply(Type baseType) {
                 List<Type> parameterTypes = Lists.transform(typeApplication.getParameters(), toParameterType(nodeLocations, context));
-                return TypeResult.success((Type)CoreTypes.classOf(new TypeApplication((TypeFunction)baseType, parameterTypes)));
+                return TypeResult.success((Type)CoreTypes.classOf(new TypeApplication((ParameterisedType)baseType, parameterTypes)));
             }
         });
     }

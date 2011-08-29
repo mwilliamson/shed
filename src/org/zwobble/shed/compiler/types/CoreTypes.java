@@ -24,7 +24,7 @@ public class CoreTypes {
         return new ClassType(Collections.<String>emptyList(), name, Collections.<InterfaceType>emptySet());
     }
     
-    public static final TypeFunction CLASS = new TypeFunction(
+    public static final ParameterisedType CLASS = new ParameterisedType(
         coreType("Class"),
         asList(new FormalTypeParameter("C"))
     );
@@ -33,17 +33,17 @@ public class CoreTypes {
         return new TypeApplication(CLASS, asList(type));
     }
     
-    private static Map<Integer, TypeFunction> functionTypes = new HashMap<Integer, TypeFunction>();
+    private static Map<Integer, ParameterisedType> functionTypes = new HashMap<Integer, ParameterisedType>();
     
     public static boolean isFunction(Type type) {
         return type instanceof TypeApplication && functionTypes.containsValue((((TypeApplication)type).getTypeFunction()));
     }
     
-    public static TypeFunction functionType(int arguments) {
+    public static ParameterisedType functionType(int arguments) {
         if (!functionTypes.containsKey(arguments)) {
             List<FormalTypeParameter> formalTypeParameters = newArrayList(transform(range(arguments), toFormalTypeParameter()));
             formalTypeParameters.add(new FormalTypeParameter("TResult"));
-            TypeFunction functionType = new TypeFunction(
+            ParameterisedType functionType = new ParameterisedType(
                 coreType("Function" + arguments),
                 formalTypeParameters
             );
@@ -61,7 +61,7 @@ public class CoreTypes {
         };
     }
 
-    public static Type typeFunction(TypeFunction typeFunction) {
+    public static Type typeFunction(ParameterisedType typeFunction) {
         return null;
     }
 }

@@ -26,7 +26,7 @@ import org.zwobble.shed.compiler.types.FormalTypeParameter;
 import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
-import org.zwobble.shed.compiler.types.TypeFunction;
+import org.zwobble.shed.compiler.types.ParameterisedType;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -400,7 +400,7 @@ public class TypeInfererTest {
     cannotCallNonFunctionTypeApplications() {
         StaticContext context = new StaticContext();
         ClassType classType = new ClassType(asList("example"), "List", Collections.<InterfaceType>emptySet());
-        TypeFunction typeFunction = new TypeFunction(classType, asList(new FormalTypeParameter("T")));
+        ParameterisedType typeFunction = new ParameterisedType(classType, asList(new FormalTypeParameter("T")));
         context.add("isLength", new TypeApplication(typeFunction, asList(CoreTypes.STRING)));
         CallNode call = Nodes.call(Nodes.id("isLength"));
         TypeResult<Type> result = inferType(call, context);
@@ -473,7 +473,7 @@ public class TypeInfererTest {
     applyingTypeUpdatesParameterisedTypeWithType() {
         StaticContext context = new StaticContext();
         FormalTypeParameter typeParameter = new FormalTypeParameter("T");
-        TypeFunction listTypeFunction = new TypeFunction(
+        ParameterisedType listTypeFunction = new ParameterisedType(
             new InterfaceType(asList("shed"), "List", ImmutableMap.<String, Type>of()),
             asList(typeParameter)
         );

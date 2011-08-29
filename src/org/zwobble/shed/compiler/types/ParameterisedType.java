@@ -10,7 +10,7 @@ import com.google.common.base.Joiner;
 import static com.google.common.collect.Iterables.transform;
 
 @Data
-public class TypeFunction implements Type {
+public class ParameterisedType implements Type {
     private final Type baseType;
     private final List<FormalTypeParameter> typeParameters;
     

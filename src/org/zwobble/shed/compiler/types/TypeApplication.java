@@ -11,7 +11,7 @@ import static com.google.common.collect.Iterables.transform;
 
 @Data
 public class TypeApplication implements Type {
-    private final TypeFunction typeFunction;
+    private final ParameterisedType typeFunction;
     private final List<Type> typeParameters;
     
     @Override

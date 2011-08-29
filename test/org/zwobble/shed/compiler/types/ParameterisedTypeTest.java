@@ -8,10 +8,10 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-public class TypeFunctionTest {
+public class ParameterisedTypeTest {
     @Test public void
     shortNameIncludesParameters() {
-        TypeFunction typeFunction = new TypeFunction(
+        ParameterisedType typeFunction = new ParameterisedType(
             new InterfaceType(asList("shed"), "Map", ImmutableMap.<String, Type>of()),
             asList(new FormalTypeParameter("K"), new FormalTypeParameter("V"))
         );

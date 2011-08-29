@@ -12,7 +12,7 @@ import org.zwobble.shed.compiler.types.FormalTypeParameter;
 import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
-import org.zwobble.shed.compiler.types.TypeFunction;
+import org.zwobble.shed.compiler.types.ParameterisedType;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -58,7 +58,7 @@ public class TypeLookupTest {
     @Test public void
     errorIfVariableDoesNotReferenceTypeInCurrentContext() {
         StaticContext context = new StaticContext();
-        TypeFunction listType = new TypeFunction(
+        ParameterisedType listType = new ParameterisedType(
             new ClassType(Collections.<String>emptyList(), "List", Collections.<InterfaceType>emptySet()),
             asList(new FormalTypeParameter("E"))
         );
