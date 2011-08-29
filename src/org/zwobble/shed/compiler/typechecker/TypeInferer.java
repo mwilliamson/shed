@@ -231,7 +231,7 @@ public class TypeInferer {
                 
                 if (baseType instanceof ParameterisedFunctionType) {
                     ParameterisedFunctionType functionType = (ParameterisedFunctionType)baseType;
-                    ParameterisedType typeFunction = functionType.getBaseFunctionType().getTypeFunction();
+                    ParameterisedType typeFunction = (ParameterisedType)functionType.getBaseFunctionType().getTypeFunction();
                     List<FormalTypeParameter> formalTypeParameters = functionType.getTypeParameters();
                     
                     List<Type> appliedFunctionParameters = new ArrayList<Type>();

@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
@@ -37,5 +38,25 @@ public class TypeReplacerTest {
             ImmutableMap.of(formalTypeParameter, CoreTypes.NUMBER)
         );
         assertThat(replacement, is(CoreTypes.NUMBER));
+    }
+    
+    @Test public void
+    typeApplicationAppliedToFunctionTypeIsReplacedByFunctionTypesBaseTypeWithAppropriateFormalTypeParametersReplaced() {
+        TypeReplacer typeReplacer = new TypeReplacer();
+        FormalTypeParameter formalTypeParameter = new FormalTypeParameter("T");
+        
+        TypeApplication typeApplication = new TypeApplication(
+            new ParameterisedFunctionType(
+                CoreTypes.functionTypeOf(formalTypeParameter, formalTypeParameter),
+                asList(formalTypeParameter)
+            ),
+            asList(CoreTypes.NUMBER)
+        );
+        
+        Type replacement = typeReplacer.replaceTypes(
+            typeApplication,
+            ImmutableMap.<FormalTypeParameter, Type>of()
+        );
+        assertThat(replacement, is((Type)CoreTypes.functionTypeOf(CoreTypes.NUMBER, CoreTypes.NUMBER)));
     }
 }

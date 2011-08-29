@@ -11,13 +11,14 @@ import static com.google.common.collect.Iterables.transform;
 
 @Data
 public class TypeApplication implements Type {
-    private final ParameterisedType typeFunction;
+    private final TypeFunction typeFunction;
     private final List<Type> typeParameters;
     
     @Override
     public String shortName() {
         Iterable<String> typeParameterNames = transform(typeParameters, toShortName());
-        return typeFunction.getBaseType().shortName() + "[" + Joiner.on(", ").join(typeParameterNames) + "]";
+        Type baseType = typeFunction instanceof ParameterisedType ? ((ParameterisedType)typeFunction).getBaseType() : typeFunction;
+        return baseType.shortName() + "[" + Joiner.on(", ").join(typeParameterNames) + "]";
     }
     
     private Function<Type, String> toShortName() {
