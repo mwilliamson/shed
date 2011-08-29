@@ -15,17 +15,14 @@ import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
-import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
-import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
-
-import static org.zwobble.shed.compiler.parsing.ParserTesting.isSuccessWithNode;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.Option.none;
+import static org.zwobble.shed.compiler.parsing.ParserTesting.isSuccessWithNode;
 import static org.zwobble.shed.compiler.parsing.ParserTesting.tokens;
 
 public class ExpressionsTest {
@@ -59,7 +56,7 @@ public class ExpressionsTest {
             Expressions.expression().parse(tokens("() => 2")),
             isSuccessWithNode(new ShortLambdaExpressionNode(
                 Collections.<FormalArgumentNode>emptyList(),
-                none(TypeReferenceNode.class),
+                none(ExpressionNode.class),
                 new NumberLiteralNode("2")
             ))
         );
@@ -70,8 +67,8 @@ public class ExpressionsTest {
         assertThat(
             Expressions.expression().parse(tokens("(num : Integer) => 2")),
             isSuccessWithNode(new ShortLambdaExpressionNode(
-                asList(new FormalArgumentNode("num", new TypeIdentifierNode("Integer"))),
-                none(TypeReferenceNode.class),
+                asList(new FormalArgumentNode("num", new VariableIdentifierNode("Integer"))),
+                none(ExpressionNode.class),
                 new NumberLiteralNode("2")
             ))
         );
@@ -83,10 +80,10 @@ public class ExpressionsTest {
             Expressions.expression().parse(tokens("(num : Integer, name: String) => 2")),
             isSuccessWithNode(new ShortLambdaExpressionNode(
                 asList(
-                    new FormalArgumentNode("num", new TypeIdentifierNode("Integer")),
-                    new FormalArgumentNode("name", new TypeIdentifierNode("String"))
+                    new FormalArgumentNode("num", new VariableIdentifierNode("Integer")),
+                    new FormalArgumentNode("name", new VariableIdentifierNode("String"))
                 ),
-                none(TypeReferenceNode.class),
+                none(ExpressionNode.class),
                 new NumberLiteralNode("2")
             ))
         );
@@ -98,9 +95,9 @@ public class ExpressionsTest {
             Expressions.expression().parse(tokens("() : String => { val x = 2; return 3; }")),
             isSuccessWithNode(new LongLambdaExpressionNode(
                 Collections.<FormalArgumentNode>emptyList(),
-                new TypeIdentifierNode("String"),
+                new VariableIdentifierNode("String"),
                 asList(
-                    new ImmutableVariableNode("x", Option.<TypeReferenceNode>none(), new NumberLiteralNode("2")),
+                    new ImmutableVariableNode("x", Option.<ExpressionNode>none(), new NumberLiteralNode("2")),
                     new ReturnNode(new NumberLiteralNode("3"))
                 )
             ))

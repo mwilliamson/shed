@@ -13,7 +13,6 @@ import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
-import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.tokeniser.Keyword;
 
 import static org.zwobble.shed.compiler.parsing.Expressions.expression;
@@ -76,7 +75,7 @@ public class Statements {
     public static Rule<ImmutableVariableNode> immutableVariable() {
         return variable(Keyword.VAL, new VariableNodeConstructor<ImmutableVariableNode>() {
             @Override
-            public ImmutableVariableNode apply(String identifier, Option<TypeReferenceNode> typeReference, ExpressionNode expression) {
+            public ImmutableVariableNode apply(String identifier, Option<ExpressionNode> typeReference, ExpressionNode expression) {
                 return new ImmutableVariableNode(identifier, typeReference, expression);
             }
         });
@@ -85,7 +84,7 @@ public class Statements {
     public static Rule<MutableVariableNode> mutableVariable() {
         return variable(Keyword.VAR, new VariableNodeConstructor<MutableVariableNode>() {
             @Override
-            public MutableVariableNode apply(String identifier, Option<TypeReferenceNode> typeReference, ExpressionNode expression) {
+            public MutableVariableNode apply(String identifier, Option<ExpressionNode> typeReference, ExpressionNode expression) {
                 return new MutableVariableNode(identifier, typeReference, expression);
             }
         });
@@ -165,7 +164,7 @@ public class Statements {
     private static <T> Rule<T> variable(Keyword keyword, final VariableNodeConstructor<T> constructor) {
         final Rule<String> identifier = tokenOfType(IDENTIFIER);
         final Rule<? extends ExpressionNode> expression = expression(); 
-        final Rule<Option<TypeReferenceNode>> type = optional(typeSpecifier());
+        final Rule<Option<ExpressionNode>> type = optional(typeSpecifier());
         return then(
             aStatement(
                 guard(keyword(keyword)), whitespace(),
@@ -184,6 +183,6 @@ public class Statements {
     }
 
     private interface VariableNodeConstructor<T> {
-        T apply(String identifier, Option<TypeReferenceNode> typeReference, ExpressionNode expression);
+        T apply(String identifier, Option<ExpressionNode> typeReference, ExpressionNode expression);
     }
 }

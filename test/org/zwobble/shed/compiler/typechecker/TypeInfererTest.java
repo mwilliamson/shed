@@ -18,8 +18,6 @@ import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
-import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
-import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -87,7 +85,7 @@ public class TypeInfererTest {
         StaticContext context = new StaticContext();
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
-            none(TypeReferenceNode.class),
+            none(ExpressionNode.class),
             new NumberLiteralNode("42")
         );
         TypeResult<Type> result = inferType(functionExpression, context);
@@ -101,7 +99,7 @@ public class TypeInfererTest {
         StaticContext context = new StaticContext();
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
-            none(TypeReferenceNode.class),
+            none(ExpressionNode.class),
             new VariableIdentifierNode("blah")
         );
         TypeResult<Type> result = inferType(functionExpression, context);
@@ -115,7 +113,7 @@ public class TypeInfererTest {
         NumberLiteralNode body = new NumberLiteralNode("42");
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
-            some((TypeReferenceNode)new TypeIdentifierNode("String")),
+            some(new VariableIdentifierNode("String")),
             body
         );
         nodeLocations.put(body, range(position(3, 5), position(7, 4)));
@@ -135,11 +133,11 @@ public class TypeInfererTest {
         context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             asList(
-                new FormalArgumentNode("name", new TypeIdentifierNode("Name")),
-                new FormalArgumentNode("age", new TypeIdentifierNode("Number")),
-                new FormalArgumentNode("address", new TypeIdentifierNode("Address"))
+                new FormalArgumentNode("name", new VariableIdentifierNode("Name")),
+                new FormalArgumentNode("age", new VariableIdentifierNode("Number")),
+                new FormalArgumentNode("address", new VariableIdentifierNode("Address"))
             ),
-            none(TypeReferenceNode.class),
+            none(ExpressionNode.class),
             new BooleanLiteralNode(true)
         );
         TypeResult<Type> result = inferType(functionExpression, context);
@@ -151,7 +149,7 @@ public class TypeInfererTest {
         StaticContext context = new StaticContext();
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
-            some((TypeReferenceNode)new TypeIdentifierNode("String")),
+            some(new VariableIdentifierNode("String")),
             new NumberLiteralNode("42")
         );
         TypeResult<Type> result = inferType(functionExpression, context);
@@ -165,10 +163,10 @@ public class TypeInfererTest {
         context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             asList(
-                new FormalArgumentNode("name", new TypeIdentifierNode("String")),
-                new FormalArgumentNode("age", new TypeIdentifierNode("Number"))
+                new FormalArgumentNode("name", new VariableIdentifierNode("String")),
+                new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
             ),
-            none(TypeReferenceNode.class),
+            none(ExpressionNode.class),
             new BooleanLiteralNode(true)
         );
         TypeResult<Type> result = inferType(functionExpression, context);
@@ -185,10 +183,10 @@ public class TypeInfererTest {
         context.add("Boolean", CoreTypes.classOf(CoreTypes.BOOLEAN));
         LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
             asList(
-                new FormalArgumentNode("name", new TypeIdentifierNode("String")),
-                new FormalArgumentNode("age", new TypeIdentifierNode("Number"))
+                new FormalArgumentNode("name", new VariableIdentifierNode("String")),
+                new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
             ),
-            new TypeIdentifierNode("Boolean"),
+            new VariableIdentifierNode("Boolean"),
             asList((StatementNode)new ReturnNode(new BooleanLiteralNode(true)))
         );
         TypeResult<Type> result = inferType(functionExpression, context);
@@ -205,11 +203,11 @@ public class TypeInfererTest {
         context.add("Boolean", CoreTypes.classOf(CoreTypes.BOOLEAN));
         LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
-            new TypeIdentifierNode("Boolean"),
+            new VariableIdentifierNode("Boolean"),
             asList(
                 new ImmutableVariableNode(
                     "x",
-                    some((TypeReferenceNode)new TypeIdentifierNode("String")),
+                    some(new VariableIdentifierNode("String")),
                     new BooleanLiteralNode(true)
                 ),
                 new ReturnNode(new BooleanLiteralNode(true))
@@ -225,7 +223,7 @@ public class TypeInfererTest {
         context.add("Boolean", CoreTypes.classOf(CoreTypes.BOOLEAN));
         LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
-            new TypeIdentifierNode("Boolean"),
+            new VariableIdentifierNode("Boolean"),
             Arrays.<StatementNode>asList(
                 new ReturnNode(new NumberLiteralNode("4.2"))
             )
@@ -241,10 +239,10 @@ public class TypeInfererTest {
         context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
         LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
             asList(
-                new FormalArgumentNode("name", new TypeIdentifierNode("String")),
-                new FormalArgumentNode("age", new TypeIdentifierNode("Number"))
+                new FormalArgumentNode("name", new VariableIdentifierNode("String")),
+                new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
             ),
-            new TypeIdentifierNode("Number"),
+            new VariableIdentifierNode("Number"),
             asList((StatementNode)new ReturnNode(new VariableIdentifierNode("age")))
         );
         TypeResult<Type> result = inferType(functionExpression, context);
@@ -259,9 +257,9 @@ public class TypeInfererTest {
         context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
         LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
             asList(
-                new FormalArgumentNode("name", new TypeIdentifierNode("Strink"))
+                new FormalArgumentNode("name", new VariableIdentifierNode("Strink"))
             ),
-            new TypeIdentifierNode("Number"),
+            new VariableIdentifierNode("Number"),
             asList((StatementNode)new ReturnNode(new NumberLiteralNode("4")))
         );
         TypeResult<Type> result = inferType(functionExpression, context);
@@ -275,10 +273,10 @@ public class TypeInfererTest {
         context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             asList(
-                new FormalArgumentNode("name", new TypeIdentifierNode("String")),
-                new FormalArgumentNode("age", new TypeIdentifierNode("Number"))
+                new FormalArgumentNode("name", new VariableIdentifierNode("String")),
+                new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
             ),
-            none(TypeReferenceNode.class),
+            none(ExpressionNode.class),
             new VariableIdentifierNode("age")
         );
         TypeResult<Type> result = inferType(functionExpression, context);
@@ -292,10 +290,10 @@ public class TypeInfererTest {
         StaticContext context = new StaticContext();
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             asList(
-                new FormalArgumentNode("name", new TypeIdentifierNode("Strink")),
-                new FormalArgumentNode("age", new TypeIdentifierNode("Numer"))
+                new FormalArgumentNode("name", new VariableIdentifierNode("Strink")),
+                new FormalArgumentNode("age", new VariableIdentifierNode("Numer"))
             ),
-            none(TypeReferenceNode.class),
+            none(ExpressionNode.class),
             new NumberLiteralNode("4")
         );
         TypeResult<Type> result = inferType(functionExpression, context);
@@ -308,9 +306,9 @@ public class TypeInfererTest {
         context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             asList(
-                new FormalArgumentNode("age", new TypeIdentifierNode("Number"))
+                new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
             ),
-            some((TypeReferenceNode)new TypeIdentifierNode("Number")),
+            some(new VariableIdentifierNode("Number")),
             new VariableIdentifierNode("blah")
         );
         TypeResult<Type> result = inferType(functionExpression, context);
@@ -323,10 +321,10 @@ public class TypeInfererTest {
         context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             asList(
-                new FormalArgumentNode("age", new TypeIdentifierNode("Number")),
-                new FormalArgumentNode("age", new TypeIdentifierNode("Number"))
+                new FormalArgumentNode("age", new VariableIdentifierNode("Number")),
+                new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
             ),
-            none(TypeReferenceNode.class),
+            none(ExpressionNode.class),
             new BooleanLiteralNode(true)
         );
         TypeResult<Type> result = inferType(functionExpression, context);
@@ -339,10 +337,10 @@ public class TypeInfererTest {
         context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
         LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
             asList(
-                new FormalArgumentNode("age", new TypeIdentifierNode("Number")),
-                new FormalArgumentNode("age", new TypeIdentifierNode("Number"))
+                new FormalArgumentNode("age", new VariableIdentifierNode("Number")),
+                new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
             ),
-            new TypeIdentifierNode("Number"),
+            new VariableIdentifierNode("Number"),
             asList((StatementNode)new ReturnNode(new NumberLiteralNode("4")))
         );
         TypeResult<Type> result = inferType(functionExpression, context);
@@ -355,7 +353,7 @@ public class TypeInfererTest {
         context.add("Boolean", CoreTypes.classOf(CoreTypes.BOOLEAN));
         LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
-            new TypeIdentifierNode("Boolean"),
+            new VariableIdentifierNode("Boolean"),
             Collections.<StatementNode>emptyList()
         );
         TypeResult<Type> result = inferType(functionExpression, context);

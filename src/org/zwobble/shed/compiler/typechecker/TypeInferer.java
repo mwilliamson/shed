@@ -16,7 +16,6 @@ import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
-import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.typechecker.BlockTypeChecker.Result;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -80,7 +79,7 @@ public class TypeInferer {
         
         result = result.withErrorsFrom(expressionTypeResult);
         
-        Option<TypeReferenceNode> returnTypeReference = lambdaExpression.getReturnType();
+        Option<? extends ExpressionNode> returnTypeReference = lambdaExpression.getReturnType();
         if (returnTypeReference.hasValue()) {
             TypeResult<Type> returnTypeResult = lookupTypeReference(returnTypeReference.get(), nodeLocations, context);
             result = result.withErrorsFrom(returnTypeResult.ifValueThen(new Function<Type, TypeResult<Void>>() {

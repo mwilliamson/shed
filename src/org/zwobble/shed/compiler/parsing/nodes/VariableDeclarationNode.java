@@ -4,6 +4,6 @@ import org.zwobble.shed.compiler.Option;
 
 public interface VariableDeclarationNode extends DeclarationNode {
     String getIdentifier();
-    Option<? extends TypeReferenceNode> getTypeReference();
+    Option<? extends ExpressionNode> getTypeReference();
     ExpressionNode getValue();
 }

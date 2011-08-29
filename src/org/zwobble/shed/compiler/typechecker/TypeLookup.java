@@ -3,8 +3,8 @@ package org.zwobble.shed.compiler.typechecker;
 import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.SourceRange;
-import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
-import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
+import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
@@ -16,9 +16,10 @@ import static org.zwobble.shed.compiler.typechecker.VariableLookup.lookupVariabl
 
 public class TypeLookup {
     public static TypeResult<Type>
-    lookupTypeReference(TypeReferenceNode typeReference, NodeLocations nodeLocations, StaticContext context) {
-        if (typeReference instanceof TypeIdentifierNode) {
-            String identifier = ((TypeIdentifierNode)typeReference).getIdentifier();
+    lookupTypeReference(ExpressionNode typeReference, NodeLocations nodeLocations, StaticContext context) {
+        // TODO: lookup type from context
+        if (typeReference instanceof VariableIdentifierNode) {
+            String identifier = ((VariableIdentifierNode)typeReference).getIdentifier();
             SourceRange nodeLocation = nodeLocations.locate(typeReference);
             TypeResult<Type> variableType = lookupVariableReference(identifier, nodeLocation, context);
             

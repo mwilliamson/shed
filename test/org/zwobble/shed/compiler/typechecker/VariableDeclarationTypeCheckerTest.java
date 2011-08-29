@@ -3,9 +3,8 @@ package org.zwobble.shed.compiler.typechecker;
 import org.junit.Test;
 import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
-import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
-import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -33,7 +32,7 @@ public class VariableDeclarationTypeCheckerTest {
     declaringVariableAddsItToScope() {
         ImmutableVariableNode variableNode = new ImmutableVariableNode(
             "x",
-            none(TypeReferenceNode.class),
+            none(ExpressionNode.class),
             new BooleanLiteralNode(true)
         );
         
@@ -50,7 +49,7 @@ public class VariableDeclarationTypeCheckerTest {
         BooleanLiteralNode booleanNode = new BooleanLiteralNode(true);
         ImmutableVariableNode variableNode = new ImmutableVariableNode(
             "x",
-            some((TypeReferenceNode)new TypeIdentifierNode("String")),
+            some(new VariableIdentifierNode("String")),
             booleanNode
         );
         nodeLocations.put(booleanNode, range(position(4, 12), position(6, 6)));
@@ -74,7 +73,7 @@ public class VariableDeclarationTypeCheckerTest {
         
         ImmutableVariableNode variableNode = new ImmutableVariableNode(
             "x",
-            some(new TypeIdentifierNode("Iterable")),
+            some(new VariableIdentifierNode("Iterable")),
             new VariableIdentifierNode("myList")
         );
         
@@ -86,7 +85,7 @@ public class VariableDeclarationTypeCheckerTest {
     
     @Test public void
     errorsIfDeclaringVariableWithNameAlreadyDeclaredInSameScope() {
-        ImmutableVariableNode variableNode = new ImmutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true));
+        ImmutableVariableNode variableNode = new ImmutableVariableNode("x", none(ExpressionNode.class), new BooleanLiteralNode(true));
         nodeLocations.put(variableNode, range(position(4, 12), position(6, 6)));
         
         staticContext.add("x", CoreTypes.BOOLEAN);

@@ -28,17 +28,13 @@ public class Nodes {
     }
     
     public static ImmutableVariableNode immutableVar(String name, ExpressionNode expression) {
-        return new ImmutableVariableNode(name, none(TypeReferenceNode.class), expression);
+        return new ImmutableVariableNode(name, none(ExpressionNode.class), expression);
     }
     
-    public static ImmutableVariableNode immutableVar(String name, TypeReferenceNode type, ExpressionNode expression) {
+    public static ImmutableVariableNode immutableVar(String name, ExpressionNode type, ExpressionNode expression) {
         return new ImmutableVariableNode(name, some(type), expression);
     }
     
-    public static TypeIdentifierNode typeId(String identifier) {
-        return new TypeIdentifierNode(identifier);
-    }
-
     public static ObjectDeclarationNode object(String name, List<StatementNode> statements) {
         return new ObjectDeclarationNode(name, statements);
     }

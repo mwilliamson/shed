@@ -10,7 +10,6 @@ import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
-import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
 import static org.zwobble.shed.compiler.parsing.Blocks.block;
@@ -157,7 +156,7 @@ public class Expressions {
     
     private static Rule<LongLambdaExpressionNode> longLambdaExpression() {
         final Rule<List<FormalArgumentNode>> formalArguments;
-        final Rule<TypeReferenceNode> returnType;
+        final Rule<ExpressionNode> returnType;
         final Rule<List<StatementNode>> functionBody;
         return then(
             sequence(OnError.FINISH,
@@ -184,7 +183,7 @@ public class Expressions {
     
     private static Rule<ShortLambdaExpressionNode> shortLambdaExpression() {
         final Rule<List<FormalArgumentNode>> formalArguments;
-        final Rule<Option<TypeReferenceNode>> returnType;
+        final Rule<Option<ExpressionNode>> returnType;
         final Rule<ExpressionNode> functionBody = expression();
         return then(
             sequence(OnError.FINISH,
@@ -230,7 +229,7 @@ public class Expressions {
 
     private static Rule<FormalArgumentNode> formalArgument() {
         final Rule<String> name;
-        final Rule<TypeReferenceNode> type = typeSpecifier();
+        final Rule<ExpressionNode> type = typeSpecifier();
         return then(
             sequence(OnError.FINISH,
                 name = guard(tokenOfType(IDENTIFIER)),

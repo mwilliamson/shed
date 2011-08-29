@@ -11,6 +11,7 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNod
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatements;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
+import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
@@ -28,8 +29,6 @@ import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
-import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
-import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
 import com.google.common.collect.ImmutableMap;
@@ -74,13 +73,13 @@ public class JavaScriptGeneratorTest {
     
     @Test public void
     immutableVariableNodesAreConvertedToVariableDeclarations() {
-        ImmutableVariableNode source = new ImmutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true));
+        ImmutableVariableNode source = new ImmutableVariableNode("x", none(ExpressionNode.class), new BooleanLiteralNode(true));
         assertGeneratedJavaScript(source, js.var("x", generator.generate(new BooleanLiteralNode(true))));
     }
     
     @Test public void
     mutableVariableNodesAreConvertedToVariableDeclarations() {
-        MutableVariableNode source = new MutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true));
+        MutableVariableNode source = new MutableVariableNode("x", none(ExpressionNode.class), new BooleanLiteralNode(true));
         assertGeneratedJavaScript(source, js.var("x", generator.generate(new BooleanLiteralNode(true))));
     }
     
@@ -105,7 +104,7 @@ public class JavaScriptGeneratorTest {
     shortLambdaExpressionWithoutArgumentsIsConvertedIntoJavaScriptAnonymousFunction() {
         ShortLambdaExpressionNode source = new ShortLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
-            none(TypeReferenceNode.class),
+            none(ExpressionNode.class),
             new BooleanLiteralNode(true)
         );
         assertGeneratedJavaScript(
@@ -121,10 +120,10 @@ public class JavaScriptGeneratorTest {
     shortLambdaExpressionWithArgumentsIsConvertedIntoJavaScriptAnonymousFunction() {
         ShortLambdaExpressionNode source = new ShortLambdaExpressionNode(
             asList(
-                new FormalArgumentNode("name", new TypeIdentifierNode("String")),
-                new FormalArgumentNode("age", new TypeIdentifierNode("Number"))
+                new FormalArgumentNode("name", new VariableIdentifierNode("String")),
+                new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
             ),
-            none(TypeReferenceNode.class),
+            none(ExpressionNode.class),
             new BooleanLiteralNode(true)
         );
         assertGeneratedJavaScript(
@@ -144,14 +143,14 @@ public class JavaScriptGeneratorTest {
     
     @Test public void
     longLambdaExpressionIsConvertedIntoJavaScriptAnonymousFunction() {
-        ImmutableVariableNode variableNode = new ImmutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true));
+        ImmutableVariableNode variableNode = new ImmutableVariableNode("x", none(ExpressionNode.class), new BooleanLiteralNode(true));
         ReturnNode returnNode = new ReturnNode(new NumberLiteralNode("42"));
         LongLambdaExpressionNode source = new LongLambdaExpressionNode(
             asList(
-                new FormalArgumentNode("name", new TypeIdentifierNode("String")),
-                new FormalArgumentNode("age", new TypeIdentifierNode("Number"))
+                new FormalArgumentNode("name", new VariableIdentifierNode("String")),
+                new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
             ),
-            new TypeIdentifierNode("Number"),
+            new VariableIdentifierNode("Number"),
             asList(variableNode, returnNode)
         );
         assertGeneratedJavaScript(
@@ -167,7 +166,7 @@ public class JavaScriptGeneratorTest {
         
         PackageDeclarationNode packageDeclaration = new PackageDeclarationNode(asList("shed", "example"));
         ImportNode importNode = new ImportNode(asList("shed", "DateTime"));
-        StatementNode statement = new ImmutableVariableNode("magic", Option.none(TypeReferenceNode.class), new NumberLiteralNode("42"));
+        StatementNode statement = new ImmutableVariableNode("magic", Option.none(ExpressionNode.class), new NumberLiteralNode("42"));
         SourceNode source = new SourceNode(packageDeclaration, asList(importNode), asList(statement));
         assertThat(
             generator.generate(source),
@@ -192,7 +191,7 @@ public class JavaScriptGeneratorTest {
         JavaScriptGenerator generator = new JavaScriptGenerator(importGenerator, wrapper);
         
         PackageDeclarationNode packageDeclaration = new PackageDeclarationNode(asList("shed", "example"));
-        StatementNode statement = new ImmutableVariableNode("magic", Option.none(TypeReferenceNode.class), new NumberLiteralNode("42"));
+        StatementNode statement = new ImmutableVariableNode("magic", Option.none(ExpressionNode.class), new NumberLiteralNode("42"));
         SourceNode source = new SourceNode(packageDeclaration, Collections.<ImportNode>emptyList(), asList(statement));
         assertThat(
             generator.generate(source),

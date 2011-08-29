@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Test;
+import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
@@ -11,7 +12,6 @@ import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
-import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -45,7 +45,7 @@ public class TopLevelNodesTest {
             isSuccessWithNode(new SourceNode(
                 new PackageDeclarationNode(asList("shed", "util", "collections")),
                 Collections.<ImportNode>emptyList(),
-                asList((StatementNode)new ImmutableVariableNode("x", none(TypeReferenceNode.class), new NumberLiteralNode("1")))
+                asList((StatementNode)new ImmutableVariableNode("x", none(ExpressionNode.class), new NumberLiteralNode("1")))
             ))
         );
     }
@@ -61,8 +61,8 @@ public class TopLevelNodesTest {
                     new ImportNode(asList("shed", "util"))
                 ),
                 Arrays.<StatementNode>asList(
-                    new ImmutableVariableNode("x", none(TypeReferenceNode.class), new NumberLiteralNode("1")),
-                    new MutableVariableNode("y", none(TypeReferenceNode.class), new NumberLiteralNode("2"))
+                    new ImmutableVariableNode("x", none(ExpressionNode.class), new NumberLiteralNode("1")),
+                    new MutableVariableNode("y", none(ExpressionNode.class), new NumberLiteralNode("2"))
                 )
             ))
         );
@@ -117,7 +117,7 @@ public class TopLevelNodesTest {
             is(new SourceNode(
                 new PackageDeclarationNode(asList("shed", "util", "collections")),
                 asList(new ImportNode(asList("shed", "stuff"))),
-                asList((StatementNode)new ImmutableVariableNode("y", none(TypeReferenceNode.class), new NumberLiteralNode("2")))
+                asList((StatementNode)new ImmutableVariableNode("y", none(ExpressionNode.class), new NumberLiteralNode("2")))
             ))
         );
     }

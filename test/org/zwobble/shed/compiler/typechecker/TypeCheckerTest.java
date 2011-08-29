@@ -5,6 +5,7 @@ import java.util.Collections;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
@@ -16,8 +17,7 @@ import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
-import org.zwobble.shed.compiler.parsing.nodes.TypeIdentifierNode;
-import org.zwobble.shed.compiler.parsing.nodes.TypeReferenceNode;
+import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
@@ -41,7 +41,7 @@ public class TypeCheckerTest {
         SourceNode source = new SourceNode(
             new PackageDeclarationNode(asList("shed", "example")),
             Collections.<ImportNode>emptyList(),
-            asList((StatementNode)new ImmutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true)))
+            asList((StatementNode)new ImmutableVariableNode("x", none(ExpressionNode.class), new BooleanLiteralNode(true)))
         );
         assertThat(typeCheck(source).isSuccess(), is(true));
     }
@@ -57,7 +57,7 @@ public class TypeCheckerTest {
             asList(new ImportNode(asList("shed", "custom", "String"))),
             asList((StatementNode)new ImmutableVariableNode(
                 "x",
-                none(TypeReferenceNode.class),
+                none(ExpressionNode.class),
                 new BooleanLiteralNode(true)
             ))
         );
@@ -72,7 +72,7 @@ public class TypeCheckerTest {
         SourceNode source = new SourceNode(
             new PackageDeclarationNode(asList("shed", "example")),
             Collections.<ImportNode>emptyList(),
-            asList((StatementNode)new ImmutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true)))
+            asList((StatementNode)new ImmutableVariableNode("x", none(ExpressionNode.class), new BooleanLiteralNode(true)))
         );
         typeCheck(source);
         assertThat(staticContext.isDeclaredInCurrentScope("x"), is(false));
@@ -85,15 +85,15 @@ public class TypeCheckerTest {
             new PackageDeclarationNode(asList("shed", "example")),
             Collections.<ImportNode>emptyList(),
             Arrays.<StatementNode>asList(
-                new ImmutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true)),
+                new ImmutableVariableNode("x", none(ExpressionNode.class), new BooleanLiteralNode(true)),
                 new ImmutableVariableNode(
                     "func",
-                    none(TypeReferenceNode.class),
+                    none(ExpressionNode.class),
                     new LongLambdaExpressionNode(
                         Collections.<FormalArgumentNode>emptyList(),
-                        new TypeIdentifierNode("String"),
+                        new VariableIdentifierNode("String"),
                         Arrays.<StatementNode>asList(
-                            new ImmutableVariableNode("x", none(TypeReferenceNode.class), new BooleanLiteralNode(true)),
+                            new ImmutableVariableNode("x", none(ExpressionNode.class), new BooleanLiteralNode(true)),
                             new ReturnNode(new StringLiteralNode("Stop!"))
                         )
                     )
@@ -132,7 +132,7 @@ public class TypeCheckerTest {
     bodyOfObjectIsTypeChecked() {
         ObjectDeclarationNode objectDeclarationNode = new ObjectDeclarationNode(
             "browser",
-            asList((StatementNode)Nodes.immutableVar("version", Nodes.typeId("String"), Nodes.number("1.2")))
+            asList((StatementNode)Nodes.immutableVar("version", Nodes.id("String"), Nodes.number("1.2")))
         );
         TypeResult<Void> result = TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext);
         assertThat(result.isSuccess(), is(false));

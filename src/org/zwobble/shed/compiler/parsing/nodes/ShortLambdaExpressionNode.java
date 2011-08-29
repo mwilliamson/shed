@@ -9,6 +9,6 @@ import lombok.Data;
 @Data
 public class ShortLambdaExpressionNode implements LambdaExpressionNode {
     private final List<FormalArgumentNode> formalArguments;
-    private final Option<TypeReferenceNode> returnType;
+    private final Option<? extends ExpressionNode> returnType;
     private final ExpressionNode body;
 }

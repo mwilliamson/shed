@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class FormalArgumentNode implements SyntaxNode {
     private final String name;
-    private final TypeReferenceNode type;
+    private final ExpressionNode type;
 }
