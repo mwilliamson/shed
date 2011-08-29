@@ -18,6 +18,7 @@ import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -467,6 +468,45 @@ public class TypeInfererTest {
             is(asList("No such member: height"))
         );
     }
+    
+    @Test public void
+    applyingTypeUpdatesParameterisedTypeWithType() {
+        StaticContext context = new StaticContext();
+        FormalTypeParameter typeParameter = new FormalTypeParameter("T");
+        TypeFunction listTypeFunction = new TypeFunction(
+            new InterfaceType(asList("shed"), "List", ImmutableMap.<String, Type>of()),
+            asList(typeParameter)
+        );
+        context.add("List", listTypeFunction);
+        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
+        TypeApplicationNode typeApplication = Nodes.typeApply(Nodes.id("List"), Nodes.id("Number"));
+        
+        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
+            asList(new FormalArgumentNode("dummy", typeApplication)),
+            none(ExpressionNode.class),
+            new NumberLiteralNode("42")
+        );
+        TypeResult<Type> result = inferType(functionExpression, context);
+        assertThat(result, is((Object)success(
+            new TypeApplication(CoreTypes.functionType(1), asList(new TypeApplication(listTypeFunction, asList(CoreTypes.NUMBER)), CoreTypes.NUMBER))
+        )));
+    }
+    
+//    @Test public void
+//    applyingTypeUpdatesFunctionArgumentAndReturnTypes() {
+//        StaticContext context = new StaticContext();
+//        FormalTypeParameter typeParameter = new FormalTypeParameter("T");
+//        context.add("identity", new TypeFunction(
+//            TypeApplication.build(
+//                CoreTypes.functionType(1),
+//                Arrays.<Type>asList(typeParameter, typeParameter)
+//            ),
+//            asList(typeParameter)
+//        ));
+//        CallNode call = Nodes.call(Nodes.typeApply(Nodes.id("identity"), Nodes.number("2")));
+//        TypeResult<Type> result = inferType(call, context);
+//        assertThat(result, is(success(CoreTypes.NUMBER)));
+//    }
     
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
         return TypeInferer.inferType(expression, nodeLocations, context);

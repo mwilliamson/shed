@@ -60,4 +60,8 @@ public class CoreTypes {
             }
         };
     }
+
+    public static Type typeFunction(TypeFunction typeFunction) {
+        return null;
+    }
 }

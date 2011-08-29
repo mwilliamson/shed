@@ -16,14 +16,17 @@ import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.typechecker.BlockTypeChecker.Result;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
+import org.zwobble.shed.compiler.types.TypeFunction;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 
 import static com.google.common.collect.Lists.transform;
 import static java.util.Arrays.asList;
@@ -61,6 +64,9 @@ public class TypeInferer {
         }
         if (expression instanceof MemberAccessNode) {
             return inferMemberAccessType((MemberAccessNode)expression, nodeLocations, context);
+        }
+        if (expression instanceof TypeApplicationNode) {
+            return inferTypeApplicationType((TypeApplicationNode)expression, nodeLocations, context);
         }
         throw new RuntimeException("Cannot infer type of expression: " + expression);
     }
@@ -210,7 +216,34 @@ public class TypeInferer {
             }
         });
     }
+
+    private static TypeResult<Type> inferTypeApplicationType(
+        final TypeApplicationNode typeApplication,
+        final NodeLocations nodeLocations,
+        final StaticContext context
+    ) {
+        return inferType(typeApplication.getBaseValue(), nodeLocations, context).ifValueThen(new Function<Type, TypeResult<Type>>() {
+            @Override
+            public TypeResult<Type> apply(Type baseType) {
+                List<Type> parameterTypes = Lists.transform(typeApplication.getParameters(), toParameterType(nodeLocations, context));
+                return TypeResult.success((Type)CoreTypes.classOf(new TypeApplication((TypeFunction)baseType, parameterTypes)));
+            }
+        });
+    }
     
+    private static Function<ExpressionNode, Type> toParameterType(final NodeLocations nodeLocations, final StaticContext context) {
+        return new Function<ExpressionNode, Type>() {
+            @Override
+            public Type apply(ExpressionNode expression) {
+                TypeResult<Type> result = TypeLookup.lookupTypeReference(expression, nodeLocations, context);
+                if (!result.isSuccess()) {
+                    throw new RuntimeException(result.getErrors().toString());
+                }
+                return result.get();
+            }
+        };
+    }
+
     private static Function<List<FormalArgumentType>, TypeResult<Type>> buildFunctionType(final Type returnType) {
         return new Function<List<FormalArgumentType>, TypeResult<Type>>() {
             @Override
