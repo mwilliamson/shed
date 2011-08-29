@@ -17,7 +17,7 @@ public class TypeApplication implements Type {
     @Override
     public String shortName() {
         Iterable<String> typeParameterNames = transform(typeParameters, toShortName());
-        return typeFunction.shortName() + "[" + Joiner.on(", ").join(typeParameterNames) + "]";
+        return typeFunction.getBaseType().shortName() + "[" + Joiner.on(", ").join(typeParameterNames) + "]";
     }
     
     private Function<Type, String> toShortName() {
