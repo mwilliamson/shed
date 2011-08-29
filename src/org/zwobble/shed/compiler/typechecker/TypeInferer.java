@@ -20,12 +20,13 @@ import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.typechecker.BlockTypeChecker.Result;
 import org.zwobble.shed.compiler.types.CoreTypes;
-import org.zwobble.shed.compiler.types.FormalTypeParameter;
 import org.zwobble.shed.compiler.types.ParameterisedFunctionType;
+import org.zwobble.shed.compiler.types.ParameterisedType;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
-import org.zwobble.shed.compiler.types.ParameterisedType;
+import org.zwobble.shed.compiler.types.TypeFunction;
+import org.zwobble.shed.compiler.types.TypeReplacer;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
@@ -230,22 +231,7 @@ public class TypeInferer {
                 List<Type> parameterTypes = Lists.transform(typeApplication.getParameters(), toParameterType(nodeLocations, context));
                 
                 if (baseType instanceof ParameterisedFunctionType) {
-                    ParameterisedFunctionType functionType = (ParameterisedFunctionType)baseType;
-                    ParameterisedType typeFunction = (ParameterisedType)functionType.getBaseFunctionType().getTypeFunction();
-                    List<FormalTypeParameter> formalTypeParameters = functionType.getTypeParameters();
-                    
-                    List<Type> appliedFunctionParameters = new ArrayList<Type>();
-                    
-                    for (int i = 0; i < typeFunction.getTypeParameters().size(); i++) {
-                        Type originalFunctionParameter = functionType.getBaseFunctionType().getTypeParameters().get(i);
-                        if (formalTypeParameters.contains(originalFunctionParameter)) {
-                            appliedFunctionParameters.add(parameterTypes.get(formalTypeParameters.indexOf(originalFunctionParameter)));
-                        } else {
-                            appliedFunctionParameters.add(originalFunctionParameter);
-                        }
-                    }
-                    
-                    return TypeResult.success((Type)new TypeApplication(typeFunction, appliedFunctionParameters));
+                    return TypeResult.success(new TypeReplacer().replaceTypes(new TypeApplication((TypeFunction)baseType, parameterTypes)));
                 } else if (baseType instanceof ParameterisedType) {
                     return TypeResult.success((Type)CoreTypes.classOf(new TypeApplication((ParameterisedType)baseType, parameterTypes)));   
                 } else {

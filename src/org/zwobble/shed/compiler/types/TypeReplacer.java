@@ -9,6 +9,10 @@ import com.google.common.collect.ImmutableMap.Builder;
 import static com.google.common.collect.Lists.transform;
 
 public class TypeReplacer {
+    public Type replaceTypes(Type type) {
+        return replaceTypes(type, ImmutableMap.<FormalTypeParameter, Type>of());
+    }
+    
     public Type replaceTypes(Type type, Map<FormalTypeParameter, Type> replacements) {
         if (type instanceof FormalTypeParameter) {
             return replaceFormalTypeParameter(type, replacements);
