@@ -2,22 +2,22 @@ package org.zwobble.shed.compiler.types;
 
 import java.util.List;
 
-import lombok.Data;
-
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 
 import static com.google.common.collect.Iterables.transform;
 
+import lombok.Data;
+
 @Data
-public class ParameterisedType implements TypeFunction {
-    private final Type baseType;
+public class ParameterisedFunctionType implements TypeFunction {
+    private final TypeApplication baseFunctionType;
     private final List<FormalTypeParameter> typeParameters;
     
     @Override
     public String shortName() {
-        String parameterString = "[" + Joiner.on(", ").join(transform(typeParameters, toName())) + "]"; 
-        return parameterString + " -> Class[" + baseType.shortName() + parameterString + "]";
+        String parameterString = "[" + Joiner.on(", ").join(transform(typeParameters, toName())) + "]";
+        return parameterString + " -> " + baseFunctionType.shortName();
     }
     
     private Function<FormalTypeParameter, String> toName() {

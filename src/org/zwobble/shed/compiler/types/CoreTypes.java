@@ -51,6 +51,10 @@ public class CoreTypes {
         }
         return functionTypes.get(arguments);
     }
+    
+    public static TypeApplication functionTypeOf(Type... types) {
+        return new TypeApplication(functionType(types.length - 1), asList(types));
+    }
 
     private static Function<Integer, FormalTypeParameter> toFormalTypeParameter() {
         return new Function<Integer, FormalTypeParameter>() {

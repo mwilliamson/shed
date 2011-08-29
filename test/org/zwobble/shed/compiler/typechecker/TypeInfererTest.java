@@ -24,9 +24,10 @@ import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
 import org.zwobble.shed.compiler.types.InterfaceType;
+import org.zwobble.shed.compiler.types.ParameterisedFunctionType;
+import org.zwobble.shed.compiler.types.ParameterisedType;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
-import org.zwobble.shed.compiler.types.ParameterisedType;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -492,21 +493,22 @@ public class TypeInfererTest {
         )));
     }
     
-//    @Test public void
-//    applyingTypeUpdatesFunctionArgumentAndReturnTypes() {
-//        StaticContext context = new StaticContext();
-//        FormalTypeParameter typeParameter = new FormalTypeParameter("T");
-//        context.add("identity", new TypeFunction(
-//            TypeApplication.build(
-//                CoreTypes.functionType(1),
-//                Arrays.<Type>asList(typeParameter, typeParameter)
-//            ),
-//            asList(typeParameter)
-//        ));
-//        CallNode call = Nodes.call(Nodes.typeApply(Nodes.id("identity"), Nodes.number("2")));
-//        TypeResult<Type> result = inferType(call, context);
-//        assertThat(result, is(success(CoreTypes.NUMBER)));
-//    }
+    @Test public void
+    applyingTypeUpdatesFunctionArgumentAndReturnTypes() {
+        StaticContext context = new StaticContext();
+        FormalTypeParameter typeParameter = new FormalTypeParameter("T");
+        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
+        context.add("identity", new ParameterisedFunctionType(
+            new TypeApplication(
+                CoreTypes.functionType(1),
+                Arrays.<Type>asList(typeParameter, typeParameter)
+            ),
+            asList(typeParameter)
+        ));
+        CallNode call = Nodes.call(Nodes.typeApply(Nodes.id("identity"), Nodes.id("Number")), Nodes.number("2"));
+        TypeResult<Type> result = inferType(call, context);
+        assertThat(result, is(success(CoreTypes.NUMBER)));
+    }
     
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
         return TypeInferer.inferType(expression, nodeLocations, context);
