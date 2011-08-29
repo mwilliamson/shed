@@ -175,4 +175,12 @@ public class ExpressionsTest {
             isSuccessWithNode(Nodes.member(Nodes.id("person"), "name"))
         );
     }
+    
+    @Test public void
+    canParseTypeApplication() {
+        assertThat(
+            Expressions.expression().parse(tokens("Map[String, Number]")),
+            isSuccessWithNode(Nodes.typeApply(Nodes.id("Map"), Nodes.id("String"), Nodes.id("Number")))
+        );
+    }
 }

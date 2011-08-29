@@ -46,4 +46,8 @@ public class Nodes {
     public static MemberAccessNode member(ExpressionNode expression, String memberName) {
         return new MemberAccessNode(expression, memberName);
     }
+
+    public static TypeApplicationNode typeApply(ExpressionNode baseType, ExpressionNode... typeParameters) {
+        return new TypeApplicationNode(baseType, asList(typeParameters));
+    }
 }

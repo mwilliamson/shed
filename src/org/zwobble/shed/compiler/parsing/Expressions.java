@@ -10,6 +10,7 @@ import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
 import static org.zwobble.shed.compiler.parsing.Blocks.block;
@@ -29,6 +30,8 @@ import static org.zwobble.shed.compiler.tokeniser.TokenType.IDENTIFIER;
 
 
 public class Expressions {
+    private static final Rule<?> COMMA = sequence(OnError.FINISH, optional(whitespace()), guard(symbol(",")), optional(whitespace()));
+    
     private static interface PartialCallExpression {
         ExpressionNode complete(ExpressionNode expression);
     }
@@ -51,7 +54,8 @@ public class Expressions {
                 final Rule<List<PartialCallExpression>> calls = zeroOrMoreWithSeparator(
                     firstOf("function call or member access",
                         functionCall(),
-                        memberAccess()
+                        memberAccess(),
+                        typeApplication()
                     ),
                     softSeparator(optional(whitespace()))
                 );
@@ -78,8 +82,7 @@ public class Expressions {
     }
     
     private static Rule<PartialCallExpression> functionCall() {
-        final Rule<?> comma = sequence(OnError.FINISH, optional(whitespace()), guard(symbol(",")), optional(whitespace()));
-        final Rule<List<ExpressionNode>> arguments = zeroOrMoreWithSeparator(expression(), softSeparator(comma));
+        final Rule<List<ExpressionNode>> arguments = argumentList();
         
         return then(
             sequence(OnError.FINISH,
@@ -116,6 +119,29 @@ public class Expressions {
                         @Override
                         public ExpressionNode complete(ExpressionNode expression) {
                             return new MemberAccessNode(expression, result.get(memberName));
+                        }
+                    };
+                }
+            }
+        );
+    }
+    
+    private static Rule<PartialCallExpression> typeApplication() {
+        final Rule<List<ExpressionNode>> arguments = argumentList();
+        
+        return then(
+            sequence(OnError.FINISH,
+                guard(symbol("[")),
+                arguments,
+                symbol("]")
+            ),
+            new ParseAction<RuleValues, PartialCallExpression>() {
+                @Override
+                public PartialCallExpression apply(final RuleValues result) {
+                    return new PartialCallExpression() {
+                        @Override
+                        public ExpressionNode complete(ExpressionNode expression) {
+                            return new TypeApplicationNode(expression, result.get(arguments));
                         }
                     };
                 }
@@ -243,5 +269,9 @@ public class Expressions {
                 }
             }
         );
+    }
+    
+    private static Rule<List<ExpressionNode>> argumentList() {
+        return zeroOrMoreWithSeparator(expression(), softSeparator(COMMA));
     }
 }
