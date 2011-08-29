@@ -36,7 +36,7 @@ public class CoreTypes {
     private static Map<Integer, TypeFunction> functionTypes = new HashMap<Integer, TypeFunction>();
     
     public static boolean isFunction(Type type) {
-        return functionTypes.containsValue(type);
+        return type instanceof TypeApplication && functionTypes.containsValue((((TypeApplication)type).getTypeFunction()));
     }
     
     public static TypeFunction functionType(int arguments) {

@@ -153,7 +153,7 @@ public class TypeInferer {
         return inferType(expression.getFunction(), nodeLocations, context).ifValueThen(new Function<Type, TypeResult<Type>>() {
             @Override
             public TypeResult<Type> apply(Type calledType) {
-                if (!(calledType instanceof TypeApplication) || !CoreTypes.isFunction(((TypeApplication)calledType).getTypeFunction())) {
+                if (!CoreTypes.isFunction(calledType)) {
                     CompilerError error = new CompilerError(nodeLocations.locate(expression), "Cannot call objects that aren't functions");
                     return TypeResult.failure(asList(error));
                 }
