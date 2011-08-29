@@ -1,8 +1,12 @@
 package org.zwobble.shed.compiler.types;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.ToString;
 
-@Data
+@AllArgsConstructor
+@ToString
+@Getter
 public class FormalTypeParameter implements Type {
     private final String name;
     
