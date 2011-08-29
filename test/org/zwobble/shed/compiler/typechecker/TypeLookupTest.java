@@ -39,7 +39,7 @@ public class TypeLookupTest {
         StaticContext context = new StaticContext();
         context.add("String", CoreTypes.NUMBER);
         TypeResult<Type> result = lookupTypeReference(new VariableIdentifierNode("String"), context);
-        assertThat(errorStrings(result), is(asList("\"String\" is not a type but an instance of \"Number\"")));
+        assertThat(errorStrings(result), is(asList("Not a type but an instance of \"Number\"")));
     }
     
     @Test public void
@@ -51,7 +51,7 @@ public class TypeLookupTest {
         TypeResult<Type> result = lookupTypeReference(node, context);
         assertThat(
             result.getErrors(),
-            is(asList(new CompilerError(range(position(3, 5), position(7, 4)), "\"String\" is not a type but an instance of \"Number\"")))
+            is(asList(new CompilerError(range(position(3, 5), position(7, 4)), "Not a type but an instance of \"Number\"")))
         );
     }
     
@@ -65,7 +65,7 @@ public class TypeLookupTest {
         TypeApplication type = new TypeApplication(listType, asList(CoreTypes.NUMBER));
         context.add("String", type);
         TypeResult<Type> result = lookupTypeReference(new VariableIdentifierNode("String"), context);
-        assertThat(errorStrings(result), is(asList("\"String\" is not a type but an instance of \"List[Number]\"")));
+        assertThat(errorStrings(result), is(asList("Not a type but an instance of \"List[Number]\"")));
     }
     
     private TypeResult<Type> lookupTypeReference(ExpressionNode typeReference, StaticContext context) {
