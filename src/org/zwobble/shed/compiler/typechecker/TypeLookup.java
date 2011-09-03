@@ -38,6 +38,6 @@ public class TypeLookup {
     }
     
     private static boolean isType(Type type) {
-        return type instanceof TypeApplication && ((TypeApplication)type).getTypeFunction().equals(CoreTypes.CLASS);
+        return type instanceof TypeApplication && ((TypeApplication)type).getBaseType().equals(CoreTypes.CLASS.getBaseType());
     }
 }

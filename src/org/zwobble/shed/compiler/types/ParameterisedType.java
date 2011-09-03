@@ -11,7 +11,7 @@ import static com.google.common.collect.Iterables.transform;
 
 @Data
 public class ParameterisedType implements TypeFunction {
-    private final Type baseType;
+    private final ScalarType baseType;
     private final List<FormalTypeParameter> typeParameters;
     
     @Override

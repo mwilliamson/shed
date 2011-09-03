@@ -1,10 +1,10 @@
 package org.zwobble.shed.compiler.types;
 
+import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 
 import static com.google.common.collect.Lists.transform;
 
@@ -18,8 +18,18 @@ public class TypeReplacer {
             return replaceFormalTypeParameter(type, replacements);
         }
         
+        if (type instanceof ClassType) {
+            return type;
+        }
+        
+        if (type instanceof InterfaceType) {
+            return type;
+        }
+        
         if (type instanceof TypeApplication) {
-            return replaceTypeApplication((TypeApplication)type, replacements);
+            TypeApplication typeApplication = (TypeApplication) type;
+            List<Type> transformedTypeParameters = transform(typeApplication.getTypeParameters(), toReplacement(replacements));
+            return new TypeApplication((ScalarType)replaceTypes(typeApplication.getReplacedType()), typeApplication.getBaseType(), transformedTypeParameters);
         }
         
         throw new RuntimeException("Don't know how to replace types for " + type);
@@ -30,23 +40,6 @@ public class TypeReplacer {
             return replacements.get(type);
         }
         return type;
-    }
-
-    private Type replaceTypeApplication(TypeApplication typeApplication, Map<FormalTypeParameter, Type> replacements) {
-        if (typeApplication.getTypeFunction() instanceof ParameterisedFunctionType) {
-            ParameterisedFunctionType typeFunction = (ParameterisedFunctionType)typeApplication.getTypeFunction();
-            
-            Builder<FormalTypeParameter, Type> replacementsBuilder = ImmutableMap.builder();
-            replacementsBuilder.putAll(replacements);
-            
-            for (int i = 0; i < typeFunction.getTypeParameters().size(); i++) {
-                replacementsBuilder.put(typeFunction.getTypeParameters().get(i), typeApplication.getTypeParameters().get(i));
-            }
-            
-            return replaceTypes(typeFunction.getBaseFunctionType(), replacementsBuilder.build());
-        } else {
-            return TypeApplication.applyTypes(typeApplication.getTypeFunction(), transform(typeApplication.getTypeParameters(), toReplacement(replacements)));
-        }
     }
 
     private Function<Type, Type> toReplacement(final Map<FormalTypeParameter, Type> replacements) {

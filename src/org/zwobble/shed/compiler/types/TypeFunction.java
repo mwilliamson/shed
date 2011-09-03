@@ -1,5 +1,7 @@
 package org.zwobble.shed.compiler.types;
 
-public interface TypeFunction extends Type {
+import java.util.List;
 
+public interface TypeFunction extends Type {
+    List<FormalTypeParameter> getTypeParameters();
 }

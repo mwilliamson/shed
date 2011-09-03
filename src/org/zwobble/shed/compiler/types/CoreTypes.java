@@ -2,8 +2,10 @@ package org.zwobble.shed.compiler.types;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
@@ -20,7 +22,7 @@ public class CoreTypes {
     public static final Type UNIT = coreType("Unit");
     public static final Type OBJECT = new InterfaceType(Collections.<String>emptyList(), "Object", ImmutableMap.<String, Type>of());
     
-    private static Type coreType(String name) {
+    private static ScalarType coreType(String name) {
         return new ClassType(
             Collections.<String>emptyList(),
             name,
@@ -39,17 +41,21 @@ public class CoreTypes {
     }
     
     private static Map<Integer, ParameterisedType> functionTypes = new HashMap<Integer, ParameterisedType>();
+    private static Set<Type> baseFunctionTypes = new HashSet<Type>();
     
     public static boolean isFunction(Type type) {
-        return type instanceof TypeApplication && functionTypes.containsValue((((TypeApplication)type).getTypeFunction()));
+        return type instanceof TypeApplication && baseFunctionTypes.contains((((TypeApplication)type).getBaseType()));
     }
     
     public static ParameterisedType functionType(int arguments) {
         if (!functionTypes.containsKey(arguments)) {
+            ScalarType baseType = coreType("Function" + arguments);
+            baseFunctionTypes.add(baseType);
+            
             List<FormalTypeParameter> formalTypeParameters = newArrayList(transform(range(arguments), toFormalTypeParameter()));
             formalTypeParameters.add(new FormalTypeParameter("TResult"));
             ParameterisedType functionType = new ParameterisedType(
-                coreType("Function" + arguments),
+                baseType,
                 formalTypeParameters
             );
             functionTypes.put(arguments, functionType);
