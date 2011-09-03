@@ -22,6 +22,7 @@ public class StaticContext {
         staticContext.add("String", CoreTypes.classOf(CoreTypes.STRING));
         staticContext.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
         staticContext.add("Boolean", CoreTypes.classOf(CoreTypes.BOOLEAN));
+        staticContext.add("Unit", CoreTypes.classOf(CoreTypes.UNIT));
 //        staticContext.add("Class", CoreTypes.classOf(CoreTypes.CLASS));
         return staticContext;
     }
