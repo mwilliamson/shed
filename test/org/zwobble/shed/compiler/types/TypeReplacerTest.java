@@ -1,5 +1,6 @@
 package org.zwobble.shed.compiler.types;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Test;
@@ -101,6 +102,39 @@ public class TypeReplacerTest {
             asList("shed", "example"),
             "List",
             ImmutableMap.<String, Type>of("first", CoreTypes.NUMBER)
+        )));
+    }
+    
+    @Test public void
+    membersAndParametersOfTypeApplicationHaveFormalTypeParametersReplaced() {
+        TypeReplacer typeReplacer = new TypeReplacer();
+        FormalTypeParameter formalTypeParameter = new FormalTypeParameter("T");
+
+        InterfaceType listInterface = new InterfaceType(
+            asList("shed", "example"),
+            "List",
+            ImmutableMap.<String, Type>of("first", new FormalTypeParameter("E"))
+        );
+        Type replacement = typeReplacer.replaceTypes(
+            new TypeApplication(
+                new InterfaceType(
+                    asList("shed", "example"),
+                    "List",
+                    ImmutableMap.<String, Type>of("first", formalTypeParameter)
+                ),
+                listInterface,
+                Arrays.<Type>asList(formalTypeParameter)
+            ),
+            ImmutableMap.<FormalTypeParameter, Type>of(formalTypeParameter, CoreTypes.NUMBER)
+        );
+        assertThat(replacement, is((Type)new TypeApplication(
+            new InterfaceType(
+                asList("shed", "example"),
+                "List",
+                ImmutableMap.<String, Type>of("first", CoreTypes.NUMBER)
+            ),
+            listInterface,
+            Arrays.<Type>asList(CoreTypes.NUMBER)
         )));
     }
 }

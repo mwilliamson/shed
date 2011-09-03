@@ -4,16 +4,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableMap;
 
 import static com.google.common.collect.Lists.transform;
 import static com.google.common.collect.Maps.transformValues;
 
 public class TypeReplacer {
-    public Type replaceTypes(Type type) {
-        return replaceTypes(type, ImmutableMap.<FormalTypeParameter, Type>of());
-    }
-    
     public Type replaceTypes(Type type, Map<FormalTypeParameter, Type> replacements) {
         // TODO: update super-classes
         if (type instanceof FormalTypeParameter) {
@@ -42,7 +37,7 @@ public class TypeReplacer {
         if (type instanceof TypeApplication) {
             TypeApplication typeApplication = (TypeApplication) type;
             List<Type> transformedTypeParameters = transform(typeApplication.getTypeParameters(), toReplacement(replacements));
-            return new TypeApplication((ScalarType)replaceTypes(typeApplication.getReplacedType()), typeApplication.getBaseType(), transformedTypeParameters);
+            return new TypeApplication((ScalarType)replaceTypes(typeApplication.getReplacedType(), replacements), typeApplication.getBaseType(), transformedTypeParameters);
         }
         
         throw new RuntimeException("Don't know how to replace types for " + type);

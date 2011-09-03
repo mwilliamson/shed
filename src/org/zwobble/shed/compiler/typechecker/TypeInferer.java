@@ -27,7 +27,6 @@ import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
 import org.zwobble.shed.compiler.types.TypeFunction;
-import org.zwobble.shed.compiler.types.TypeReplacer;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
@@ -235,7 +234,7 @@ public class TypeInferer {
                 List<Type> parameterTypes = Lists.transform(typeApplication.getParameters(), toParameterType(nodeLocations, context));
                 
                 if (baseType instanceof ParameterisedFunctionType) {
-                    return TypeResult.success(replaceTypes(TypeApplication.applyTypes((TypeFunction)baseType, parameterTypes)));
+                    return TypeResult.success(TypeApplication.applyTypes((TypeFunction)baseType, parameterTypes));
                 } else if (baseType instanceof ParameterisedType) {
                     return TypeResult.success((Type)CoreTypes.classOf(TypeApplication.applyTypes((ParameterisedType)baseType, parameterTypes)));   
                 } else {
@@ -243,10 +242,6 @@ public class TypeInferer {
                 }
             }
         });
-    }
-    
-    private static Type replaceTypes(Type type) {
-        return new TypeReplacer().replaceTypes(type);
     }
     
     private static Function<ExpressionNode, Type> toParameterType(final NodeLocations nodeLocations, final StaticContext context) {
