@@ -75,7 +75,7 @@ public class JavaScriptGenerator {
             
             return wrapper.wrap(statements);
         }
-        return null;
+        throw new RuntimeException("Cannot generate JavaScript for " + node);
     }
     
     public JavaScriptExpressionNode generateExpression(ExpressionNode node) {
@@ -114,7 +114,7 @@ public class JavaScriptGenerator {
             String memberName = memberAccess.getMemberName();
             return js.propertyAccess(generateExpression(expression), memberName);
         }
-        return null;
+        throw new RuntimeException("Cannot generate JavaScript for " + node);
     }
 
     public JavaScriptStatementNode generateStatement(StatementNode node) {
@@ -155,7 +155,7 @@ public class JavaScriptGenerator {
                 javaScriptBody
             )));
         }
-        return null;
+        throw new RuntimeException("Cannot generate JavaScript for " + node);
     }
 
     private Function<ImportNode, JavaScriptStatementNode> toJavaScriptImport(final PackageDeclarationNode packageDeclaration) {
