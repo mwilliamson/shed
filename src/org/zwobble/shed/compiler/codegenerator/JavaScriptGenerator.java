@@ -32,6 +32,7 @@ import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
+import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
@@ -105,7 +106,7 @@ public class JavaScriptGenerator {
         }
         if (node instanceof CallNode) {
             CallNode call = (CallNode) node;
-            List<JavaScriptExpressionNode> jsArguments = transform(((CallNode) node).getArguments(), toJavaScriptExpression());
+            List<JavaScriptExpressionNode> jsArguments = transform(call.getArguments(), toJavaScriptExpression());
             return js.call(generateExpression(call.getFunction()), jsArguments);
         }
         if (node instanceof MemberAccessNode) {
@@ -113,6 +114,11 @@ public class JavaScriptGenerator {
             ExpressionNode expression = memberAccess.getExpression();
             String memberName = memberAccess.getMemberName();
             return js.propertyAccess(generateExpression(expression), memberName);
+        }
+        if (node instanceof TypeApplicationNode) {
+            TypeApplicationNode typeApplication = (TypeApplicationNode)node;
+            List<JavaScriptExpressionNode> jsArguments = transform(typeApplication.getParameters(), toJavaScriptExpression());
+            return js.call(generateExpression(typeApplication.getBaseValue()), jsArguments);
         }
         throw new RuntimeException("Cannot generate JavaScript for " + node);
     }

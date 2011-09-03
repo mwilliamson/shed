@@ -29,6 +29,7 @@ import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
+import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
 import com.google.common.collect.ImmutableMap;
@@ -241,6 +242,12 @@ public class JavaScriptGeneratorTest {
     memberAccessIsConvertedToJavaScriptPropertyAccess() {
         MemberAccessNode source = Nodes.member(Nodes.id("ball"), "confusion");
         assertGeneratedJavaScript(source, js.propertyAccess(js.id("ball"), "confusion"));
+    }
+    
+    @Test public void
+    typeApplicationIsConvertedToFunctionCall() {
+        TypeApplicationNode source = Nodes.typeApply(Nodes.id("Function1"), Nodes.id("Number"), Nodes.id("String"));
+        assertGeneratedJavaScript(source, js.call(js.id("Function1"), js.id("Number"), js.id("String")));
     }
     
     private void assertGeneratedJavaScript(SyntaxNode source, JavaScriptNode expectedJavaScript) {
