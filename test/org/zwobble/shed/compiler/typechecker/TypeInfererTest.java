@@ -62,6 +62,11 @@ public class TypeInfererTest {
     }
     
     @Test public void
+    canInferTypeOfUnitLiteralsAsUnit() {
+        assertThat(inferType(Nodes.unit(), null), is(success(CoreTypes.UNIT)));
+    }
+    
+    @Test public void
     variableReferencesHaveTypeOfVariable() {
         StaticContext context = new StaticContext();
         context.add("value", CoreTypes.STRING);
