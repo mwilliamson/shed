@@ -96,8 +96,8 @@ public class TypeInfererTest {
             new NumberLiteralNode("42")
         );
         TypeResult<Type> result = inferType(functionExpression, context);
-        assertThat(result, is((Object)success(
-            new TypeApplication(CoreTypes.functionType(0), asList(CoreTypes.NUMBER))
+        assertThat(result, is(success(
+            TypeApplication.applyTypes(CoreTypes.functionType(0), asList(CoreTypes.NUMBER))
         )));
     }
     
@@ -116,7 +116,7 @@ public class TypeInfererTest {
     @Test public void
     errorIfTypeSpecifierAndTypeBodyOfShortLambdaExpressionDoNotAgree() {
         StaticContext context = new StaticContext();
-        context.add("String", new TypeApplication(CoreTypes.CLASS, asList(CoreTypes.STRING)));
+        context.add("String", TypeApplication.applyTypes(CoreTypes.CLASS, asList(CoreTypes.STRING)));
         NumberLiteralNode body = new NumberLiteralNode("42");
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
@@ -178,7 +178,7 @@ public class TypeInfererTest {
         );
         TypeResult<Type> result = inferType(functionExpression, context);
         assertThat(result, is(success(
-            (Type) new TypeApplication(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN))
+            (Type) TypeApplication.applyTypes(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN))
         )));
     }
     
@@ -198,7 +198,7 @@ public class TypeInfererTest {
         );
         TypeResult<Type> result = inferType(functionExpression, context);
         assertThat(result, is(success(
-            (Type) new TypeApplication(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN))
+            (Type) TypeApplication.applyTypes(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN))
         )));
     }
     
@@ -254,7 +254,7 @@ public class TypeInfererTest {
         );
         TypeResult<Type> result = inferType(functionExpression, context);
         assertThat(result, is(success(
-            (Type) new TypeApplication(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.NUMBER))
+            (Type) TypeApplication.applyTypes(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.NUMBER))
         )));
     }
     
@@ -288,7 +288,7 @@ public class TypeInfererTest {
         );
         TypeResult<Type> result = inferType(functionExpression, context);
         assertThat(result, is(success(
-            (Type) new TypeApplication(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.NUMBER))
+            (Type) TypeApplication.applyTypes(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.NUMBER))
         )));
     }
     
@@ -370,7 +370,7 @@ public class TypeInfererTest {
     @Test public void
     functionCallsHaveTypeOfReturnTypeOfFunctionWithNoArguments() {
         StaticContext context = new StaticContext();
-        context.add("magic", new TypeApplication(CoreTypes.functionType(0), asList(CoreTypes.NUMBER)));
+        context.add("magic", TypeApplication.applyTypes(CoreTypes.functionType(0), asList(CoreTypes.NUMBER)));
         CallNode call = Nodes.call(Nodes.id("magic"));
         TypeResult<Type> result = inferType(call, context);
         assertThat(result, is(success(CoreTypes.NUMBER)));
@@ -380,7 +380,7 @@ public class TypeInfererTest {
     functionCallsHaveTypeOfReturnTypeOfFunctionWithCorrectArguments() {
         StaticContext context = new StaticContext();
         // isLength: (String, Number) -> Boolean 
-        context.add("isLength", new TypeApplication(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
+        context.add("isLength", TypeApplication.applyTypes(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
         CallNode call = Nodes.call(Nodes.id("isLength"), Nodes.string("Blah"), Nodes.number("4"));
         TypeResult<Type> result = inferType(call, context);
         assertThat(result, is(success(CoreTypes.BOOLEAN)));
@@ -390,7 +390,7 @@ public class TypeInfererTest {
     errorIfActualArgumentsAreNotAssignableToFormalArguments() {
         StaticContext context = new StaticContext();
         // isLength: (String, Number) -> Boolean 
-        context.add("isLength", new TypeApplication(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
+        context.add("isLength", TypeApplication.applyTypes(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
         CallNode call = Nodes.call(Nodes.id("isLength"), Nodes.number("4"), Nodes.string("Blah"));
         TypeResult<Type> result = inferType(call, context);
         assertThat(
@@ -407,7 +407,7 @@ public class TypeInfererTest {
         StaticContext context = new StaticContext();
         ClassType classType = new ClassType(asList("example"), "List", Collections.<InterfaceType>emptySet(), ImmutableMap.<String, Type>of());
         ParameterisedType typeFunction = new ParameterisedType(classType, asList(new FormalTypeParameter("T")));
-        context.add("isLength", new TypeApplication(typeFunction, asList(CoreTypes.STRING)));
+        context.add("isLength", TypeApplication.applyTypes(typeFunction, asList(CoreTypes.STRING)));
         CallNode call = Nodes.call(Nodes.id("isLength"));
         TypeResult<Type> result = inferType(call, context);
         assertThat(
@@ -435,7 +435,7 @@ public class TypeInfererTest {
     @Test public void
     errorIfCallingFunctionWithWrongNumberOfArguments() {
         StaticContext context = new StaticContext();
-        context.add("isLength", new TypeApplication(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
+        context.add("isLength", TypeApplication.applyTypes(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
         CallNode call = Nodes.call(Nodes.id("isLength"), Nodes.number("4"));
         TypeResult<Type> result = inferType(call, context);
         assertThat(
@@ -494,7 +494,7 @@ public class TypeInfererTest {
         );
         TypeResult<Type> result = inferType(functionExpression, context);
         assertThat(result, is((Object)success(
-            new TypeApplication(CoreTypes.functionType(1), asList(new TypeApplication(listTypeFunction, asList(CoreTypes.NUMBER)), CoreTypes.NUMBER))
+            TypeApplication.applyTypes(CoreTypes.functionType(1), asList(TypeApplication.applyTypes(listTypeFunction, asList(CoreTypes.NUMBER)), CoreTypes.NUMBER))
         )));
     }
     
@@ -504,7 +504,7 @@ public class TypeInfererTest {
         FormalTypeParameter typeParameter = new FormalTypeParameter("T");
         context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
         context.add("identity", new ParameterisedFunctionType(
-            new TypeApplication(
+            TypeApplication.applyTypes(
                 CoreTypes.functionType(1),
                 Arrays.<Type>asList(typeParameter, typeParameter)
             ),

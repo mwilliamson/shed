@@ -43,9 +43,9 @@ public class TypeReplacer {
                 replacementsBuilder.put(typeFunction.getTypeParameters().get(i), typeApplication.getTypeParameters().get(i));
             }
             
-            return replaceTypeApplication(typeFunction.getBaseFunctionType(), replacementsBuilder.build());
+            return replaceTypes(typeFunction.getBaseFunctionType(), replacementsBuilder.build());
         } else {
-            return new TypeApplication(typeApplication.getTypeFunction(), transform(typeApplication.getTypeParameters(), toReplacement(replacements)));
+            return TypeApplication.applyTypes(typeApplication.getTypeFunction(), transform(typeApplication.getTypeParameters(), toReplacement(replacements)));
         }
     }
 

@@ -30,7 +30,7 @@ public class TypeLookupTest {
     @Test public void
     canLookupTypesFromContext() {
         StaticContext context = new StaticContext();
-        context.add("String", new TypeApplication(CoreTypes.CLASS, asList(CoreTypes.STRING)));
+        context.add("String", TypeApplication.applyTypes(CoreTypes.CLASS, asList(CoreTypes.STRING)));
 
         TypeResult<Type> result = lookupTypeReference(new VariableIdentifierNode("String"), context);
         assertThat(result, is(success(CoreTypes.STRING)));
@@ -64,7 +64,7 @@ public class TypeLookupTest {
             new ClassType(Collections.<String>emptyList(), "List", Collections.<InterfaceType>emptySet(), ImmutableMap.<String, Type>of()),
             asList(new FormalTypeParameter("E"))
         );
-        TypeApplication type = new TypeApplication(listType, asList(CoreTypes.NUMBER));
+        Type type = TypeApplication.applyTypes(listType, asList(CoreTypes.NUMBER));
         context.add("String", type);
         TypeResult<Type> result = lookupTypeReference(new VariableIdentifierNode("String"), context);
         assertThat(errorStrings(result), is(asList("Not a type but an instance of \"List[Number]\"")));

@@ -34,8 +34,8 @@ public class CoreTypes {
         asList(new FormalTypeParameter("C"))
     );
     
-    public static TypeApplication classOf(Type type) {
-        return new TypeApplication(CLASS, asList(type));
+    public static Type classOf(Type type) {
+        return TypeApplication.applyTypes(CLASS, asList(type));
     }
     
     private static Map<Integer, ParameterisedType> functionTypes = new HashMap<Integer, ParameterisedType>();
@@ -57,8 +57,8 @@ public class CoreTypes {
         return functionTypes.get(arguments);
     }
     
-    public static TypeApplication functionTypeOf(Type... types) {
-        return new TypeApplication(functionType(types.length - 1), asList(types));
+    public static Type functionTypeOf(Type... types) {
+        return TypeApplication.applyTypes(functionType(types.length - 1), asList(types));
     }
 
     private static Function<Integer, FormalTypeParameter> toFormalTypeParameter() {

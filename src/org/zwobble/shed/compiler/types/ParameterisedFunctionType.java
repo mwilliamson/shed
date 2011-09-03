@@ -11,7 +11,7 @@ import lombok.Data;
 
 @Data
 public class ParameterisedFunctionType implements TypeFunction {
-    private final TypeApplication baseFunctionType;
+    private final Type baseFunctionType;
     private final List<FormalTypeParameter> typeParameters;
     
     @Override

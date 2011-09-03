@@ -235,14 +235,18 @@ public class TypeInferer {
                 List<Type> parameterTypes = Lists.transform(typeApplication.getParameters(), toParameterType(nodeLocations, context));
                 
                 if (baseType instanceof ParameterisedFunctionType) {
-                    return TypeResult.success(new TypeReplacer().replaceTypes(new TypeApplication((TypeFunction)baseType, parameterTypes)));
+                    return TypeResult.success(replaceTypes(TypeApplication.applyTypes((TypeFunction)baseType, parameterTypes)));
                 } else if (baseType instanceof ParameterisedType) {
-                    return TypeResult.success((Type)CoreTypes.classOf(new TypeApplication((ParameterisedType)baseType, parameterTypes)));   
+                    return TypeResult.success((Type)CoreTypes.classOf(TypeApplication.applyTypes((ParameterisedType)baseType, parameterTypes)));   
                 } else {
                     throw new RuntimeException("Don't know how to apply types to " + baseType);
                 }
             }
         });
+    }
+    
+    private static Type replaceTypes(Type type) {
+        return new TypeReplacer().replaceTypes(type);
     }
     
     private static Function<ExpressionNode, Type> toParameterType(final NodeLocations nodeLocations, final StaticContext context) {
@@ -264,7 +268,7 @@ public class TypeInferer {
             public TypeResult<Type> apply(List<FormalArgumentType> argumentTypes) {
                 List<Type> typeParameters = new ArrayList<Type>(transform(argumentTypes, toType()));
                 typeParameters.add(returnType);
-                return success((Type)new TypeApplication(CoreTypes.functionType(argumentTypes.size()), typeParameters));
+                return success(TypeApplication.applyTypes(CoreTypes.functionType(argumentTypes.size()), typeParameters));
             }
         };
     }

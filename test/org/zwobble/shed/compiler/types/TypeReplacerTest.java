@@ -45,7 +45,7 @@ public class TypeReplacerTest {
         TypeReplacer typeReplacer = new TypeReplacer();
         FormalTypeParameter formalTypeParameter = new FormalTypeParameter("T");
         
-        TypeApplication typeApplication = new TypeApplication(
+        Type typeApplication = TypeApplication.applyTypes(
             new ParameterisedFunctionType(
                 CoreTypes.functionTypeOf(formalTypeParameter, formalTypeParameter),
                 asList(formalTypeParameter)
