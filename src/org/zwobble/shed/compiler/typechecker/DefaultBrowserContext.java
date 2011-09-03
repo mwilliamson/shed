@@ -22,13 +22,15 @@ public class DefaultBrowserContext {
             CoreTypes.functionTypeOf(CoreTypes.STRING, formalTypeParameter),
             asList(formalTypeParameter)
         );
+        // TODO: replace with metaclass that implements both Class and Function1
         ClassType javaScriptImporterType = new ClassType(
             asList("shed", "javascript"),
             "JavaScriptImporter",
             Collections.<InterfaceType>emptySet(),
             ImmutableMap.of("importValue", importValueType)
         );
-        context.addGlobal(asList("shed", "javascript", "JavaScriptImporter"), javaScriptImporterType);
+        
+        context.addGlobal(asList("shed", "javascript", "JavaScriptImporter"), CoreTypes.functionTypeOf(javaScriptImporterType));
         
         return context;
     }
