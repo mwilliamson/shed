@@ -183,4 +183,12 @@ public class ExpressionsTest {
             isSuccessWithNode(Nodes.typeApply(Nodes.id("Map"), Nodes.id("String"), Nodes.id("Number")))
         );
     }
+    
+    @Test public void
+    canParseUnitLiteral() {
+        assertThat(
+            Expressions.expression().parse(tokens("()")),
+            isSuccessWithNode(Nodes.unit())
+        );
+    }
 }

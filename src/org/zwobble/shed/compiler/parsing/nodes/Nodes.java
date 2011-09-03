@@ -22,6 +22,14 @@ public class Nodes {
     public static StringLiteralNode string(String value) {
         return new StringLiteralNode(value);
     }
+
+    public static BooleanLiteralNode bool(boolean value) {
+        return new BooleanLiteralNode(value);
+    }
+    
+    public static UnitLiteralNode unit() {
+        return new UnitLiteralNode();
+    }
     
     public static ExpressionStatementNode expressionStatement(ExpressionNode expression) {
         return new ExpressionStatementNode(expression);

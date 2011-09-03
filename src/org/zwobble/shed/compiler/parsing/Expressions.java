@@ -48,6 +48,7 @@ public class Expressions {
                     Literals.numberLiteral(),
                     Literals.stringLiteral(),
                     Literals.booleanLiteral(),
+                    Literals.unitLiteral(),
                     expressionInParens()
                 )); 
                 

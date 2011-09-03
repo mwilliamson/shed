@@ -1,13 +1,18 @@
 package org.zwobble.shed.compiler.parsing;
 
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.tokeniser.Keyword;
 import org.zwobble.shed.compiler.tokeniser.TokenType;
 
 import static org.zwobble.shed.compiler.parsing.Rules.firstOf;
+import static org.zwobble.shed.compiler.parsing.Rules.guard;
 import static org.zwobble.shed.compiler.parsing.Rules.keyword;
+import static org.zwobble.shed.compiler.parsing.Rules.sequence;
+import static org.zwobble.shed.compiler.parsing.Rules.symbol;
 import static org.zwobble.shed.compiler.parsing.Rules.then;
 import static org.zwobble.shed.compiler.parsing.Rules.tokenOfType;
 
@@ -39,6 +44,21 @@ public class Literals {
                 @Override
                 public BooleanLiteralNode apply(Keyword result) {
                     return new BooleanLiteralNode(result == Keyword.TRUE);
+                }
+            }
+        );
+    }
+
+    public static Rule<UnitLiteralNode> unitLiteral() {
+        return then(
+            sequence(OnError.FINISH,
+                guard(symbol("(")),
+                guard(symbol(")"))
+            ),
+            new ParseAction<RuleValues, UnitLiteralNode>() {
+                @Override
+                public UnitLiteralNode apply(RuleValues result) {
+                    return Nodes.unit();
                 }
             }
         );

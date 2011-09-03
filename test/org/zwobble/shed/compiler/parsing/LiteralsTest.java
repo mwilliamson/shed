@@ -1,6 +1,7 @@
 package org.zwobble.shed.compiler.parsing;
 
 import org.junit.Test;
+import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 
@@ -21,6 +22,22 @@ public class LiteralsTest {
         assertThat(
             Literals.stringLiteral().parse(tokens("\"Stop giving me verses\"")),
             isSuccessWithNode(new StringLiteralNode("Stop giving me verses"))
+        );
+    }
+    
+    @Test public void
+    canParseTrueBooleanLiteral() {
+        assertThat(
+            Literals.booleanLiteral().parse(tokens("true")),
+            isSuccessWithNode(Nodes.bool(true))
+        );
+    }
+    
+    @Test public void
+    canParseFalseBooleanLiteral() {
+        assertThat(
+            Literals.booleanLiteral().parse(tokens("false")),
+            isSuccessWithNode(Nodes.bool(false))
         );
     }
 }
