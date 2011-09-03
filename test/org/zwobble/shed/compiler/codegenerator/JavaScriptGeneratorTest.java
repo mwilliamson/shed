@@ -30,6 +30,7 @@ import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
+import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
 import com.google.common.collect.ImmutableMap;
@@ -64,6 +65,12 @@ public class JavaScriptGeneratorTest {
     stringLiteralsAreConvertedToBoxedStrings() {
         StringLiteralNode source = new StringLiteralNode("Stop giving me verses");
         assertGeneratedJavaScript(source, js.call(js.id("__shed.String"), js.string("Stop giving me verses")));
+    }
+    
+    @Test public void
+    unitLiteralsAreConvertedToUnitValue() {
+        UnitLiteralNode source = Nodes.unit();
+        assertGeneratedJavaScript(source, js.call(js.id("__shed.Unit")));
     }
     
     @Test public void

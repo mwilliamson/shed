@@ -33,6 +33,7 @@ import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
+import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
@@ -88,6 +89,9 @@ public class JavaScriptGenerator {
         }
         if (node instanceof StringLiteralNode) {
             return js.call(js.id(CORE_TYPES_OBJECT_NAME + ".String"), js.string(((StringLiteralNode)node).getValue()));
+        }
+        if (node instanceof UnitLiteralNode) {
+            return js.call(js.id(CORE_TYPES_OBJECT_NAME + ".Unit"));
         }
         if (node instanceof VariableIdentifierNode) {
             return js.id(((VariableIdentifierNode) node).getIdentifier());
