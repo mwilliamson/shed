@@ -7,6 +7,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 
 import static com.google.common.collect.Lists.transform;
+import static com.google.common.collect.Maps.transformValues;
 
 public class TypeReplacer {
     public Type replaceTypes(Type type) {
@@ -14,16 +15,28 @@ public class TypeReplacer {
     }
     
     public Type replaceTypes(Type type, Map<FormalTypeParameter, Type> replacements) {
+        // TODO: update super-classes
         if (type instanceof FormalTypeParameter) {
             return replaceFormalTypeParameter(type, replacements);
         }
         
         if (type instanceof ClassType) {
-            return type;
+            ClassType classType = (ClassType) type;
+            return new ClassType(
+                classType.getScope(),
+                classType.getName(),
+                classType.getSuperTypes(),
+                transformValues(classType.getMembers(), toReplacement(replacements))
+            );
         }
         
         if (type instanceof InterfaceType) {
-            return type;
+            InterfaceType interfaceType = (InterfaceType) type;
+            return new InterfaceType(
+                interfaceType.getScope(),
+                interfaceType.getName(),
+                transformValues(interfaceType.getMembers(), toReplacement(replacements))
+            );
         }
         
         if (type instanceof TypeApplication) {

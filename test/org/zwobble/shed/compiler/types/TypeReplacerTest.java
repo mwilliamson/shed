@@ -1,5 +1,7 @@
 package org.zwobble.shed.compiler.types;
 
+import java.util.Collections;
+
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
@@ -58,5 +60,47 @@ public class TypeReplacerTest {
             ImmutableMap.<FormalTypeParameter, Type>of()
         );
         assertThat(replacement, is((Type)CoreTypes.functionTypeOf(CoreTypes.NUMBER, CoreTypes.NUMBER)));
+    }
+    
+    @Test public void
+    membersOfClassTypeHaveFormalTypeParametersReplaced() {
+        TypeReplacer typeReplacer = new TypeReplacer();
+        FormalTypeParameter formalTypeParameter = new FormalTypeParameter("T");
+
+        Type replacement = typeReplacer.replaceTypes(
+            new ClassType(
+                asList("shed", "example"),
+                "List",
+                Collections.<InterfaceType>emptySet(),
+                ImmutableMap.<String, Type>of("first", formalTypeParameter)
+            ),
+            ImmutableMap.<FormalTypeParameter, Type>of(formalTypeParameter, CoreTypes.NUMBER)
+        );
+        assertThat(replacement, is((Type)new ClassType(
+            asList("shed", "example"),
+            "List",
+            Collections.<InterfaceType>emptySet(),
+            ImmutableMap.<String, Type>of("first", CoreTypes.NUMBER)
+        )));
+    }
+    
+    @Test public void
+    membersOfInterfaceTypeHaveFormalTypeParametersReplaced() {
+        TypeReplacer typeReplacer = new TypeReplacer();
+        FormalTypeParameter formalTypeParameter = new FormalTypeParameter("T");
+
+        Type replacement = typeReplacer.replaceTypes(
+            new InterfaceType(
+                asList("shed", "example"),
+                "List",
+                ImmutableMap.<String, Type>of("first", formalTypeParameter)
+            ),
+            ImmutableMap.<FormalTypeParameter, Type>of(formalTypeParameter, CoreTypes.NUMBER)
+        );
+        assertThat(replacement, is((Type)new InterfaceType(
+            asList("shed", "example"),
+            "List",
+            ImmutableMap.<String, Type>of("first", CoreTypes.NUMBER)
+        )));
     }
 }
