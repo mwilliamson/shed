@@ -7,7 +7,9 @@ import java.util.Map;
 
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult.Status;
+import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
+import org.zwobble.shed.compiler.types.ParameterisedType;
 import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.Lists;
@@ -24,6 +26,13 @@ public class StaticContext {
         staticContext.add("Boolean", CoreTypes.classOf(CoreTypes.BOOLEAN));
         staticContext.add("Unit", CoreTypes.classOf(CoreTypes.UNIT));
 //        staticContext.add("Class", CoreTypes.classOf(CoreTypes.CLASS));
+        
+        for (int i = 0; i < 20; i += 1) {
+            ParameterisedType functionType = CoreTypes.functionType(i);
+            // TODO: remove assumption that the base type is a ClassType
+            staticContext.add(((ClassType)functionType.getBaseType()).getName(), CoreTypes.classOf(functionType));
+        }
+        
         return staticContext;
     }
     
