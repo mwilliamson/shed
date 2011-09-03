@@ -67,7 +67,7 @@ public class VariableDeclarationTypeCheckerTest {
     @Test public void
     canInstantiateVariableWithSubType() {
         InterfaceType iterableType = new InterfaceType(asList("shed", "util"), "Iterable", ImmutableMap.<String, Type>of());
-        ClassType listType = new ClassType(asList("shed", "util"), "List", newHashSet(iterableType));
+        ClassType listType = new ClassType(asList("shed", "util"), "List", newHashSet(iterableType), ImmutableMap.<String, Type>of());
         staticContext.add("myList", listType);
         staticContext.add("Iterable", CoreTypes.classOf(iterableType));
         

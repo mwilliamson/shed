@@ -46,7 +46,7 @@ public class ReturnStatementTypeCheckerTest {
     returnExpressionCanBeSubTypeOfReturnType() {
         ReturnNode returnStatement = new ReturnNode(new VariableIdentifierNode("x"));
         InterfaceType iterableType = new InterfaceType(asList("shed", "util"), "Iterable", ImmutableMap.<String, Type>of());
-        ClassType listType = new ClassType(asList("shed", "util"), "List", newHashSet(iterableType));
+        ClassType listType = new ClassType(asList("shed", "util"), "List", newHashSet(iterableType), ImmutableMap.<String, Type>of());
         staticContext.enterNewScope(some((Type)iterableType));
         staticContext.add("x", listType);
         assertThat(

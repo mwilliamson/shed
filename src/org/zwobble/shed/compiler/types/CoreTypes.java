@@ -21,7 +21,12 @@ public class CoreTypes {
     public static final Type OBJECT = new InterfaceType(Collections.<String>emptyList(), "Object", ImmutableMap.<String, Type>of());
     
     private static Type coreType(String name) {
-        return new ClassType(Collections.<String>emptyList(), name, Collections.<InterfaceType>emptySet());
+        return new ClassType(
+            Collections.<String>emptyList(),
+            name,
+            Collections.<InterfaceType>emptySet(),
+            Collections.<String, Type>emptyMap()
+        );
     }
     
     public static final ParameterisedType CLASS = new ParameterisedType(

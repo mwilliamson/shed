@@ -11,6 +11,7 @@ public class ClassType implements ScalarType {
     private final List<String> scope;
     private final String name;
     private final Set<InterfaceType> superTypes;
+    private final Map<String, Type> members;
     
     @Override
     public String shortName() {
@@ -20,10 +21,5 @@ public class ClassType implements ScalarType {
     @Override
     public Set<InterfaceType> superTypes() {
         return superTypes;
-    }
-    
-    @Override
-    public Map<String, Type> getMembers() {
-        return null;
     }
 }

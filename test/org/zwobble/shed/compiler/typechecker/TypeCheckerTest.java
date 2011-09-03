@@ -48,7 +48,7 @@ public class TypeCheckerTest {
     
     @Test public void
     newScopeIsCreatedBySource() {
-        Type customString = new ClassType(asList("shed", "custom"), "String", Collections.<InterfaceType>emptySet());
+        Type customString = new ClassType(asList("shed", "custom"), "String", Collections.<InterfaceType>emptySet(), ImmutableMap.<String, Type>of());
         staticContext.addGlobal(asList("shed", "custom", "String"), CoreTypes.classOf(customString));
         
         staticContext.add("String", CoreTypes.STRING);

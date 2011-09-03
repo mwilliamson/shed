@@ -405,7 +405,7 @@ public class TypeInfererTest {
     @Test public void
     cannotCallNonFunctionTypeApplications() {
         StaticContext context = new StaticContext();
-        ClassType classType = new ClassType(asList("example"), "List", Collections.<InterfaceType>emptySet());
+        ClassType classType = new ClassType(asList("example"), "List", Collections.<InterfaceType>emptySet(), ImmutableMap.<String, Type>of());
         ParameterisedType typeFunction = new ParameterisedType(classType, asList(new FormalTypeParameter("T")));
         context.add("isLength", new TypeApplication(typeFunction, asList(CoreTypes.STRING)));
         CallNode call = Nodes.call(Nodes.id("isLength"));

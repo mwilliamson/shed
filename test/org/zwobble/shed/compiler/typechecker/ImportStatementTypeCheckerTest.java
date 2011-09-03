@@ -9,6 +9,8 @@ import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Type;
 
+import com.google.common.collect.ImmutableMap;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -21,7 +23,7 @@ public class ImportStatementTypeCheckerTest {
     
     @Test public void
     importingValuesAddsThemToCurrentScope() {
-        Type dateTime = new ClassType(asList("shed", "time"), "DateTime", Collections.<InterfaceType>emptySet());
+        Type dateTime = new ClassType(asList("shed", "time"), "DateTime", Collections.<InterfaceType>emptySet(), ImmutableMap.<String, Type>of());
         staticContext.addGlobal(asList("shed", "time", "DateTime"), CoreTypes.classOf(dateTime));
         
         ImportNode importStatement = new ImportNode(asList("shed", "time", "DateTime"));
@@ -44,7 +46,7 @@ public class ImportStatementTypeCheckerTest {
     
     @Test public void
     errorIfImportingTwoValuesWithTheSameName() {
-        Type dateTime = new ClassType(asList("shed", "time"), "DateTime", Collections.<InterfaceType>emptySet());
+        Type dateTime = new ClassType(asList("shed", "time"), "DateTime", Collections.<InterfaceType>emptySet(), ImmutableMap.<String, Type>of());
         staticContext.addGlobal(asList("shed", "time", "DateTime"), CoreTypes.classOf(dateTime));
         staticContext.add("DateTime", CoreTypes.classOf(dateTime));
         

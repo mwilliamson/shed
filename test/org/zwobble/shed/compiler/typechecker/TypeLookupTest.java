@@ -14,6 +14,8 @@ import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
 import org.zwobble.shed.compiler.types.ParameterisedType;
 
+import com.google.common.collect.ImmutableMap;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -59,7 +61,7 @@ public class TypeLookupTest {
     errorIfVariableDoesNotReferenceTypeInCurrentContext() {
         StaticContext context = new StaticContext();
         ParameterisedType listType = new ParameterisedType(
-            new ClassType(Collections.<String>emptyList(), "List", Collections.<InterfaceType>emptySet()),
+            new ClassType(Collections.<String>emptyList(), "List", Collections.<InterfaceType>emptySet(), ImmutableMap.<String, Type>of()),
             asList(new FormalTypeParameter("E"))
         );
         TypeApplication type = new TypeApplication(listType, asList(CoreTypes.NUMBER));
