@@ -30,7 +30,7 @@ public class StaticContext {
         for (int i = 0; i < 20; i += 1) {
             ParameterisedType functionType = CoreTypes.functionType(i);
             // TODO: remove assumption that the base type is a ClassType
-            staticContext.add(((ClassType)functionType.getBaseType()).getName(), CoreTypes.classOf(functionType));
+            staticContext.add(((ClassType)functionType.getBaseType()).getName(), functionType);
         }
         
         return staticContext;

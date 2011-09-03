@@ -238,7 +238,7 @@ public class TypeInferer {
                 } else if (baseType instanceof ParameterisedType) {
                     return TypeResult.success((Type)CoreTypes.classOf(TypeApplication.applyTypes((ParameterisedType)baseType, parameterTypes)));   
                 } else {
-                    throw new RuntimeException("Don't know how to apply types to " + baseType);
+                    throw new RuntimeException("Don't know how to apply types " + parameterTypes + " to " + baseType);
                 }
             }
         });
