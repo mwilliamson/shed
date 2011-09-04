@@ -14,26 +14,31 @@ import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.Lists;
 
+import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.Option.none;
-
 import static org.zwobble.shed.compiler.Option.some;
 
 public class StaticContext {
     public static StaticContext defaultContext() {
         StaticContext staticContext = new StaticContext();
-        staticContext.add("String", CoreTypes.classOf(CoreTypes.STRING));
-        staticContext.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
-        staticContext.add("Boolean", CoreTypes.classOf(CoreTypes.BOOLEAN));
-        staticContext.add("Unit", CoreTypes.classOf(CoreTypes.UNIT));
-//        staticContext.add("Class", CoreTypes.classOf(CoreTypes.CLASS));
+        addCore(staticContext, "String", CoreTypes.classOf(CoreTypes.STRING));
+        addCore(staticContext, "Number", CoreTypes.classOf(CoreTypes.NUMBER));
+        addCore(staticContext, "Boolean", CoreTypes.classOf(CoreTypes.BOOLEAN));
+        addCore(staticContext, "Unit", CoreTypes.classOf(CoreTypes.UNIT));
+//        addCore(staticContext, "Class", CoreTypes.classOf(CoreTypes.CLASS));
         
         for (int i = 0; i < 20; i += 1) {
             ParameterisedType functionType = CoreTypes.functionType(i);
             // TODO: remove assumption that the base type is a ClassType
-            staticContext.add(((ClassType)functionType.getBaseType()).getName(), functionType);
+            addCore(staticContext, ((ClassType)functionType.getBaseType()).getName(), functionType);
         }
         
         return staticContext;
+    }
+    
+    private static void addCore(StaticContext context, String name, Type type) {
+        context.add(name, type);
+        context.addGlobal(asList("shed", "core", name), type);
     }
     
     private final List<StaticScope> scopes = new ArrayList<StaticScope>();
