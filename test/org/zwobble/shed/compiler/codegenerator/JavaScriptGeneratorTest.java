@@ -31,6 +31,8 @@ import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+import org.zwobble.shed.compiler.types.CoreTypes;
+import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -176,9 +178,11 @@ public class JavaScriptGeneratorTest {
         StatementNode statement = new ImmutableVariableNode("magic", Option.none(ExpressionNode.class), new NumberLiteralNode("42"));
         SourceNode source = new SourceNode(packageDeclaration, asList(importNode), asList(statement));
         assertThat(
-            generator.generate(source),
+            generator.generate(source, ImmutableMap.<String, Type>of("String", CoreTypes.STRING, "Number", CoreTypes.NUMBER)),
             is((JavaScriptNode)js.statements(
                 js.var("__shed", importGenerator.generateExpression(packageDeclaration, JavaScriptGenerator.CORE_TYPES_IMPORT_NODE)),
+                js.var("String", js.id("__shed.String")),
+                js.var("Number", js.id("__shed.Number")),
                 js.var("DateTime", importGenerator.generateExpression(packageDeclaration, importNode)),
                 generator.generateStatement(statement)
             ))
@@ -201,7 +205,7 @@ public class JavaScriptGeneratorTest {
         StatementNode statement = new ImmutableVariableNode("magic", Option.none(ExpressionNode.class), new NumberLiteralNode("42"));
         SourceNode source = new SourceNode(packageDeclaration, Collections.<ImportNode>emptyList(), asList(statement));
         assertThat(
-            generator.generate(source),
+            generator.generate(source, ImmutableMap.<String, Type>of()),
             is((JavaScriptNode)js.func(
                 Collections.<String>emptyList(),
                 asList(

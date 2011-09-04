@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.zwobble.shed.compiler.ShedSymbols;
@@ -35,6 +36,7 @@ import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
@@ -57,19 +59,28 @@ public class JavaScriptGenerator {
         this.wrapper = wrapper;
     }
     
-    public JavaScriptNode generate(SourceNode node) {
+    public JavaScriptNode generate(SourceNode node, Map<String, Type> coreValues) {
         SourceNode source = (SourceNode)node;
         PackageDeclarationNode packageDeclaration = source.getPackageDeclaration();
         JavaScriptNode coreTypesImportExpression = importGenerator.generateExpression(packageDeclaration, CORE_TYPES_IMPORT_NODE);
-        JavaScriptVariableDeclarationNode coreTypesImport = js.var(CORE_TYPES_OBJECT_NAME, coreTypesImportExpression);
+        JavaScriptVariableDeclarationNode coreModuleImport = js.var(CORE_TYPES_OBJECT_NAME, coreTypesImportExpression);
+        
+        Iterable<JavaScriptStatementNode> coreValuesImports = Iterables.transform(coreValues.entrySet(), coreValueToJavaScript());
+        
         Function<ImportNode, JavaScriptStatementNode> toJavaScriptImport = toJavaScriptImport(packageDeclaration);
         Iterable<JavaScriptStatementNode> importStatments = Iterables.transform(source.getImports(), toJavaScriptImport);
         Iterable<JavaScriptStatementNode> sourceStatements = Iterables.transform(source.getStatements(), toJavaScriptStatement());
-        JavaScriptStatements statements = js.statements(Iterables.concat(singleton(coreTypesImport), importStatments, sourceStatements));
+        
+        JavaScriptStatements statements = js.statements(Iterables.concat(
+            singleton(coreModuleImport),
+            coreValuesImports,
+            importStatments,
+            sourceStatements
+        ));
         
         return wrapper.wrap(statements);
     }
-    
+
     public JavaScriptExpressionNode generateExpression(ExpressionNode node) {
         if (node instanceof BooleanLiteralNode) {
             return js.call(js.id(CORE_TYPES_OBJECT_NAME + ".Boolean"), js.bool(((BooleanLiteralNode)node).getValue()));
@@ -156,6 +167,15 @@ public class JavaScriptGenerator {
             )));
         }
         throw new RuntimeException("Cannot generate JavaScript for " + node);
+    }
+
+    private Function<Entry<String, Type>, JavaScriptStatementNode> coreValueToJavaScript() {
+        return new Function<Map.Entry<String,Type>, JavaScriptStatementNode>() {
+            @Override
+            public JavaScriptStatementNode apply(Entry<String, Type> input) {
+                return js.var(input.getKey(), js.id(CORE_TYPES_OBJECT_NAME + "." + input.getKey()));
+            }
+        };
     }
 
     private Function<ImportNode, JavaScriptStatementNode> toJavaScriptImport(final PackageDeclarationNode packageDeclaration) {
