@@ -11,10 +11,9 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 
-public class NodeJsImportGenerator implements JavaScriptImportGenerator {
+public class NodeJsImportGenerator {
     private final JavaScriptNodes js = new JavaScriptNodes();
     
-    @Override
     public JavaScriptNode generateExpression(PackageDeclarationNode packageDeclaration, ImportNode importNode) {
         List<String> packageNames = packageDeclaration.getPackageNames();
         List<String> importNames = importNode.getNames();
