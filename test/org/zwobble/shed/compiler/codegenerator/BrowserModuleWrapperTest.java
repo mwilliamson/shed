@@ -1,12 +1,11 @@
 package org.zwobble.shed.compiler.codegenerator;
 
-import java.util.Collections;
-
 import org.junit.Test;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptVariableDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -17,15 +16,23 @@ public class BrowserModuleWrapperTest {
     private final BrowserModuleWrapper wrapper = new BrowserModuleWrapper();
     
     @Test public void
-    packageIsDefinedAndModuleIsWrappedInAnonymousFunction() {
+    packageIsDefinedAndModuleIsWrappedInRequireCall() {
         JavaScriptVariableDeclarationNode original = js.var("x", js.number("0"));
-        JavaScriptNode wrapped = wrapper.wrap(js.statements(original));
+        JavaScriptNode wrapped = wrapper.wrap(
+            null, 
+            asList(new ImportNode(asList("shed", "blah")), new ImportNode(asList("shed", "example"))), 
+            js.statements(original)
+        );
         assertThat(wrapped, is(
             (JavaScriptNode)js.statements(
                 js.expressionStatement(
                     js.call(
+                        js.id("SHED.require"),
+                        js.string("shed.core"),
+                        js.string("shed.blah"),
+                        js.string("shed.example"),
                         js.func(
-                            Collections.<String>emptyList(),
+                            asList(JavaScriptGenerator.CORE_VALUES_OBJECT_NAME, "blah", "example"),
                             asList((JavaScriptStatementNode)original)
                         )
                     )

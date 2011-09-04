@@ -16,8 +16,10 @@ public class BrowserImportGeneratorTest {
     @Test public void
     importsAreRetrievedFromGlobalShedObject() {
         assertThat(
+            // FIXME: should use __shed
+            // TODO: convert to callback style
             generator.generateExpression(null, new ImportNode(asList("shed", "List"))),
-            is((JavaScriptNode)js.id("SHED.shed.List"))
+            is((JavaScriptNode)js.call(js.id("SHED.require"), js.string("shed.List")))
         );
     }
 }

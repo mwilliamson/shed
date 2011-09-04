@@ -12,6 +12,6 @@ public class BrowserImportGenerator implements JavaScriptImportGenerator {
     
     @Override
     public JavaScriptNode generateExpression(PackageDeclarationNode packageDeclaration, ImportNode importNode) {
-        return js.id("SHED." + Joiner.on(".").join(importNode.getNames()));
+        return js.call(js.id("SHED.require"), js.string(Joiner.on(".").join(importNode.getNames())));
     }
 }

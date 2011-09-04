@@ -3,10 +3,8 @@ package org.zwobble.shed.compiler;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.zwobble.shed.compiler.codegenerator.BrowserImportGenerator;
 import org.zwobble.shed.compiler.codegenerator.BrowserModuleWrapper;
 import org.zwobble.shed.compiler.codegenerator.JavaScriptGenerator;
-import org.zwobble.shed.compiler.codegenerator.JavaScriptImportGenerator;
 import org.zwobble.shed.compiler.codegenerator.JavaScriptModuleWrapper;
 import org.zwobble.shed.compiler.codegenerator.JavaScriptWriter;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
@@ -25,7 +23,7 @@ import static org.zwobble.shed.compiler.typechecker.DefaultBrowserContext.defaul
 
 public class ShedCompiler {
     public static ShedCompiler forBrowser() {
-        return new ShedCompiler(new BrowserImportGenerator(), new BrowserModuleWrapper());
+        return new ShedCompiler(new BrowserModuleWrapper());
     }
 
     private final Tokeniser tokeniser;
@@ -33,10 +31,10 @@ public class ShedCompiler {
     private final JavaScriptGenerator javaScriptGenerator;
     private final JavaScriptWriter javaScriptWriter;
     
-    private ShedCompiler(JavaScriptImportGenerator importGenerator, JavaScriptModuleWrapper moduleWrapper) {
+    private ShedCompiler(JavaScriptModuleWrapper moduleWrapper) {
         this.tokeniser = new Tokeniser();
         this.parser = new Parser();
-        this.javaScriptGenerator = new JavaScriptGenerator(importGenerator, moduleWrapper);
+        this.javaScriptGenerator = new JavaScriptGenerator(moduleWrapper);
         this.javaScriptWriter = new JavaScriptWriter();
     }
     
@@ -52,7 +50,7 @@ public class ShedCompiler {
             errors.addAll(typeCheckResult.getErrors());
             
             if (typeCheckResult.isSuccess()) {
-                JavaScriptNode javaScript = javaScriptGenerator.generate(parseResult.get(), CoreModule.VALUES);
+                JavaScriptNode javaScript = javaScriptGenerator.generate(parseResult.get(), CoreModule.VALUES.keySet());
                 javaScriptOutput = javaScriptWriter.write(javaScript);
             }
         }

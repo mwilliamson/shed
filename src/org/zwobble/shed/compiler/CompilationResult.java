@@ -12,4 +12,8 @@ public class CompilationResult {
     private final List<TokenPosition> tokens;
     private final List<CompilerError> errors;
     private final String javaScript;
+    
+    public boolean isSuccess() {
+        return javaScript != null;
+    }
 }

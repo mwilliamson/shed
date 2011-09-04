@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.zwobble.shed.compiler.ShedSymbols;
@@ -13,8 +12,6 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptExpressionNo
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNode;
-import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatements;
-import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptVariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
@@ -36,7 +33,6 @@ import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
-import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
@@ -44,55 +40,51 @@ import com.google.common.collect.Iterables;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.transform;
 import static java.util.Arrays.asList;
-import static java.util.Collections.singleton;
 
 public class JavaScriptGenerator {
-    public static final ImportNode CORE_TYPES_IMPORT_NODE = new ImportNode(asList("shed", "core")); 
+    public static final ImportNode CORE_TYPES_IMPORT_NODE = new ImportNode(asList("shed", "core"));
+    public static final String CORE_VALUES_OBJECT_NAME = ShedSymbols.INTERNAL_PREFIX + "core";
     
-    private static final String CORE_TYPES_OBJECT_NAME = ShedSymbols.INTERNAL_PREFIX + "shed"; 
     private final JavaScriptNodes js = new JavaScriptNodes();
-    private final JavaScriptImportGenerator importGenerator;
     private final JavaScriptModuleWrapper wrapper;
     
-    public JavaScriptGenerator(JavaScriptImportGenerator importGenerator, JavaScriptModuleWrapper wrapper) {
-        this.importGenerator = importGenerator;
+    public JavaScriptGenerator(JavaScriptModuleWrapper wrapper) {
         this.wrapper = wrapper;
     }
     
-    public JavaScriptNode generate(SourceNode node, Map<String, Type> coreValues) {
+    public JavaScriptNode generate(SourceNode node, Iterable<String> coreValues) {
         SourceNode source = (SourceNode)node;
         PackageDeclarationNode packageDeclaration = source.getPackageDeclaration();
-        JavaScriptNode coreTypesImportExpression = importGenerator.generateExpression(packageDeclaration, CORE_TYPES_IMPORT_NODE);
-        JavaScriptVariableDeclarationNode coreModuleImport = js.var(CORE_TYPES_OBJECT_NAME, coreTypesImportExpression);
         
-        Iterable<JavaScriptStatementNode> coreValuesImports = Iterables.transform(coreValues.entrySet(), coreValueToJavaScript());
+        Iterable<JavaScriptStatementNode> sourceStatements = Iterables.concat(
+            Iterables.transform(coreValues, coreValueToJavaScript()),
+            Iterables.transform(source.getStatements(), toJavaScriptStatement())
+        );
         
-        Function<ImportNode, JavaScriptStatementNode> toJavaScriptImport = toJavaScriptImport(packageDeclaration);
-        Iterable<JavaScriptStatementNode> importStatments = Iterables.transform(source.getImports(), toJavaScriptImport);
-        Iterable<JavaScriptStatementNode> sourceStatements = Iterables.transform(source.getStatements(), toJavaScriptStatement());
-        
-        JavaScriptStatements statements = js.statements(Iterables.concat(
-            singleton(coreModuleImport),
-            coreValuesImports,
-            importStatments,
-            sourceStatements
-        ));
-        
-        return wrapper.wrap(statements);
+        return wrapper.wrap(packageDeclaration, node.getImports(), js.statements(sourceStatements));
+    }
+
+    private Function<String, JavaScriptStatementNode> coreValueToJavaScript() {
+        return new Function<String, JavaScriptStatementNode>() {
+            @Override
+            public JavaScriptStatementNode apply(String input) {
+                return js.var(input, js.id(CORE_VALUES_OBJECT_NAME + "." + input));
+            }
+        };
     }
 
     public JavaScriptExpressionNode generateExpression(ExpressionNode node) {
         if (node instanceof BooleanLiteralNode) {
-            return js.call(js.id(CORE_TYPES_OBJECT_NAME + ".Boolean"), js.bool(((BooleanLiteralNode)node).getValue()));
+            return js.call(js.id(CORE_VALUES_OBJECT_NAME + ".Boolean"), js.bool(((BooleanLiteralNode)node).getValue()));
         }
         if (node instanceof NumberLiteralNode) {
-            return js.call(js.id(CORE_TYPES_OBJECT_NAME + ".Number"), js.number(((NumberLiteralNode)node).getValue()));
+            return js.call(js.id(CORE_VALUES_OBJECT_NAME + ".Number"), js.number(((NumberLiteralNode)node).getValue()));
         }
         if (node instanceof StringLiteralNode) {
-            return js.call(js.id(CORE_TYPES_OBJECT_NAME + ".String"), js.string(((StringLiteralNode)node).getValue()));
+            return js.call(js.id(CORE_VALUES_OBJECT_NAME + ".String"), js.string(((StringLiteralNode)node).getValue()));
         }
         if (node instanceof UnitLiteralNode) {
-            return js.call(js.id(CORE_TYPES_OBJECT_NAME + ".Unit"));
+            return js.call(js.id(CORE_VALUES_OBJECT_NAME + ".Unit"));
         }
         if (node instanceof VariableIdentifierNode) {
             return js.id(((VariableIdentifierNode) node).getIdentifier());
@@ -167,26 +159,6 @@ public class JavaScriptGenerator {
             )));
         }
         throw new RuntimeException("Cannot generate JavaScript for " + node);
-    }
-
-    private Function<Entry<String, Type>, JavaScriptStatementNode> coreValueToJavaScript() {
-        return new Function<Map.Entry<String,Type>, JavaScriptStatementNode>() {
-            @Override
-            public JavaScriptStatementNode apply(Entry<String, Type> input) {
-                return js.var(input.getKey(), js.id(CORE_TYPES_OBJECT_NAME + "." + input.getKey()));
-            }
-        };
-    }
-
-    private Function<ImportNode, JavaScriptStatementNode> toJavaScriptImport(final PackageDeclarationNode packageDeclaration) {
-        return new Function<ImportNode, JavaScriptStatementNode>() {
-            @Override
-            public JavaScriptStatementNode apply(ImportNode input) {
-                List<String> importNames = input.getNames();
-                String name = importNames.get(importNames.size() - 1);
-                return js.var(name, importGenerator.generateExpression(packageDeclaration, input));
-            }
-        };
     }
 
     private Function<FormalArgumentNode, String> toFormalArgumentName() {

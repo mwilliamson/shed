@@ -31,10 +31,10 @@ import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
-import org.zwobble.shed.compiler.types.CoreTypes;
-import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.ImmutableMap;
+
+import static org.zwobble.shed.compiler.codegenerator.JavaScriptGenerator.CORE_VALUES_OBJECT_NAME;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -42,7 +42,7 @@ import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.Option.none;
 
 public class JavaScriptGeneratorTest {
-    private final JavaScriptGenerator generator = new JavaScriptGenerator(null, new IdentityModuleWrapper());
+    private final JavaScriptGenerator generator = new JavaScriptGenerator(new IdentityModuleWrapper());
     private final JavaScriptNodes js = new JavaScriptNodes();
     
     @Test public void
@@ -53,25 +53,25 @@ public class JavaScriptGeneratorTest {
     
     private void booleanLiteralIsConvertedToBoxedBooleansWhenBooleanIs(boolean value) {
         BooleanLiteralNode source = new BooleanLiteralNode(value);
-        assertGeneratedJavaScript(source, js.call(js.id("__shed.Boolean"), js.bool(value)));
+        assertGeneratedJavaScript(source, js.call(js.id("__core.Boolean"), js.bool(value)));
     }
     
     @Test public void
     numberLiteralsAreConvertedToBoxedNumbers() {
         NumberLiteralNode source = new NumberLiteralNode("4.2");
-        assertGeneratedJavaScript(source, js.call(js.id("__shed.Number"), js.number("4.2")));
+        assertGeneratedJavaScript(source, js.call(js.id("__core.Number"), js.number("4.2")));
     }
     
     @Test public void
     stringLiteralsAreConvertedToBoxedStrings() {
         StringLiteralNode source = new StringLiteralNode("Stop giving me verses");
-        assertGeneratedJavaScript(source, js.call(js.id("__shed.String"), js.string("Stop giving me verses")));
+        assertGeneratedJavaScript(source, js.call(js.id("__core.String"), js.string("Stop giving me verses")));
     }
     
     @Test public void
     unitLiteralsAreConvertedToUnitValue() {
         UnitLiteralNode source = Nodes.unit();
-        assertGeneratedJavaScript(source, js.call(js.id("__shed.Unit")));
+        assertGeneratedJavaScript(source, js.call(js.id("__core.Unit")));
     }
     
     @Test public void
@@ -170,20 +170,17 @@ public class JavaScriptGeneratorTest {
     
     @Test public void
     canGenerateJavaScriptForSourceFile() {
-        JavaScriptImportGenerator importGenerator = new NodeJsImportGenerator();
-        JavaScriptGenerator generator = new JavaScriptGenerator(importGenerator, new IdentityModuleWrapper());
+        JavaScriptGenerator generator = new JavaScriptGenerator(new IdentityModuleWrapper());
         
         PackageDeclarationNode packageDeclaration = new PackageDeclarationNode(asList("shed", "example"));
         ImportNode importNode = new ImportNode(asList("shed", "DateTime"));
         StatementNode statement = new ImmutableVariableNode("magic", Option.none(ExpressionNode.class), new NumberLiteralNode("42"));
         SourceNode source = new SourceNode(packageDeclaration, asList(importNode), asList(statement));
         assertThat(
-            generator.generate(source, ImmutableMap.<String, Type>of("String", CoreTypes.STRING, "Number", CoreTypes.NUMBER)),
+            generator.generate(source, asList("String", "Number")),
             is((JavaScriptNode)js.statements(
-                js.var("__shed", importGenerator.generateExpression(packageDeclaration, JavaScriptGenerator.CORE_TYPES_IMPORT_NODE)),
-                js.var("String", js.id("__shed.String")),
-                js.var("Number", js.id("__shed.Number")),
-                js.var("DateTime", importGenerator.generateExpression(packageDeclaration, importNode)),
+                js.var("String", js.id(CORE_VALUES_OBJECT_NAME + ".String")),
+                js.var("Number", js.id(CORE_VALUES_OBJECT_NAME + ".Number")),
                 generator.generateStatement(statement)
             ))
         );
@@ -193,23 +190,21 @@ public class JavaScriptGeneratorTest {
     moduleIsWrappedUsingModuleWrapper() {
         JavaScriptModuleWrapper wrapper = new JavaScriptModuleWrapper() {
             @Override
-            public JavaScriptNode wrap(JavaScriptStatements module) {
+            public JavaScriptNode wrap(PackageDeclarationNode packageDeclaration, Iterable<ImportNode> imports, JavaScriptStatements module) {
                 return js.func(Collections.<String>emptyList(), module.getStatements());
             }
         };
         
-        JavaScriptImportGenerator importGenerator = new NodeJsImportGenerator();
-        JavaScriptGenerator generator = new JavaScriptGenerator(importGenerator, wrapper);
+        JavaScriptGenerator generator = new JavaScriptGenerator(wrapper);
         
         PackageDeclarationNode packageDeclaration = new PackageDeclarationNode(asList("shed", "example"));
         StatementNode statement = new ImmutableVariableNode("magic", Option.none(ExpressionNode.class), new NumberLiteralNode("42"));
         SourceNode source = new SourceNode(packageDeclaration, Collections.<ImportNode>emptyList(), asList(statement));
         assertThat(
-            generator.generate(source, ImmutableMap.<String, Type>of()),
+            generator.generate(source, Collections.<String>emptyList()),
             is((JavaScriptNode)js.func(
                 Collections.<String>emptyList(),
                 asList(
-                    js.var("__shed", importGenerator.generateExpression(packageDeclaration, JavaScriptGenerator.CORE_TYPES_IMPORT_NODE)),
                     generator.generateStatement(statement)
                 )
             ))

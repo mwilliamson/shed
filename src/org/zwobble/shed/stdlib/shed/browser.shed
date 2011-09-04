@@ -3,7 +3,7 @@ package shed;
 import shed.javascript.JavaScriptImporter;
 
 object browser {
-    val importer = new JavaScriptImporter();
+    val importer = JavaScriptImporter();
     
     public val alert = importer.importValue[Function1[String, Unit]]("alert");
 }
