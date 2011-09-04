@@ -14,5 +14,5 @@
         };
     };
     
-    SHED.export(JavaScriptImporter);
+    SHED.export("shed.javascript.JavaScriptImporter", JavaScriptImporter);
 })();
