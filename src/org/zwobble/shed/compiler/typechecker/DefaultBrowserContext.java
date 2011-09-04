@@ -32,6 +32,15 @@ public class DefaultBrowserContext {
         
         context.addGlobal(asList("shed", "javascript", "JavaScriptImporter"), CoreTypes.functionTypeOf(javaScriptImporterType));
         
+        ClassType browserType = new ClassType(
+            asList("shed"),
+            "browser",
+            Collections.<InterfaceType>emptySet(),
+            ImmutableMap.of("alert", CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.UNIT))
+        );
+        
+        context.addGlobal(asList("shed", "browser"), browserType);
+        
         return context;
     }
 }
