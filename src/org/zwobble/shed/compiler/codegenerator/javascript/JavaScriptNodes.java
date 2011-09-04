@@ -63,4 +63,8 @@ public class JavaScriptNodes {
     public JavaScriptExpressionNode propertyAccess(JavaScriptExpressionNode expression, String propertyName) {
         return new JavaScriptPropertyAccessNode(expression, propertyName);
     }
+    
+    public JavaScriptStatementNode forIn(String name, JavaScriptExpressionNode object, List<JavaScriptStatementNode> statements) {
+        return new JavaScriptForInNode(name, object, statements);
+    }
 }
