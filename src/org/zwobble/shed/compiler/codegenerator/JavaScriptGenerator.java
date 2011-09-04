@@ -31,7 +31,6 @@ import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
-import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
@@ -58,26 +57,17 @@ public class JavaScriptGenerator {
         this.wrapper = wrapper;
     }
     
-    public JavaScriptNode generate(SyntaxNode node) {
-        if (node instanceof ExpressionNode) {
-            return generateExpression((ExpressionNode)node);
-        }
-        if (node instanceof StatementNode) {
-            return generateStatement((StatementNode)node);
-        }
-        if (node instanceof SourceNode) {
-            SourceNode source = (SourceNode)node;
-            PackageDeclarationNode packageDeclaration = source.getPackageDeclaration();
-            JavaScriptNode coreTypesImportExpression = importGenerator.generateExpression(packageDeclaration, CORE_TYPES_IMPORT_NODE);
-            JavaScriptVariableDeclarationNode coreTypesImport = js.var(CORE_TYPES_OBJECT_NAME, coreTypesImportExpression);
-            Function<ImportNode, JavaScriptStatementNode> toJavaScriptImport = toJavaScriptImport(packageDeclaration);
-            Iterable<JavaScriptStatementNode> importStatments = Iterables.transform(source.getImports(), toJavaScriptImport);
-            Iterable<JavaScriptStatementNode> sourceStatements = Iterables.transform(source.getStatements(), toJavaScriptStatement());
-            JavaScriptStatements statements = js.statements(Iterables.concat(singleton(coreTypesImport), importStatments, sourceStatements));
-            
-            return wrapper.wrap(statements);
-        }
-        throw new RuntimeException("Cannot generate JavaScript for " + node);
+    public JavaScriptNode generate(SourceNode node) {
+        SourceNode source = (SourceNode)node;
+        PackageDeclarationNode packageDeclaration = source.getPackageDeclaration();
+        JavaScriptNode coreTypesImportExpression = importGenerator.generateExpression(packageDeclaration, CORE_TYPES_IMPORT_NODE);
+        JavaScriptVariableDeclarationNode coreTypesImport = js.var(CORE_TYPES_OBJECT_NAME, coreTypesImportExpression);
+        Function<ImportNode, JavaScriptStatementNode> toJavaScriptImport = toJavaScriptImport(packageDeclaration);
+        Iterable<JavaScriptStatementNode> importStatments = Iterables.transform(source.getImports(), toJavaScriptImport);
+        Iterable<JavaScriptStatementNode> sourceStatements = Iterables.transform(source.getStatements(), toJavaScriptStatement());
+        JavaScriptStatements statements = js.statements(Iterables.concat(singleton(coreTypesImport), importStatments, sourceStatements));
+        
+        return wrapper.wrap(statements);
     }
     
     public JavaScriptExpressionNode generateExpression(ExpressionNode node) {
@@ -130,11 +120,11 @@ public class JavaScriptGenerator {
     public JavaScriptStatementNode generateStatement(StatementNode node) {
         if (node instanceof VariableDeclarationNode) {
             VariableDeclarationNode immutableVariable = (VariableDeclarationNode)node;
-            return js.var(immutableVariable.getIdentifier(), generate(immutableVariable.getValue()));
+            return js.var(immutableVariable.getIdentifier(), generateExpression(immutableVariable.getValue()));
         }
         if (node instanceof ReturnNode) {
             ReturnNode returnNode = (ReturnNode)node;
-            return js.ret(generate(returnNode.getExpression()));
+            return js.ret(generateExpression(returnNode.getExpression()));
         }
         if (node instanceof ExpressionStatementNode) {
             return js.expressionStatement(generateExpression(((ExpressionStatementNode) node).getExpression()));
