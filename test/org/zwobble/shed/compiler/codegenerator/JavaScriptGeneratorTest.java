@@ -187,6 +187,22 @@ public class JavaScriptGeneratorTest {
     }
     
     @Test public void
+    publicDeclarationsAreExported() {
+        JavaScriptGenerator generator = new JavaScriptGenerator(new IdentityModuleWrapper());
+        
+        PackageDeclarationNode packageDeclaration = new PackageDeclarationNode(asList("shed", "example"));
+        StatementNode statement = Nodes.publik(Nodes.immutableVar("magic", Nodes.number("42")));
+        SourceNode source = new SourceNode(packageDeclaration, Collections.<ImportNode>emptyList(), asList(statement));
+        assertThat(
+            generator.generate(source, Collections.<String>emptyList()),
+            is((JavaScriptNode)js.statements(
+                generator.generateStatement(statement),
+                js.expressionStatement(js.call(js.id("SHED.export"), js.string("shed.example.magic"), js.id("magic")))
+            ))
+        );
+    }
+    
+    @Test public void
     moduleIsWrappedUsingModuleWrapper() {
         JavaScriptModuleWrapper wrapper = new JavaScriptModuleWrapper() {
             @Override

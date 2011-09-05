@@ -13,6 +13,5 @@
             }
         };
     };
-    
     SHED.export("shed.javascript.JavaScriptImporter", JavaScriptImporter);
 })();

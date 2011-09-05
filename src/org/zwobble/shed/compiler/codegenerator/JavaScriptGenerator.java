@@ -35,6 +35,8 @@ import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
 import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -58,7 +60,8 @@ public class JavaScriptGenerator {
         
         Iterable<JavaScriptStatementNode> sourceStatements = Iterables.concat(
             Iterables.transform(coreValues, coreValueToJavaScript()),
-            Iterables.transform(source.getStatements(), toJavaScriptStatement())
+            Iterables.transform(source.getStatements(), toJavaScriptStatement()),
+            Iterables.transform(Iterables.filter(source.getStatements(), isPublicDeclaration()), toJavaScriptExport(packageDeclaration))
         );
         
         return wrapper.wrap(packageDeclaration, node.getImports(), js.statements(sourceStatements));
@@ -184,6 +187,26 @@ public class JavaScriptGenerator {
             @Override
             public JavaScriptExpressionNode apply(ExpressionNode input) {
                 return generateExpression(input);
+            }
+        };
+    }
+
+    private Predicate<StatementNode> isPublicDeclaration() {
+        return new Predicate<StatementNode>() {
+            @Override
+            public boolean apply(StatementNode input) {
+                return input instanceof PublicDeclarationNode;
+            }
+        };
+    }
+
+    private Function<StatementNode, JavaScriptStatementNode> toJavaScriptExport(final PackageDeclarationNode packageDeclaration) {
+        return new Function<StatementNode, JavaScriptStatementNode>() {
+            @Override
+            public JavaScriptStatementNode apply(StatementNode input) {
+                String identifier = ((PublicDeclarationNode)input).getDeclaration().getIdentifier();
+                String fullIdentifier = Joiner.on(".").join(packageDeclaration.getPackageNames()) + "." + identifier;
+                return js.expressionStatement(js.call(js.id("SHED.export"), js.string(fullIdentifier), js.id(identifier)));
             }
         };
     }

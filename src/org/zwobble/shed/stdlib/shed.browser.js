@@ -9,7 +9,7 @@
             current[parts[i]] = current[parts[i]] || {};
             current = current[parts[i]];
         }
-        current[parts[i]] = value;
+        current[parts[parts.length - 1]] = value;
         modules[name] = value;
         
         for (var i = 0; i < moduleCallbacks[name].length; i += 1) {
@@ -44,5 +44,9 @@
                 firstScript.parentNode.insertBefore(scriptTag, firstScript);
             }
         });
+    };
+    
+    exports.alert = function(value) {
+        alert(value)
     };
 })(window.SHED = {});
