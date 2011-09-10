@@ -9,21 +9,44 @@ import org.zwobble.shed.compiler.tokeniser.Token;
 import org.zwobble.shed.compiler.tokeniser.TokenPosition;
 import org.zwobble.shed.compiler.tokeniser.Tokens;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
+
 public class StructureAnalyser {
+    private static final BiMap<Token, Token> openingSymbolToClosingSymbol = ImmutableBiMap.<Token, Token>of(
+        Token.symbol("{"), Token.symbol("}"),
+        Token.symbol("("), Token.symbol(")")
+    );
+    
     public TokenStructure analyse(Tokens tokens) {
-        Deque<TokenPosition> openingBraces = new LinkedList<TokenPosition>();
+        Deque<TokenPosition> openingSymbols = new LinkedList<TokenPosition>();
         Map<TokenPosition, TokenPosition> matchingClosingBraces = new HashMap<TokenPosition, TokenPosition>();
         
         for (TokenPosition tokenPosition : tokens) {
             Token token = tokenPosition.getToken();
-            if (token.equals(Token.symbol("{")) || token.equals(Token.symbol("("))) {
-                openingBraces.push(tokenPosition);
+            if (isOpeningSymbol(token)) {
+                openingSymbols.push(tokenPosition);
             }
-            if (token.equals(Token.symbol("}")) || token.equals(Token.symbol(")"))) {
-                matchingClosingBraces.put(openingBraces.pop(), tokenPosition);
+            if (isClosingSymbol(token)) {
+                while (!openingSymbols.peek().getToken().equals(openingSymbolFor(token))) {
+                    openingSymbols.pop();
+                }
+                matchingClosingBraces.put(openingSymbols.pop(), tokenPosition);
             }
         }
         
         return new TokenStructure(matchingClosingBraces);
+    }
+
+    private Token openingSymbolFor(Token token) {
+        return openingSymbolToClosingSymbol.inverse().get(token); 
+    }
+
+    private boolean isOpeningSymbol(Token token) {
+        return openingSymbolToClosingSymbol.containsKey(token);
+    }
+
+    private boolean isClosingSymbol(Token token) {
+        return openingSymbolToClosingSymbol.containsValue(token);
     }
 }

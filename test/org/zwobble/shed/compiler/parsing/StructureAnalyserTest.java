@@ -41,6 +41,22 @@ public class StructureAnalyserTest {
         assertThat(structure.findMatchingClosingSymbolFor(tokens.get(0)).getPosition(), is(position(1, 19)));
     }
     
+    @Test public void
+    closingBraceClosesAnyOpenParens() {
+        Tokens tokens = tokens("{({(})}");
+        TokenStructure structure = analyser.analyse(tokens);
+        assertThat(structure.findMatchingClosingSymbolFor(tokens.get(1)).getPosition(), is(position(1, 6)));
+        assertThat(structure.hasMatchingClosingSymbol(tokens.get(3)), is(false));
+    }
+    
+    @Test public void
+    closingParenClosesAnyOpenBraces() {
+        Tokens tokens = tokens("({({)})");
+        TokenStructure structure = analyser.analyse(tokens);
+        assertThat(structure.findMatchingClosingSymbolFor(tokens.get(1)).getPosition(), is(position(1, 6)));
+        assertThat(structure.hasMatchingClosingSymbol(tokens.get(3)), is(false));
+    }
+    
     private Tokens tokens(String input) {
         return new Tokeniser().tokenise(input);
     }
