@@ -52,7 +52,11 @@ public class StructureAnalyser {
                     openingSymbols.pop();
                 }
             }
+            if (!tokenIterator.hasNext()) {
+                endOfStatements.add(tokenPosition);
+            }
         }
+
         
         return new TokenStructure(matchingClosingBraces.build(), endOfStatements);
     }
