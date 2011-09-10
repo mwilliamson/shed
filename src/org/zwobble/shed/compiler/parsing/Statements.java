@@ -52,7 +52,7 @@ public class Statements {
                 guard(keyword(Keyword.PUBLIC)),
                 declaration
             ),
-            new ParseAction<RuleValues, PublicDeclarationNode>() {
+            new SimpleParseAction<RuleValues, PublicDeclarationNode>() {
                 @Override
                 public PublicDeclarationNode apply(RuleValues result) {
                     return new PublicDeclarationNode(result.get(declaration));
@@ -95,7 +95,7 @@ public class Statements {
                 guard(keyword(Keyword.RETURN)),
                 expression
             ),
-            new ParseAction<RuleValues, ReturnNode>() {
+            new SimpleParseAction<RuleValues, ReturnNode>() {
                 @Override
                 public ReturnNode apply(RuleValues result) {
                     return new ReturnNode(result.get(expression));
@@ -110,7 +110,7 @@ public class Statements {
             aStatement(
                 expression
             ),
-            new ParseAction<RuleValues, ExpressionStatementNode>() {
+            new SimpleParseAction<RuleValues, ExpressionStatementNode>() {
                 @Override
                 public ExpressionStatementNode apply(RuleValues result) {
                     return new ExpressionStatementNode(result.get(expression));
@@ -128,7 +128,7 @@ public class Statements {
                 identifier,
                 body
             ),
-            new ParseAction<RuleValues, ObjectDeclarationNode>() {
+            new SimpleParseAction<RuleValues, ObjectDeclarationNode>() {
                 @Override
                 public ObjectDeclarationNode apply(RuleValues result) {
                     String objectName = result.get(identifier);
@@ -167,7 +167,7 @@ public class Statements {
                 symbol("="),
                 expression
             ),
-            new ParseAction<RuleValues, T>() {
+            new SimpleParseAction<RuleValues, T>() {
                 @Override
                 public T apply(RuleValues result) {
                     return constructor.apply(result.get(identifier), result.get(type), result.get(expression));

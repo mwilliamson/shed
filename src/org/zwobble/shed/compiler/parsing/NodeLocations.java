@@ -1,7 +1,7 @@
 package org.zwobble.shed.compiler.parsing;
 
-import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
+import org.zwobble.shed.compiler.parsing.nodes.Node;
 
 public interface NodeLocations {
-    SourceRange locate(SyntaxNode node);
+    SourceRange locate(Node node);
 }

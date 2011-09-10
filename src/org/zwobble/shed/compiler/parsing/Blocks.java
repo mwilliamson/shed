@@ -35,7 +35,7 @@ public class Blocks {
                 }
             },
             
-            new ParseAction<RuleValues, List<StatementNode>>() {
+            new SimpleParseAction<RuleValues, List<StatementNode>>() {
                 @Override
                 public List<StatementNode> apply(RuleValues result) {
                     return result.get(statements);

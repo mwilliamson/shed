@@ -8,10 +8,13 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
+import org.zwobble.shed.compiler.parsing.nodes.PartialNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+
+import static org.zwobble.shed.compiler.parsing.SourceRange.range;
 
 import static org.zwobble.shed.compiler.parsing.Rules.zeroOrMore;
 
@@ -33,7 +36,7 @@ import static org.zwobble.shed.compiler.tokeniser.TokenType.IDENTIFIER;
 public class Expressions {
     private static final Rule<?> COMMA = guard(symbol(","));
     
-    private static interface PartialCallExpression {
+    private static interface PartialCallExpression extends PartialNode {
         ExpressionNode complete(ExpressionNode expression);
     }
     
@@ -67,11 +70,17 @@ public class Expressions {
                     ),
                     new ParseAction<RuleValues, ExpressionNode>() {
                         @Override
-                        public ExpressionNode apply(RuleValues values) {
-                            ExpressionNode result = values.get(left);
+                        public ParseResult<ExpressionNode> apply(ParseResult<RuleValues> valuesResult) {
+                            RuleValues values = valuesResult.get();
+                            ExpressionNode leftExpression = values.get(left);
+                            ParseResult<ExpressionNode> result = valuesResult.changeValue(leftExpression);
                             List<PartialCallExpression> callExpressions = values.get(calls);
                             for (PartialCallExpression callExpression : callExpressions) {
-                                result = callExpression.complete(result);
+                                SourcePosition start = result.locate(leftExpression).getStart();
+                                SourcePosition end = result.locate(callExpression).getEnd();
+                                SourceRange sourceRange = range(start, end);
+                                leftExpression = callExpression.complete(leftExpression);
+                                result = result.changeValue(leftExpression, sourceRange);
                             }
                             return result;
                         }
@@ -90,7 +99,7 @@ public class Expressions {
                 arguments,
                 symbol(")")
             ),
-            new ParseAction<RuleValues, PartialCallExpression>() {
+            new SimpleParseAction<RuleValues, PartialCallExpression>() {
                 @Override
                 public PartialCallExpression apply(final RuleValues result) {
                     return new PartialCallExpression() {
@@ -111,7 +120,7 @@ public class Expressions {
                 guard(symbol(".")),
                 memberName
             ),
-            new ParseAction<RuleValues, PartialCallExpression>() {
+            new SimpleParseAction<RuleValues, PartialCallExpression>() {
                 @Override
                 public PartialCallExpression apply(final RuleValues result) {
                     return new PartialCallExpression() {
@@ -134,7 +143,7 @@ public class Expressions {
                 arguments,
                 symbol("]")
             ),
-            new ParseAction<RuleValues, PartialCallExpression>() {
+            new SimpleParseAction<RuleValues, PartialCallExpression>() {
                 @Override
                 public PartialCallExpression apply(final RuleValues result) {
                     return new PartialCallExpression() {
@@ -151,7 +160,7 @@ public class Expressions {
     private static Rule<ExpressionNode> variableIdentifier() {
         return then(
             tokenOfType(IDENTIFIER),
-            new ParseAction<String, ExpressionNode>() {
+            new SimpleParseAction<String, ExpressionNode>() {
                 @Override
                 public ExpressionNode apply(String result) {
                     return new VariableIdentifierNode(result);
@@ -168,7 +177,7 @@ public class Expressions {
                 expression,
                 symbol(")")
             ),
-            new ParseAction<RuleValues, ExpressionNode>() {
+            new SimpleParseAction<RuleValues, ExpressionNode>() {
                 @Override
                 public ExpressionNode apply(RuleValues result) {
                     return result.get(expression);
@@ -188,7 +197,7 @@ public class Expressions {
                 guard(symbol("=>")),
                 functionBody = guard(block())
             ),
-            new ParseAction<RuleValues, LongLambdaExpressionNode>() {
+            new SimpleParseAction<RuleValues, LongLambdaExpressionNode>() {
                 @Override
                 public LongLambdaExpressionNode apply(RuleValues result) {
                     return new LongLambdaExpressionNode(
@@ -212,7 +221,7 @@ public class Expressions {
                 guard(symbol("=>")),
                 functionBody
             ),
-            new ParseAction<RuleValues, ShortLambdaExpressionNode>() {
+            new SimpleParseAction<RuleValues, ShortLambdaExpressionNode>() {
                 @Override
                 public ShortLambdaExpressionNode apply(RuleValues result) {
                     return new ShortLambdaExpressionNode(
@@ -233,7 +242,7 @@ public class Expressions {
                 formalArguments,
                 guard(symbol(")"))
             ),
-            new ParseAction<RuleValues, List<FormalArgumentNode>>() {
+            new SimpleParseAction<RuleValues, List<FormalArgumentNode>>() {
                 @Override
                 public List<FormalArgumentNode> apply(RuleValues result) {
                     return result.get(formalArguments);
@@ -251,7 +260,7 @@ public class Expressions {
                 name = guard(tokenOfType(IDENTIFIER)),
                 type
             ),
-            new ParseAction<RuleValues, FormalArgumentNode>() {
+            new SimpleParseAction<RuleValues, FormalArgumentNode>() {
                 @Override
                 public FormalArgumentNode apply(RuleValues result) {
                     return new FormalArgumentNode(result.get(name), result.get(type));

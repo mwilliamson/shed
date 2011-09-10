@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.Separator.Type;
-import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
+import org.zwobble.shed.compiler.parsing.nodes.Node;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNodeIdentifier;
 import org.zwobble.shed.compiler.tokeniser.Keyword;
 import org.zwobble.shed.compiler.tokeniser.Token;
@@ -25,7 +25,7 @@ import static org.zwobble.shed.compiler.parsing.ParseResult.success;
 import static org.zwobble.shed.compiler.parsing.Separator.softSeparator;
 
 public class Rules {
-    public static <T, U> Rule<T> then(final Rule<U> originalRule, final ParseAction<U, T> action) {
+    public static <T, U> Rule<T> then(final Rule<U> originalRule, final SimpleParseAction<U, T> action) {
         return new Rule<T>() {
             @SuppressWarnings("unchecked")
             @Override
@@ -37,11 +37,24 @@ public class Rules {
                 }
                 T actionResult = action.apply(result.get());
                 SourcePosition end = tokens.lastPosition();
-                if (actionResult instanceof SyntaxNode) {
-                    return (ParseResult<T>)result.changeValue((SyntaxNode)actionResult, new SourceRange(start, end));
+                if (actionResult instanceof Node) {
+                    return (ParseResult<T>)result.changeValue((Node)actionResult, new SourceRange(start, end));
                 } else {
                     return result.changeValue(actionResult);
                 }
+            }
+        };
+    }
+    
+    public static <T, U> Rule<T> then(final Rule<U> originalRule, final ParseAction<U, T> action) {
+        return new Rule<T>() {
+            @Override
+            public ParseResult<T> parse(TokenNavigator tokens) {
+                ParseResult<U> result = originalRule.parse(tokens);
+                if (!result.hasValue()) {
+                    return result.changeValue(null);
+                }
+                return action.apply(result);
             }
         };
     }
@@ -191,7 +204,7 @@ public class Rules {
     public static Rule<Keyword> keyword(final Keyword keyword) {
         return then(
             token(Token.keyword(keyword)),
-            new ParseAction<Void, Keyword>() {
+            new SimpleParseAction<Void, Keyword>() {
                 @Override
                 public Keyword apply(Void result) {
                     return keyword;

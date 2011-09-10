@@ -37,7 +37,7 @@ public class TopLevelNodes {
                 statements = oneOrMore(statement()),
                 Rules.token(Token.end())
             ),
-            new ParseAction<RuleValues, SourceNode>() {
+            new SimpleParseAction<RuleValues, SourceNode>() {
                 @Override
                 public SourceNode apply(RuleValues result) {
                     return new SourceNode(
@@ -57,7 +57,7 @@ public class TopLevelNodes {
                 keyword(PACKAGE),
                 names = dotSeparatedIdentifiers()
             ),
-            new ParseAction<RuleValues, PackageDeclarationNode>() {
+            new SimpleParseAction<RuleValues, PackageDeclarationNode>() {
                 @Override
                 public PackageDeclarationNode apply(RuleValues result) {
                     return new PackageDeclarationNode(result.get(names));
@@ -73,7 +73,7 @@ public class TopLevelNodes {
                 guard(keyword(IMPORT)),
                 (names = dotSeparatedIdentifiers())
             ),
-            new ParseAction<RuleValues, ImportNode>() {
+            new SimpleParseAction<RuleValues, ImportNode>() {
                 @Override
                 public ImportNode apply(RuleValues result) {
                     return new ImportNode(result.get(names));

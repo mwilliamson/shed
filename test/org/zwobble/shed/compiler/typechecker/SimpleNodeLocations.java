@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.SourceRange;
+import org.zwobble.shed.compiler.parsing.nodes.Node;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNodeIdentifier;
 
@@ -16,7 +17,7 @@ public class SimpleNodeLocations implements NodeLocations {
     }
     
     @Override
-    public SourceRange locate(SyntaxNode node) {
+    public SourceRange locate(Node node) {
         return locations.get(new SyntaxNodeIdentifier(node));
     }
 }

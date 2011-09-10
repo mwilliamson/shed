@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import org.zwobble.shed.compiler.HasErrors;
-import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
+import org.zwobble.shed.compiler.parsing.nodes.Node;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNodeIdentifier;
 
 import com.google.common.collect.ImmutableMap;
@@ -66,7 +66,7 @@ public class ParseResult<T> implements HasErrors, NodeLocations {
         return new ParseResult<U>(value, errors, type, nodePositions);
     }
     
-    public <U extends SyntaxNode> ParseResult<U> changeValue(U value, SourceRange position) {
+    public <U extends Node> ParseResult<U> changeValue(U value, SourceRange position) {
         Map<SyntaxNodeIdentifier, SourceRange> newPositions = new HashMap<SyntaxNodeIdentifier, SourceRange>();
         newPositions.putAll(nodePositions);
         SyntaxNodeIdentifier nodeIdentifier = new SyntaxNodeIdentifier(value);
@@ -90,7 +90,7 @@ public class ParseResult<T> implements HasErrors, NodeLocations {
     }
     
     @Override
-    public SourceRange locate(SyntaxNode node) {
+    public SourceRange locate(Node node) {
         return nodePositions.get(new SyntaxNodeIdentifier(node));
     }
     

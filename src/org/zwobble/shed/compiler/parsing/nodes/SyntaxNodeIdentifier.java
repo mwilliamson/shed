@@ -4,14 +4,10 @@ import lombok.ToString;
 
 @ToString
 public class SyntaxNodeIdentifier {
-    private final SyntaxNode node;
+    private final Node node;
 
-    public SyntaxNodeIdentifier(SyntaxNode node) {
+    public SyntaxNodeIdentifier(Node node) {
         this.node = node;
-    }
-    
-    public SyntaxNode getNode() {
-        return node;
     }
     
     @Override

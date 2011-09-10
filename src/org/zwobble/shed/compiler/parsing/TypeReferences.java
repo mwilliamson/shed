@@ -16,7 +16,7 @@ public class TypeReferences {
                 guard(symbol(":")),
                 typeReference
             ),
-            new ParseAction<RuleValues, ExpressionNode>() {
+            new SimpleParseAction<RuleValues, ExpressionNode>() {
                 @Override
                 public ExpressionNode apply(RuleValues result) {
                     return result.get(typeReference);

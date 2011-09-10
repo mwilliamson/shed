@@ -10,12 +10,17 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+
+import static org.zwobble.shed.compiler.parsing.SourceRange.range;
+
+import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -173,6 +178,20 @@ public class ExpressionsTest {
         assertThat(
             Expressions.expression().parse(tokens("person.name")),
             isSuccessWithNode(Nodes.member(Nodes.id("person"), "name"))
+        );
+    }
+    
+    @Test public void
+    canLocateSubMemberAccesses() {
+        ParseResult<ExpressionNode> parsedExpression = Expressions.expression().parse(tokens("dancing.tears.eyes"));
+        ExpressionNode subAccess = ((MemberAccessNode)parsedExpression.get()).getExpression();
+        assertThat(
+            parsedExpression.locate(subAccess),
+            is(range(position(1, 1), position(1, 14)))
+        );
+        assertThat(
+            parsedExpression.locate(((MemberAccessNode)subAccess).getExpression()),
+            is(range(position(1, 1), position(1, 8)))
         );
     }
     

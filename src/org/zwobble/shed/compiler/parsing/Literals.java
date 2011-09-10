@@ -19,7 +19,7 @@ import static org.zwobble.shed.compiler.parsing.Rules.tokenOfType;
 
 public class Literals {
     public static Rule<NumberLiteralNode> numberLiteral() {
-        return then(tokenOfType(TokenType.NUMBER), new ParseAction<String, NumberLiteralNode>() {
+        return then(tokenOfType(TokenType.NUMBER), new SimpleParseAction<String, NumberLiteralNode>() {
             @Override
             public NumberLiteralNode apply(String result) {
                 return new NumberLiteralNode(result);
@@ -28,7 +28,7 @@ public class Literals {
     }
 
     public static Rule<StringLiteralNode> stringLiteral() {
-        return then(tokenOfType(TokenType.STRING), new ParseAction<String, StringLiteralNode>() {
+        return then(tokenOfType(TokenType.STRING), new SimpleParseAction<String, StringLiteralNode>() {
             @Override
             public StringLiteralNode apply(String result) {
                 return new StringLiteralNode(result);
@@ -40,7 +40,7 @@ public class Literals {
     public static Rule<BooleanLiteralNode> booleanLiteral() {
         return then(
             firstOf("Boolean literal", keyword(Keyword.TRUE), keyword(Keyword.FALSE)),
-            new ParseAction<Keyword, BooleanLiteralNode>() {
+            new SimpleParseAction<Keyword, BooleanLiteralNode>() {
                 @Override
                 public BooleanLiteralNode apply(Keyword result) {
                     return new BooleanLiteralNode(result == Keyword.TRUE);
@@ -55,7 +55,7 @@ public class Literals {
                 guard(symbol("(")),
                 guard(symbol(")"))
             ),
-            new ParseAction<RuleValues, UnitLiteralNode>() {
+            new SimpleParseAction<RuleValues, UnitLiteralNode>() {
                 @Override
                 public UnitLiteralNode apply(RuleValues result) {
                     return Nodes.unit();
