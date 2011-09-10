@@ -88,35 +88,35 @@ public class StructureAnalyserTest {
     semiColonEndsStatement() {
         Tokens tokens = tokens("{a.b();}");
         TokenStructure structure = analyser.analyse(tokens);
-        assertThat(structure.findEndOfStatement(tokens.get(2)).get().getPosition(), is(position(1, 8)));
+        assertThat(structure.findFirstTokenAfterStatement(tokens.get(2)).get().getPosition(), is(position(1, 8)));
     }
     
     @Test public void
     closingBraceEndsStatement() {
         Tokens tokens = tokens("{a.b()}{}");
         TokenStructure structure = analyser.analyse(tokens);
-        assertThat(structure.findEndOfStatement(tokens.get(2)).get().getPosition(), is(position(1, 7)));
+        assertThat(structure.findFirstTokenAfterStatement(tokens.get(2)).get().getPosition(), is(position(1, 7)));
     }
     
     @Test public void
     endOfTokensEndsStatement() {
         Tokens tokens = tokens("a");
         TokenStructure structure = analyser.analyse(tokens);
-        assertThat(structure.findEndOfStatement(tokens.get(0)).get().getPosition(), is(position(1, 2)));
+        assertThat(structure.findFirstTokenAfterStatement(tokens.get(0)).get().getPosition(), is(position(1, 2)));
     }
     
     @Test public void
     closingBraceInSubStatementDoesNotEndStatement() {
         Tokens tokens = tokens("{a.b({})}{}");
         TokenStructure structure = analyser.analyse(tokens);
-        assertThat(structure.findEndOfStatement(tokens.get(2)).get().getPosition(), is(position(1, 9)));
+        assertThat(structure.findFirstTokenAfterStatement(tokens.get(2)).get().getPosition(), is(position(1, 9)));
     }
     
     @Test public void
     parenThatClosesOpenBraceAlsoEndsStatement() {
         Tokens tokens = tokens("({a.b())");
         TokenStructure structure = analyser.analyse(tokens);
-        assertThat(structure.findEndOfStatement(tokens.get(2)).get().getPosition(), is(position(1, 8)));
+        assertThat(structure.findFirstTokenAfterStatement(tokens.get(2)).get().getPosition(), is(position(1, 8)));
     }
     
     private Tokens tokens(String input) {

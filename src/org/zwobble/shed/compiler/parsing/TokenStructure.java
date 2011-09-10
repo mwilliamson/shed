@@ -22,7 +22,7 @@ public class TokenStructure {
         return matchingClosingSymbols.containsKey(openingSymbol);
     }
 
-    public Option<TokenPosition> findEndOfStatement(TokenPosition tokenPosition) {
+    public Option<TokenPosition> findFirstTokenAfterStatement(TokenPosition tokenPosition) {
         for (EndOfStatement endOfStatement : endOfStatements) {
             if (
                 endOfStatement.getPosition().compareTo(tokenPosition.getPosition()) > 0 && 
