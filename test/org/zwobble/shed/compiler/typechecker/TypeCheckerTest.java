@@ -47,6 +47,19 @@ public class TypeCheckerTest {
     }
     
     @Test public void
+    sourceNodeMayHaveNoMoreThanOnePublicNode() {
+        SourceNode source = new SourceNode(
+            new PackageDeclarationNode(asList("shed", "example")),
+            Collections.<ImportNode>emptyList(),
+            Arrays.<StatementNode>asList(
+                Nodes.publik(Nodes.immutableVar("x", new BooleanLiteralNode(true))),
+                Nodes.publik(Nodes.immutableVar("y", new BooleanLiteralNode(true)))
+            )
+        );
+        assertThat(errorStrings(typeCheck(source)), is(asList("A module may have no more than one public value")));
+    }
+    
+    @Test public void
     newScopeIsCreatedBySource() {
         Type customString = new ClassType(asList("shed", "custom"), "String", Collections.<InterfaceType>emptySet(), ImmutableMap.<String, Type>of());
         staticContext.addGlobal(asList("shed", "custom", "String"), CoreTypes.classOf(customString));

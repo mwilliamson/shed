@@ -40,6 +40,16 @@ public class TypeChecker {
         TypeResult<Result> blockResult = new BlockTypeChecker().typeCheckBlock(source.getStatements(), staticContext, nodeLocations);
         errors.addAll(blockResult.getErrors());
         
+        boolean seenPublicStatement = false;
+        for (StatementNode statement : source.getStatements()) {
+            if (statement instanceof PublicDeclarationNode) {
+                if (seenPublicStatement) {
+                    errors.add(new CompilerError(nodeLocations.locate(statement), "A module may have no more than one public value"));
+                }
+                seenPublicStatement = true;
+            }
+        }
+        
         staticContext.exitScope();
         if (errors.isEmpty()) {
             return success(null);
