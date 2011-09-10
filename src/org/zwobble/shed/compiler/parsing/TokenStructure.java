@@ -3,17 +3,16 @@ package org.zwobble.shed.compiler.parsing;
 import java.util.List;
 import java.util.Map;
 
+import lombok.AllArgsConstructor;
+
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.tokeniser.TokenPosition;
 
+@AllArgsConstructor
 public class TokenStructure {
     private final Map<TokenPosition, TokenPosition> matchingClosingSymbols;
-    private final List<TokenPosition> endOfStatements;
-    
-    public TokenStructure(Map<TokenPosition, TokenPosition> matchingClosingSymbols, List<TokenPosition> endOfStatements) {
-        this.matchingClosingSymbols = matchingClosingSymbols;
-        this.endOfStatements = endOfStatements;
-    }
+    private final List<EndOfStatement> endOfStatements;
+    private final Map<TokenPosition, Integer> scopeDepthBeforeSymbol;
     
     public TokenPosition findMatchingClosingSymbolFor(TokenPosition openingSymbol) {
         return matchingClosingSymbols.get(openingSymbol);
@@ -24,9 +23,12 @@ public class TokenStructure {
     }
 
     public Option<TokenPosition> findEndOfStatement(TokenPosition tokenPosition) {
-        for (TokenPosition endOfStatement : endOfStatements) {
-            if (endOfStatement.getPosition().compareTo(tokenPosition.getPosition()) > 0) {
-                return Option.some(endOfStatement);
+        for (EndOfStatement endOfStatement : endOfStatements) {
+            if (
+                endOfStatement.getPosition().compareTo(tokenPosition.getPosition()) > 0 && 
+                endOfStatement.getScopeDepth() <= scopeDepthBeforeSymbol.get(tokenPosition)
+            ) {
+                return Option.some(endOfStatement.getTokenPosition());
             }
         }
         return Option.none();

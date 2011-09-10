@@ -27,11 +27,15 @@ public class StructureAnalyser {
     public TokenStructure analyse(Tokens tokens) {
         Deque<TokenPosition> openingSymbols = new LinkedList<TokenPosition>();
         Builder<TokenPosition, TokenPosition> matchingClosingBraces = ImmutableMap.builder();
-        List<TokenPosition> endOfStatements = new ArrayList<TokenPosition>();
+        List<EndOfStatement> endOfStatements = new ArrayList<EndOfStatement>();
+        Builder<TokenPosition, Integer> scopeDepthBeforeSymbol = ImmutableMap.builder();
         
         for (TokenIterator tokenIterator = tokens.iterator(); tokenIterator.hasNext(); ) {
             TokenPosition tokenPosition = tokenIterator.next();
             Token token = tokenPosition.getToken();
+            
+            scopeDepthBeforeSymbol.put(tokenPosition, openingSymbols.size());
+            
             if (isOpeningSymbol(token)) {
                 openingSymbols.push(tokenPosition);
             }
@@ -43,22 +47,22 @@ public class StructureAnalyser {
                     matchingClosingBraces.put(openingSymbols.pop(), tokenPosition);                    
                 }
                 if (token.equals(CLOSING_BRACE)) {
-                    endOfStatements.add(tokenPosition);
+                    endOfStatements.add(new EndOfStatement(tokenPosition, openingSymbols.size()));
                 }
             }
             if (token.equals(Token.symbol(";"))) {
-                endOfStatements.add(tokenIterator.peek());
                 while (!openingSymbols.isEmpty() && openingSymbols.peek().getToken().equals(OPENING_PAREN)) {
                     openingSymbols.pop();
                 }
+                endOfStatements.add(new EndOfStatement(tokenIterator.peek(), openingSymbols.size()));
             }
             if (!tokenIterator.hasNext()) {
-                endOfStatements.add(tokenPosition);
+                endOfStatements.add(new EndOfStatement(tokenPosition, 0));
             }
         }
 
         
-        return new TokenStructure(matchingClosingBraces.build(), endOfStatements);
+        return new TokenStructure(matchingClosingBraces.build(), endOfStatements, scopeDepthBeforeSymbol.build());
     }
     
     private Token openingSymbolFor(Token token) {

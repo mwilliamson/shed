@@ -105,6 +105,13 @@ public class StructureAnalyserTest {
         assertThat(structure.findEndOfStatement(tokens.get(0)).get().getPosition(), is(position(1, 2)));
     }
     
+    @Test public void
+    closingBraceInSubStatementDoesNotCloseStatement() {
+        Tokens tokens = tokens("{a.b({})}{}");
+        TokenStructure structure = analyser.analyse(tokens);
+        assertThat(structure.findEndOfStatement(tokens.get(2)).get().getPosition(), is(position(1, 9)));
+    }
+    
     private Tokens tokens(String input) {
         return new Tokeniser().tokenise(input);
     }
