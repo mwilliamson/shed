@@ -66,6 +66,13 @@ public class StructureAnalyserTest {
     }
     
     @Test public void
+    semiColonsDoNotCloseOpenBraces() {
+        Tokens tokens = tokens("{;})");
+        TokenStructure structure = analyser.analyse(tokens);
+        assertThat(structure.findMatchingClosingSymbolFor(tokens.get(0)).getPosition(), is(position(1, 3)));
+    }
+    
+    @Test public void
     canHandleUnmatchedClosingBrace() {
         Tokens tokens = tokens("}");
         analyser.analyse(tokens);

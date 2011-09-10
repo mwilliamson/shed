@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import org.zwobble.shed.compiler.tokeniser.Token;
-import org.zwobble.shed.compiler.tokeniser.TokenIterator;
 import org.zwobble.shed.compiler.tokeniser.TokenPosition;
 import org.zwobble.shed.compiler.tokeniser.Tokens;
 
