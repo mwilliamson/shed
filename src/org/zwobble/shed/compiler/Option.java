@@ -26,6 +26,9 @@ public class Option<T> {
     }
     
     public T get() {
+        if (!hasValue) {
+            throw new RuntimeException("Option has no value");
+        }
         return value;
     }
     
