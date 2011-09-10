@@ -119,6 +119,20 @@ public class StructureAnalyserTest {
         assertThat(structure.findFirstTokenAfterStatement(tokens.get(2)).get().getPosition(), is(position(1, 8)));
     }
     
+    @Test public void
+    closingBraceEndsBlock() {
+        Tokens tokens = tokens("{a}");
+        TokenStructure structure = analyser.analyse(tokens);
+        assertThat(structure.findFirstTokenAfterBlock(tokens.get(1)).get().getPosition(), is(position(1, 3)));
+    }
+    
+    @Test public void
+    endOfTokensEndsBlock() {
+        Tokens tokens = tokens("{a");
+        TokenStructure structure = analyser.analyse(tokens);
+        assertThat(structure.findFirstTokenAfterBlock(tokens.get(1)).get().getPosition(), is(position(1, 3)));
+    }
+    
     private Tokens tokens(String input) {
         return new Tokeniser().tokenise(input);
     }

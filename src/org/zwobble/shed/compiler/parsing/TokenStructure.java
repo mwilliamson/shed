@@ -1,6 +1,5 @@
 package org.zwobble.shed.compiler.parsing;
 
-import java.util.List;
 import java.util.Map;
 
 import lombok.AllArgsConstructor;
@@ -11,7 +10,7 @@ import org.zwobble.shed.compiler.tokeniser.TokenPosition;
 @AllArgsConstructor
 public class TokenStructure {
     private final Map<TokenPosition, TokenPosition> matchingClosingSymbols;
-    private final List<EndOfStatement> endOfStatements;
+    private final Endings endings;
     private final Map<TokenPosition, Integer> scopeDepthBeforeSymbol;
     
     public TokenPosition findMatchingClosingSymbolFor(TokenPosition openingSymbol) {
@@ -23,15 +22,22 @@ public class TokenStructure {
     }
 
     public Option<TokenPosition> findFirstTokenAfterStatement(TokenPosition tokenPosition) {
-        for (EndOfStatement endOfStatement : endOfStatements) {
+        return findFirstEndingAfterPosition(tokenPosition, endings.endsOfStatements());
+    }
+
+    public Option<TokenPosition> findFirstTokenAfterBlock(TokenPosition tokenPosition) {
+        return findFirstEndingAfterPosition(tokenPosition, endings.endsOfBlocks());
+    }
+
+    private Option<TokenPosition> findFirstEndingAfterPosition(TokenPosition tokenPosition, Iterable<Ending> endings) {
+        for (Ending ending : endings) {
             if (
-                endOfStatement.getPosition().compareTo(tokenPosition.getPosition()) > 0 && 
-                endOfStatement.getScopeDepth() <= scopeDepthBeforeSymbol.get(tokenPosition)
+                ending.getPosition().compareTo(tokenPosition.getPosition()) > 0 && 
+                ending.getScopeDepth() <= scopeDepthBeforeSymbol.get(tokenPosition)
             ) {
-                return Option.some(endOfStatement.getTokenPosition());
+                return Option.some(ending.getTokenPosition());
             }
         }
         return Option.none();
     }
-
 }

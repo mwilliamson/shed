@@ -5,7 +5,7 @@ import org.zwobble.shed.compiler.tokeniser.TokenPosition;
 import lombok.Data;
 
 @Data
-public class EndOfStatement {
+public class Ending {
     private final TokenPosition tokenPosition;
     private final int scopeDepth;
     
