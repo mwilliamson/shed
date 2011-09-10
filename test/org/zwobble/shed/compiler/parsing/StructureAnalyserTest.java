@@ -57,6 +57,26 @@ public class StructureAnalyserTest {
         assertThat(structure.hasMatchingClosingSymbol(tokens.get(3)), is(false));
     }
     
+    @Test public void
+    semiColonClosesAnyOpenParens() {
+        Tokens tokens = tokens("({(;)");
+        TokenStructure structure = analyser.analyse(tokens);
+        assertThat(structure.hasMatchingClosingSymbol(tokens.get(2)), is(false));
+        assertThat(structure.findMatchingClosingSymbolFor(tokens.get(0)).getPosition(), is(position(1, 5)));
+    }
+    
+    @Test public void
+    canHandleUnmatchedClosingBrace() {
+        Tokens tokens = tokens("}");
+        analyser.analyse(tokens);
+    }
+    
+    @Test public void
+    canHandleSemiColonWithNoOpenBraces() {
+        Tokens tokens = tokens(";");
+        analyser.analyse(tokens);
+    }
+    
     private Tokens tokens(String input) {
         return new Tokeniser().tokenise(input);
     }
