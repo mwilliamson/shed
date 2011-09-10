@@ -17,4 +17,8 @@ public class Tokens implements Iterable<TokenPosition> {
     public TokenIterator iterator() {
         return new TokenIterator(tokens);
     }
+    
+    public TokenPosition get(int index) {
+        return tokens.get(index);
+    }
 }

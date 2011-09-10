@@ -12,10 +12,19 @@ public class StructureAnalyserTest {
     private final StructureAnalyser analyser = new StructureAnalyser();
     
     @Test public void
-    canFindMatchingClosingBrace() {
-        Tokens tokens = tokens("{abc 1 43}");
+    canFindClosingBrace() {
+        Tokens tokens = tokens("{a 1 4}");
         TokenStructure structure = analyser.analyse(tokens);
-        assertThat(structure.findMatchingClosingBracesFor(tokens.iterator().next()).getPosition(), is(position(1, 10)));
+        assertThat(structure.findMatchingClosingBracesFor(tokens.iterator().next()).getPosition(), is(position(1, 7)));
+    }
+    
+    @Test public void
+    canFindMatchingClosingBraceIgnoringSubBlocks() {
+        Tokens tokens = tokens("{a 1{a{b{}}c{d}} 4}");
+        TokenStructure structure = analyser.analyse(tokens);
+        assertThat(structure.findMatchingClosingBracesFor(tokens.get(0)).getPosition(), is(position(1, 19)));
+        assertThat(structure.findMatchingClosingBracesFor(tokens.get(4)).getPosition(), is(position(1, 16)));
+        assertThat(structure.findMatchingClosingBracesFor(tokens.get(6)).getPosition(), is(position(1, 11)));
     }
     
     private Tokens tokens(String input) {
