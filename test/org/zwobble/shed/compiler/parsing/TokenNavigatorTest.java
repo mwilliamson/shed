@@ -17,13 +17,6 @@ public class TokenNavigatorTest {
     }
     
     @Test public void
-    canPeekAtAbritraryNextTokenWithoutAdvancingIterator() {
-        TokenNavigator navigator = navigator("1+2");
-        assertThat(navigator.peek(1).getToken(), is(Token.symbol("+")));
-        assertThat(navigator.peek(1).getToken(), is(Token.symbol("+")));
-    }
-    
-    @Test public void
     nextReturnsNextTokenAndAdvancesIterator() {
         TokenNavigator navigator = navigator("1+2");
         assertThat(navigator.next().getToken(), is(Token.number("1")));

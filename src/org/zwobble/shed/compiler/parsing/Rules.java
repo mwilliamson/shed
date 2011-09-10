@@ -244,8 +244,9 @@ public class Rules {
     }
     
     private static <T> ParseResult<T> error(TokenNavigator startOfError, Object expected, ParseResult.Type type) {
-        TokenPosition actual = startOfError.peek();
-        TokenPosition endOfError = startOfError.hasNext(1) ? startOfError.peek(1) : actual;
+        TokenNavigator copiedNavigator = startOfError.currentState();
+        TokenPosition actual = copiedNavigator.next();
+        TokenPosition endOfError = copiedNavigator.hasNext() ? copiedNavigator.next() : actual;
         Token actualToken = actual.getToken();
         String message = format("Expected %s but got %s", expected, actualToken.describe());
         return new ParseResult<T>(
