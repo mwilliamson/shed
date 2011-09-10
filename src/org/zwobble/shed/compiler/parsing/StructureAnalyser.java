@@ -2,8 +2,10 @@ package org.zwobble.shed.compiler.parsing;
 
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.zwobble.shed.compiler.tokeniser.Token;
 import org.zwobble.shed.compiler.tokeniser.TokenIterator;
@@ -16,11 +18,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
 public class StructureAnalyser {
-    private static final Token OPENING_PAREN = Token.symbol("(");
+    private static final Token OPENING_BRACE = Token.symbol("{");
     private static final Token CLOSING_BRACE = Token.symbol("}");
+    private static final Token OPENING_PAREN = Token.symbol("(");
     
     private static final BiMap<Token, Token> openingSymbolToClosingSymbol = ImmutableBiMap.<Token, Token>of(
-        Token.symbol("{"), CLOSING_BRACE,
+        OPENING_BRACE, CLOSING_BRACE,
         OPENING_PAREN, Token.symbol(")")
     );
     
@@ -40,13 +43,14 @@ public class StructureAnalyser {
                 openingSymbols.push(tokenPosition);
             }
             if (isClosingSymbol(token)) {
+                Set<Token> poppedTokens = new HashSet<Token>();
                 while (!openingSymbols.isEmpty() && !openingSymbols.peek().getToken().equals(openingSymbolFor(token))) {
-                    openingSymbols.pop();
+                    poppedTokens.add(openingSymbols.pop().getToken());
                 }
                 if (!openingSymbols.isEmpty()) {
                     matchingClosingBraces.put(openingSymbols.pop(), tokenPosition);                    
                 }
-                if (token.equals(CLOSING_BRACE)) {
+                if (token.equals(CLOSING_BRACE) || poppedTokens.contains(OPENING_BRACE)) {
                     endOfStatements.add(new EndOfStatement(tokenPosition, openingSymbols.size()));
                 }
             }
