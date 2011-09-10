@@ -4,18 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.zwobble.shed.compiler.PsychicIterator;
 import org.zwobble.shed.compiler.ShedSymbols;
 import org.zwobble.shed.compiler.parsing.SourcePosition;
 
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.PeekingIterator;
 
 import static com.google.common.base.Predicates.not;
 import static com.google.common.base.Predicates.or;
-import static com.google.common.collect.Iterators.peekingIterator;
 import static com.google.common.collect.Lists.charactersOf;
 import static java.util.Arrays.asList;
+import static org.zwobble.shed.compiler.PsychicIterators.psychicIterator;
 import static org.zwobble.shed.compiler.parsing.SourceRange.range;
 import static org.zwobble.shed.compiler.tokeniser.Token.token;
 
@@ -54,10 +56,14 @@ public class Tokeniser {
         return tokens;
     }
     
-    private Token nextToken(PeekingIterator<Character> characters, TokenType previousTokenType) {
+    private Token nextToken(PsychicIterator<Character> characters, TokenType previousTokenType) {
         Character firstCharacter = characters.peek();
         
-        if (isWhitespace().apply(firstCharacter)) {
+        if (firstCharacter == '/' && characters.peek(1) == '/') {
+            characters.next();
+            characters.next();
+            return Token.singleLineComment(takeUntil(characters, isNewLine()));
+        } else if (isWhitespace().apply(firstCharacter)) {
             return token(TokenType.WHITESPACE, takeWhile(characters, isWhitespace()));
         } else if (symbols.contains(firstCharacter.toString())) {
             characters.next();
@@ -106,6 +112,10 @@ public class Tokeniser {
         }
     }
 
+    private String takeUntil(PeekingIterator<Character> characters, Predicate<Character> predicate) {
+        return takeWhile(characters, Predicates.not(predicate));
+    }
+
     private String takeWhile(PeekingIterator<Character> characters, Predicate<Character> predicate) {
         StringBuilder result = new StringBuilder();
         while (characters.hasNext() && predicate.apply(characters.peek())) {
@@ -145,6 +155,15 @@ public class Tokeniser {
         };
     }
 
+    private Predicate<Character> isNewLine() {
+        return new Predicate<Character>() {
+            @Override
+            public boolean apply(Character input) {
+                return input == '\n';
+            }
+        };
+    }
+
     private boolean isKeyword(String value) {
         for (Keyword keyword : Keyword.values()) {
             if (value.equals(keyword.keywordName())) {
@@ -154,13 +173,13 @@ public class Tokeniser {
         return false;
     }
     
-    private class InputStringIterator implements PeekingIterator<Character> {
-        private final PeekingIterator<Character> characters;
+    private class InputStringIterator implements PsychicIterator<Character> {
+        private final PsychicIterator<Character> characters;
         private int lineNumber = 1;
         private int characterNumber = 1;
 
         public InputStringIterator(String inputString) {
-            characters = peekingIterator(charactersOf(inputString).iterator());
+            characters = psychicIterator(charactersOf(inputString));
         }
         
         @Override
@@ -171,6 +190,11 @@ public class Tokeniser {
         @Override
         public Character peek() {
             return characters.peek();
+        }
+
+        @Override
+        public Character peek(int offset) {
+            return characters.peek(offset);
         }
 
         @Override

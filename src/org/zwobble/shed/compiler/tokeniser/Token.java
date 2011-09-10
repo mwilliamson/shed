@@ -35,6 +35,9 @@ public class Token {
     public static Token stringWithInvalidEscapeCodes(String value, String sourceString) {
         return new Token(TokenType.STRING_WITH_INVALID_ESCAPE_CODES, value, sourceString);
     }
+    public static Token singleLineComment(String value) {
+        return new Token(TokenType.SINGLE_LINE_COMMENT, value, "//" + value);
+    }
     
     public static Token end() {
         return END;

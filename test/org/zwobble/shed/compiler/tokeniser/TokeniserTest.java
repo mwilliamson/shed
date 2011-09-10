@@ -120,6 +120,21 @@ public class TokeniserTest {
         assertThat(tokens("\" 53\\yz\""), is(asList(Token.stringWithInvalidEscapeCodes(" 53z", "\" 53\\yz\""), Token.end())));
     }
     
+    @Test public void
+    singleLineCommentsContinueToEndOfLine() {
+        assertThat(
+            tokens("42 // Comment //\n16"),
+            is(asList(
+                Token.number("42"),
+                Token.whitespace(" "),
+                Token.singleLineComment(" Comment //"),
+                Token.whitespace("\n"),
+                Token.number("16"),
+                Token.end())
+            )
+        );
+    }
+    
     private List<Token> tokens(String input) {
         return newArrayList(transform(tokeniser.tokenise(input), toToken()));
     }
