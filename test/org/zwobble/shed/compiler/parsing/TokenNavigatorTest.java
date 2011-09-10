@@ -57,6 +57,53 @@ public class TokenNavigatorTest {
         assertThat(navigator.peek().getToken(), is(Token.number("1")));
     }
     
+    @Test public void
+    seekingToEndOfStatementSeeksToNextSemiColon() {
+        TokenNavigator navigator = navigator("1+2;3;");
+        navigator.next();
+        navigator.seekToEndOfStatement();
+        assertThat(navigator.peek().getPosition(), is(position(1, 5)));
+    }
+    
+    @Test public void
+    seekingToEndOfStatementWhenThereAreNoMoreSemiColonsSeeksToEndOfIterator() {
+        TokenNavigator navigator = navigator("1+2");
+        navigator.seekToEndOfStatement();
+        assertThat(navigator.peek().getToken(), is(Token.end()));
+    }
+    
+    @Test public void
+    seekingToEndOfStatementSeeksToJustBeforeEndOfBlockIfNoSemiColonsAreFoundBeforehand() {
+        TokenNavigator navigator = navigator("{1+2}3;");
+        navigator.next();
+        navigator.seekToEndOfStatement();
+        assertThat(navigator.peek().getPosition(), is(position(1, 5)));
+    }
+    
+    @Test public void
+    seekingToEndOfStatementSeeksToJustBeforeEndOfCurrentBlockIfNoSemiColonsAreFoundBeforehand() {
+        TokenNavigator navigator = navigator("{1+2{ }}3;");
+        navigator.next();
+        navigator.seekToEndOfStatement();
+        assertThat(navigator.peek().getPosition(), is(position(1, 8)));
+    }
+    
+    @Test public void
+    seekingToEndOfBlockSeeksToEndOfCurrentBlock() {
+        TokenNavigator navigator = navigator("{1+2{ }}3;");
+        navigator.next();
+        navigator.seekToEndOfBlock();
+        assertThat(navigator.peek().getPosition(), is(position(1, 9)));
+    }
+
+    @Test public void
+    seekingToEndOfBlockSeeksToEndIfCurrentBlockIsNotClosed() {
+        TokenNavigator navigator = navigator("{1+2{ }3;");
+        navigator.next();
+        navigator.seekToEndOfBlock();
+        assertThat(navigator.peek().getToken(), is(Token.end()));
+    }
+    
     private TokenNavigator navigator(String input) {
         return ParserTesting.tokens(input);
     }
