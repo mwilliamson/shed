@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.zwobble.shed.compiler.tokeniser.Token;
+import org.zwobble.shed.compiler.tokeniser.TokenIterator;
 import org.zwobble.shed.compiler.tokeniser.TokenPosition;
+import org.zwobble.shed.compiler.tokeniser.Tokens;
 
 import com.google.common.base.Predicate;
 
@@ -16,8 +18,8 @@ public class TokenNavigator {
     private final TokenIterator tokens;
     private final List<ScopeType> scopes;
 
-    public TokenNavigator(List<TokenPosition> tokens) {
-        this.tokens = new TokenIterator(tokens);
+    public TokenNavigator(Tokens tokens) {
+        this.tokens = tokens.iterator();
         this.scopes = new ArrayList<ScopeType>();
     }
 

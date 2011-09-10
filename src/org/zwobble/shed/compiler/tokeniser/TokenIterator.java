@@ -1,10 +1,12 @@
-package org.zwobble.shed.compiler.parsing;
+package org.zwobble.shed.compiler.tokeniser;
 
 import java.util.List;
 
-import org.zwobble.shed.compiler.tokeniser.TokenPosition;
+import org.zwobble.shed.compiler.parsing.SourcePosition;
 
-public class TokenIterator {
+import com.google.common.collect.PeekingIterator;
+
+public class TokenIterator implements PeekingIterator<TokenPosition> {
     private final List<TokenPosition> tokens;
     private int nextIndex;
 
@@ -45,5 +47,10 @@ public class TokenIterator {
     
     public void reset(TokenIterator position) {
         nextIndex = position.nextIndex;
+    }
+
+    @Override
+    public void remove() {
+        throw new UnsupportedOperationException();
     }
 }

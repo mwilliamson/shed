@@ -13,8 +13,8 @@ import org.zwobble.shed.compiler.parsing.ParseResult;
 import org.zwobble.shed.compiler.parsing.Parser;
 import org.zwobble.shed.compiler.parsing.TokenNavigator;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
-import org.zwobble.shed.compiler.tokeniser.TokenPosition;
 import org.zwobble.shed.compiler.tokeniser.Tokeniser;
+import org.zwobble.shed.compiler.tokeniser.Tokens;
 import org.zwobble.shed.compiler.typechecker.CoreModule;
 import org.zwobble.shed.compiler.typechecker.TypeChecker;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
@@ -39,7 +39,7 @@ public class ShedCompiler {
     }
     
     public CompilationResult compile(String source) {
-        List<TokenPosition> tokens = tokeniser.tokenise(source);
+        Tokens tokens = tokeniser.tokenise(source);
         ParseResult<SourceNode> parseResult = parser.parse(new TokenNavigator(tokens));
         List<CompilerError> errors = new ArrayList<CompilerError>();
         errors.addAll(parseResult.getErrors());

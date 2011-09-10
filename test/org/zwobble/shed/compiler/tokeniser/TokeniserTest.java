@@ -6,7 +6,8 @@ import org.junit.Test;
 
 import com.google.common.base.Function;
 
-import static com.google.common.collect.Lists.transform;
+import static com.google.common.collect.Iterables.transform;
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -120,7 +121,7 @@ public class TokeniserTest {
     }
     
     private List<Token> tokens(String input) {
-        return transform(tokeniser.tokenise(input), toToken());
+        return newArrayList(transform(tokeniser.tokenise(input), toToken()));
     }
 
     private Function<TokenPosition, Token> toToken() {
