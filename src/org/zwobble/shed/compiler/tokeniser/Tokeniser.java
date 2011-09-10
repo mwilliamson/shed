@@ -11,13 +11,13 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.PeekingIterator;
 
-import static org.zwobble.shed.compiler.tokeniser.Token.token;
-
 import static com.google.common.base.Predicates.not;
 import static com.google.common.base.Predicates.or;
 import static com.google.common.collect.Iterators.peekingIterator;
 import static com.google.common.collect.Lists.charactersOf;
 import static java.util.Arrays.asList;
+import static org.zwobble.shed.compiler.parsing.SourceRange.range;
+import static org.zwobble.shed.compiler.tokeniser.Token.token;
 
 public class Tokeniser {
     private static final List<String> symbols = asList(
@@ -45,10 +45,12 @@ public class Tokeniser {
         while (characters.hasNext()) {
             SourcePosition tokenStart = new SourcePosition(characters.currentLineNumber(), characters.currentCharacterNumber());
             Token token = nextToken(characters, previousTokenType);
-            tokens.add(new TokenPosition(tokenStart, token));
+            SourcePosition tokenEnd = new SourcePosition(characters.currentLineNumber(), characters.currentCharacterNumber());
+            tokens.add(new TokenPosition(range(tokenStart, tokenEnd), token));
             previousTokenType = token.getType();
         }
-        tokens.add(new TokenPosition(new SourcePosition(characters.currentLineNumber(), characters.currentCharacterNumber()), Token.end()));
+        SourcePosition endPosition = new SourcePosition(characters.currentLineNumber(), characters.currentCharacterNumber());
+        tokens.add(new TokenPosition(range(endPosition, endPosition), Token.end()));
         return tokens;
     }
     

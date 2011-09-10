@@ -129,21 +129,6 @@ public class TopLevelNodesTest {
     }
     
     @Test public void
-    errorInPackageDeclarationIsRaisedIfWhitespaceIsEncounteredInsteadOfDot() {
-        assertThat(errorStrings(TopLevelNodes.packageDeclaration().parse(tokens("package shed .util.collections;"))),
-                   is(asList("Expected symbol \";\" but got symbol \".\"")));
-    }
-    
-    @Test public void
-    errorInPackageDeclarationIsRaisedIfWhitespaceIsEncounteredInsteadOfIdentifier() {
-        assertThat(errorStrings(TopLevelNodes.packageDeclaration().parse(tokens("package shed. util.collections;"))),
-            is(asList(
-                "Expected identifier but got whitespace \" \""
-            ))
-        );
-    }
-    
-    @Test public void
     errorsInStatementsAreReported() {
         assertThat(errorStrings(TopLevelNodes.source().parse(tokens("package blah; val x = 2; val y 3;"))),
             is(asList(

@@ -48,6 +48,15 @@ public class TokenNavigatorTest {
     }
     
     @Test public void
+    canGetPositionOfEndOfLastToken() {
+        TokenNavigator navigator = navigator("1 + 2");
+        navigator.next();
+        assertThat(navigator.lastPosition(), is(position(1, 2)));
+        navigator.next();
+        assertThat(navigator.lastPosition(), is(position(1, 4)));
+    }
+    
+    @Test public void
     canResetNavigator() {
         TokenNavigator navigator = navigator("1+2");
         TokenNavigator start = navigator.currentState();
@@ -62,7 +71,7 @@ public class TokenNavigatorTest {
         TokenNavigator navigator = navigator("1+2;3;");
         navigator.next();
         navigator.seekToEndOfStatement();
-        assertThat(navigator.peek().getPosition(), is(position(1, 5)));
+        assertThat(navigator.peek().getStartPosition(), is(position(1, 5)));
     }
     
     @Test public void
@@ -77,7 +86,7 @@ public class TokenNavigatorTest {
         TokenNavigator navigator = navigator("{1+2}3;");
         navigator.next();
         navigator.seekToEndOfStatement();
-        assertThat(navigator.peek().getPosition(), is(position(1, 5)));
+        assertThat(navigator.peek().getStartPosition(), is(position(1, 5)));
     }
     
     @Test public void
@@ -85,7 +94,7 @@ public class TokenNavigatorTest {
         TokenNavigator navigator = navigator("{1+2{ }}3;");
         navigator.next();
         navigator.seekToEndOfStatement();
-        assertThat(navigator.peek().getPosition(), is(position(1, 8)));
+        assertThat(navigator.peek().getStartPosition(), is(position(1, 8)));
     }
     
     @Test public void
@@ -93,7 +102,7 @@ public class TokenNavigatorTest {
         TokenNavigator navigator = navigator("{1+2{ }}3;");
         navigator.next();
         navigator.seekToEndOfBlock();
-        assertThat(navigator.peek().getPosition(), is(position(1, 9)));
+        assertThat(navigator.peek().getStartPosition(), is(position(1, 9)));
     }
 
     @Test public void

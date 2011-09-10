@@ -86,6 +86,10 @@ public class TokenNavigator {
     public SourcePosition currentPosition() {
         return tokens.currentPosition();
     }
+
+    public SourcePosition lastPosition() {
+        return tokens.peekPrevious().getEndPosition();
+    }
     
     public TokenNavigator currentState() {
         return new TokenNavigator(tokens.currentState(), new ArrayList<ScopeType>(scopes));

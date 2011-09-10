@@ -36,7 +36,7 @@ public class Rules {
                     return result.changeValue(null);
                 }
                 T actionResult = action.apply(result.get());
-                SourcePosition end = tokens.currentPosition();
+                SourcePosition end = tokens.lastPosition();
                 if (actionResult instanceof SyntaxNode) {
                     return (ParseResult<T>)result.changeValue((SyntaxNode)actionResult, new SourceRange(start, end));
                 } else {
@@ -257,16 +257,11 @@ public class Rules {
     }
     
     private static <T> ParseResult<T> error(TokenNavigator startOfError, Object expected, ParseResult.Type type) {
-        TokenNavigator copiedNavigator = startOfError.currentState();
-        TokenPosition actual = copiedNavigator.next();
-        TokenPosition endOfError = copiedNavigator.hasNext() ? copiedNavigator.next() : actual;
-        Token actualToken = actual.getToken();
-        String message = format("Expected %s but got %s", expected, actualToken.describe());
+        TokenPosition tokenPosition = startOfError.peek();
+        String message = format("Expected %s but got %s", expected, tokenPosition.getToken().describe());
         return new ParseResult<T>(
             null,
-            asList(new CompilerError(
-                new SourceRange(actual.getPosition(), endOfError.getPosition()), message
-            )),
+            asList(new CompilerError(tokenPosition.getSourceRange(), message)),
             type,
             ImmutableMap.<SyntaxNodeIdentifier, SourceRange>of()
         );

@@ -24,7 +24,7 @@ public class ParserTest {
         
         assertThat(
             parseResult.locate(sourceNode.getPackageDeclaration()),
-            is(new SourceRange(new SourcePosition(1, 1), new SourcePosition(2, 1)))
+            is(new SourceRange(new SourcePosition(1, 1), new SourcePosition(1, 22)))
         );
     }
     @Test public void

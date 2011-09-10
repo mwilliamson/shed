@@ -50,9 +50,9 @@ public class TokenIterator implements PeekingIterator<TokenPosition> {
 
     public SourcePosition currentPosition() {
         if (!hasNext()) {
-            return tokens.get(tokens.size() - 1).getPosition();
+            return tokens.get(tokens.size() - 1).getStartPosition();
         }
-        return peek().getPosition();
+        return peek().getStartPosition();
     }
     
     public TokenIterator currentState() {
@@ -66,5 +66,9 @@ public class TokenIterator implements PeekingIterator<TokenPosition> {
     @Override
     public void remove() {
         throw new UnsupportedOperationException();
+    }
+
+    public TokenPosition peekPrevious() {
+        return tokens.get(nextIndex - 1);
     }
 }
