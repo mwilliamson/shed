@@ -13,33 +13,30 @@ import static org.zwobble.shed.compiler.tokeniser.Token.symbol;
 
 
 public class TokenNavigator {
-    private final List<TokenPosition> tokens;
+    private final TokenIterator tokens;
     private final List<ScopeType> scopes;
-    private int nextIndex;
 
     public TokenNavigator(List<TokenPosition> tokens) {
-        this.tokens = tokens;
+        this.tokens = new TokenIterator(tokens);
         this.scopes = new ArrayList<ScopeType>();
-        this.nextIndex = 0;
     }
 
-    private TokenNavigator(List<TokenPosition> tokens, List<ScopeType> scopes, int nextIndex) {
+    private TokenNavigator(TokenIterator tokens, List<ScopeType> scopes) {
         this.tokens = tokens;
         this.scopes = scopes;
-        this.nextIndex = nextIndex;
     }
     
     public TokenPosition peek() {
-        return tokens.get(nextIndex);
+        return tokens.peek();
     }
     
     public boolean hasNext() {
-        return nextIndex < tokens.size();
+        return tokens.hasNext();
     }
     
     public TokenPosition next() {
         // TODO: should put types of scope (parens, brackets, square brackets) in a single location (also appears in rules)
-        TokenPosition nextTokenPosition = tokens.get(nextIndex);
+        TokenPosition nextTokenPosition = tokens.peek();
         Token nextToken = nextTokenPosition.getToken();
         if (nextToken.equals(symbol("{"))) {
             scopes.add(ScopeType.BRACES);
@@ -64,7 +61,7 @@ public class TokenNavigator {
                 popScope();
             }
         }
-        nextIndex += 1;
+        tokens.next();
         return nextTokenPosition;
     }
 
@@ -87,18 +84,15 @@ public class TokenNavigator {
     }
 
     public SourcePosition currentPosition() {
-        if (!hasNext()) {
-            return tokens.get(tokens.size() - 1).getPosition();
-        }
-        return peek().getPosition();
+        return tokens.currentPosition();
     }
     
     public TokenNavigator currentState() {
-        return new TokenNavigator(tokens, new ArrayList<ScopeType>(scopes), nextIndex);
+        return new TokenNavigator(tokens.currentState(), new ArrayList<ScopeType>(scopes));
     }
     
     public void reset(TokenNavigator position) {
-        nextIndex = position.nextIndex;
+        tokens.reset(position.tokens);
         scopes.clear();
         scopes.addAll(position.scopes);
     }
