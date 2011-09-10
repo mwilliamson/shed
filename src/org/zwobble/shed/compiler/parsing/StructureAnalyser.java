@@ -1,9 +1,9 @@
 package org.zwobble.shed.compiler.parsing;
 
+import java.util.ArrayList;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
+import java.util.List;
 
 import org.zwobble.shed.compiler.tokeniser.Token;
 import org.zwobble.shed.compiler.tokeniser.TokenPosition;
@@ -11,6 +11,8 @@ import org.zwobble.shed.compiler.tokeniser.Tokens;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 
 public class StructureAnalyser {
     private static final Token OPENING_PAREN = Token.symbol("(");
@@ -22,7 +24,8 @@ public class StructureAnalyser {
     
     public TokenStructure analyse(Tokens tokens) {
         Deque<TokenPosition> openingSymbols = new LinkedList<TokenPosition>();
-        Map<TokenPosition, TokenPosition> matchingClosingBraces = new HashMap<TokenPosition, TokenPosition>();
+        Builder<TokenPosition, TokenPosition> matchingClosingBraces = ImmutableMap.builder();
+        List<TokenPosition> endOfStatements = new ArrayList<TokenPosition>();
         
         for (TokenPosition tokenPosition : tokens) {
             Token token = tokenPosition.getToken();
@@ -38,13 +41,14 @@ public class StructureAnalyser {
                 }
             }
             if (token.equals(Token.symbol(";"))) {
+                endOfStatements.add(tokenPosition);
                 while (!openingSymbols.isEmpty() && openingSymbols.peek().getToken().equals(OPENING_PAREN)) {
                     openingSymbols.pop();
                 }
             }
         }
         
-        return new TokenStructure(matchingClosingBraces);
+        return new TokenStructure(matchingClosingBraces.build(), endOfStatements);
     }
     
     private Token openingSymbolFor(Token token) {

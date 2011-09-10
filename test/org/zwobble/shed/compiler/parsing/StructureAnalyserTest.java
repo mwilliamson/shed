@@ -84,6 +84,13 @@ public class StructureAnalyserTest {
         analyser.analyse(tokens);
     }
     
+    @Test public void
+    semiColonEndsStatement() {
+        Tokens tokens = tokens("{a.b();}");
+        TokenStructure structure = analyser.analyse(tokens);
+        assertThat(structure.findEndOfStatement(tokens.get(2)).get().getPosition(), is(position(1, 7)));
+    }
+    
     private Tokens tokens(String input) {
         return new Tokeniser().tokenise(input);
     }
