@@ -14,12 +14,13 @@ public class StructureAnalyser {
         Deque<TokenPosition> openingBraces = new LinkedList<TokenPosition>();
         Map<TokenPosition, TokenPosition> matchingClosingBraces = new HashMap<TokenPosition, TokenPosition>();
         
-        for (TokenPosition token : tokens) {
-            if (token.getToken().equals(Token.symbol("{"))) {
-                openingBraces.push(token);
+        for (TokenPosition tokenPosition : tokens) {
+            Token token = tokenPosition.getToken();
+            if (token.equals(Token.symbol("{")) || token.equals(Token.symbol("("))) {
+                openingBraces.push(tokenPosition);
             }
-            if (token.getToken().equals(Token.symbol("}"))) {
-                matchingClosingBraces.put(openingBraces.pop(), token);
+            if (token.equals(Token.symbol("}")) || token.equals(Token.symbol(")"))) {
+                matchingClosingBraces.put(openingBraces.pop(), tokenPosition);
             }
         }
         

@@ -15,16 +15,30 @@ public class StructureAnalyserTest {
     canFindClosingBrace() {
         Tokens tokens = tokens("{a 1 4}");
         TokenStructure structure = analyser.analyse(tokens);
-        assertThat(structure.findMatchingClosingBracesFor(tokens.iterator().next()).getPosition(), is(position(1, 7)));
+        assertThat(structure.findMatchingClosingSymbolFor(tokens.iterator().next()).getPosition(), is(position(1, 7)));
     }
     
     @Test public void
     canFindMatchingClosingBraceIgnoringSubBlocks() {
         Tokens tokens = tokens("{a 1{a{b{}}c{d}} 4}");
         TokenStructure structure = analyser.analyse(tokens);
-        assertThat(structure.findMatchingClosingBracesFor(tokens.get(0)).getPosition(), is(position(1, 19)));
-        assertThat(structure.findMatchingClosingBracesFor(tokens.get(4)).getPosition(), is(position(1, 16)));
-        assertThat(structure.findMatchingClosingBracesFor(tokens.get(6)).getPosition(), is(position(1, 11)));
+        assertThat(structure.findMatchingClosingSymbolFor(tokens.get(0)).getPosition(), is(position(1, 19)));
+        assertThat(structure.findMatchingClosingSymbolFor(tokens.get(4)).getPosition(), is(position(1, 16)));
+        assertThat(structure.findMatchingClosingSymbolFor(tokens.get(6)).getPosition(), is(position(1, 11)));
+    }
+    
+    @Test public void
+    canFindClosingParen() {
+        Tokens tokens = tokens("(a 1 4)");
+        TokenStructure structure = analyser.analyse(tokens);
+        assertThat(structure.findMatchingClosingSymbolFor(tokens.iterator().next()).getPosition(), is(position(1, 7)));
+    }
+    
+    @Test public void
+    canFindMatchingClosingParenIgnoringSubBlocksAndParens() {
+        Tokens tokens = tokens("(a 1{a(b{})c{d}} 4)");
+        TokenStructure structure = analyser.analyse(tokens);
+        assertThat(structure.findMatchingClosingSymbolFor(tokens.get(0)).getPosition(), is(position(1, 19)));
     }
     
     private Tokens tokens(String input) {

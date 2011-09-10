@@ -11,7 +11,7 @@ public class TokenStructure {
         this.matchingClosingBraces = matchingClosingBraces;
     }
     
-    public TokenPosition findMatchingClosingBracesFor(TokenPosition openingBrace) {
+    public TokenPosition findMatchingClosingSymbolFor(TokenPosition openingBrace) {
         return matchingClosingBraces.get(openingBrace);
     }
 
