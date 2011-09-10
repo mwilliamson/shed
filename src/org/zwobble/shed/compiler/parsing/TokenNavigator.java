@@ -12,18 +12,18 @@ import static com.google.common.collect.Iterables.any;
 import static org.zwobble.shed.compiler.tokeniser.Token.symbol;
 
 
-public class TokenIterator {
+public class TokenNavigator {
     private final List<TokenPosition> tokens;
     private final List<ScopeType> scopes;
     private int nextIndex;
 
-    public TokenIterator(List<TokenPosition> tokens) {
+    public TokenNavigator(List<TokenPosition> tokens) {
         this.tokens = tokens;
         this.scopes = new ArrayList<ScopeType>();
         this.nextIndex = 0;
     }
 
-    private TokenIterator(List<TokenPosition> tokens, List<ScopeType> scopes, int nextIndex) {
+    private TokenNavigator(List<TokenPosition> tokens, List<ScopeType> scopes, int nextIndex) {
         this.tokens = tokens;
         this.scopes = scopes;
         this.nextIndex = nextIndex;
@@ -99,11 +99,11 @@ public class TokenIterator {
         return peek().getPosition();
     }
     
-    public TokenIterator currentState() {
-        return new TokenIterator(tokens, new ArrayList<ScopeType>(scopes), nextIndex);
+    public TokenNavigator currentState() {
+        return new TokenNavigator(tokens, new ArrayList<ScopeType>(scopes), nextIndex);
     }
     
-    public void reset(TokenIterator position) {
+    public void reset(TokenNavigator position) {
         nextIndex = position.nextIndex;
         scopes.clear();
         scopes.addAll(position.scopes);

@@ -35,7 +35,7 @@ public class Statements {
     public static Rule<StatementNode> statement() {
         return new Rule<StatementNode>() {
             @Override
-            public ParseResult<StatementNode> parse(TokenIterator tokens) {
+            public ParseResult<StatementNode> parse(TokenNavigator tokens) {
                 return firstOf("statement",
                     publicDeclaration(),
                     declaration(),
@@ -150,7 +150,7 @@ public class Statements {
         statementRules[rules.length + 1] = symbol(";");
         return new Rule<RuleValues>() {
             @Override
-            public ParseResult<RuleValues> parse(TokenIterator tokens) {
+            public ParseResult<RuleValues> parse(TokenNavigator tokens) {
                 ParseResult<RuleValues> result = sequence(OnError.FINISH, statementRules).parse(tokens);
                 if (!result.isFatal()) {
                     return result;

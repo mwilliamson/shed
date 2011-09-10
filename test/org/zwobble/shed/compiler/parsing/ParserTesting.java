@@ -7,8 +7,8 @@ import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.tokeniser.Tokeniser;
 
 public class ParserTesting {
-    public static TokenIterator tokens(String input) {
-        return new TokenIterator(new Tokeniser().tokenise(input));
+    public static TokenNavigator tokens(String input) {
+        return new TokenNavigator(new Tokeniser().tokenise(input));
     }
     
     public static Matcher<ParseResult<?>> isSuccessWithNode(final SyntaxNode node) {

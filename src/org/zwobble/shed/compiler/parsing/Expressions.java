@@ -40,7 +40,7 @@ public class Expressions {
     public static Rule<ExpressionNode> expression() {
         return new Rule<ExpressionNode>() {
             @Override
-            public ParseResult<ExpressionNode> parse(TokenIterator tokens) {
+            public ParseResult<ExpressionNode> parse(TokenNavigator tokens) {
                 final Rule<ExpressionNode> left = guard(firstOf("expression",
                     longLambdaExpression(),
                     shortLambdaExpression(),

@@ -23,7 +23,7 @@ public class Blocks {
         return then(
             new Rule<RuleValues>() {
                 @Override
-                public ParseResult<RuleValues> parse(TokenIterator tokens) {
+                public ParseResult<RuleValues> parse(TokenNavigator tokens) {
                     Rule<RuleValues> sequence = sequence(OnError.FINISH,
                         guard(symbol("{")),
                         optional(whitespace()),

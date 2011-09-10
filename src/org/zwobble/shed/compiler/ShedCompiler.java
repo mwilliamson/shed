@@ -11,7 +11,7 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.ParseResult;
 import org.zwobble.shed.compiler.parsing.Parser;
-import org.zwobble.shed.compiler.parsing.TokenIterator;
+import org.zwobble.shed.compiler.parsing.TokenNavigator;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.tokeniser.TokenPosition;
 import org.zwobble.shed.compiler.tokeniser.Tokeniser;
@@ -40,7 +40,7 @@ public class ShedCompiler {
     
     public CompilationResult compile(String source) {
         List<TokenPosition> tokens = tokeniser.tokenise(source);
-        ParseResult<SourceNode> parseResult = parser.parse(new TokenIterator(tokens));
+        ParseResult<SourceNode> parseResult = parser.parse(new TokenNavigator(tokens));
         List<CompilerError> errors = new ArrayList<CompilerError>();
         errors.addAll(parseResult.getErrors());
         String javaScriptOutput = null;
