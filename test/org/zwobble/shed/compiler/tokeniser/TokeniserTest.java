@@ -135,6 +135,21 @@ public class TokeniserTest {
         );
     }
     
+    @Test public void
+    multiLineCommentsContinueAcrossNewLines() {
+        assertThat(
+            tokens("42 /* Dustbowl\nDance */\n16"),
+            is(asList(
+                Token.number("42"),
+                Token.whitespace(" "),
+                Token.multiLineComment(" Dustbowl\nDance "),
+                Token.whitespace("\n"),
+                Token.number("16"),
+                Token.end())
+            )
+        );
+    }
+    
     private List<Token> tokens(String input) {
         return newArrayList(transform(tokeniser.tokenise(input), toToken()));
     }

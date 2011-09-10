@@ -21,7 +21,7 @@ public class TokenIterator implements PeekingIterator<TokenPosition> {
             @Override
             public boolean apply(TokenPosition input) {
                 TokenType type = input.getToken().getType();
-                return type != TokenType.WHITESPACE && type != TokenType.SINGLE_LINE_COMMENT;
+                return type != TokenType.WHITESPACE && type != TokenType.SINGLE_LINE_COMMENT && type != TokenType.MULTI_LINE_COMMENT;
             }
         };
     }

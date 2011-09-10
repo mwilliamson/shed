@@ -38,6 +38,9 @@ public class Token {
     public static Token singleLineComment(String value) {
         return new Token(TokenType.SINGLE_LINE_COMMENT, value, "//" + value);
     }
+    public static Token multiLineComment(String value) {
+        return new Token(TokenType.MULTI_LINE_COMMENT, value, "/*" + value + "*/");
+    }
     
     public static Token end() {
         return END;

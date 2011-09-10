@@ -63,6 +63,16 @@ public class Tokeniser {
             characters.next();
             characters.next();
             return Token.singleLineComment(takeUntil(characters, isNewLine()));
+        } else if (firstCharacter == '/' && characters.peek(1) == '*') {
+            characters.next();
+            characters.next();
+            StringBuilder comment = new StringBuilder();
+            while (characters.peek() != '*' && characters.peek(1) != '/') {
+                comment.append(characters.next());
+            }
+            characters.next();
+            characters.next();
+            return Token.multiLineComment(comment.toString());
         } else if (isWhitespace().apply(firstCharacter)) {
             return token(TokenType.WHITESPACE, takeWhile(characters, isWhitespace()));
         } else if (symbols.contains(firstCharacter.toString())) {
