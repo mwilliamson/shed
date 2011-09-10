@@ -22,7 +22,7 @@ import static org.zwobble.shed.compiler.parsing.ParseResult.errorRecoveredWithVa
 import static org.zwobble.shed.compiler.parsing.ParseResult.fatal;
 import static org.zwobble.shed.compiler.parsing.ParseResult.subResults;
 import static org.zwobble.shed.compiler.parsing.ParseResult.success;
-import static org.zwobble.shed.compiler.tokeniser.TokenType.WHITESPACE;
+import static org.zwobble.shed.compiler.parsing.Separator.softSeparator;
 
 public class Rules {
     public static <T, U> Rule<T> then(final Rule<U> originalRule, final ParseAction<U, T> action) {
@@ -85,10 +85,27 @@ public class Rules {
         return repeatedWithSeparator(rule, separator, false);
     }
     
+    public static <T> Rule<List<T>> oneOrMore(final Rule<T> rule) {
+        return oneOrMoreWithSeparator(rule, softSeparator(emptyRule()));
+    }
+    
     public static <T> Rule<List<T>> zeroOrMoreWithSeparator(final Rule<T> rule, final Separator<?> separator) {
         return repeatedWithSeparator(rule, separator, true);
     }
     
+    public static <T> Rule<List<T>> zeroOrMore(final Rule<T> rule) {
+        return zeroOrMoreWithSeparator(rule, softSeparator(emptyRule()));
+    }
+    
+    private static Rule<Void> emptyRule() {
+        return new Rule<Void>() {
+            @Override
+            public ParseResult<Void> parse(TokenNavigator tokens) {
+                return ParseResult.success(null, Collections.<ParseResult<?>>emptyList());
+            }
+        };
+    }
+
     private static <T> Rule<List<T>> repeatedWithSeparator(final Rule<T> rule, final Separator<?> separator, final boolean allowEmpty) {
         return new Rule<List<T>>() {
             @Override
@@ -186,10 +203,6 @@ public class Rules {
     
     public static Rule<Void> symbol(String symbol) {
         return token(Token.symbol(symbol));
-    }
-    
-    public static Rule<String> whitespace() {
-        return tokenOfType(WHITESPACE);
     }
     
     public static Rule<String> tokenOfType(final TokenType type) {

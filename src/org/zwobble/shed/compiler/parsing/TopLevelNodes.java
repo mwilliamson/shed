@@ -10,16 +10,14 @@ import org.zwobble.shed.compiler.tokeniser.Token;
 
 import static org.zwobble.shed.compiler.parsing.Rules.guard;
 import static org.zwobble.shed.compiler.parsing.Rules.keyword;
+import static org.zwobble.shed.compiler.parsing.Rules.oneOrMore;
 import static org.zwobble.shed.compiler.parsing.Rules.oneOrMoreWithSeparator;
-import static org.zwobble.shed.compiler.parsing.Rules.optional;
 import static org.zwobble.shed.compiler.parsing.Rules.sequence;
 import static org.zwobble.shed.compiler.parsing.Rules.symbol;
 import static org.zwobble.shed.compiler.parsing.Rules.then;
 import static org.zwobble.shed.compiler.parsing.Rules.tokenOfType;
-import static org.zwobble.shed.compiler.parsing.Rules.whitespace;
-import static org.zwobble.shed.compiler.parsing.Rules.zeroOrMoreWithSeparator;
+import static org.zwobble.shed.compiler.parsing.Rules.zeroOrMore;
 import static org.zwobble.shed.compiler.parsing.Separator.hardSeparator;
-import static org.zwobble.shed.compiler.parsing.Separator.softSeparator;
 import static org.zwobble.shed.compiler.parsing.Statements.aStatement;
 import static org.zwobble.shed.compiler.parsing.Statements.statement;
 import static org.zwobble.shed.compiler.tokeniser.Keyword.IMPORT;
@@ -35,11 +33,8 @@ public class TopLevelNodes {
         return then(
             sequence(OnError.CONTINUE,
                 packageDeclaration = packageDeclaration(),
-                optional(whitespace()),
-                imports = zeroOrMoreWithSeparator(importNode(), softSeparator(whitespace())),
-                optional(whitespace()),
-                statements = oneOrMoreWithSeparator(statement(), softSeparator(whitespace())),
-                optional(whitespace()),
+                imports = zeroOrMore(importNode()),
+                statements = oneOrMore(statement()),
                 Rules.token(Token.end())
             ),
             new ParseAction<RuleValues, SourceNode>() {
@@ -60,7 +55,6 @@ public class TopLevelNodes {
         return then(
             aStatement(
                 keyword(PACKAGE),
-                whitespace(),
                 names = dotSeparatedIdentifiers()
             ),
             new ParseAction<RuleValues, PackageDeclarationNode>() {
@@ -77,7 +71,6 @@ public class TopLevelNodes {
         return then(
             aStatement(
                 guard(keyword(IMPORT)),
-                whitespace(),
                 (names = dotSeparatedIdentifiers())
             ),
             new ParseAction<RuleValues, ImportNode>() {

@@ -13,6 +13,8 @@ import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
+import static org.zwobble.shed.compiler.parsing.Rules.zeroOrMore;
+
 import static org.zwobble.shed.compiler.parsing.Blocks.block;
 import static org.zwobble.shed.compiler.parsing.Rules.firstOf;
 import static org.zwobble.shed.compiler.parsing.Rules.guard;
@@ -21,7 +23,6 @@ import static org.zwobble.shed.compiler.parsing.Rules.sequence;
 import static org.zwobble.shed.compiler.parsing.Rules.symbol;
 import static org.zwobble.shed.compiler.parsing.Rules.then;
 import static org.zwobble.shed.compiler.parsing.Rules.tokenOfType;
-import static org.zwobble.shed.compiler.parsing.Rules.whitespace;
 import static org.zwobble.shed.compiler.parsing.Rules.zeroOrMoreWithSeparator;
 import static org.zwobble.shed.compiler.parsing.Separator.hardSeparator;
 import static org.zwobble.shed.compiler.parsing.Separator.softSeparator;
@@ -30,7 +31,7 @@ import static org.zwobble.shed.compiler.tokeniser.TokenType.IDENTIFIER;
 
 
 public class Expressions {
-    private static final Rule<?> COMMA = sequence(OnError.FINISH, optional(whitespace()), guard(symbol(",")), optional(whitespace()));
+    private static final Rule<?> COMMA = guard(symbol(","));
     
     private static interface PartialCallExpression {
         ExpressionNode complete(ExpressionNode expression);
@@ -52,18 +53,16 @@ public class Expressions {
                     expressionInParens()
                 )); 
                 
-                final Rule<List<PartialCallExpression>> calls = zeroOrMoreWithSeparator(
+                final Rule<List<PartialCallExpression>> calls = zeroOrMore(
                     firstOf("function call or member access",
                         functionCall(),
                         memberAccess(),
                         typeApplication()
-                    ),
-                    softSeparator(optional(whitespace()))
+                    )
                 );
                 return then(
                     sequence(OnError.FINISH,
                         left,
-                        optional(whitespace()),
                         calls
                     ),
                     new ParseAction<RuleValues, ExpressionNode>() {
@@ -110,7 +109,6 @@ public class Expressions {
         return then(
             sequence(OnError.FINISH,
                 guard(symbol(".")),
-                optional(whitespace()),
                 memberName
             ),
             new ParseAction<RuleValues, PartialCallExpression>() {
@@ -167,9 +165,7 @@ public class Expressions {
         return then(
             sequence(OnError.FINISH,
                 guard(symbol("(")),
-                optional(whitespace()),
                 expression,
-                optional(whitespace()),
                 symbol(")")
             ),
             new ParseAction<RuleValues, ExpressionNode>() {
@@ -188,11 +184,8 @@ public class Expressions {
         return then(
             sequence(OnError.FINISH,
                 formalArguments = guard(formalArgumentList()),
-                optional(whitespace()),
                 returnType = guard(typeSpecifier()),
-                optional(whitespace()),
                 guard(symbol("=>")),
-                optional(whitespace()),
                 functionBody = guard(block())
             ),
             new ParseAction<RuleValues, LongLambdaExpressionNode>() {
@@ -215,11 +208,8 @@ public class Expressions {
         return then(
             sequence(OnError.FINISH,
                 formalArguments = guard(formalArgumentList()),
-                optional(whitespace()),
                 returnType = optional(typeSpecifier()),
-                optional(whitespace()),
                 guard(symbol("=>")),
-                optional(whitespace()),
                 functionBody
             ),
             new ParseAction<RuleValues, ShortLambdaExpressionNode>() {
@@ -236,8 +226,7 @@ public class Expressions {
     }
     
     private static Rule<List<FormalArgumentNode>> formalArgumentList() {
-        final Rule<?> comma = sequence(OnError.FINISH, optional(whitespace()), guard(symbol(",")), optional(whitespace()));
-        final Rule<List<FormalArgumentNode>> formalArguments = zeroOrMoreWithSeparator(formalArgument(), hardSeparator(comma));
+        final Rule<List<FormalArgumentNode>> formalArguments = zeroOrMoreWithSeparator(formalArgument(), hardSeparator(COMMA));
         return then(
             sequence(OnError.FINISH,
                 guard(symbol("(")),
@@ -260,7 +249,6 @@ public class Expressions {
         return then(
             sequence(OnError.FINISH,
                 name = guard(tokenOfType(IDENTIFIER)),
-                guard(optional(whitespace())),
                 type
             ),
             new ParseAction<RuleValues, FormalArgumentNode>() {

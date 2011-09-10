@@ -1,19 +1,33 @@
-package org.zwobble.shed.compiler.tokeniser;
+package org.zwobble.shed.compiler.parsing;
 
 import java.util.List;
 
-import org.zwobble.shed.compiler.parsing.SourcePosition;
+import org.zwobble.shed.compiler.tokeniser.TokenPosition;
+import org.zwobble.shed.compiler.tokeniser.TokenType;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.PeekingIterator;
 
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Lists.newArrayList;
+
 public class TokenIterator implements PeekingIterator<TokenPosition> {
+    public static TokenIterator semanticallySignificantIterator(List<TokenPosition> tokens) {
+        return new TokenIterator(newArrayList(filter(tokens, isSemanticallySignificantToken())), 0);
+    }
+    
+    private static Predicate<TokenPosition> isSemanticallySignificantToken() {
+        return new Predicate<TokenPosition>() {
+            @Override
+            public boolean apply(TokenPosition input) {
+                TokenType type = input.getToken().getType();
+                return type != TokenType.WHITESPACE;
+            }
+        };
+    }
+    
     private final List<TokenPosition> tokens;
     private int nextIndex;
-
-    public TokenIterator(List<TokenPosition> tokens) {
-        this.tokens = tokens;
-        this.nextIndex = 0;
-    }
 
     private TokenIterator(List<TokenPosition> tokens, int nextIndex) {
         this.tokens = tokens;

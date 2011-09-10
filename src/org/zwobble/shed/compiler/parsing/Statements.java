@@ -25,7 +25,6 @@ import static org.zwobble.shed.compiler.parsing.Rules.sequence;
 import static org.zwobble.shed.compiler.parsing.Rules.symbol;
 import static org.zwobble.shed.compiler.parsing.Rules.then;
 import static org.zwobble.shed.compiler.parsing.Rules.tokenOfType;
-import static org.zwobble.shed.compiler.parsing.Rules.whitespace;
 import static org.zwobble.shed.compiler.parsing.TypeReferences.typeSpecifier;
 import static org.zwobble.shed.compiler.tokeniser.TokenType.IDENTIFIER;
 
@@ -51,7 +50,6 @@ public class Statements {
         return then(
             sequence(OnError.FINISH,
                 guard(keyword(Keyword.PUBLIC)),
-                optional(whitespace()),
                 declaration
             ),
             new ParseAction<RuleValues, PublicDeclarationNode>() {
@@ -95,7 +93,6 @@ public class Statements {
         return then( 
             aStatement(
                 guard(keyword(Keyword.RETURN)),
-                optional(whitespace()),
                 expression
             ),
             new ParseAction<RuleValues, ReturnNode>() {
@@ -128,9 +125,7 @@ public class Statements {
         return then(
             sequence(OnError.FINISH,
                 guard(keyword(Keyword.OBJECT)),
-                optional(whitespace()),
                 identifier,
-                optional(whitespace()),
                 body
             ),
             new ParseAction<RuleValues, ObjectDeclarationNode>() {
@@ -145,9 +140,8 @@ public class Statements {
     }
     
     public static Rule<RuleValues> aStatement(Rule<?>... rules) {
-        final Rule<?>[] statementRules = Arrays.copyOf(rules, rules.length + 2);
-        statementRules[rules.length] = optional(whitespace());
-        statementRules[rules.length + 1] = symbol(";");
+        final Rule<?>[] statementRules = Arrays.copyOf(rules, rules.length + 1);
+        statementRules[rules.length] = symbol(";");
         return new Rule<RuleValues>() {
             @Override
             public ParseResult<RuleValues> parse(TokenNavigator tokens) {
@@ -167,10 +161,10 @@ public class Statements {
         final Rule<Option<ExpressionNode>> type = optional(typeSpecifier());
         return then(
             aStatement(
-                guard(keyword(keyword)), whitespace(),
-                identifier, optional(whitespace()),
-                type, optional(whitespace()),
-                symbol("="), optional(whitespace()),
+                guard(keyword(keyword)),
+                identifier,
+                type,
+                symbol("="),
                 expression
             ),
             new ParseAction<RuleValues, T>() {
