@@ -16,33 +16,45 @@ import com.google.common.base.Function;
 @ToString
 @EqualsAndHashCode
 public class TypeResult<T> implements HasErrors {
+    public static TypeResult<Void> success() {
+        return success(null);
+    }
+    
     public static <T> TypeResult<T> success(T value) {
-        return new TypeResult<T>(true, value, Collections.<CompilerError>emptyList());
+        return new TypeResult<T>(true, true, value, Collections.<CompilerError>emptyList());
     }
     
     public static <T> TypeResult<T> failure(List<CompilerError> errors) {
-        return new TypeResult<T>(false, null, errors);
+        return new TypeResult<T>(false, false, null, errors);
+    }
+    
+    public static <T> TypeResult<T> failure(T value, List<CompilerError> errors) {
+        return new TypeResult<T>(false, true, value, errors);
     }
     
     public static <T> TypeResult<List<T>> combine(Iterable<? extends TypeResult<? extends T>> results) {
         List<T> values = new ArrayList<T>();
         List<CompilerError> errors = new ArrayList<CompilerError>();
         boolean success = true;
+        boolean hasValue = true;
         for (TypeResult<? extends T> result : results) {
             success &= result.success;
+            hasValue &= result.hasValue;
             errors.addAll(result.getErrors());
             values.add(result.value);
         }
-        return new TypeResult<List<T>>(success, values, errors);
+        return new TypeResult<List<T>>(success, hasValue, values, errors);
         
     }
     
     private final boolean success;
+    private final boolean hasValue;
     private final T value;
     private final List<CompilerError> errors;
     
-    private TypeResult(boolean success, T value, List<CompilerError> errors) {
+    private TypeResult(boolean success, boolean hasValue, T value, List<CompilerError> errors) {
         this.success = success;
+        this.hasValue = hasValue;
         this.value = value;
         this.errors = errors;
     }
@@ -61,7 +73,7 @@ public class TypeResult<T> implements HasErrors {
     }
     
     public boolean hasValue() {
-        return success;
+        return hasValue;
     }
     
     public <R> TypeResult<R> then(Function0<TypeResult<R>> function) {
@@ -73,7 +85,7 @@ public class TypeResult<T> implements HasErrors {
         if (hasValue()) {
             return function.apply(value);
         } else {
-            return new TypeResult<R>(false, null, Collections.<CompilerError>emptyList());
+            return new TypeResult<R>(false, false, null, Collections.<CompilerError>emptyList());
         }
     }
     
@@ -83,22 +95,22 @@ public class TypeResult<T> implements HasErrors {
             TypeResult<R> result = function.apply(value);
             return thenResult(result);
         } else {
-            return new TypeResult<R>(success, null, errors);
+            return new TypeResult<R>(success, false, null, errors);
         }
     }
     
     public TypeResult<T> withErrorsFrom(TypeResult<?> other) {
-        return thenResult(other, value);
+        return thenResult(other, hasValue, value);
     }
     
     private <R> TypeResult<R> thenResult(TypeResult<R> result) {
-        return thenResult(result, result.value);
+        return thenResult(result, result.hasValue, result.value);
     }
     
-    private <R> TypeResult<R> thenResult(TypeResult<?> result, R value) {
+    private <R> TypeResult<R> thenResult(TypeResult<?> result, boolean hasValue, R value) {
         List<CompilerError> newErrors = new ArrayList<CompilerError>();
         newErrors.addAll(errors);
         newErrors.addAll(result.errors);
-        return new TypeResult<R>(success && result.success, value, newErrors);
+        return new TypeResult<R>(success && result.success, hasValue, value, newErrors);
     }
 }

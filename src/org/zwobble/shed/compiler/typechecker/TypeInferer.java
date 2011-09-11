@@ -101,7 +101,7 @@ public class TypeInferer {
                         @Override
                         public TypeResult<Void> apply(Type expressionType) {
                             if (expressionType.equals(returnType)) {
-                                return success(null);
+                                return success();
                             } else {
                                 return failure(asList(new CompilerError(
                                     nodeLocations.locate(lambdaExpression.getBody()),
@@ -115,7 +115,11 @@ public class TypeInferer {
             }));
         }
         
-        return result.ifValueThen(buildFunctionType(expressionTypeResult.get()));
+        if (expressionTypeResult.hasValue()) {
+            return result.ifValueThen(buildFunctionType(expressionTypeResult.get()));            
+        } else {
+            return TypeResult.<Type>failure(result.getErrors());
+        }
     }
 
     private static TypeResult<Type>
@@ -128,7 +132,7 @@ public class TypeInferer {
         TypeResult<Void> bodyResult = returnTypeResult.use(new Function<Type, TypeResult<Void>>() {
             @Override
             public TypeResult<Void> apply(Type returnType) {
-                TypeResult<Void> result = success(null);
+                TypeResult<Void> result = success();
 
                 context.enterNewScope(some(returnType));
                 for (TypeResult<FormalArgumentType> argumentTypeResult : argumentTypeResults) {
@@ -187,7 +191,7 @@ public class TypeInferer {
                         @Override
                         public TypeResult<Void> apply(Type actualArgumentType) {
                             if (isSubType(actualArgumentType, typeParameters.get(index))) {
-                                return success(null);
+                                return success();
                             } else {
                                 return failure(asList(new CompilerError(
                                     nodeLocations.locate(argument),
@@ -314,7 +318,7 @@ public class TypeInferer {
                     )));
                 } else {
                     context.add(argument.getName(), argument.getType());
-                    return success(null);
+                    return success();
                 }
             }
         };

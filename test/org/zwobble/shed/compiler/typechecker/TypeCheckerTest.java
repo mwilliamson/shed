@@ -17,6 +17,7 @@ import org.zwobble.shed.compiler.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.types.ClassType;
@@ -137,8 +138,9 @@ public class TypeCheckerTest {
     declaringObjectAddsItToScope() {
         ObjectDeclarationNode objectDeclarationNode = 
             new ObjectDeclarationNode("browser", asList((StatementNode)Nodes.immutableVar("version", Nodes.number("1.2"))));
-        TypeResult<Void> result = TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext);
-        assertThat(result, is(TypeResult.<Void>success(null)));
+        TypeResult<StatementTypeCheckResult> result = 
+            TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext);
+        assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
         assertThat(staticContext.isDeclaredInCurrentScope("browser"), is(true));
     }
     
@@ -148,7 +150,8 @@ public class TypeCheckerTest {
             "browser",
             asList((StatementNode)Nodes.immutableVar("version", Nodes.id("String"), Nodes.number("1.2")))
         );
-        TypeResult<Void> result = TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext);
+        TypeResult<StatementTypeCheckResult> result =
+            TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext);
         assertThat(result.isSuccess(), is(false));
     }
     
@@ -156,8 +159,9 @@ public class TypeCheckerTest {
     bodyOfObjectIsInSeparateScope() {
         ObjectDeclarationNode objectDeclarationNode = 
             new ObjectDeclarationNode("browser", asList((StatementNode)Nodes.immutableVar("browser", Nodes.number("1.2"))));
-        TypeResult<Void> result = TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext);
-        assertThat(result, is(TypeResult.<Void>success(null)));
+        TypeResult<StatementTypeCheckResult> result = 
+            TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext);
+        assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
     }
     
     @Test public void
@@ -167,8 +171,9 @@ public class TypeCheckerTest {
                 Nodes.immutableVar("version", Nodes.number("1.2")),
                 Nodes.publik(Nodes.immutableVar("name", Nodes.string("firefox")))
             ));
-        TypeResult<Void> result = TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext);
-        assertThat(result, is(TypeResult.<Void>success(null)));
+        TypeResult<StatementTypeCheckResult> result = 
+            TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext);
+        assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
         ScalarType browserType = (ScalarType)staticContext.get("browser").getType();
         assertThat(browserType.getMembers(), is((Object)ImmutableMap.of("name", CoreTypes.STRING)));
     }
@@ -183,7 +188,8 @@ public class TypeCheckerTest {
                     Nodes.immutableVar("name", Nodes.string("Jim"))
                 ))
             ));
-        TypeResult<Void> result = TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext);
+        TypeResult<StatementTypeCheckResult> result = 
+            TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext);
         assertThat(errorStrings(result), is((asList("Cannot access variable \"name\" before it is declared"))));
     }
     
@@ -195,7 +201,7 @@ public class TypeCheckerTest {
                 Arrays.<StatementNode>asList(Nodes.expressionStatement(Nodes.call(Nodes.id("eatCereal")))),
                 Arrays.<StatementNode>asList(Nodes.expressionStatement(Nodes.call(Nodes.id("eatPudding"))))
             );
-        TypeResult<Void> result = TypeChecker.typeCheckStatement(ifThenElseNode, nodeLocations, staticContext);
+        TypeResult<?> result = TypeChecker.typeCheckStatement(ifThenElseNode, nodeLocations, staticContext);
         assertThat(
             errorStrings(result),
             is((asList(
@@ -215,7 +221,7 @@ public class TypeCheckerTest {
                 Arrays.<StatementNode>asList(),
                 Arrays.<StatementNode>asList()
             );
-        TypeResult<Void> result = TypeChecker.typeCheckStatement(ifThenElseNode, nodeLocations, staticContext);
+        TypeResult<?> result = TypeChecker.typeCheckStatement(ifThenElseNode, nodeLocations, staticContext);
         assertThat(
             errorStrings(result),
             is((asList(

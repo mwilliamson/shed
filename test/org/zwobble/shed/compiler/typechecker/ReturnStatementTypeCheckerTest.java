@@ -3,6 +3,7 @@ package org.zwobble.shed.compiler.typechecker;
 import org.junit.Test;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
+import org.zwobble.shed.compiler.parsing.nodes.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -51,7 +52,7 @@ public class ReturnStatementTypeCheckerTest {
         staticContext.add("x", listType);
         assertThat(
             typeCheckReturnStatement(returnStatement, nodeLocations, staticContext),
-            is(TypeResult.<Void>success(null))
+            is(TypeResult.success(StatementTypeCheckResult.alwaysReturns()))
         );
     }
 }

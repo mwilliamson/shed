@@ -5,6 +5,7 @@ import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
+import org.zwobble.shed.compiler.parsing.nodes.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -39,7 +40,7 @@ public class VariableDeclarationTypeCheckerTest {
         staticContext.add("Boolean", CoreTypes.classOf(CoreTypes.BOOLEAN));
         assertThat(
             typeCheckVariableDeclaration(variableNode, nodeLocations, staticContext),
-            is(TypeResult.<Void>success(null))
+            is(TypeResult.success(StatementTypeCheckResult.noReturn()))
         );
         assertThat(staticContext.get("x"), is(VariableLookupResult.success(CoreTypes.BOOLEAN)));
     }
@@ -57,7 +58,7 @@ public class VariableDeclarationTypeCheckerTest {
         staticContext.add("String", CoreTypes.classOf(CoreTypes.STRING));
         assertThat(
             typeCheckVariableDeclaration(variableNode, nodeLocations, staticContext),
-            is(TypeResult.<Void>failure(asList(new CompilerError(
+            is(TypeResult.<StatementTypeCheckResult>failure(asList(new CompilerError(
                 range(position(4, 12), position(6, 6)),
                 "Cannot initialise variable of type \"String\" with expression of type \"Boolean\""
             ))))
@@ -79,7 +80,7 @@ public class VariableDeclarationTypeCheckerTest {
         
         assertThat(
             typeCheckVariableDeclaration(variableNode, nodeLocations, staticContext),
-            is(TypeResult.<Void>success(null))
+            is(TypeResult.success(StatementTypeCheckResult.noReturn()))
         );
     }
     

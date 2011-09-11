@@ -6,6 +6,7 @@ import java.util.List;
 import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.types.Type;
 
@@ -17,7 +18,7 @@ import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 public class VariableDeclarationTypeChecker {
-    public static TypeResult<Void>
+    public static TypeResult<StatementTypeCheckResult>
     typeCheckVariableDeclaration(VariableDeclarationNode variableDeclaration, NodeLocations nodeLocations, StaticContext staticContext) {
         List<CompilerError> errors = new ArrayList<CompilerError>();
         
@@ -43,7 +44,7 @@ public class VariableDeclarationTypeChecker {
         
         if (errors.isEmpty()) {
             staticContext.add(variableDeclaration.getIdentifier(), valueTypeResult.get());
-            return success(null);
+            return success(StatementTypeCheckResult.noReturn());
         } else {
             return failure(errors);
         }

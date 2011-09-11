@@ -5,7 +5,6 @@ import java.util.List;
 import org.zwobble.shed.compiler.Function0;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
-import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementTypeCheckResult;
 
@@ -29,10 +28,10 @@ public class BlockTypeChecker {
         
         boolean hasReturnedYet = false;
         for (StatementNode statement : statements) {
-            TypeResult<Void> statementResult = typeCheckStatement(statement, nodeLocations, context);
+            TypeResult<StatementTypeCheckResult> statementResult = typeCheckStatement(statement, nodeLocations, context);
             result = result.withErrorsFrom(statementResult);
-            if (statement instanceof ReturnNode) {
-                hasReturnedYet = true;
+            if (statementResult.hasValue()) {
+                hasReturnedYet |= statementResult.get().hasReturned();   
             }
         }
         final boolean hasReturned = hasReturnedYet;

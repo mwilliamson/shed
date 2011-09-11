@@ -1,7 +1,6 @@
 package org.zwobble.shed.compiler.typechecker;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.zwobble.shed.compiler.parsing.CompilerError;
@@ -26,7 +25,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
 import static java.util.Arrays.asList;
-
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.typechecker.ImportStatementTypeChecker.typeCheckImportStatement;
 import static org.zwobble.shed.compiler.typechecker.ReturnStatementTypeChecker.typeCheckReturnStatement;
@@ -65,7 +63,7 @@ public class TypeChecker {
         }
     }
     
-    public static TypeResult<Void> typeCheckStatement(StatementNode statement, NodeLocations nodeLocations, StaticContext context) {
+    public static TypeResult<StatementTypeCheckResult> typeCheckStatement(StatementNode statement, NodeLocations nodeLocations, StaticContext context) {
         if (statement instanceof VariableDeclarationNode) {
             return typeCheckVariableDeclaration((VariableDeclarationNode)statement, nodeLocations, context);
         }
@@ -74,7 +72,7 @@ public class TypeChecker {
         }
         if (statement instanceof ExpressionStatementNode) {
             TypeResult<Type> result = TypeInferer.inferType(((ExpressionStatementNode) statement).getExpression(), nodeLocations, context);
-            return TypeResult.<Void>success(null).withErrorsFrom(result);
+            return TypeResult.success(StatementTypeCheckResult.noReturn()).withErrorsFrom(result);
         }
         if (statement instanceof ObjectDeclarationNode) {
             return typeCheckObjectDeclaration((ObjectDeclarationNode)statement, nodeLocations, context);
@@ -88,12 +86,12 @@ public class TypeChecker {
         throw new RuntimeException("Cannot check type of statement: " + statement);
     }
 
-    public static TypeResult<Void> typeCheckObjectDeclaration(
+    public static TypeResult<StatementTypeCheckResult> typeCheckObjectDeclaration(
         ObjectDeclarationNode objectDeclaration,
         NodeLocations nodeLocations,
         StaticContext context)
     {
-        TypeResult<Void> result = TypeResult.success(null);
+        TypeResult<StatementTypeCheckResult> result = TypeResult.success(StatementTypeCheckResult.noReturn());
         context.enterNewScope(none(Type.class));
 
         TypeResult<StatementTypeCheckResult> blockResult = new BlockTypeChecker().typeCheckBlock(objectDeclaration.getStatements(), context, nodeLocations);
@@ -127,8 +125,7 @@ public class TypeChecker {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
-    private static TypeResult<Void> typeCheckIfThenElse(
+    private static TypeResult<StatementTypeCheckResult> typeCheckIfThenElse(
         IfThenElseStatementNode statement,
         NodeLocations nodeLocations,
         StaticContext context
@@ -139,7 +136,10 @@ public class TypeChecker {
         
         TypeResult<StatementTypeCheckResult> ifTrueResult = typeCheckBlock(statement.getIfTrue(), nodeLocations, context);
         TypeResult<StatementTypeCheckResult> ifFalseResult = typeCheckBlock(statement.getIfFalse(), nodeLocations, context);
-        return TypeResult.<Void>success(null).withErrorsFrom(TypeResult.combine(Arrays.asList(conditionResult, ifTrueResult, ifFalseResult)));
+        return TypeResult.success(StatementTypeCheckResult.noReturn())
+            .withErrorsFrom(conditionResult)
+            .withErrorsFrom(ifTrueResult)
+            .withErrorsFrom(ifFalseResult);
     }
 
     private static Function<Type, TypeResult<Void>> checkIsBoolean(final SourceRange conditionLocation) {
@@ -147,7 +147,7 @@ public class TypeChecker {
             @Override
             public TypeResult<Void> apply(Type input) {
                 if (SubTyping.isSubType(input, CoreTypes.BOOLEAN)) {
-                    return TypeResult.success(null);
+                    return TypeResult.success();
                 } else {
                     return TypeResult.failure(asList(new CompilerError(
                         conditionLocation,

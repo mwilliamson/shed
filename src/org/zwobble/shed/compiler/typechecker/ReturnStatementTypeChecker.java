@@ -5,6 +5,7 @@ import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
+import org.zwobble.shed.compiler.parsing.nodes.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.types.Type;
 
 import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
@@ -15,10 +16,10 @@ import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 public class ReturnStatementTypeChecker {
-    public static TypeResult<Void> typeCheckReturnStatement(ReturnNode returnStatement, NodeLocations nodeLocations, StaticContext context) {
+    public static TypeResult<StatementTypeCheckResult> typeCheckReturnStatement(ReturnNode returnStatement, NodeLocations nodeLocations, StaticContext context) {
         Option<Type> expectedReturnType = context.currentScope().getReturnType();
         if (!expectedReturnType.hasValue()) {
-            return failure(asList(
+            return failure(StatementTypeCheckResult.alwaysReturns(), asList(
                 new CompilerError(
                     nodeLocations.locate(returnStatement),
                     "Cannot return from this scope"
@@ -31,11 +32,11 @@ public class ReturnStatementTypeChecker {
             return failure(expressionType.getErrors());
         }
         if (isSubType(expressionType.get(), expectedReturnType.get())) {
-            return success(null);
+            return success(StatementTypeCheckResult.alwaysReturns());
         } else {
             String expectedName = expectedReturnType.get().shortName();
             String actualName = expressionType.get().shortName();
-            return failure(asList(
+            return failure(StatementTypeCheckResult.alwaysReturns(), asList(
                 new CompilerError(
                     nodeLocations.locate(expression),
                     "Expected return expression of type \"" + expectedName + "\" but was of type \"" + actualName + "\""
