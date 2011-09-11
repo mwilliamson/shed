@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
+import org.zwobble.shed.compiler.parsing.SourceRange;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
@@ -16,11 +17,15 @@ import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
+import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Type;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
+
+import static java.util.Arrays.asList;
 
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.typechecker.ImportStatementTypeChecker.typeCheckImportStatement;
@@ -122,15 +127,35 @@ public class TypeChecker {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     private static TypeResult<Void> typeCheckIfThenElse(
         IfThenElseStatementNode statement,
         NodeLocations nodeLocations,
         StaticContext context
     ) {
-        TypeResult<Type> conditionResult = TypeInferer.inferType(statement.getCondition(), nodeLocations, context);
+        TypeResult<Void> conditionResult =
+            TypeInferer.inferType(statement.getCondition(), nodeLocations, context)
+            .ifValueThen(checkIsBoolean(nodeLocations.locate(statement.getCondition())));
+        
         TypeResult<StatementTypeCheckResult> ifTrueResult = typeCheckBlock(statement.getIfTrue(), nodeLocations, context);
         TypeResult<StatementTypeCheckResult> ifFalseResult = typeCheckBlock(statement.getIfFalse(), nodeLocations, context);
         return TypeResult.<Void>success(null).withErrorsFrom(TypeResult.combine(Arrays.asList(conditionResult, ifTrueResult, ifFalseResult)));
+    }
+
+    private static Function<Type, TypeResult<Void>> checkIsBoolean(final SourceRange conditionLocation) {
+        return new Function<Type, TypeResult<Void>>() {
+            @Override
+            public TypeResult<Void> apply(Type input) {
+                if (SubTyping.isSubType(input, CoreTypes.BOOLEAN)) {
+                    return TypeResult.success(null);
+                } else {
+                    return TypeResult.failure(asList(new CompilerError(
+                        conditionLocation,
+                        "Condition must be of type " + CoreTypes.BOOLEAN.shortName() + ", was of type " + input.shortName()
+                    )));
+                }
+            }
+        };
     }
 
     private static TypeResult<StatementTypeCheckResult> typeCheckBlock(

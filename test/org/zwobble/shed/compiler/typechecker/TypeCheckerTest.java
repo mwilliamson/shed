@@ -206,6 +206,24 @@ public class TypeCheckerTest {
         );
     }
     
+    @Test public void
+    conditionOfIfThenElseStatementMustBeABoolean() {
+        staticContext.add("isMorning", CoreTypes.STRING);
+        IfThenElseStatementNode ifThenElseNode = 
+            Nodes.ifThenElse(
+                Nodes.id("isMorning"),
+                Arrays.<StatementNode>asList(),
+                Arrays.<StatementNode>asList()
+            );
+        TypeResult<Void> result = TypeChecker.typeCheckStatement(ifThenElseNode, nodeLocations, staticContext);
+        assertThat(
+            errorStrings(result),
+            is((asList(
+                "Condition must be of type Boolean, was of type String"
+            )))
+        );
+    }
+    
     private TypeResult<Void> typeCheck(SourceNode source) {
         return TypeChecker.typeCheck(source, nodeLocations, staticContext);
     }
