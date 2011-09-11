@@ -17,6 +17,7 @@ import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
+import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
@@ -160,6 +161,14 @@ public class JavaScriptGenerator {
                 Collections.<String>emptyList(),
                 javaScriptBody
             )));
+        }
+        if (node instanceof IfThenElseStatementNode) {
+            IfThenElseStatementNode ifThenElse = (IfThenElseStatementNode) node;
+            return js.ifThenElse(
+                generateExpression(ifThenElse.getCondition()),
+                transform(ifThenElse.getIfTrue(), toJavaScriptStatement()),
+                transform(ifThenElse.getIfFalse(), toJavaScriptStatement())
+            );
         }
         throw new RuntimeException("Cannot generate JavaScript for " + node);
     }

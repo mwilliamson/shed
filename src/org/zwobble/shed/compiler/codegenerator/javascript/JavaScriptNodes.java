@@ -67,4 +67,8 @@ public class JavaScriptNodes {
     public JavaScriptStatementNode forIn(String name, JavaScriptExpressionNode object, List<JavaScriptStatementNode> statements) {
         return new JavaScriptForInNode(name, object, statements);
     }
+
+    public JavaScriptStatementNode ifThenElse(JavaScriptExpressionNode condition, List<JavaScriptStatementNode> ifTrue, List<JavaScriptStatementNode> ifFalse) {
+        return new JavaScriptIfThenElseNode(condition, ifTrue, ifFalse);
+    }
 }

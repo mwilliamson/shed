@@ -14,6 +14,7 @@ import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
+import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
@@ -34,12 +35,11 @@ import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
 import com.google.common.collect.ImmutableMap;
 
-import static org.zwobble.shed.compiler.codegenerator.JavaScriptGenerator.CORE_VALUES_OBJECT_NAME;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.Option.none;
+import static org.zwobble.shed.compiler.codegenerator.JavaScriptGenerator.CORE_VALUES_OBJECT_NAME;
 
 public class JavaScriptGeneratorTest {
     private final JavaScriptGenerator generator = new JavaScriptGenerator(new IdentityModuleWrapper());
@@ -269,6 +269,18 @@ public class JavaScriptGeneratorTest {
     typeApplicationIsConvertedToFunctionCall() {
         TypeApplicationNode source = Nodes.typeApply(Nodes.id("Function1"), Nodes.id("Number"), Nodes.id("String"));
         assertGeneratedJavaScript(source, js.call(js.id("Function1"), js.id("Number"), js.id("String")));
+    }
+    
+    @Test public void
+    ifElseIsConvertedToIfElse() {
+        StatementNode eatCereal = Nodes.returnStatement(Nodes.call(Nodes.id("eatCereal")));
+        StatementNode eatPudding = Nodes.returnStatement(Nodes.call(Nodes.id("eatPudding")));
+        IfThenElseStatementNode source =  Nodes.ifThenElse(Nodes.id("isMorning"), asList(eatCereal), asList(eatPudding));
+        assertGeneratedJavaScript(source, js.ifThenElse(
+            js.id("isMorning"),
+            asList(generator.generateStatement(eatCereal)),
+            asList(generator.generateStatement(eatPudding))
+        ));
     }
     
     private void assertGeneratedJavaScript(ExpressionNode source, JavaScriptNode expectedJavaScript) {
