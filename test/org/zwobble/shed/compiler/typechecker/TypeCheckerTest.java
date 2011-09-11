@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
+import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
@@ -184,6 +185,25 @@ public class TypeCheckerTest {
             ));
         TypeResult<Void> result = TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext);
         assertThat(errorStrings(result), is((asList("Cannot access variable \"name\" before it is declared"))));
+    }
+    
+    @Test public void
+    conditionAndBothBranchesOfIfThenElseStatementAreTypeChecked() {
+        IfThenElseStatementNode ifThenElseNode = 
+            Nodes.ifThenElse(
+                Nodes.id("isMorning"),
+                Arrays.<StatementNode>asList(Nodes.expressionStatement(Nodes.call(Nodes.id("eatCereal")))),
+                Arrays.<StatementNode>asList(Nodes.expressionStatement(Nodes.call(Nodes.id("eatPudding"))))
+            );
+        TypeResult<Void> result = TypeChecker.typeCheckStatement(ifThenElseNode, nodeLocations, staticContext);
+        assertThat(
+            errorStrings(result),
+            is((asList(
+                "No variable \"isMorning\" in scope",
+                "No variable \"eatCereal\" in scope",
+                "No variable \"eatPudding\" in scope"
+            )))
+        );
     }
     
     private TypeResult<Void> typeCheck(SourceNode source) {

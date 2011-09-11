@@ -15,11 +15,11 @@ import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
-import org.zwobble.shed.compiler.typechecker.BlockTypeChecker.Result;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ParameterisedFunctionType;
 import org.zwobble.shed.compiler.types.ParameterisedType;
@@ -136,7 +136,7 @@ public class TypeInferer {
                     result = result.withErrorsFrom(addArgumentToContextResult);
                 }
                 
-                TypeResult<Result> blockResult = new BlockTypeChecker().typeCheckBlock(lambdaExpression.getBody(), context, nodeLocations);
+                TypeResult<StatementTypeCheckResult> blockResult = new BlockTypeChecker().typeCheckBlock(lambdaExpression.getBody(), context, nodeLocations);
                 
                 result = result.withErrorsFrom(blockResult);
                 

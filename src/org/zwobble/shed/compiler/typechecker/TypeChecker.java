@@ -1,19 +1,21 @@
 package org.zwobble.shed.compiler.typechecker;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
-import org.zwobble.shed.compiler.typechecker.BlockTypeChecker.Result;
 import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Type;
 
@@ -37,7 +39,7 @@ public class TypeChecker {
             errors.addAll(importTypeCheckResult.getErrors());
         }
 
-        TypeResult<Result> blockResult = new BlockTypeChecker().typeCheckBlock(source.getStatements(), staticContext, nodeLocations);
+        TypeResult<StatementTypeCheckResult> blockResult = typeCheckBlock(source.getStatements(), nodeLocations, staticContext);
         errors.addAll(blockResult.getErrors());
         
         boolean seenPublicStatement = false;
@@ -75,6 +77,9 @@ public class TypeChecker {
         if (statement instanceof PublicDeclarationNode) {
             return typeCheckStatement(((PublicDeclarationNode) statement).getDeclaration(), nodeLocations, context);
         }
+        if (statement instanceof IfThenElseStatementNode) {
+            return typeCheckIfThenElse((IfThenElseStatementNode)statement, nodeLocations, context);
+        }
         throw new RuntimeException("Cannot check type of statement: " + statement);
     }
 
@@ -86,7 +91,7 @@ public class TypeChecker {
         TypeResult<Void> result = TypeResult.success(null);
         context.enterNewScope(none(Type.class));
 
-        TypeResult<Result> blockResult = new BlockTypeChecker().typeCheckBlock(objectDeclaration.getStatements(), context, nodeLocations);
+        TypeResult<StatementTypeCheckResult> blockResult = new BlockTypeChecker().typeCheckBlock(objectDeclaration.getStatements(), context, nodeLocations);
         result = result.withErrorsFrom(blockResult);
         
         if (result.isSuccess()) {
@@ -117,4 +122,22 @@ public class TypeChecker {
         return result;
     }
 
+    private static TypeResult<Void> typeCheckIfThenElse(
+        IfThenElseStatementNode statement,
+        NodeLocations nodeLocations,
+        StaticContext context
+    ) {
+        TypeResult<Type> conditionResult = TypeInferer.inferType(statement.getCondition(), nodeLocations, context);
+        TypeResult<StatementTypeCheckResult> ifTrueResult = typeCheckBlock(statement.getIfTrue(), nodeLocations, context);
+        TypeResult<StatementTypeCheckResult> ifFalseResult = typeCheckBlock(statement.getIfFalse(), nodeLocations, context);
+        return TypeResult.<Void>success(null).withErrorsFrom(TypeResult.combine(Arrays.asList(conditionResult, ifTrueResult, ifFalseResult)));
+    }
+
+    private static TypeResult<StatementTypeCheckResult> typeCheckBlock(
+        List<StatementNode> statements,
+        NodeLocations nodeLocations,
+        StaticContext staticContext
+    ) {
+        return new BlockTypeChecker().typeCheckBlock(statements, staticContext, nodeLocations);
+    }
 }

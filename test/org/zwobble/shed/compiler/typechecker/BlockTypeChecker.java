@@ -2,19 +2,18 @@ package org.zwobble.shed.compiler.typechecker;
 
 import java.util.List;
 
-import lombok.Data;
-
 import org.zwobble.shed.compiler.Function0;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.StatementTypeCheckResult;
 
 import static org.zwobble.shed.compiler.typechecker.TypeChecker.typeCheckStatement;
 
 
 public class BlockTypeChecker {
-    public TypeResult<Result> typeCheckBlock(
+    public TypeResult<StatementTypeCheckResult> typeCheckBlock(
         List<StatementNode> statements,
         StaticContext context,
         NodeLocations nodeLocations
@@ -37,16 +36,11 @@ public class BlockTypeChecker {
             }
         }
         final boolean hasReturned = hasReturnedYet;
-        return result.then(new Function0<TypeResult<Result>>() {
+        return result.then(new Function0<TypeResult<StatementTypeCheckResult>>() {
             @Override
-            public TypeResult<Result> apply() {
-                return TypeResult.success(new Result(hasReturned));
+            public TypeResult<StatementTypeCheckResult> apply() {
+                return TypeResult.success(new StatementTypeCheckResult(hasReturned));
             }
         });
-    }
-    
-    @Data
-    public class Result {
-        private final boolean hasReturned;
     }
 }
