@@ -1,5 +1,6 @@
 package org.zwobble.shed.compiler.parsing;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Test;
@@ -88,6 +89,18 @@ public class StatementsTest {
         assertThat(
             Statements.statement().parse(tokens("public val magic = 42;")),
             isSuccessWithNode(Nodes.publik(Nodes.immutableVar("magic", Nodes.number("42"))))
+        );
+    }
+    
+    @Test public void
+    canParseIfElseStatement() {
+        assertThat(
+            Statements.statement().parse(tokens("if isMorning { eatCereal(); } else { eatPudding(); }")),
+            isSuccessWithNode(Nodes.ifThenElse(
+                Nodes.id("isMorning"),
+                Arrays.<StatementNode>asList(Nodes.expressionStatement(Nodes.call(Nodes.id("eatCereal")))),
+                Arrays.<StatementNode>asList(Nodes.expressionStatement(Nodes.call(Nodes.id("eatPudding"))))
+            ))
         );
     }
 }

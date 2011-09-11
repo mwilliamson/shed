@@ -58,4 +58,8 @@ public class Nodes {
     public static TypeApplicationNode typeApply(ExpressionNode baseType, ExpressionNode... typeParameters) {
         return new TypeApplicationNode(baseType, asList(typeParameters));
     }
+    
+    public static IfThenElseStatementNode ifThenElse(ExpressionNode condition, List<StatementNode> ifTrue, List<StatementNode> ifFalse) {
+        return new IfThenElseStatementNode(condition, ifTrue, ifFalse);
+    }
 }

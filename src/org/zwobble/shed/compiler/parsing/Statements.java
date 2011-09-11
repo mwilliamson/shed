@@ -7,6 +7,7 @@ import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
@@ -39,6 +40,7 @@ public class Statements {
                     publicDeclaration(),
                     declaration(),
                     returnStatement(),
+                    ifThenElseStatement(),
                     expressionStatement()
                 ).parse(tokens);
             }
@@ -99,6 +101,27 @@ public class Statements {
                 @Override
                 public ReturnNode apply(RuleValues result) {
                     return new ReturnNode(result.get(expression));
+                }
+            }
+        );
+    }
+    
+    public static Rule<IfThenElseStatementNode> ifThenElseStatement() {
+        final Rule<ExpressionNode> condition = expression();
+        final Rule<List<StatementNode>> ifTrue = Blocks.block();
+        final Rule<List<StatementNode>> ifFalse = Blocks.block();
+        return then( 
+            sequence(OnError.FINISH,
+                guard(keyword(Keyword.IF)),
+                condition,
+                ifTrue,
+                keyword(Keyword.ELSE),
+                ifFalse
+            ),
+            new SimpleParseAction<RuleValues, IfThenElseStatementNode>() {
+                @Override
+                public IfThenElseStatementNode apply(RuleValues result) {
+                    return new IfThenElseStatementNode(result.get(condition), result.get(ifTrue), result.get(ifFalse));
                 }
             }
         );

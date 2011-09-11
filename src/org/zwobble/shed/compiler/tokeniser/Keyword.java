@@ -9,7 +9,9 @@ public enum Keyword {
     RETURN,
     TRUE,
     FALSE,
-    OBJECT;
+    OBJECT,
+    IF,
+    ELSE;
     
     public String keywordName() {
         return name().toLowerCase();
