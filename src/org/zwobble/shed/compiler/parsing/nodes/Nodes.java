@@ -62,4 +62,8 @@ public class Nodes {
     public static IfThenElseStatementNode ifThenElse(ExpressionNode condition, List<StatementNode> ifTrue, List<StatementNode> ifFalse) {
         return new IfThenElseStatementNode(condition, ifTrue, ifFalse);
     }
+
+    public static StatementNode returnStatement(ExpressionNode expression) {
+        return new ReturnNode(expression);
+    }
 }

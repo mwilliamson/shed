@@ -12,5 +12,9 @@ public class StatementTypeCheckResult {
         return new StatementTypeCheckResult(true);
     }
     
+    public static StatementTypeCheckResult doesReturn(boolean value) {
+        return new StatementTypeCheckResult(value);
+    }
+    
     private final boolean hasReturned;
 }

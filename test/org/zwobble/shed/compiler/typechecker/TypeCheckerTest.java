@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Test;
+import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
@@ -228,6 +229,53 @@ public class TypeCheckerTest {
                 "Condition must be of type Boolean, was of type String"
             )))
         );
+    }
+    
+    @Test public void
+    ifElseDoesNotReturnIfNeitherBranchReturns() {
+        staticContext.add("isMorning", CoreTypes.BOOLEAN);
+        staticContext.add("eatCereal", CoreTypes.functionTypeOf(CoreTypes.UNIT));
+        staticContext.add("eatPudding", CoreTypes.functionTypeOf(CoreTypes.UNIT));
+        IfThenElseStatementNode ifThenElseNode = 
+            Nodes.ifThenElse(
+                Nodes.id("isMorning"),
+                Arrays.<StatementNode>asList(Nodes.expressionStatement(Nodes.call(Nodes.id("eatCereal")))),
+                Arrays.<StatementNode>asList(Nodes.expressionStatement(Nodes.call(Nodes.id("eatPudding"))))
+            );
+        TypeResult<StatementTypeCheckResult> result = TypeChecker.typeCheckStatement(ifThenElseNode, nodeLocations, staticContext);
+        assertThat(result, is(TypeResult.<StatementTypeCheckResult>success(StatementTypeCheckResult.noReturn())));
+    }
+    
+    @Test public void
+    ifElseDoesNotReturnIfOnlyOneBranchReturns() {
+        staticContext.enterNewScope(Option.some(CoreTypes.UNIT));
+        staticContext.add("isMorning", CoreTypes.BOOLEAN);
+        staticContext.add("eatCereal", CoreTypes.functionTypeOf(CoreTypes.UNIT));
+        staticContext.add("eatPudding", CoreTypes.functionTypeOf(CoreTypes.UNIT));
+        IfThenElseStatementNode ifThenElseNode = 
+            Nodes.ifThenElse(
+                Nodes.id("isMorning"),
+                Arrays.<StatementNode>asList(Nodes.returnStatement(Nodes.call(Nodes.id("eatCereal")))),
+                Arrays.<StatementNode>asList(Nodes.expressionStatement(Nodes.call(Nodes.id("eatPudding"))))
+            );
+        TypeResult<StatementTypeCheckResult> result = TypeChecker.typeCheckStatement(ifThenElseNode, nodeLocations, staticContext);
+        assertThat(result, is(TypeResult.<StatementTypeCheckResult>success(StatementTypeCheckResult.noReturn())));
+    }
+    
+    @Test public void
+    ifElseDoesReturnsIfBothBranchesReturn() {
+        staticContext.enterNewScope(Option.some(CoreTypes.UNIT));
+        staticContext.add("isMorning", CoreTypes.BOOLEAN);
+        staticContext.add("eatCereal", CoreTypes.functionTypeOf(CoreTypes.UNIT));
+        staticContext.add("eatPudding", CoreTypes.functionTypeOf(CoreTypes.UNIT));
+        IfThenElseStatementNode ifThenElseNode = 
+            Nodes.ifThenElse(
+                Nodes.id("isMorning"),
+                Arrays.<StatementNode>asList(Nodes.returnStatement(Nodes.call(Nodes.id("eatCereal")))),
+                Arrays.<StatementNode>asList(Nodes.returnStatement(Nodes.call(Nodes.id("eatPudding"))))
+            );
+        TypeResult<StatementTypeCheckResult> result = TypeChecker.typeCheckStatement(ifThenElseNode, nodeLocations, staticContext);
+        assertThat(result, is(TypeResult.<StatementTypeCheckResult>success(StatementTypeCheckResult.alwaysReturns())));
     }
     
     private TypeResult<Void> typeCheck(SourceNode source) {

@@ -136,7 +136,12 @@ public class TypeChecker {
         
         TypeResult<StatementTypeCheckResult> ifTrueResult = typeCheckBlock(statement.getIfTrue(), nodeLocations, context);
         TypeResult<StatementTypeCheckResult> ifFalseResult = typeCheckBlock(statement.getIfFalse(), nodeLocations, context);
-        return TypeResult.success(StatementTypeCheckResult.noReturn())
+        
+        boolean returns = 
+            ifTrueResult.hasValue() && ifTrueResult.get().hasReturned() && 
+            ifFalseResult.hasValue() && ifFalseResult.get().hasReturned();
+        
+        return TypeResult.success(StatementTypeCheckResult.doesReturn(returns))
             .withErrorsFrom(conditionResult)
             .withErrorsFrom(ifTrueResult)
             .withErrorsFrom(ifFalseResult);
