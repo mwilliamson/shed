@@ -1,5 +1,6 @@
 package org.zwobble.shed.compiler.codegenerator;
 
+import java.util.List;
 import java.util.Map;
 
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptBooleanLiteralNode;
@@ -8,11 +9,13 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptExpressionSt
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptFunctionCallNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptFunctionNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptIdentifierNode;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptIfThenElseNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNumberLiteralNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptObjectLiteralNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptPropertyAccessNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptReturnNode;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatements;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStringLiteralNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptVariableDeclarationNode;
@@ -95,15 +98,8 @@ public class JavaScriptWriter {
             
             builder.append("function(");
             Joiner.on(", ").appendTo(builder, function.getArguments());
-            builder.append(") {\n");
-            if (function.getStatements().size() == 0) {
-                builder.append("}");
-            } else {
-                Joiner.on("\n").appendTo(builder, transform(function.getStatements(), stringify(indentationLevel + 1)));
-                builder.append("\n");
-                builder.append(indentationAtLevel(indentationLevel));
-                builder.append("}");
-            }
+            builder.append(") ");
+            writeBlock(builder, indentationLevel, function.getStatements());
             return;   
         }
         if (node instanceof JavaScriptObjectLiteralNode) {
@@ -134,7 +130,30 @@ public class JavaScriptWriter {
             builder.append(propertyName);
             return;
         }
+        if (node instanceof JavaScriptIfThenElseNode) {
+            JavaScriptIfThenElseNode ifThenElse = (JavaScriptIfThenElseNode) node;
+            builder.append(indentationAtLevel(indentationLevel));
+            builder.append("if (");
+            write(ifThenElse.getCondition(), builder, indentationLevel);
+            builder.append(") ");
+            writeBlock(builder, indentationLevel, ifThenElse.getIfTrue());
+            builder.append(" else ");
+            writeBlock(builder, indentationLevel, ifThenElse.getIfFalse());
+            return;
+        }
         throw new RuntimeException("Don't know how to write JavaScript node: " + node);
+    }
+
+    private void writeBlock(StringBuilder builder, int indentationLevel, List<JavaScriptStatementNode> statements) {
+        builder.append("{\n");
+        if (statements.size() == 0) {
+            builder.append("}");
+        } else {
+            Joiner.on("\n").appendTo(builder, transform(statements, stringify(indentationLevel + 1)));
+            builder.append("\n");
+            builder.append(indentationAtLevel(indentationLevel));
+            builder.append("}");
+        }
     }
 
     private void writeJavaScriptString(String value, StringBuilder builder) {

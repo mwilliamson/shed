@@ -1,9 +1,11 @@
 package org.zwobble.shed.compiler.codegenerator;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptExpressionNode;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNode;
 
@@ -138,5 +140,23 @@ public class JavaScriptWriterTest {
             writer.write(js.propertyAccess(js.id("user"), "height")),
             is("user.height")
         );
+    }
+    
+    @Test public void
+    ifThenElseWritesConditionAndBranches() {
+        assertThat(
+            write(js.ifThenElse(
+                js.id("isMorning"),
+                Arrays.<JavaScriptStatementNode>asList(js.expressionStatement(js.call(js.id("eatCereal")))),
+                Arrays.<JavaScriptStatementNode>asList(js.expressionStatement(js.call(js.id("eatPudding"))))
+            ), 1),
+            is("    if (isMorning) {\n        eatCereal();\n    } else {\n        eatPudding();\n    }")
+        );
+    }
+    
+    private String write(JavaScriptNode node, int indentationLevel) {
+        StringBuilder builder = new StringBuilder();
+        writer.write(node, builder, indentationLevel);
+        return builder.toString();
     }
 }
