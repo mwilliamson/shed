@@ -3,7 +3,8 @@ package org.zwobble.shed.compiler.typechecker;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.zwobble.shed.compiler.parsing.CompilerError;
+import org.zwobble.shed.compiler.CompilerError;
+import org.zwobble.shed.compiler.SimpleCompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementTypeCheckResult;
@@ -30,7 +31,7 @@ public class VariableDeclarationTypeChecker {
             TypeResult<Type> typeResult = lookupTypeReference(typeReference, nodeLocations, staticContext);
             errors.addAll(typeResult.getErrors());
             if (errors.isEmpty() && !isSubType(valueTypeResult.get(), typeResult.get())) {
-                errors.add(new CompilerError(
+                errors.add(new SimpleCompilerError(
                     nodeLocations.locate(variableDeclaration.getValue()),
                     "Cannot initialise variable of type \"" + typeResult.get().shortName() +
                         "\" with expression of type \"" + valueTypeResult.get().shortName() + "\""

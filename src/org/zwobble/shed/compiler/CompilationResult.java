@@ -4,7 +4,6 @@ import java.util.List;
 
 import lombok.Data;
 
-import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.tokeniser.TokenPosition;
 
 @Data

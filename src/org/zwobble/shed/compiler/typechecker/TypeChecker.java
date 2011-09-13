@@ -3,7 +3,8 @@ package org.zwobble.shed.compiler.typechecker;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.zwobble.shed.compiler.parsing.CompilerError;
+import org.zwobble.shed.compiler.CompilerError;
+import org.zwobble.shed.compiler.SimpleCompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.SourceRange;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
@@ -49,7 +50,7 @@ public class TypeChecker {
         for (StatementNode statement : source.getStatements()) {
             if (statement instanceof PublicDeclarationNode) {
                 if (seenPublicStatement) {
-                    errors.add(new CompilerError(nodeLocations.locate(statement), "A module may have no more than one public value"));
+                    errors.add(new SimpleCompilerError(nodeLocations.locate(statement), "A module may have no more than one public value"));
                 }
                 seenPublicStatement = true;
             }
@@ -154,7 +155,7 @@ public class TypeChecker {
                 if (SubTyping.isSubType(input, CoreTypes.BOOLEAN)) {
                     return TypeResult.success();
                 } else {
-                    return TypeResult.failure(asList(new CompilerError(
+                    return TypeResult.failure(asList(new SimpleCompilerError(
                         conditionLocation,
                         "Condition must be of type " + CoreTypes.BOOLEAN.shortName() + ", was of type " + input.shortName()
                     )));

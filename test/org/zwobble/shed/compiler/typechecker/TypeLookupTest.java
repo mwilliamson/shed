@@ -3,7 +3,7 @@ package org.zwobble.shed.compiler.typechecker;
 import java.util.Collections;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.parsing.CompilerError;
+import org.zwobble.shed.compiler.SimpleCompilerError;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.types.ClassType;
@@ -53,7 +53,7 @@ public class TypeLookupTest {
         TypeResult<Type> result = lookupTypeReference(node, context);
         assertThat(
             result.getErrors(),
-            is(asList(new CompilerError(range(position(3, 5), position(7, 4)), "Not a type but an instance of \"Number\"")))
+            is((Object)asList(new SimpleCompilerError(range(position(3, 5), position(7, 4)), "Not a type but an instance of \"Number\"")))
         );
     }
     

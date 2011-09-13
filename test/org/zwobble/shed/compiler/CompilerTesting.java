@@ -2,7 +2,6 @@ package org.zwobble.shed.compiler;
 
 import java.util.List;
 
-import org.zwobble.shed.compiler.parsing.CompilerError;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;

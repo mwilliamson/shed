@@ -1,10 +1,13 @@
 package org.zwobble.shed.compiler.parsing;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.SimpleCompilerError;
 import org.zwobble.shed.compiler.parsing.Separator.Type;
 import org.zwobble.shed.compiler.parsing.nodes.Node;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNodeIdentifier;
@@ -16,7 +19,6 @@ import org.zwobble.shed.compiler.tokeniser.TokenType;
 import com.google.common.collect.ImmutableMap;
 
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.parsing.ParseResult.errorRecoveredWithValue;
 import static org.zwobble.shed.compiler.parsing.ParseResult.fatal;
@@ -274,7 +276,7 @@ public class Rules {
         String message = format("Expected %s but got %s", expected, tokenPosition.getToken().describe());
         return new ParseResult<T>(
             null,
-            asList(new CompilerError(tokenPosition.getSourceRange(), message)),
+            Arrays.<CompilerError>asList(new SimpleCompilerError(tokenPosition.getSourceRange(), message)),
             type,
             ImmutableMap.<SyntaxNodeIdentifier, SourceRange>of()
         );

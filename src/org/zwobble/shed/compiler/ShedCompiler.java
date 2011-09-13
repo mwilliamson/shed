@@ -8,7 +8,6 @@ import org.zwobble.shed.compiler.codegenerator.JavaScriptGenerator;
 import org.zwobble.shed.compiler.codegenerator.JavaScriptModuleWrapper;
 import org.zwobble.shed.compiler.codegenerator.JavaScriptWriter;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
-import org.zwobble.shed.compiler.parsing.CompilerError;
 import org.zwobble.shed.compiler.parsing.ParseResult;
 import org.zwobble.shed.compiler.parsing.Parser;
 import org.zwobble.shed.compiler.parsing.TokenNavigator;

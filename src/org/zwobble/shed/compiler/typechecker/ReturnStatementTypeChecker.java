@@ -1,7 +1,7 @@
 package org.zwobble.shed.compiler.typechecker;
 
 import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.parsing.CompilerError;
+import org.zwobble.shed.compiler.SimpleCompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
@@ -20,7 +20,7 @@ public class ReturnStatementTypeChecker {
         Option<Type> expectedReturnType = context.currentScope().getReturnType();
         if (!expectedReturnType.hasValue()) {
             return failure(StatementTypeCheckResult.alwaysReturns(), asList(
-                new CompilerError(
+                new SimpleCompilerError(
                     nodeLocations.locate(returnStatement),
                     "Cannot return from this scope"
                 )
@@ -37,7 +37,7 @@ public class ReturnStatementTypeChecker {
             String expectedName = expectedReturnType.get().shortName();
             String actualName = expressionType.get().shortName();
             return failure(StatementTypeCheckResult.alwaysReturns(), asList(
-                new CompilerError(
+                new SimpleCompilerError(
                     nodeLocations.locate(expression),
                     "Expected return expression of type \"" + expectedName + "\" but was of type \"" + actualName + "\""
                 )

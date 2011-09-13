@@ -7,9 +7,9 @@ import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.Function0;
 import org.zwobble.shed.compiler.HasErrors;
-import org.zwobble.shed.compiler.parsing.CompilerError;
 
 import com.google.common.base.Function;
 
@@ -24,11 +24,11 @@ public class TypeResult<T> implements HasErrors {
         return new TypeResult<T>(true, true, value, Collections.<CompilerError>emptyList());
     }
     
-    public static <T> TypeResult<T> failure(List<CompilerError> errors) {
+    public static <T> TypeResult<T> failure(List<? extends CompilerError> errors) {
         return new TypeResult<T>(false, false, null, errors);
     }
     
-    public static <T> TypeResult<T> failure(T value, List<CompilerError> errors) {
+    public static <T> TypeResult<T> failure(T value, List<? extends CompilerError> errors) {
         return new TypeResult<T>(false, true, value, errors);
     }
     
@@ -50,9 +50,9 @@ public class TypeResult<T> implements HasErrors {
     private final boolean success;
     private final boolean hasValue;
     private final T value;
-    private final List<CompilerError> errors;
+    private final List<? extends CompilerError> errors;
     
-    private TypeResult(boolean success, boolean hasValue, T value, List<CompilerError> errors) {
+    private TypeResult(boolean success, boolean hasValue, T value, List<? extends CompilerError> errors) {
         this.success = success;
         this.hasValue = hasValue;
         this.value = value;
@@ -64,7 +64,7 @@ public class TypeResult<T> implements HasErrors {
     }
     
     @Override
-    public List<CompilerError> getErrors() {
+    public List<? extends CompilerError> getErrors() {
         return errors;
     }
     

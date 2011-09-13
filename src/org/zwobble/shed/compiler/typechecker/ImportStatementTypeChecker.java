@@ -3,7 +3,7 @@ package org.zwobble.shed.compiler.typechecker;
 import java.util.List;
 
 import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.parsing.CompilerError;
+import org.zwobble.shed.compiler.SimpleCompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.types.Type;
@@ -22,7 +22,7 @@ public class ImportStatementTypeChecker {
         if (importedValueType.hasValue()) {
             return StaticContexts.tryAdd(context, identifier, importedValueType.get(), nodeLocations.locate(importStatement));
         } else {
-            return failure(asList(new CompilerError(
+            return failure(asList(new SimpleCompilerError(
                 nodeLocations.locate(importStatement),
                 "The import \"" + Joiner.on(".").join(identifiers) + "\" cannot be resolved"
             )));

@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Test;
+import org.zwobble.shed.compiler.SimpleCompilerError;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
@@ -70,11 +71,12 @@ public class TopLevelNodesTest {
     
     @Test public void
     errorsHaveLineNumbersAndCharacterNumbers() {
-        assertThat(TopLevelNodes.source().parse(tokens("packag shed.util.collections; import shed import shed.collections;\nblah")).getErrors(),
-            is(asList(
-                new CompilerError(range(position(1, 1), position(1, 7)), "Expected keyword \"package\" but got identifier \"packag\""),
-                new CompilerError(range(position(1, 43), position(1, 49)), "Expected symbol \";\" but got keyword \"import\""),
-                new CompilerError(range(position(2, 5), position(2, 5)), "Expected symbol \";\" but got end of source")
+        assertThat(
+            TopLevelNodes.source().parse(tokens("packag shed.util.collections; import shed import shed.collections;\nblah")).getErrors(),
+            is((Object)asList(
+                new SimpleCompilerError(range(position(1, 1), position(1, 7)), "Expected keyword \"package\" but got identifier \"packag\""),
+                new SimpleCompilerError(range(position(1, 43), position(1, 49)), "Expected symbol \";\" but got keyword \"import\""),
+                new SimpleCompilerError(range(position(2, 5), position(2, 5)), "Expected symbol \";\" but got end of source")
                 
             ))
         );
