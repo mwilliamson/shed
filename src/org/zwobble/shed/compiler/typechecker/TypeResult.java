@@ -13,6 +13,8 @@ import org.zwobble.shed.compiler.HasErrors;
 
 import com.google.common.base.Function;
 
+import static java.util.Arrays.asList;
+
 @ToString
 @EqualsAndHashCode
 public class TypeResult<T> implements HasErrors {
@@ -26,6 +28,10 @@ public class TypeResult<T> implements HasErrors {
     
     public static <T> TypeResult<T> failure(List<? extends CompilerError> errors) {
         return new TypeResult<T>(false, false, null, errors);
+    }
+    
+    public static <T> TypeResult<T> failure(CompilerError error) {
+        return new TypeResult<T>(false, false, null, asList(error));
     }
     
     public static <T> TypeResult<T> failure(T value, List<? extends CompilerError> errors) {
