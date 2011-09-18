@@ -1,6 +1,5 @@
 package org.zwobble.shed.compiler.referenceresolution;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,7 +27,6 @@ import org.zwobble.shed.compiler.typechecker.SimpleNodeLocations;
 import com.google.common.collect.ImmutableMap;
 
 import static java.util.Arrays.asList;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -114,6 +112,37 @@ public class ReferenceResolverTest {
         assertThat(resolveReferences(source), hasReference(reference, declaration));
     }
 
+    @Test public void
+    canOverrideDeclarationOfVariableInSubScope() {
+        SyntaxNode source = Nodes.block(
+            Nodes.immutableVar("wind", Nodes.string("decide")),
+            Nodes.expressionStatement(new LongLambdaExpressionNode(
+                Collections.<FormalArgumentNode>emptyList(),
+                Nodes.id("String"),
+                Nodes.block(
+                    Nodes.immutableVar("wind", Nodes.bool(false))
+                )
+            ))
+        );
+        assertThat(resolveReferences(source), isSuccess());
+    }
+
+    @Test public void
+    cannotReferToVariableInCurrentScopeAndParentScopeNotYetDefinedInCurrentScope() {
+        SyntaxNode source = Nodes.block(
+            Nodes.immutableVar("wind", Nodes.string("decide")),
+            Nodes.expressionStatement(new LongLambdaExpressionNode(
+                Collections.<FormalArgumentNode>emptyList(),
+                Nodes.id("String"),
+                Nodes.block(
+                    Nodes.expressionStatement(Nodes.id("wind")),
+                    Nodes.immutableVar("wind", Nodes.bool(false))
+                )
+            ))
+        );
+        assertThat(resolveReferences(source), isFailureWithErrors(new VariableNotDeclaredYetError("wind")));
+    }
+
     private ReferenceResolverResult resolveReferences(SyntaxNode node) {
         return resolver.resolveReferences(node, nodeLocations);
     }
@@ -145,11 +174,19 @@ public class ReferenceResolverTest {
     }
     
     private Matcher<ReferenceResolverResult> isFailureWithErrors(CompilerErrorDescription... errorsArray) {
-        final List<CompilerErrorDescription> errors = Arrays.asList(errorsArray);
+        List<CompilerErrorDescription> errors = asList(errorsArray);
+        return hasErrors("failure with errors: " + errors, errors);
+    }
+
+    private Matcher<ReferenceResolverResult> isSuccess() {
+        return hasErrors("success", Collections.<CompilerErrorDescription>emptyList());
+    }
+    
+    private Matcher<ReferenceResolverResult> hasErrors(final String matcherDescription, final List<CompilerErrorDescription> errors) {
         return new TypeSafeDiagnosingMatcher<ReferenceResolverResult>() {
             @Override
             public void describeTo(Description description) {
-                description.appendText("failure with errors: " + errors);
+                description.appendText(matcherDescription);
             }
 
             @Override

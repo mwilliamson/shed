@@ -17,4 +17,7 @@ public interface Scope {
     
     public class NotInScope implements Result {
     }
+    
+    public class NotDeclaredYet implements Result {
+    }
 }
