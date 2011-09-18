@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.SimpleCompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
@@ -101,7 +101,7 @@ public class TypeInferer {
                             if (expressionType.equals(returnType)) {
                                 return success();
                             } else {
-                                return failure(asList(new SimpleCompilerError(
+                                return failure(asList(CompilerError.error(
                                     nodeLocations.locate(lambdaExpression.getBody()),
                                     "Type mismatch: expected expression of type \"" + returnType.shortName() +
                                         "\" but was of type \"" + expressionType.shortName() + "\""
@@ -143,7 +143,7 @@ public class TypeInferer {
                 result = result.withErrorsFrom(blockResult);
                 
                 if (!blockResult.get().hasReturned()) {
-                    result = result.withErrorsFrom(TypeResult.<Type>failure(asList(new SimpleCompilerError(
+                    result = result.withErrorsFrom(TypeResult.<Type>failure(asList(CompilerError.error(
                         nodeLocations.locate(lambdaExpression),
                         "Expected return statement"
                     ))));
@@ -167,7 +167,7 @@ public class TypeInferer {
             @Override
             public TypeResult<Type> apply(Type calledType) {
                 if (!CoreTypes.isFunction(calledType)) {
-                    SimpleCompilerError error = new SimpleCompilerError(nodeLocations.locate(expression), "Cannot call objects that aren't functions");
+                    CompilerError error = CompilerError.error(nodeLocations.locate(expression), "Cannot call objects that aren't functions");
                     return TypeResult.failure(asList(error));
                 }
                 TypeApplication functionType = (TypeApplication)calledType;
@@ -177,7 +177,7 @@ public class TypeInferer {
                 int numberOfActualArguments = expression.getArguments().size();
                 if (numberOfFormalAguments != numberOfActualArguments) {
                     String errorMessage = "Function requires " + numberOfFormalAguments + " argument(s), but is called with " + numberOfActualArguments;
-                    SimpleCompilerError error = new SimpleCompilerError(nodeLocations.locate(expression), errorMessage);
+                    CompilerError error = CompilerError.error(nodeLocations.locate(expression), errorMessage);
                     return TypeResult.failure(asList(error));
                 }
                 
@@ -191,7 +191,7 @@ public class TypeInferer {
                             if (isSubType(actualArgumentType, typeParameters.get(index))) {
                                 return success();
                             } else {
-                                return failure(asList(new SimpleCompilerError(
+                                return failure(asList(CompilerError.error(
                                     nodeLocations.locate(argument),
                                     "Expected expression of type " + typeParameters.get(index).shortName() +
                                         " as argument " + (index + 1) + ", but got expression of type " + actualArgumentType.shortName()
@@ -219,7 +219,7 @@ public class TypeInferer {
                 if (members.containsKey(name)) {
                     return TypeResult.success(members.get(name));
                 } else {
-                    return TypeResult.failure(asList(new SimpleCompilerError(nodeLocations.locate(memberAccess), "No such member: " + name)));
+                    return TypeResult.failure(asList(CompilerError.error(nodeLocations.locate(memberAccess), "No such member: " + name)));
                 }
             }
         });
@@ -310,7 +310,7 @@ public class TypeInferer {
             @Override
             public TypeResult<Void> apply(FormalArgumentType argument) {
                 if (context.isDeclaredInCurrentScope(argument.getName())) {
-                    return failure(asList(new SimpleCompilerError(
+                    return failure(asList(CompilerError.error(
                         nodeLocations.locate(argument.getNode()),
                         "Duplicate argument name \"" + argument.getName() + "\""
                     )));

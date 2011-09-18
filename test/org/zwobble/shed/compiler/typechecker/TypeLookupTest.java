@@ -3,16 +3,16 @@ package org.zwobble.shed.compiler.typechecker;
 import java.util.Collections;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.SimpleCompilerError;
+import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
 import org.zwobble.shed.compiler.types.InterfaceType;
+import org.zwobble.shed.compiler.types.ParameterisedType;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
-import org.zwobble.shed.compiler.types.ParameterisedType;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -53,7 +53,7 @@ public class TypeLookupTest {
         TypeResult<Type> result = lookupTypeReference(node, context);
         assertThat(
             result.getErrors(),
-            is((Object)asList(new SimpleCompilerError(range(position(3, 5), position(7, 4)), "Not a type but an instance of \"Number\"")))
+            is((Object)asList(CompilerError.error(range(position(3, 5), position(7, 4)), "Not a type but an instance of \"Number\"")))
         );
     }
     

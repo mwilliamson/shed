@@ -1,6 +1,6 @@
 package org.zwobble.shed.compiler.typechecker;
 
-import org.zwobble.shed.compiler.SimpleCompilerError;
+import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.SourceRange;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
@@ -26,7 +26,7 @@ public class TypeLookup {
             @Override
             public TypeResult<Type> apply(Type variableType) {
                 if (!isType(variableType)) {
-                    return failure(asList(new SimpleCompilerError(
+                    return failure(asList(CompilerError.error(
                         nodeLocation,
                         "Not a type but an instance of \"" + variableType.shortName() + "\""
                     )));

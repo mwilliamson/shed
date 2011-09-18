@@ -31,7 +31,7 @@ public class ReferenceResolver {
             VariableIdentifierNode variableIdentifier = (VariableIdentifierNode) node;
             Result lookupResult = scope.lookup(variableIdentifier.getIdentifier());
             if (lookupResult instanceof NotInScope) {
-                errors.add(new VariableNotInScopeError(variableIdentifier.getIdentifier(), nodeLocations.locate(node)));
+                errors.add(new CompilerError(nodeLocations.locate(node), new VariableNotInScopeError(variableIdentifier.getIdentifier())));
             } else {
                 references.addReference(variableIdentifier, ((Success)lookupResult).getNode());                
             }

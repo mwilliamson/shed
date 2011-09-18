@@ -9,6 +9,7 @@ import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerError;
+import org.zwobble.shed.compiler.CompilerErrorDescription;
 import org.zwobble.shed.compiler.CompilerTesting;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
@@ -55,7 +56,7 @@ public class ReferenceResolverTest {
     @Test public void
     referringToVariablesNotInScopeAddsError() {
         VariableIdentifierNode reference = Nodes.id("height");
-        assertThat(resolveReferences(reference), isFailureWithErrors("No variable \"height\" in scope"));
+        assertThat(resolveReferences(reference), isFailureWithErrors(new VariableNotInScopeError("height")));
     }
 
     private ReferenceResolverResult resolveReferences(SyntaxNode node) {
@@ -88,8 +89,8 @@ public class ReferenceResolverTest {
         };
     }
     
-    private Matcher<ReferenceResolverResult> isFailureWithErrors(final String... errorsArray) {
-        final List<String> errors = Arrays.asList(errorsArray);
+    private Matcher<ReferenceResolverResult> isFailureWithErrors(CompilerErrorDescription... errorsArray) {
+        final List<CompilerErrorDescription> errors = Arrays.asList(errorsArray);
         return new TypeSafeDiagnosingMatcher<ReferenceResolverResult>() {
             @Override
             public void describeTo(Description description) {
@@ -98,7 +99,7 @@ public class ReferenceResolverTest {
 
             @Override
             protected boolean matchesSafely(ReferenceResolverResult item, Description mismatchDescription) {
-                List<String> actualErrors = CompilerTesting.errorStrings(item);
+                List<CompilerErrorDescription> actualErrors = CompilerTesting.errorDescriptions(item);
                 if (actualErrors.equals(errors)) {
                     return true;
                 } else {

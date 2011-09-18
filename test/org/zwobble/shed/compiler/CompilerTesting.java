@@ -2,7 +2,6 @@ package org.zwobble.shed.compiler;
 
 import java.util.List;
 
-
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
@@ -15,9 +14,21 @@ public class CompilerTesting {
         return new Function<CompilerError, String>() {
             @Override
             public String apply(CompilerError input) {
-                return input.getDescription();
+                return input.describe();
             }
         };
     }
 
+    public static List<CompilerErrorDescription> errorDescriptions(HasErrors result) {
+        return Lists.transform(result.getErrors(), toDescription());
+    }
+    
+    private static Function<CompilerError, CompilerErrorDescription> toDescription() {
+        return new Function<CompilerError, CompilerErrorDescription>() {
+            @Override
+            public CompilerErrorDescription apply(CompilerError input) {
+                return input.getDescription();
+            }
+        };
+    }
 }

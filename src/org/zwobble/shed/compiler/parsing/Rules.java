@@ -7,10 +7,9 @@ import java.util.List;
 
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.SimpleCompilerError;
 import org.zwobble.shed.compiler.parsing.Separator.Type;
-import org.zwobble.shed.compiler.parsing.nodes.Node;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
+import org.zwobble.shed.compiler.parsing.nodes.Node;
 import org.zwobble.shed.compiler.tokeniser.Keyword;
 import org.zwobble.shed.compiler.tokeniser.Token;
 import org.zwobble.shed.compiler.tokeniser.TokenPosition;
@@ -276,7 +275,7 @@ public class Rules {
         String message = format("Expected %s but got %s", expected, tokenPosition.getToken().describe());
         return new ParseResult<T>(
             null,
-            Arrays.<CompilerError>asList(new SimpleCompilerError(tokenPosition.getSourceRange(), message)),
+            Arrays.<CompilerError>asList(CompilerError.error(tokenPosition.getSourceRange(), message)),
             type,
             ImmutableMap.<Identity<?>, SourceRange>of()
         );

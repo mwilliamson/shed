@@ -2,6 +2,7 @@ package org.zwobble.shed.compiler.typechecker;
 
 import java.util.List;
 
+import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
@@ -19,7 +20,7 @@ public class ImportStatementTypeChecker {
         if (importedValueType.hasValue()) {
             return StaticContexts.tryAdd(context, identifier, importedValueType.get(), nodeLocations.locate(importStatement));
         } else {
-            return failure(new UnresolvedImportError(nodeLocations.locate(importStatement), identifiers));
+            return failure(new CompilerError(nodeLocations.locate(importStatement), new UnresolvedImportError(identifiers)));
         }
     }
 }

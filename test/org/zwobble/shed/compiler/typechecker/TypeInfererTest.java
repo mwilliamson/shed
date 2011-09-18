@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.SimpleCompilerError;
+import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
@@ -80,7 +80,7 @@ public class TypeInfererTest {
         nodeLocations.put(node, range(position(3, 5), position(7, 4)));
         TypeResult<Type> result = inferType(node, context);
         assertThat(result, is(
-            (Object)failure(asList(new SimpleCompilerError(
+            (Object)failure(asList(CompilerError.error(
                 range(position(3, 5), position(7, 4)),
                 "No variable \"value\" in scope"
             )))
@@ -127,7 +127,7 @@ public class TypeInfererTest {
         TypeResult<Type> result = inferType(functionExpression, context);
         assertThat(
             result.getErrors(),
-            is((Object)asList(new SimpleCompilerError(
+            is((Object)asList(CompilerError.error(
                 range(position(3, 5), position(7, 4)),
                 "Type mismatch: expected expression of type \"String\" but was of type \"Number\""
             )))
