@@ -7,15 +7,19 @@ import java.util.List;
 import java.util.Set;
 
 import org.zwobble.shed.compiler.CompilerError;
+import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.LambdaExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
+import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
@@ -68,6 +72,15 @@ public class ReferenceResolver {
             for (FormalArgumentNode formalArgument : formalArguments) {
                 lambdaScope.add(formalArgument.getIdentifier(), formalArgument);
                 resolveReferences(formalArgument.getType(), nodeLocations, references, lambdaScope, errors);
+            }
+            if (node instanceof ShortLambdaExpressionNode) {
+                Option<? extends ExpressionNode> returnType = ((ShortLambdaExpressionNode) node).getReturnType();
+                if (returnType.hasValue()) {
+                    resolveReferences(returnType.get(), nodeLocations, references, scope, errors);                    
+                }
+            }
+            if (node instanceof LongLambdaExpressionNode) {
+                resolveReferences(((LongLambdaExpressionNode) node).getReturnType(), nodeLocations, references, scope, errors);
             }
             resolveReferences(lambda.getBody(), nodeLocations, references, lambdaScope, errors);
         } else if (node instanceof ReturnNode) {

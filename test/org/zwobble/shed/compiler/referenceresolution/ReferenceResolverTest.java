@@ -15,7 +15,6 @@ import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
-import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
@@ -152,6 +151,28 @@ public class ReferenceResolverTest {
             asList(new FormalArgumentNode("first", typeReference), new FormalArgumentNode("second", Nodes.id("Number"))),
             Option.<ExpressionNode>none(),
             Nodes.id("first")
+        );
+        assertThat(resolveReferences(source), hasReference(typeReference, CoreModule.GLOBAL_DECLARATIONS.get("String")));
+    }
+
+    @Test public void
+    typeExpressionsOfShortLambdaReturnTypeAreLookedUp() {
+        VariableIdentifierNode typeReference = Nodes.id("String");
+        SyntaxNode source = new ShortLambdaExpressionNode(
+            Collections.<FormalArgumentNode>emptyList(),
+            Option.<ExpressionNode>some(typeReference),
+            Nodes.string("Falling from your mouth")
+        );
+        assertThat(resolveReferences(source), hasReference(typeReference, CoreModule.GLOBAL_DECLARATIONS.get("String")));
+    }
+
+    @Test public void
+    typeExpressionsOfLongLambdaReturnTypeAreLookedUp() {
+        VariableIdentifierNode typeReference = Nodes.id("String");
+        SyntaxNode source = new LongLambdaExpressionNode(
+            Collections.<FormalArgumentNode>emptyList(),
+            typeReference,
+            Nodes.block(Nodes.returnStatement(Nodes.string("Falling from your mouth")))
         );
         assertThat(resolveReferences(source), hasReference(typeReference, CoreModule.GLOBAL_DECLARATIONS.get("String")));
     }
