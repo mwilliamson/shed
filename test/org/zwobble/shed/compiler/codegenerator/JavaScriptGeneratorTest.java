@@ -278,8 +278,8 @@ public class JavaScriptGeneratorTest {
         IfThenElseStatementNode source =  Nodes.ifThenElse(Nodes.id("isMorning"), asList(eatCereal), asList(eatPudding));
         assertGeneratedJavaScript(source, js.ifThenElse(
             js.id("isMorning"),
-            asList(js.scope(generator.generateStatement(eatCereal))),
-            asList(js.scope(generator.generateStatement(eatPudding)))
+            asList(generator.generateStatement(eatCereal)),
+            asList(generator.generateStatement(eatPudding))
         ));
     }
     
