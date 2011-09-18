@@ -59,6 +59,14 @@ public class ReferenceResolverTest {
         assertThat(resolveReferences(reference), isFailureWithErrors(new VariableNotInScopeError("height")));
     }
 
+    @Test public void
+    declaringVariableWithSameNameInSameScopeAddsError() {
+        DeclarationNode firstDeclaration = Nodes.immutableVar("x", Nodes.number("42"));
+        DeclarationNode secondDeclaration = Nodes.immutableVar("x", Nodes.number("42"));
+        SyntaxNode source = Nodes.block(firstDeclaration, secondDeclaration);
+        assertThat(resolveReferences(source), isFailureWithErrors(new DuplicateIdentifierError("x")));
+    }
+
     private ReferenceResolverResult resolveReferences(SyntaxNode node) {
         return resolver.resolveReferences(node, nodeLocations);
     }

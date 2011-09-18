@@ -44,7 +44,12 @@ public class ReferenceResolver {
             }
         } else if (node instanceof DeclarationNode) {
             DeclarationNode declaration = (DeclarationNode)node;
-            scope.add(declaration.getIdentifier(), declaration);
+            if (scope.lookup(declaration.getIdentifier()) instanceof NotInScope) {
+                scope.add(declaration.getIdentifier(), declaration);
+            } else {
+                errors.add(new CompilerError(nodeLocations.locate(node), new DuplicateIdentifierError(declaration.getIdentifier())));
+            }
+            
         } else if (node instanceof ExpressionStatementNode) {
             resolveReferences(((ExpressionStatementNode) node).getExpression(), nodeLocations, references, scope, errors);
         } else {

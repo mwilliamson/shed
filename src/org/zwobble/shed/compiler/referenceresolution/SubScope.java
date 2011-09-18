@@ -16,7 +16,7 @@ public class SubScope implements Scope {
         this.parentScope = parentScope;
     }
     
-    void add(String identifier, DeclarationNode node) {
+    public void add(String identifier, DeclarationNode node) {
         variables.put(identifier, new Identity<DeclarationNode>(node));
     }
 
