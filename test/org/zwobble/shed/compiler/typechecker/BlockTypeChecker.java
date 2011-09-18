@@ -1,7 +1,5 @@
 package org.zwobble.shed.compiler.typechecker;
 
-import java.util.List;
-
 import org.zwobble.shed.compiler.Function0;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
@@ -13,7 +11,7 @@ import static org.zwobble.shed.compiler.typechecker.TypeChecker.typeCheckStateme
 
 public class BlockTypeChecker {
     public TypeResult<StatementTypeCheckResult> typeCheckBlock(
-        List<StatementNode> statements,
+        Iterable<StatementNode> statements,
         StaticContext context,
         NodeLocations nodeLocations
     ) {

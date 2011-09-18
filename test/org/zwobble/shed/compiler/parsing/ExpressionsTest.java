@@ -101,7 +101,7 @@ public class ExpressionsTest {
             isSuccessWithNode(new LongLambdaExpressionNode(
                 Collections.<FormalArgumentNode>emptyList(),
                 new VariableIdentifierNode("String"),
-                asList(
+                Nodes.block(
                     new ImmutableVariableNode("x", Option.<ExpressionNode>none(), new NumberLiteralNode("2")),
                     new ReturnNode(new NumberLiteralNode("3"))
                 )

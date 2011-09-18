@@ -3,6 +3,7 @@ package org.zwobble.shed.compiler.parsing;
 import java.util.List;
 
 import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
@@ -10,13 +11,8 @@ import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.PartialNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
-import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
-
-import static org.zwobble.shed.compiler.parsing.SourceRange.range;
-
-import static org.zwobble.shed.compiler.parsing.Rules.zeroOrMore;
 
 import static org.zwobble.shed.compiler.parsing.Blocks.block;
 import static org.zwobble.shed.compiler.parsing.Rules.firstOf;
@@ -26,9 +22,11 @@ import static org.zwobble.shed.compiler.parsing.Rules.sequence;
 import static org.zwobble.shed.compiler.parsing.Rules.symbol;
 import static org.zwobble.shed.compiler.parsing.Rules.then;
 import static org.zwobble.shed.compiler.parsing.Rules.tokenOfType;
+import static org.zwobble.shed.compiler.parsing.Rules.zeroOrMore;
 import static org.zwobble.shed.compiler.parsing.Rules.zeroOrMoreWithSeparator;
 import static org.zwobble.shed.compiler.parsing.Separator.hardSeparator;
 import static org.zwobble.shed.compiler.parsing.Separator.softSeparator;
+import static org.zwobble.shed.compiler.parsing.SourceRange.range;
 import static org.zwobble.shed.compiler.parsing.TypeReferences.typeSpecifier;
 import static org.zwobble.shed.compiler.tokeniser.TokenType.IDENTIFIER;
 
@@ -189,7 +187,7 @@ public class Expressions {
     private static Rule<LongLambdaExpressionNode> longLambdaExpression() {
         final Rule<List<FormalArgumentNode>> formalArguments;
         final Rule<ExpressionNode> returnType;
-        final Rule<List<StatementNode>> functionBody;
+        final Rule<BlockNode> functionBody;
         return then(
             sequence(OnError.FINISH,
                 formalArguments = guard(formalArgumentList()),

@@ -1,18 +1,13 @@
 package org.zwobble.shed.compiler.parsing;
 
-import java.util.Arrays;
-import java.util.Collections;
-
 import org.junit.Test;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
-import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
-import static java.util.Arrays.asList;
 import static org.junit.Assert.assertThat;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
@@ -64,7 +59,7 @@ public class StatementsTest {
     canDeclareAnEmptyObject() {
         assertThat(
             Statements.statement().parse(tokens("object browser { }")),
-            isSuccessWithNode(Nodes.object("browser", Collections.<StatementNode>emptyList()))
+            isSuccessWithNode(Nodes.object("browser", Nodes.block()))
         );
     }
     
@@ -72,7 +67,7 @@ public class StatementsTest {
     canDeclareObjectWithStatements() {
         assertThat(
             Statements.statement().parse(tokens("object browser { val x = 1; }")),
-            isSuccessWithNode(Nodes.object("browser", asList(Statements.statement().parse(tokens("val x = 1;")).get())))
+            isSuccessWithNode(Nodes.object("browser", Nodes.block(Statements.statement().parse(tokens("val x = 1;")).get())))
         );
     }
     
@@ -80,7 +75,7 @@ public class StatementsTest {
     canDeclarePublicObjects() {
         assertThat(
             Statements.statement().parse(tokens("public object browser { }")),
-            isSuccessWithNode(Nodes.publik(Nodes.object("browser", Collections.<StatementNode>emptyList())))
+            isSuccessWithNode(Nodes.publik(Nodes.object("browser", Nodes.block())))
         );
     }
     
@@ -98,8 +93,8 @@ public class StatementsTest {
             Statements.statement().parse(tokens("if isMorning { eatCereal(); } else { eatPudding(); }")),
             isSuccessWithNode(Nodes.ifThenElse(
                 Nodes.id("isMorning"),
-                Arrays.<StatementNode>asList(Nodes.expressionStatement(Nodes.call(Nodes.id("eatCereal")))),
-                Arrays.<StatementNode>asList(Nodes.expressionStatement(Nodes.call(Nodes.id("eatPudding"))))
+                Nodes.block(Nodes.expressionStatement(Nodes.call(Nodes.id("eatCereal")))),
+                Nodes.block(Nodes.expressionStatement(Nodes.call(Nodes.id("eatPudding"))))
             ))
         );
     }

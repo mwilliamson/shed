@@ -108,7 +108,7 @@ public class TypeCheckerTest {
                     new LongLambdaExpressionNode(
                         Collections.<FormalArgumentNode>emptyList(),
                         new VariableIdentifierNode("String"),
-                        Arrays.<StatementNode>asList(
+                        Nodes.block(
                             new ImmutableVariableNode("x", none(ExpressionNode.class), new BooleanLiteralNode(true)),
                             new ReturnNode(new StringLiteralNode("Stop!"))
                         )
@@ -138,7 +138,7 @@ public class TypeCheckerTest {
     @Test public void
     declaringObjectAddsItToScope() {
         ObjectDeclarationNode objectDeclarationNode = 
-            new ObjectDeclarationNode("browser", asList((StatementNode)Nodes.immutableVar("version", Nodes.number("1.2"))));
+            new ObjectDeclarationNode("browser", Nodes.block(Nodes.immutableVar("version", Nodes.number("1.2"))));
         TypeResult<StatementTypeCheckResult> result = 
             TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext);
         assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
@@ -149,7 +149,7 @@ public class TypeCheckerTest {
     bodyOfObjectIsTypeChecked() {
         ObjectDeclarationNode objectDeclarationNode = new ObjectDeclarationNode(
             "browser",
-            asList((StatementNode)Nodes.immutableVar("version", Nodes.id("String"), Nodes.number("1.2")))
+            Nodes.block(Nodes.immutableVar("version", Nodes.id("String"), Nodes.number("1.2")))
         );
         TypeResult<StatementTypeCheckResult> result =
             TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext);
@@ -159,7 +159,7 @@ public class TypeCheckerTest {
     @Test public void
     bodyOfObjectIsInSeparateScope() {
         ObjectDeclarationNode objectDeclarationNode = 
-            new ObjectDeclarationNode("browser", asList((StatementNode)Nodes.immutableVar("browser", Nodes.number("1.2"))));
+            new ObjectDeclarationNode("browser", Nodes.block(Nodes.immutableVar("browser", Nodes.number("1.2"))));
         TypeResult<StatementTypeCheckResult> result = 
             TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext);
         assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
@@ -168,7 +168,7 @@ public class TypeCheckerTest {
     @Test public void
     objectDeclarationCreatesNewTypeWithPublicMembers() {
         ObjectDeclarationNode objectDeclarationNode = 
-            new ObjectDeclarationNode("browser", Arrays.<StatementNode>asList(
+            new ObjectDeclarationNode("browser", Nodes.block(
                 Nodes.immutableVar("version", Nodes.number("1.2")),
                 Nodes.publik(Nodes.immutableVar("name", Nodes.string("firefox")))
             ));
@@ -182,9 +182,9 @@ public class TypeCheckerTest {
     @Test public void
     cannotAccessVariableFromSuperScopeIfCurrentScopeDefinesVariableWithSameNameLater() {
         ObjectDeclarationNode objectDeclarationNode = 
-            Nodes.object("person", Arrays.<StatementNode>asList(
+            Nodes.object("person", Nodes.block(
                 Nodes.immutableVar("name", Nodes.string("Bob")),
-                Nodes.object("parent", Arrays.<StatementNode>asList(
+                Nodes.object("parent", Nodes.block(
                     Nodes.immutableVar("identifier", Nodes.id("name")),
                     Nodes.immutableVar("name", Nodes.string("Jim"))
                 ))
@@ -199,8 +199,8 @@ public class TypeCheckerTest {
         IfThenElseStatementNode ifThenElseNode = 
             Nodes.ifThenElse(
                 Nodes.id("isMorning"),
-                Arrays.<StatementNode>asList(Nodes.expressionStatement(Nodes.call(Nodes.id("eatCereal")))),
-                Arrays.<StatementNode>asList(Nodes.expressionStatement(Nodes.call(Nodes.id("eatPudding"))))
+                Nodes.block(Nodes.expressionStatement(Nodes.call(Nodes.id("eatCereal")))),
+                Nodes.block(Nodes.expressionStatement(Nodes.call(Nodes.id("eatPudding"))))
             );
         TypeResult<?> result = TypeChecker.typeCheckStatement(ifThenElseNode, nodeLocations, staticContext);
         assertThat(
@@ -219,8 +219,8 @@ public class TypeCheckerTest {
         IfThenElseStatementNode ifThenElseNode = 
             Nodes.ifThenElse(
                 Nodes.id("isMorning"),
-                Arrays.<StatementNode>asList(),
-                Arrays.<StatementNode>asList()
+                Nodes.block(),
+                Nodes.block()
             );
         TypeResult<?> result = TypeChecker.typeCheckStatement(ifThenElseNode, nodeLocations, staticContext);
         assertThat(
@@ -239,8 +239,8 @@ public class TypeCheckerTest {
         IfThenElseStatementNode ifThenElseNode = 
             Nodes.ifThenElse(
                 Nodes.id("isMorning"),
-                Arrays.<StatementNode>asList(Nodes.expressionStatement(Nodes.call(Nodes.id("eatCereal")))),
-                Arrays.<StatementNode>asList(Nodes.expressionStatement(Nodes.call(Nodes.id("eatPudding"))))
+                Nodes.block(Nodes.expressionStatement(Nodes.call(Nodes.id("eatCereal")))),
+                Nodes.block(Nodes.expressionStatement(Nodes.call(Nodes.id("eatPudding"))))
             );
         TypeResult<StatementTypeCheckResult> result = TypeChecker.typeCheckStatement(ifThenElseNode, nodeLocations, staticContext);
         assertThat(result, is(TypeResult.<StatementTypeCheckResult>success(StatementTypeCheckResult.noReturn())));
@@ -255,8 +255,8 @@ public class TypeCheckerTest {
         IfThenElseStatementNode ifThenElseNode = 
             Nodes.ifThenElse(
                 Nodes.id("isMorning"),
-                Arrays.<StatementNode>asList(Nodes.returnStatement(Nodes.call(Nodes.id("eatCereal")))),
-                Arrays.<StatementNode>asList(Nodes.expressionStatement(Nodes.call(Nodes.id("eatPudding"))))
+                Nodes.block(Nodes.returnStatement(Nodes.call(Nodes.id("eatCereal")))),
+                Nodes.block(Nodes.expressionStatement(Nodes.call(Nodes.id("eatPudding"))))
             );
         TypeResult<StatementTypeCheckResult> result = TypeChecker.typeCheckStatement(ifThenElseNode, nodeLocations, staticContext);
         assertThat(result, is(TypeResult.<StatementTypeCheckResult>success(StatementTypeCheckResult.noReturn())));
@@ -271,8 +271,8 @@ public class TypeCheckerTest {
         IfThenElseStatementNode ifThenElseNode = 
             Nodes.ifThenElse(
                 Nodes.id("isMorning"),
-                Arrays.<StatementNode>asList(Nodes.returnStatement(Nodes.call(Nodes.id("eatCereal")))),
-                Arrays.<StatementNode>asList(Nodes.returnStatement(Nodes.call(Nodes.id("eatPudding"))))
+                Nodes.block(Nodes.returnStatement(Nodes.call(Nodes.id("eatCereal")))),
+                Nodes.block(Nodes.returnStatement(Nodes.call(Nodes.id("eatPudding"))))
             );
         TypeResult<StatementTypeCheckResult> result = TypeChecker.typeCheckStatement(ifThenElseNode, nodeLocations, staticContext);
         assertThat(result, is(TypeResult.<StatementTypeCheckResult>success(StatementTypeCheckResult.alwaysReturns())));
@@ -283,8 +283,8 @@ public class TypeCheckerTest {
         IfThenElseStatementNode ifThenElseNode = 
             Nodes.ifThenElse(
                 Nodes.bool(true),
-                Arrays.<StatementNode>asList(Nodes.immutableVar("x", Nodes.bool(true))),
-                Arrays.<StatementNode>asList(Nodes.immutableVar("x", Nodes.bool(true)))
+                Nodes.block(Nodes.immutableVar("x", Nodes.bool(true))),
+                Nodes.block(Nodes.immutableVar("x", Nodes.bool(true)))
             );
         List<StatementNode> statements = asList(Nodes.immutableVar("x", Nodes.bool(true)), ifThenElseNode);
         staticContext.enterNewSubScope();

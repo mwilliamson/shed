@@ -16,7 +16,6 @@ import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
-import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
@@ -194,7 +193,7 @@ public class TypeInfererTest {
                 new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
             ),
             new VariableIdentifierNode("Boolean"),
-            asList((StatementNode)new ReturnNode(new BooleanLiteralNode(true)))
+            Nodes.block(new ReturnNode(new BooleanLiteralNode(true)))
         );
         TypeResult<Type> result = inferType(functionExpression, context);
         assertThat(result, is(success(
@@ -211,7 +210,7 @@ public class TypeInfererTest {
         LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
             new VariableIdentifierNode("Boolean"),
-            asList(
+            Nodes.block(
                 new ImmutableVariableNode(
                     "x",
                     some(new VariableIdentifierNode("String")),
@@ -231,7 +230,7 @@ public class TypeInfererTest {
         LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
             new VariableIdentifierNode("Boolean"),
-            Arrays.<StatementNode>asList(
+            Nodes.block(
                 new ReturnNode(new NumberLiteralNode("4.2"))
             )
         );
@@ -250,7 +249,7 @@ public class TypeInfererTest {
                 new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
             ),
             new VariableIdentifierNode("Number"),
-            asList((StatementNode)new ReturnNode(new VariableIdentifierNode("age")))
+            Nodes.block(new ReturnNode(new VariableIdentifierNode("age")))
         );
         TypeResult<Type> result = inferType(functionExpression, context);
         assertThat(result, is(success(
@@ -267,7 +266,7 @@ public class TypeInfererTest {
                 new FormalArgumentNode("name", new VariableIdentifierNode("Strink"))
             ),
             new VariableIdentifierNode("Number"),
-            asList((StatementNode)new ReturnNode(new NumberLiteralNode("4")))
+            Nodes.block(new ReturnNode(new NumberLiteralNode("4")))
         );
         TypeResult<Type> result = inferType(functionExpression, context);
         assertThat(errorStrings(result), is(asList("No variable \"Strink\" in scope")));
@@ -348,7 +347,7 @@ public class TypeInfererTest {
                 new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
             ),
             new VariableIdentifierNode("Number"),
-            asList((StatementNode)new ReturnNode(new NumberLiteralNode("4")))
+            Nodes.block(new ReturnNode(new NumberLiteralNode("4")))
         );
         TypeResult<Type> result = inferType(functionExpression, context);
         assertThat(errorStrings(result), is(asList("Duplicate argument name \"age\"")));
@@ -361,7 +360,7 @@ public class TypeInfererTest {
         LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
             new VariableIdentifierNode("Boolean"),
-            Collections.<StatementNode>emptyList()
+            Nodes.block()
         );
         TypeResult<Type> result = inferType(functionExpression, context);
         assertThat(errorStrings(result), is(asList("Expected return statement")));

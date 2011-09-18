@@ -8,5 +8,5 @@ import lombok.Data;
 public class LongLambdaExpressionNode implements LambdaExpressionNode {
     private final List<FormalArgumentNode> formalArguments;
     private final ExpressionNode returnType;
-    private final List<StatementNode> body;
+    private final BlockNode body;
 }

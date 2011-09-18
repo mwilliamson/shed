@@ -167,7 +167,7 @@ public class TypeChecker {
     }
 
     public static TypeResult<StatementTypeCheckResult> typeCheckBlock(
-        List<StatementNode> statements,
+        Iterable<StatementNode> statements,
         NodeLocations nodeLocations,
         StaticContext staticContext
     ) {

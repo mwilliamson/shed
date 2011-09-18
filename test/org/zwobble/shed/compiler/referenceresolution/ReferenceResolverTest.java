@@ -17,6 +17,7 @@ import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
+import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
@@ -74,13 +75,25 @@ public class ReferenceResolverTest {
     }
 
     @Test public void
-    lambdaExpressionAddsArgumentsToScope() {
+    shortLambdaExpressionAddsArgumentsToScope() {
         FormalArgumentNode firstArgument = new FormalArgumentNode("first", Nodes.id("String"));
         VariableIdentifierNode reference = Nodes.id("first");
         SyntaxNode source = new ShortLambdaExpressionNode(
             asList(firstArgument, new FormalArgumentNode("second", Nodes.id("Number"))),
             Option.<ExpressionNode>none(),
             reference
+        );
+        assertThat(resolveReferences(source), hasReference(reference, firstArgument));
+    }
+
+    @Test public void
+    longLambdaExpressionAddsArgumentsToScope() {
+        FormalArgumentNode firstArgument = new FormalArgumentNode("first", Nodes.id("String"));
+        VariableIdentifierNode reference = Nodes.id("first");
+        SyntaxNode source = new LongLambdaExpressionNode(
+            asList(firstArgument, new FormalArgumentNode("second", Nodes.id("Number"))),
+            Nodes.id("String"),
+            Nodes.block(Nodes.returnStatement(reference))
         );
         assertThat(resolveReferences(source), hasReference(reference, firstArgument));
     }

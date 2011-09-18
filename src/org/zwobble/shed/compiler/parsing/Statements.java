@@ -1,9 +1,9 @@
 package org.zwobble.shed.compiler.parsing;
 
 import java.util.Arrays;
-import java.util.List;
 
 import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
@@ -108,8 +108,8 @@ public class Statements {
     
     public static Rule<IfThenElseStatementNode> ifThenElseStatement() {
         final Rule<ExpressionNode> condition = expression();
-        final Rule<List<StatementNode>> ifTrue = Blocks.block();
-        final Rule<List<StatementNode>> ifFalse = Blocks.block();
+        final Rule<BlockNode> ifTrue = Blocks.block();
+        final Rule<BlockNode> ifFalse = Blocks.block();
         return then( 
             sequence(OnError.FINISH,
                 guard(keyword(Keyword.IF)),
@@ -144,7 +144,7 @@ public class Statements {
     
     public static Rule<ObjectDeclarationNode> objectDeclaration() {
         final Rule<String> identifier = tokenOfType(IDENTIFIER);
-        final Rule<List<StatementNode>> body = Blocks.block();
+        final Rule<BlockNode> body = Blocks.block();
         return then(
             sequence(OnError.FINISH,
                 guard(keyword(Keyword.OBJECT)),
@@ -155,7 +155,7 @@ public class Statements {
                 @Override
                 public ObjectDeclarationNode apply(RuleValues result) {
                     String objectName = result.get(identifier);
-                    List<StatementNode> statements = result.get(body);
+                    BlockNode statements = result.get(body);
                     return new ObjectDeclarationNode(objectName, statements);
                 }
             }

@@ -160,7 +160,7 @@ public class JavaScriptGeneratorTest {
                 new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
             ),
             new VariableIdentifierNode("Number"),
-            asList(variableNode, returnNode)
+            Nodes.block(variableNode, returnNode)
         );
         assertGeneratedJavaScript(
             source,
@@ -239,7 +239,7 @@ public class JavaScriptGeneratorTest {
         ImmutableVariableNode ageDeclaration = Nodes.immutableVar("age", Nodes.number("22"));
         ObjectDeclarationNode source = new ObjectDeclarationNode(
             "person",
-            asList(
+            Nodes.block(
                 Nodes.publik(nameDeclaration),
                 ageDeclaration
             )
@@ -275,7 +275,7 @@ public class JavaScriptGeneratorTest {
     ifElseIsConvertedToIfElse() {
         StatementNode eatCereal = Nodes.returnStatement(Nodes.call(Nodes.id("eatCereal")));
         StatementNode eatPudding = Nodes.returnStatement(Nodes.call(Nodes.id("eatPudding")));
-        IfThenElseStatementNode source =  Nodes.ifThenElse(Nodes.id("isMorning"), asList(eatCereal), asList(eatPudding));
+        IfThenElseStatementNode source =  Nodes.ifThenElse(Nodes.id("isMorning"), Nodes.block(eatCereal), Nodes.block(eatPudding));
         assertGeneratedJavaScript(source, js.ifThenElse(
             js.id("isMorning"),
             asList(generator.generateStatement(eatCereal)),

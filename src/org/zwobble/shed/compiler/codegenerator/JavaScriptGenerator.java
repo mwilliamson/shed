@@ -12,6 +12,7 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptExpressionNo
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
@@ -41,8 +42,8 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Lists.transform;
 import static java.util.Arrays.asList;
+import static org.zwobble.shed.compiler.Eager.transform;
 
 public class JavaScriptGenerator {
     public static final ImportNode CORE_TYPES_IMPORT_NODE = new ImportNode(asList("shed", "core"));
@@ -141,7 +142,7 @@ public class JavaScriptGenerator {
         }
         if (node instanceof ObjectDeclarationNode) {
             ObjectDeclarationNode objectDeclaration = (ObjectDeclarationNode) node;
-            List<StatementNode> statements = objectDeclaration.getStatements();
+            BlockNode statements = objectDeclaration.getStatements();
             List<JavaScriptStatementNode> javaScriptBody = newArrayList(transform(statements, toJavaScriptStatement()));
 
             Set<String> publicMembers = new HashSet<String>();

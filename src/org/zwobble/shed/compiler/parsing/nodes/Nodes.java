@@ -1,7 +1,5 @@
 package org.zwobble.shed.compiler.parsing.nodes;
 
-import java.util.List;
-
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
@@ -43,8 +41,8 @@ public class Nodes {
         return new ImmutableVariableNode(name, some(type), expression);
     }
     
-    public static ObjectDeclarationNode object(String name, List<StatementNode> statements) {
-        return new ObjectDeclarationNode(name, statements);
+    public static ObjectDeclarationNode object(String name, BlockNode body) {
+        return new ObjectDeclarationNode(name, body);
     }
 
     public static PublicDeclarationNode publik(DeclarationNode declaration) {
@@ -59,7 +57,7 @@ public class Nodes {
         return new TypeApplicationNode(baseType, asList(typeParameters));
     }
     
-    public static IfThenElseStatementNode ifThenElse(ExpressionNode condition, List<StatementNode> ifTrue, List<StatementNode> ifFalse) {
+    public static IfThenElseStatementNode ifThenElse(ExpressionNode condition, BlockNode ifTrue, BlockNode ifFalse) {
         return new IfThenElseStatementNode(condition, ifTrue, ifFalse);
     }
 

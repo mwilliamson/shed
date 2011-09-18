@@ -2,6 +2,7 @@ package org.zwobble.shed.compiler.parsing;
 
 import java.util.List;
 
+import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 
 import static org.zwobble.shed.compiler.parsing.ParseResult.errorRecovered;
@@ -15,7 +16,7 @@ import static org.zwobble.shed.compiler.parsing.Statements.statement;
 
 
 public class Blocks {
-    public static Rule<List<StatementNode>> block() {
+    public static Rule<BlockNode> block() {
         final Rule<List<StatementNode>> statements = statements();
         return then(
             new Rule<RuleValues>() {
@@ -35,10 +36,10 @@ public class Blocks {
                 }
             },
             
-            new SimpleParseAction<RuleValues, List<StatementNode>>() {
+            new SimpleParseAction<RuleValues, BlockNode>() {
                 @Override
-                public List<StatementNode> apply(RuleValues result) {
-                    return result.get(statements);
+                public BlockNode apply(RuleValues result) {
+                    return new BlockNode(result.get(statements));
                 }
             }
         );
