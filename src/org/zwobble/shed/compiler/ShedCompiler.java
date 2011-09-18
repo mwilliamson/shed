@@ -21,20 +21,29 @@ import org.zwobble.shed.compiler.typechecker.TypeResult;
 import static org.zwobble.shed.compiler.typechecker.DefaultBrowserContext.defaultBrowserContext;
 
 public class ShedCompiler {
-    public static ShedCompiler forBrowser() {
-        return new ShedCompiler(new BrowserModuleWrapper());
+    public static ShedCompiler forBrowser(OptimisationLevel optimisationLevel) {
+        return new ShedCompiler(new BrowserModuleWrapper(), optimiserFor(optimisationLevel));
+    }
+
+    private static JavaScriptOptimiser optimiserFor(OptimisationLevel optimisationLevel) {
+        if (optimisationLevel == OptimisationLevel.SIMPLE) {
+            return new GoogleClosureJavaScriptOptimiser();
+        }
+        return new NoOpJavaScriptOptimiser();
     }
 
     private final Tokeniser tokeniser;
     private final Parser parser;
     private final JavaScriptGenerator javaScriptGenerator;
     private final JavaScriptWriter javaScriptWriter;
+    private final JavaScriptOptimiser javaScriptOptimiser;
     
-    private ShedCompiler(JavaScriptModuleWrapper moduleWrapper) {
+    private ShedCompiler(JavaScriptModuleWrapper moduleWrapper, JavaScriptOptimiser javaScriptOptimiser) {
         this.tokeniser = new Tokeniser();
         this.parser = new Parser();
         this.javaScriptGenerator = new JavaScriptGenerator(moduleWrapper);
         this.javaScriptWriter = new JavaScriptWriter();
+        this.javaScriptOptimiser = javaScriptOptimiser;
     }
     
     public CompilationResult compile(String source) {
@@ -50,7 +59,7 @@ public class ShedCompiler {
             
             if (typeCheckResult.isSuccess()) {
                 JavaScriptNode javaScript = javaScriptGenerator.generate(parseResult.get(), CoreModule.VALUES.keySet());
-                javaScriptOutput = javaScriptWriter.write(javaScript);
+                javaScriptOutput = javaScriptOptimiser.optimise(javaScriptWriter.write(javaScript));
             }
         }
         return new CompilationResult(tokens, errors, javaScriptOutput);
