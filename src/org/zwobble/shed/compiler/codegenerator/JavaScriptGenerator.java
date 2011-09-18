@@ -177,7 +177,7 @@ public class JavaScriptGenerator {
         return new Function<FormalArgumentNode, String>() {
             @Override
             public String apply(FormalArgumentNode input) {
-                return input.getName();
+                return input.getIdentifier();
             }
         };
     }

@@ -299,7 +299,7 @@ public class TypeInferer {
         return new Function<Type, TypeResult<FormalArgumentType>>() {
             @Override
             public TypeResult<FormalArgumentType> apply(Type type) {
-                return success(new FormalArgumentType(node.getName(), type, node));
+                return success(new FormalArgumentType(node.getIdentifier(), type, node));
             }
         };
     }

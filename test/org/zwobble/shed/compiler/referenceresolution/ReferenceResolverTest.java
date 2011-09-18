@@ -11,15 +11,21 @@ import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.CompilerErrorDescription;
 import org.zwobble.shed.compiler.CompilerTesting;
+import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
+import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.typechecker.SimpleNodeLocations;
 
 import com.google.common.collect.ImmutableMap;
+
+import static java.util.Arrays.asList;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -65,6 +71,18 @@ public class ReferenceResolverTest {
         DeclarationNode secondDeclaration = Nodes.immutableVar("x", Nodes.number("42"));
         SyntaxNode source = Nodes.block(firstDeclaration, secondDeclaration);
         assertThat(resolveReferences(source), isFailureWithErrors(new DuplicateIdentifierError("x")));
+    }
+
+    @Test public void
+    lambdaExpressionAddsArgumentsToScope() {
+        FormalArgumentNode firstArgument = new FormalArgumentNode("first", Nodes.id("String"));
+        VariableIdentifierNode reference = Nodes.id("first");
+        SyntaxNode source = new ShortLambdaExpressionNode(
+            asList(firstArgument, new FormalArgumentNode("second", Nodes.id("Number"))),
+            Option.<ExpressionNode>none(),
+            reference
+        );
+        assertThat(resolveReferences(source), hasReference(reference, firstArgument));
     }
 
     private ReferenceResolverResult resolveReferences(SyntaxNode node) {

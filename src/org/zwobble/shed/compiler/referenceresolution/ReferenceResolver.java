@@ -9,7 +9,10 @@ import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
+import org.zwobble.shed.compiler.parsing.nodes.LambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
@@ -52,6 +55,13 @@ public class ReferenceResolver {
             
         } else if (node instanceof ExpressionStatementNode) {
             resolveReferences(((ExpressionStatementNode) node).getExpression(), nodeLocations, references, scope, errors);
+        } else if (node instanceof ShortLambdaExpressionNode) {
+            SubScope lambdaScope = new SubScope(scope);
+            List<FormalArgumentNode> formalArguments = ((ShortLambdaExpressionNode) node).getFormalArguments();
+            for (FormalArgumentNode formalArgument : formalArguments) {
+                lambdaScope.add(formalArgument.getIdentifier(), formalArgument);
+            }
+            resolveReferences(((ShortLambdaExpressionNode) node).getBody(), nodeLocations, references, lambdaScope, errors);
         } else {
             throw new RuntimeException("Don't how to resolve references for: " + node);
         }
