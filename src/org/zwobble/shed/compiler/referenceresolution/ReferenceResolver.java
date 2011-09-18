@@ -17,9 +17,9 @@ import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
-import org.zwobble.shed.compiler.referenceresolution.SubScope.NotInScope;
-import org.zwobble.shed.compiler.referenceresolution.SubScope.Result;
-import org.zwobble.shed.compiler.referenceresolution.SubScope.Success;
+import org.zwobble.shed.compiler.referenceresolution.Scope.NotInScope;
+import org.zwobble.shed.compiler.referenceresolution.Scope.Result;
+import org.zwobble.shed.compiler.referenceresolution.Scope.Success;
 
 public class ReferenceResolver {
     public ReferenceResolverResult resolveReferences(SyntaxNode node, NodeLocations nodeLocations) {

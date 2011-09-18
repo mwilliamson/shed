@@ -17,6 +17,7 @@ import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
+import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
@@ -98,6 +99,21 @@ public class ReferenceResolverTest {
         assertThat(resolveReferences(source), hasReference(reference, firstArgument));
     }
 
+    @Test public void
+    canReferToVariableInParentScope() {
+        VariableIdentifierNode reference = Nodes.id("theNight");
+        ImmutableVariableNode declaration = Nodes.immutableVar("theNight", Nodes.string("feelsMySoul"));
+        SyntaxNode source = Nodes.block(
+            declaration,
+            Nodes.expressionStatement(new ShortLambdaExpressionNode(
+                asList(new FormalArgumentNode("first", Nodes.id("String")), new FormalArgumentNode("second", Nodes.id("Number"))),
+                Option.<ExpressionNode>none(),
+                reference
+            ))
+        );
+        assertThat(resolveReferences(source), hasReference(reference, declaration));
+    }
+
     private ReferenceResolverResult resolveReferences(SyntaxNode node) {
         return resolver.resolveReferences(node, nodeLocations);
     }
@@ -121,7 +137,7 @@ public class ReferenceResolverTest {
                         return false;
                     }
                 } else {
-                    mismatchDescription.appendText("result was failure");
+                    mismatchDescription.appendText("result was failure: " + CompilerTesting.errorDescriptions(result));
                     return false;
                 }
             }
