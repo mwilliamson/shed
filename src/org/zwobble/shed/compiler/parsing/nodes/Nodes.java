@@ -66,4 +66,8 @@ public class Nodes {
     public static StatementNode returnStatement(ExpressionNode expression) {
         return new ReturnNode(expression);
     }
+    
+    public static BlockNode block(StatementNode... statements) {
+        return new BlockNode(asList(statements));
+    }
 }

@@ -12,7 +12,7 @@ import lombok.ToString;
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.HasErrors;
 import org.zwobble.shed.compiler.parsing.nodes.Node;
-import org.zwobble.shed.compiler.parsing.nodes.SyntaxNodeIdentifier;
+import org.zwobble.shed.compiler.parsing.nodes.Identity;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -46,8 +46,8 @@ public class ParseResult<T> implements HasErrors, NodeLocations {
         return new ParseResult<T>(value, errors, type, resultsToNodePositions(subResults));
     }
     
-    private static Map<SyntaxNodeIdentifier, SourceRange> resultsToNodePositions(Iterable<? extends ParseResult<?>> subResults) {
-        ImmutableMap.Builder<SyntaxNodeIdentifier, SourceRange> nodePositions = ImmutableMap.builder();
+    private static Map<Identity<?>, SourceRange> resultsToNodePositions(Iterable<? extends ParseResult<?>> subResults) {
+        ImmutableMap.Builder<Identity<?>, SourceRange> nodePositions = ImmutableMap.builder();
         for (ParseResult<?> subResult : subResults) {
             nodePositions.putAll(subResult.nodePositions);            
         }
@@ -57,7 +57,7 @@ public class ParseResult<T> implements HasErrors, NodeLocations {
     private final T value;
     private final List<CompilerError> errors;
     private final Type type;
-    private final Map<SyntaxNodeIdentifier, SourceRange> nodePositions;
+    private final Map<Identity<?>, SourceRange> nodePositions;
     
     public boolean anyErrors() {
         return !errors.isEmpty();
@@ -68,9 +68,9 @@ public class ParseResult<T> implements HasErrors, NodeLocations {
     }
     
     public <U extends Node> ParseResult<U> changeValue(U value, SourceRange position) {
-        Map<SyntaxNodeIdentifier, SourceRange> newPositions = new HashMap<SyntaxNodeIdentifier, SourceRange>();
+        Map<Identity<?>, SourceRange> newPositions = new HashMap<Identity<?>, SourceRange>();
         newPositions.putAll(nodePositions);
-        SyntaxNodeIdentifier nodeIdentifier = new SyntaxNodeIdentifier(value);
+        Identity<?> nodeIdentifier = new Identity<U>(value);
         if (newPositions.containsKey(nodeIdentifier)) {
             if (!position.contains(newPositions.get(nodeIdentifier))) {
                 throw new RuntimeException("The same node cannot appear in two places");
@@ -92,7 +92,7 @@ public class ParseResult<T> implements HasErrors, NodeLocations {
     
     @Override
     public SourceRange locate(Node node) {
-        return nodePositions.get(new SyntaxNodeIdentifier(node));
+        return nodePositions.get(new Identity<Node>(node));
     }
     
     public List<CompilerError> getErrors() {

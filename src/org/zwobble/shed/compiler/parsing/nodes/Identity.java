@@ -3,23 +3,28 @@ package org.zwobble.shed.compiler.parsing.nodes;
 import lombok.ToString;
 
 @ToString
-public class SyntaxNodeIdentifier {
-    private final Node node;
+public class Identity<T extends Node> {
+    private final T node;
 
-    public SyntaxNodeIdentifier(Node node) {
+    public Identity(T node) {
         this.node = node;
     }
     
+    @SuppressWarnings("unchecked")
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof SyntaxNodeIdentifier)) {
+        if (obj == null || !(obj instanceof Identity)) {
             return false;
         }
-        return ((SyntaxNodeIdentifier)obj).node == node;
+        return ((Identity<T>)obj).node == node;
     }
     
     @Override
     public int hashCode() {
         return System.identityHashCode(node);
+    }
+    
+    public T get() {
+        return node;
     }
 }

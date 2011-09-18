@@ -10,7 +10,7 @@ import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.SimpleCompilerError;
 import org.zwobble.shed.compiler.parsing.Separator.Type;
 import org.zwobble.shed.compiler.parsing.nodes.Node;
-import org.zwobble.shed.compiler.parsing.nodes.SyntaxNodeIdentifier;
+import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.tokeniser.Keyword;
 import org.zwobble.shed.compiler.tokeniser.Token;
 import org.zwobble.shed.compiler.tokeniser.TokenPosition;
@@ -278,7 +278,7 @@ public class Rules {
             null,
             Arrays.<CompilerError>asList(new SimpleCompilerError(tokenPosition.getSourceRange(), message)),
             type,
-            ImmutableMap.<SyntaxNodeIdentifier, SourceRange>of()
+            ImmutableMap.<Identity<?>, SourceRange>of()
         );
     }
 }
