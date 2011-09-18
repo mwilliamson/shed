@@ -33,8 +33,6 @@ import com.google.common.collect.Lists;
 
 import static com.google.common.collect.Lists.transform;
 import static java.util.Arrays.asList;
-import static org.zwobble.shed.compiler.Option.none;
-import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
 import static org.zwobble.shed.compiler.typechecker.TypeLookup.lookupTypeReference;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.combine;
@@ -81,7 +79,7 @@ public class TypeInferer {
         List<TypeResult<FormalArgumentType>> argumentTypesResult = inferArgumentTypes(lambdaExpression.getFormalArguments(), nodeLocations, context);
         TypeResult<List<FormalArgumentType>> result = combine(argumentTypesResult);
         
-        context.enterNewScope(none(Type.class));
+        context.enterNewNonFunctionScope();
         for (TypeResult<FormalArgumentType> argumentTypeResult : argumentTypesResult) {
             TypeResult<Void> addArgumentToContextResult = argumentTypeResult.use(addArgumentToContext(context, nodeLocations));
             result = result.withErrorsFrom(addArgumentToContextResult);
@@ -134,7 +132,7 @@ public class TypeInferer {
             public TypeResult<Void> apply(Type returnType) {
                 TypeResult<Void> result = success();
 
-                context.enterNewScope(some(returnType));
+                context.enterNewFunctionScope(returnType);
                 for (TypeResult<FormalArgumentType> argumentTypeResult : argumentTypeResults) {
                     TypeResult<Void> addArgumentToContextResult = argumentTypeResult.use(addArgumentToContext(context, nodeLocations));
                     result = result.withErrorsFrom(addArgumentToContextResult);

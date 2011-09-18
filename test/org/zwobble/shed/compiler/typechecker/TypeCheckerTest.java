@@ -2,9 +2,9 @@ package org.zwobble.shed.compiler.typechecker;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
@@ -248,7 +248,7 @@ public class TypeCheckerTest {
     
     @Test public void
     ifElseDoesNotReturnIfOnlyOneBranchReturns() {
-        staticContext.enterNewScope(Option.some(CoreTypes.UNIT));
+        staticContext.enterNewFunctionScope(CoreTypes.UNIT);
         staticContext.add("isMorning", CoreTypes.BOOLEAN);
         staticContext.add("eatCereal", CoreTypes.functionTypeOf(CoreTypes.UNIT));
         staticContext.add("eatPudding", CoreTypes.functionTypeOf(CoreTypes.UNIT));
@@ -264,7 +264,7 @@ public class TypeCheckerTest {
     
     @Test public void
     ifElseDoesReturnsIfBothBranchesReturn() {
-        staticContext.enterNewScope(Option.some(CoreTypes.UNIT));
+        staticContext.enterNewFunctionScope(CoreTypes.UNIT);
         staticContext.add("isMorning", CoreTypes.BOOLEAN);
         staticContext.add("eatCereal", CoreTypes.functionTypeOf(CoreTypes.UNIT));
         staticContext.add("eatPudding", CoreTypes.functionTypeOf(CoreTypes.UNIT));
@@ -276,6 +276,22 @@ public class TypeCheckerTest {
             );
         TypeResult<StatementTypeCheckResult> result = TypeChecker.typeCheckStatement(ifThenElseNode, nodeLocations, staticContext);
         assertThat(result, is(TypeResult.<StatementTypeCheckResult>success(StatementTypeCheckResult.alwaysReturns())));
+    }
+    
+    @Test public void
+    branchesOfIfStatementAreSeparateNewContexts() {
+        IfThenElseStatementNode ifThenElseNode = 
+            Nodes.ifThenElse(
+                Nodes.bool(true),
+                Arrays.<StatementNode>asList(Nodes.immutableVar("x", Nodes.bool(true))),
+                Arrays.<StatementNode>asList(Nodes.immutableVar("x", Nodes.bool(true)))
+            );
+        List<StatementNode> statements = asList(Nodes.immutableVar("x", Nodes.bool(true)), ifThenElseNode);
+        staticContext.enterNewSubScope();
+        TypeResult<StatementTypeCheckResult> result = TypeChecker.typeCheckBlock(statements, nodeLocations, staticContext);
+        staticContext.exitScope();
+        assertThat(result, is(TypeResult.<StatementTypeCheckResult>success(StatementTypeCheckResult.noReturn())));
+        assertThat(staticContext.isDeclaredInCurrentScope("x"), is(false));
     }
     
     private TypeResult<Void> typeCheck(SourceNode source) {

@@ -1,5 +1,6 @@
 package org.zwobble.shed.compiler.codegenerator.javascript;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -70,5 +71,13 @@ public class JavaScriptNodes {
 
     public JavaScriptStatementNode ifThenElse(JavaScriptExpressionNode condition, List<JavaScriptStatementNode> ifTrue, List<JavaScriptStatementNode> ifFalse) {
         return new JavaScriptIfThenElseNode(condition, ifTrue, ifFalse);
+    }
+    
+    public JavaScriptStatementNode scope(JavaScriptStatementNode... statements) {
+        return scope(asList(statements));
+    }
+    
+    public JavaScriptStatementNode scope(List<JavaScriptStatementNode> statements) {
+        return expressionStatement(call(func(Collections.<String>emptyList(), statements)));
     }
 }

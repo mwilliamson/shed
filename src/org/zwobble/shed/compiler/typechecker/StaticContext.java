@@ -71,8 +71,16 @@ public class StaticContext {
         }
     }
 
-    public void enterNewScope(Option<Type> type) {
-        scopes.add(new StaticScope(type));
+    public void enterNewFunctionScope(Type type) {
+        enterNewScope(some(type));
+    }
+    
+    public void enterNewNonFunctionScope() {
+        enterNewScope(Option.<Type>none());
+    }
+    
+    public void enterNewSubScope() {
+        enterNewScope(currentScope().getReturnType());
     }
     
     public void exitScope() {
@@ -81,5 +89,9 @@ public class StaticContext {
 
     public StaticScope currentScope() {
         return scopes.get(scopes.size() - 1);
+    }
+
+    private void enterNewScope(Option<Type> type) {
+        scopes.add(new StaticScope(type));
     }
 }

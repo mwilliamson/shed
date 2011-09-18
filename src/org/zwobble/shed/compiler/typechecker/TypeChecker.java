@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
 import static java.util.Arrays.asList;
-import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.typechecker.ImportStatementTypeChecker.typeCheckImportStatement;
 import static org.zwobble.shed.compiler.typechecker.ReturnStatementTypeChecker.typeCheckReturnStatement;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
@@ -35,7 +34,7 @@ import static org.zwobble.shed.compiler.typechecker.VariableDeclarationTypeCheck
 
 public class TypeChecker {
     public static TypeResult<Void> typeCheck(SourceNode source, NodeLocations nodeLocations, StaticContext staticContext) {
-        staticContext.enterNewScope(none(Type.class));
+        staticContext.enterNewNonFunctionScope();
         List<CompilerError> errors = new ArrayList<CompilerError>();
         
         for (ImportNode importNode : source.getImports()) {
@@ -93,7 +92,7 @@ public class TypeChecker {
         StaticContext context)
     {
         TypeResult<StatementTypeCheckResult> result = TypeResult.success(StatementTypeCheckResult.noReturn());
-        context.enterNewScope(none(Type.class));
+        context.enterNewNonFunctionScope();
 
         TypeResult<StatementTypeCheckResult> blockResult = new BlockTypeChecker().typeCheckBlock(objectDeclaration.getStatements(), context, nodeLocations);
         result = result.withErrorsFrom(blockResult);
@@ -135,8 +134,12 @@ public class TypeChecker {
             TypeInferer.inferType(statement.getCondition(), nodeLocations, context)
             .ifValueThen(checkIsBoolean(nodeLocations.locate(statement.getCondition())));
         
+        context.enterNewSubScope();
         TypeResult<StatementTypeCheckResult> ifTrueResult = typeCheckBlock(statement.getIfTrue(), nodeLocations, context);
+        context.exitScope();
+        context.enterNewSubScope();
         TypeResult<StatementTypeCheckResult> ifFalseResult = typeCheckBlock(statement.getIfFalse(), nodeLocations, context);
+        context.exitScope();
         
         boolean returns = 
             ifTrueResult.hasValue() && ifTrueResult.get().hasReturned() && 
@@ -164,7 +167,7 @@ public class TypeChecker {
         };
     }
 
-    private static TypeResult<StatementTypeCheckResult> typeCheckBlock(
+    public static TypeResult<StatementTypeCheckResult> typeCheckBlock(
         List<StatementNode> statements,
         NodeLocations nodeLocations,
         StaticContext staticContext

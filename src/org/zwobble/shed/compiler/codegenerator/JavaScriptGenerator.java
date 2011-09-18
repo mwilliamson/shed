@@ -166,8 +166,8 @@ public class JavaScriptGenerator {
             IfThenElseStatementNode ifThenElse = (IfThenElseStatementNode) node;
             return js.ifThenElse(
                 generateExpression(ifThenElse.getCondition()),
-                transform(ifThenElse.getIfTrue(), toJavaScriptStatement()),
-                transform(ifThenElse.getIfFalse(), toJavaScriptStatement())
+                asList(js.scope(transform(ifThenElse.getIfTrue(), toJavaScriptStatement()))),
+                asList(js.scope(transform(ifThenElse.getIfFalse(), toJavaScriptStatement())))
             );
         }
         throw new RuntimeException("Cannot generate JavaScript for " + node);

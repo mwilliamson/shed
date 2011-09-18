@@ -17,7 +17,6 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
-import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.typechecker.ReturnStatementTypeChecker.typeCheckReturnStatement;
 
 public class ReturnStatementTypeCheckerTest {
@@ -36,7 +35,7 @@ public class ReturnStatementTypeCheckerTest {
     @Test public void
     returnExpressionIsTypeChecked() {
         ReturnNode returnStatement = new ReturnNode(new VariableIdentifierNode("x"));
-        staticContext.enterNewScope(some(CoreTypes.STRING));
+        staticContext.enterNewFunctionScope(CoreTypes.STRING);
         assertThat(
             errorStrings(typeCheckReturnStatement(returnStatement, nodeLocations, staticContext)),
             is(asList("No variable \"x\" in scope"))
@@ -48,7 +47,7 @@ public class ReturnStatementTypeCheckerTest {
         ReturnNode returnStatement = new ReturnNode(new VariableIdentifierNode("x"));
         InterfaceType iterableType = new InterfaceType(asList("shed", "util"), "Iterable", ImmutableMap.<String, Type>of());
         ClassType listType = new ClassType(asList("shed", "util"), "List", newHashSet(iterableType), ImmutableMap.<String, Type>of());
-        staticContext.enterNewScope(some((Type)iterableType));
+        staticContext.enterNewFunctionScope(iterableType);
         staticContext.add("x", listType);
         assertThat(
             typeCheckReturnStatement(returnStatement, nodeLocations, staticContext),
