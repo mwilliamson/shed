@@ -215,7 +215,7 @@ public class JavaScriptGenerator {
             public JavaScriptStatementNode apply(StatementNode input) {
                 String identifier = ((PublicDeclarationNode)input).getDeclaration().getIdentifier();
                 String fullIdentifier = Joiner.on(".").join(packageDeclaration.getPackageNames()) + "." + identifier;
-                return js.expressionStatement(js.call(js.id("SHED.export"), js.string(fullIdentifier), js.id(identifier)));
+                return js.expressionStatement(js.call(js.id("SHED.exportValue"), js.string(fullIdentifier), js.id(identifier)));
             }
         };
     }

@@ -2,7 +2,7 @@
     var modules = {};
     var moduleCallbacks = {};
     
-    exports.export = function(name, value) {
+    exports.exportValue = function(name, value) {
         var parts = name.split(".");
         var current = exports;
         for (var i = 0; i < parts.length - 1; i += 1) {

@@ -197,7 +197,7 @@ public class JavaScriptGeneratorTest {
             generator.generate(source, Collections.<String>emptyList()),
             is((JavaScriptNode)js.statements(
                 generator.generateStatement(statement),
-                js.expressionStatement(js.call(js.id("SHED.export"), js.string("shed.example.magic"), js.id("magic")))
+                js.expressionStatement(js.call(js.id("SHED.exportValue"), js.string("shed.example.magic"), js.id("magic")))
             ))
         );
     }

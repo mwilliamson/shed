@@ -16,5 +16,5 @@
         };
     }
     
-    SHED.export("shed.core", exports);
+    SHED.exportValue("shed.core", exports);
 })();
