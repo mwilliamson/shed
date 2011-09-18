@@ -3,6 +3,8 @@ package org.zwobble.shed.compiler.referenceresolution;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.Data;
+
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
 
@@ -18,7 +20,22 @@ public class SubScope implements Scope {
         variables.put(identifier, new Identity<DeclarationNode>(node));
     }
 
-    public DeclarationNode lookup(String identifier) {
-        return variables.get(identifier).get();
+    public Result lookup(String identifier) {
+        if (variables.containsKey(identifier)) {
+            return new Success(variables.get(identifier).get()); 
+        } else {
+            return new NotInScope();
+        }
+    }
+    
+    public interface Result {
+    }
+    
+    @Data
+    public class Success implements Result {
+        private final DeclarationNode node;
+    }
+    
+    public class NotInScope implements Result {
     }
 }
