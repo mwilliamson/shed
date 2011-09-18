@@ -15,6 +15,7 @@ import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
+import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
@@ -22,6 +23,7 @@ import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+import org.zwobble.shed.compiler.typechecker.CoreModule;
 import org.zwobble.shed.compiler.typechecker.SimpleNodeLocations;
 
 import com.google.common.collect.ImmutableMap;
@@ -143,6 +145,17 @@ public class ReferenceResolverTest {
         assertThat(resolveReferences(source), isFailureWithErrors(new VariableNotDeclaredYetError("wind")));
     }
 
+    @Test public void
+    typeExpressionsOfFormalArgumentsAreLookedUp() {
+        VariableIdentifierNode typeReference = Nodes.id("String");
+        SyntaxNode source = new ShortLambdaExpressionNode(
+            asList(new FormalArgumentNode("first", typeReference), new FormalArgumentNode("second", Nodes.id("Number"))),
+            Option.<ExpressionNode>none(),
+            Nodes.id("first")
+        );
+        assertThat(resolveReferences(source), hasReference(typeReference, CoreModule.GLOBAL_DECLARATIONS.get("String")));
+    }
+
     private ReferenceResolverResult resolveReferences(SyntaxNode node) {
         return resolver.resolveReferences(node, nodeLocations);
     }
@@ -162,7 +175,7 @@ public class ReferenceResolverTest {
                     if (actualReferent == declaration) {
                         return true;
                     } else {
-                        mismatchDescription.appendText("referent was " + result.getReferences());
+                        mismatchDescription.appendText("referent was " + actualReferent);
                         return false;
                     }
                 } else {

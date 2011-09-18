@@ -67,6 +67,7 @@ public class ReferenceResolver {
             List<FormalArgumentNode> formalArguments = lambda.getFormalArguments();
             for (FormalArgumentNode formalArgument : formalArguments) {
                 lambdaScope.add(formalArgument.getIdentifier(), formalArgument);
+                resolveReferences(formalArgument.getType(), nodeLocations, references, lambdaScope, errors);
             }
             resolveReferences(lambda.getBody(), nodeLocations, references, lambdaScope, errors);
         } else if (node instanceof ReturnNode) {
