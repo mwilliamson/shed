@@ -16,12 +16,14 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
@@ -104,6 +106,14 @@ public class ReferenceResolver {
             resolveReferences(call.getFunction(), nodeLocations, references, scope, errors);
             for (ExpressionNode argument : call.getArguments()) {
                 resolveReferences(argument, nodeLocations, references, scope, errors);
+            }
+        } else if (node instanceof SourceNode) {
+            SourceNode source = (SourceNode) node;
+            for (ImportNode importNode : source.getImports()) {
+                scope.add(importNode.getIdentifier(), importNode);
+            }
+            for (StatementNode child : source.getStatements()) {
+                resolveReferences(child, nodeLocations, references, scope, errors);
             }
         } else {
             throw new RuntimeException("Don't how to resolve references for: " + node);

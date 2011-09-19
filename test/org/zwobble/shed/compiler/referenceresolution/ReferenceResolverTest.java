@@ -1,5 +1,6 @@
 package org.zwobble.shed.compiler.referenceresolution;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -17,9 +18,13 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
+import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
+import org.zwobble.shed.compiler.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
+import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.typechecker.CoreModule;
@@ -257,6 +262,18 @@ public class ReferenceResolverTest {
             )
         );
         assertThat(resolveReferences(source), isFailureWithErrors(new DuplicateIdentifierError("go")));
+    }
+
+    @Test public void
+    bodyOfSourceNodeCanReferToImports() {
+        ImportNode declaration = new ImportNode(asList("shed", "collections", "List"));
+        VariableIdentifierNode reference = Nodes.id("List");
+        SyntaxNode source = new SourceNode(
+            new PackageDeclarationNode(asList("shed", "example")),
+            asList(declaration),
+            Arrays.<StatementNode>asList(Nodes.expressionStatement(reference))
+        );
+        assertThat(resolveReferences(source), hasReference(reference, declaration));
     }
 
     private ReferenceResolverResult resolveReferences(SyntaxNode node) {

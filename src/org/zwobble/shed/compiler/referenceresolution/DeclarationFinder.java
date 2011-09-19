@@ -9,10 +9,12 @@ import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
+import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
@@ -39,6 +41,14 @@ public class DeclarationFinder {
             Set<String> declarations = new HashSet<String>();
             for (StatementNode child : (BlockNode)node) {
                 declarations.addAll(findDeclarations(child));
+            }
+            return declarations;
+        }
+        if (node instanceof SourceNode) {
+            Set<String> declarations = new HashSet<String>();
+            SourceNode source = (SourceNode) node;
+            for (ImportNode importNode : source.getImports()) {
+                declarations.addAll(findDeclarations(importNode));
             }
             return declarations;
         }
