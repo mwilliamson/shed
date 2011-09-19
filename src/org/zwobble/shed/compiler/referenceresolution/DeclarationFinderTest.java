@@ -1,5 +1,6 @@
 package org.zwobble.shed.compiler.referenceresolution;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 
@@ -39,5 +40,16 @@ public class DeclarationFinderTest {
         );
         Set<String> declarations = finder.findDeclarations(source);
         assertThat(declarations, containsInAnyOrder("List"));
+    }
+    
+    @Test public void
+    findsDeclarationsInSourceBody() {
+        SyntaxNode source = new SourceNode(
+            new PackageDeclarationNode(asList("shed", "example")),
+            Collections.<ImportNode>emptyList(),
+            Arrays.<StatementNode>asList(Nodes.immutableVar("go", Nodes.bool(true)))
+        );
+        Set<String> declarations = finder.findDeclarations(source);
+        assertThat(declarations, containsInAnyOrder("go"));
     }
 }

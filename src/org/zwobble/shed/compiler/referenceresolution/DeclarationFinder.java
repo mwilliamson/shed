@@ -50,6 +50,9 @@ public class DeclarationFinder {
             for (ImportNode importNode : source.getImports()) {
                 declarations.addAll(findDeclarations(importNode));
             }
+            for (StatementNode statement : source.getStatements()) {
+                declarations.addAll(findDeclarations(statement));
+            }
             return declarations;
         }
         throw new RuntimeException("Don't how to find declarations for: " + node);
