@@ -5,7 +5,6 @@ import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
-import org.zwobble.shed.compiler.parsing.nodes.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.types.Type;
 
 import static java.util.Arrays.asList;

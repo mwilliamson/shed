@@ -4,7 +4,6 @@ import org.zwobble.shed.compiler.Function0;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
-import org.zwobble.shed.compiler.parsing.nodes.StatementTypeCheckResult;
 
 import static org.zwobble.shed.compiler.typechecker.TypeChecker.typeCheckStatement;
 

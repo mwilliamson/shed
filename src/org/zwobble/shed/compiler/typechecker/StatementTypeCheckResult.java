@@ -1,4 +1,4 @@
-package org.zwobble.shed.compiler.parsing.nodes;
+package org.zwobble.shed.compiler.typechecker;
 
 import lombok.Data;
 
