@@ -97,6 +97,14 @@ public class ReferenceResolverTest {
         assertThat(resolveReferences(source), hasReference(functionReference, functionDeclaration));
         assertThat(resolveReferences(source), hasReference(argumentReference, argumentDeclaration));
     }
+    
+    @Test public void
+    referencesInMemberAccessAreResolved() {
+        VariableIdentifierNode reference = Nodes.id("x");
+        DeclarationNode declaration = Nodes.immutableVar("x", Nodes.number("42"));
+        SyntaxNode source = Nodes.block(declaration, Nodes.expressionStatement(Nodes.member(reference, "abs")));
+        assertThat(resolveReferences(source), hasReference(reference, declaration));
+    }
 
     @Test public void
     referringToVariablesNotInScopeAddsError() {

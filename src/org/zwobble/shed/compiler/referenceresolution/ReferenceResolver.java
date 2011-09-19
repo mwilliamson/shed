@@ -19,6 +19,7 @@ import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
@@ -107,6 +108,8 @@ public class ReferenceResolver {
             for (ExpressionNode argument : call.getArguments()) {
                 resolveReferences(argument, nodeLocations, references, scope, errors);
             }
+        } else if (node instanceof MemberAccessNode) {
+            resolveReferences(((MemberAccessNode) node).getExpression(), nodeLocations, references, scope, errors);
         } else if (node instanceof SourceNode) {
             SourceNode source = (SourceNode) node;
             for (ImportNode importNode : source.getImports()) {
