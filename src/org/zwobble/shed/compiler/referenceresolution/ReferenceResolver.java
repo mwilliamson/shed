@@ -11,6 +11,7 @@ import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
@@ -40,6 +41,12 @@ public class ReferenceResolver {
     }
 
     private void resolveReferences(SyntaxNode node, NodeLocations nodeLocations, ReferencesBuilder references, SubScope scope, List<CompilerError> errors) {
+        addReferences(node, nodeLocations, references, scope, errors);
+        addDeclarations(node, nodeLocations, scope, errors);
+    }
+
+    private void addReferences(SyntaxNode node, NodeLocations nodeLocations,
+        ReferencesBuilder references, SubScope scope, List<CompilerError> errors) {
         if (node instanceof VariableIdentifierNode) {
             VariableIdentifierNode variableIdentifier = (VariableIdentifierNode) node;
             Result lookupResult = scope.lookup(variableIdentifier.getIdentifier());
@@ -86,9 +93,18 @@ public class ReferenceResolver {
             resolveReferences(ifElse.getIfFalse(), nodeLocations, references, scope.extend(findDeclarations(ifElse.getIfFalse())), errors);
         } else if (node instanceof VariableDeclarationNode) {
             resolveReferences(((VariableDeclarationNode) node).getValue(), nodeLocations, references, scope, errors);
+        } else if (node instanceof CallNode) {
+            CallNode call = (CallNode) node;
+            resolveReferences(call.getFunction(), nodeLocations, references, scope, errors);
+            for (ExpressionNode argument : call.getArguments()) {
+                resolveReferences(argument, nodeLocations, references, scope, errors);
+            }
         } else {
             throw new RuntimeException("Don't how to resolve references for: " + node);
         }
+    }
+
+    private void addDeclarations(SyntaxNode node, NodeLocations nodeLocations, SubScope scope, List<CompilerError> errors) {
         if (node instanceof DeclarationNode) {
             DeclarationNode declaration = (DeclarationNode)node;
             if (scope.isDeclaredInCurrentScope(declaration.getIdentifier())) {
