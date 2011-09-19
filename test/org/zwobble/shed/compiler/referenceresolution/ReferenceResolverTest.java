@@ -58,6 +58,11 @@ public class ReferenceResolverTest {
     }
     
     @Test public void
+    unitLiteralNodeAddsNothingToScope() {
+        assertThat(resolveReferences(Nodes.unit()), is(EMPTY_RESULT));
+    }
+    
+    @Test public void
     canReferToImmutableReferencesInSameBlock() {
         VariableIdentifierNode reference = Nodes.id("x");
         DeclarationNode declaration = Nodes.immutableVar("x", Nodes.number("42"));

@@ -28,6 +28,7 @@ import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
+import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.Scope.NotDeclaredYet;
@@ -143,7 +144,11 @@ public class ReferenceResolver {
     }
 
     private boolean isLiteralNode(SyntaxNode node) {
-        return node instanceof BooleanLiteralNode || node instanceof NumberLiteralNode || node instanceof StringLiteralNode;
+        return 
+            node instanceof BooleanLiteralNode || 
+            node instanceof NumberLiteralNode || 
+            node instanceof StringLiteralNode ||
+            node instanceof UnitLiteralNode;
     }
 
     private Set<String> findDeclarations(SyntaxNode node) {
