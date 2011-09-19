@@ -21,6 +21,7 @@ import org.zwobble.shed.compiler.parsing.nodes.LambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
@@ -119,6 +120,10 @@ public class ReferenceResolver {
             for (StatementNode child : source.getStatements()) {
                 resolveReferences(child, nodeLocations, references, scope, errors);
             }
+        } else if (node instanceof ObjectDeclarationNode) {
+            ObjectDeclarationNode objectDeclaration = (ObjectDeclarationNode) node;
+            SubScope bodyScope = new SubScope(scope, findDeclarations(objectDeclaration.getStatements()));
+            resolveReferences(objectDeclaration.getStatements(), nodeLocations, references, bodyScope, errors);
         } else {
             throw new RuntimeException("Don't how to resolve references for: " + node);
         }

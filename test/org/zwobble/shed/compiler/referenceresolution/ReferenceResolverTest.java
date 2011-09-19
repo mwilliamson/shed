@@ -288,6 +288,21 @@ public class ReferenceResolverTest {
         );
         assertThat(resolveReferences(source), hasReference(reference, declaration));
     }
+    
+    @Test public void
+    referencesInObjectDeclarationAreResolved() {
+        VariableIdentifierNode reference = Nodes.id("x");
+        DeclarationNode declaration = Nodes.immutableVar("x", Nodes.number("42"));
+        SyntaxNode source = Nodes.block(declaration, Nodes.object("bob", Nodes.block(Nodes.expressionStatement(reference))));
+        assertThat(resolveReferences(source), hasReference(reference, declaration));
+    }
+    
+    @Test public void
+    objectDeclarationBodyIsInNewScope() {
+        DeclarationNode declaration = Nodes.immutableVar("x", Nodes.number("42"));
+        SyntaxNode source = Nodes.block(declaration, Nodes.object("bob", Nodes.block(Nodes.immutableVar("x", Nodes.number("43")))));
+        assertThat(resolveReferences(source), isSuccess());
+    }
 
     private ReferenceResolverResult resolveReferences(SyntaxNode node) {
         return resolver.resolveReferences(node, nodeLocations);
