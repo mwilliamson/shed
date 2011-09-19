@@ -177,6 +177,55 @@ public class ReferenceResolverTest {
         assertThat(resolveReferences(source), hasReference(typeReference, CoreModule.GLOBAL_DECLARATIONS.get("String")));
     }
 
+    @Test public void
+    canDefineVariableWithSameNameInBothBranchesOfIfElse() {
+        SyntaxNode source = Nodes.ifThenElse(
+            Nodes.bool(true),
+            Nodes.block(Nodes.immutableVar("singItFor", Nodes.string("The boys"))),
+            Nodes.block(Nodes.immutableVar("singItFor", Nodes.string("The girls")))
+        );
+        assertThat(resolveReferences(source), isSuccess());
+    }
+
+    @Test public void
+    referencesAreResolvedForConditionAndBranchesOfIfElse() {
+        ImmutableVariableNode booleanDeclaration = Nodes.immutableVar("go", Nodes.bool(true));
+        ImmutableVariableNode ifTrueDeclaration = Nodes.immutableVar("boys", Nodes.string("The boys"));
+        ImmutableVariableNode ifFalseDeclaration = Nodes.immutableVar("girls", Nodes.string("The girls"));
+        
+        VariableIdentifierNode booleanReference = Nodes.id("go");
+        VariableIdentifierNode ifTrueReference = Nodes.id("boys");
+        VariableIdentifierNode ifFalseReference = Nodes.id("girls");
+        
+        SyntaxNode source = Nodes.block(
+            booleanDeclaration,
+            ifTrueDeclaration,
+            ifFalseDeclaration,
+            Nodes.ifThenElse(
+                booleanReference,
+                Nodes.block(Nodes.expressionStatement(ifTrueReference)),
+                Nodes.block(Nodes.expressionStatement(ifFalseReference))
+            )
+        );
+        ReferenceResolverResult references = resolveReferences(source);
+        assertThat(references, hasReference(booleanReference, booleanDeclaration));
+        assertThat(references, hasReference(ifTrueReference, ifTrueDeclaration));
+        assertThat(resolveReferences(source), hasReference(ifFalseReference, ifFalseDeclaration));
+    }
+
+    @Test public void
+    branchOfIfElseStatementCannotDeclareVariableDeclaredInParentBlock() {
+        SyntaxNode source = Nodes.block(
+            Nodes.immutableVar("go", Nodes.bool(true)),
+            Nodes.ifThenElse(
+                Nodes.id("go"),
+                Nodes.block(Nodes.immutableVar("go", Nodes.string("The boys"))),
+                Nodes.block()
+            )
+        );
+        assertThat(resolveReferences(source), isFailureWithErrors(new DuplicateIdentifierError("go")));
+    }
+
     private ReferenceResolverResult resolveReferences(SyntaxNode node) {
         return resolver.resolveReferences(node, nodeLocations);
     }
@@ -196,7 +245,7 @@ public class ReferenceResolverTest {
                     if (actualReferent == declaration) {
                         return true;
                     } else {
-                        mismatchDescription.appendText("referent was " + actualReferent);
+                        mismatchDescription.appendText("referent was " + actualReferent + " [references: " + references + "]");
                         return false;
                     }
                 } else {

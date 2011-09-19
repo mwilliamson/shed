@@ -17,6 +17,7 @@ public class References {
     private final Map<Identity<VariableIdentifierNode>, Identity<DeclarationNode>> references;
     
     public DeclarationNode findReferent(VariableIdentifierNode reference) {
-        return references.get(new Identity<VariableIdentifierNode>(reference)).get();
+        Identity<DeclarationNode> identity = references.get(new Identity<VariableIdentifierNode>(reference));
+        return identity == null ? null : identity.get();
     }
 }

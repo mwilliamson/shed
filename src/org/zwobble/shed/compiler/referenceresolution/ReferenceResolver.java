@@ -15,6 +15,7 @@ import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
+import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.LambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
@@ -85,6 +86,11 @@ public class ReferenceResolver {
             resolveReferences(lambda.getBody(), nodeLocations, references, lambdaScope, errors);
         } else if (node instanceof ReturnNode) {
             resolveReferences(((ReturnNode) node).getExpression(), nodeLocations, references, scope, errors);
+        } else if (node instanceof IfThenElseStatementNode) {
+            IfThenElseStatementNode ifElse = (IfThenElseStatementNode) node;
+            resolveReferences(ifElse.getCondition(), nodeLocations, references, scope, errors);
+            resolveReferences(ifElse.getIfTrue(), nodeLocations, references, scope.extend(findDeclarations(ifElse.getIfTrue())), errors);
+            resolveReferences(ifElse.getIfFalse(), nodeLocations, references, scope.extend(findDeclarations(ifElse.getIfFalse())), errors);
         } else {
             throw new RuntimeException("Don't how to resolve references for: " + node);
         }
@@ -95,7 +101,8 @@ public class ReferenceResolver {
             node instanceof ExpressionStatementNode || 
             node instanceof VariableIdentifierNode || 
             node instanceof ReturnNode ||
-            node instanceof LambdaExpressionNode
+            node instanceof LambdaExpressionNode ||
+            node instanceof IfThenElseStatementNode
         ) {
             return Collections.emptySet();
         }
