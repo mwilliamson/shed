@@ -24,7 +24,11 @@ public class SubScope implements Scope {
     }
     
     public void add(String identifier, DeclarationNode node) {
-        variables.put(identifier, new Identity<DeclarationNode>(node));
+        if (allVariablesDeclaredInScope.contains(identifier)) {
+            variables.put(identifier, new Identity<DeclarationNode>(node));            
+        } else {
+            throw new RuntimeException("Variable has not been pre-declared: " + identifier);
+        }
     }
 
     @Override

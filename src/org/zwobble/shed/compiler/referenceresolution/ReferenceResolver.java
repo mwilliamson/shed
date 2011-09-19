@@ -1,6 +1,7 @@
 package org.zwobble.shed.compiler.referenceresolution;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -30,6 +31,8 @@ import org.zwobble.shed.compiler.referenceresolution.Scope.NotDeclaredYet;
 import org.zwobble.shed.compiler.referenceresolution.Scope.NotInScope;
 import org.zwobble.shed.compiler.referenceresolution.Scope.Result;
 import org.zwobble.shed.compiler.referenceresolution.Scope.Success;
+
+import com.google.common.collect.Sets;
 
 public class ReferenceResolver {
     private final DeclarationFinder declarationFinder = new DeclarationFinder();
@@ -69,7 +72,7 @@ public class ReferenceResolver {
             resolveReferences(((ExpressionStatementNode) node).getExpression(), nodeLocations, references, scope, errors);
         } else if (node instanceof LambdaExpressionNode) {
             LambdaExpressionNode lambda = (LambdaExpressionNode) node;
-            SubScope lambdaScope = new SubScope(scope, findDeclarations(lambda.getBody()));
+            SubScope lambdaScope = new SubScope(scope, Sets.union(argumentDeclarations(lambda), findDeclarations(lambda.getBody())));
             List<FormalArgumentNode> formalArguments = lambda.getFormalArguments();
             for (FormalArgumentNode formalArgument : formalArguments) {
                 lambdaScope.add(formalArgument.getIdentifier(), formalArgument);
@@ -116,6 +119,14 @@ public class ReferenceResolver {
                 scope.add(declaration.getIdentifier(), declaration);
             }
         }
+    }
+
+    private Set<String> argumentDeclarations(LambdaExpressionNode lambda) {
+        Set<String> declarations = new HashSet<String>();
+        for (FormalArgumentNode formalArgument : lambda.getFormalArguments()) {
+            declarations.add(formalArgument.getIdentifier());
+        }
+        return declarations;
     }
 
     private boolean isLiteralNode(SyntaxNode node) {
