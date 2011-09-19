@@ -7,7 +7,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
-public class BooleanLiteralNode implements ExpressionNode {
+public class BooleanLiteralNode implements LiteralNode {
     private final boolean value;
     
     public boolean getValue() {

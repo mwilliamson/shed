@@ -1,25 +1,27 @@
 package org.zwobble.shed.compiler.codegenerator;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.zwobble.shed.compiler.ShedSymbols;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptExpressionNode;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptFunctionCallNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
+import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
+import org.zwobble.shed.compiler.parsing.nodes.LiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
@@ -35,6 +37,7 @@ import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+import org.zwobble.shed.compiler.referenceresolution.References;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -51,9 +54,11 @@ public class JavaScriptGenerator {
     
     private final JavaScriptNodes js = new JavaScriptNodes();
     private final JavaScriptModuleWrapper wrapper;
+    private final JavaScriptNamer namer;
     
-    public JavaScriptGenerator(JavaScriptModuleWrapper wrapper) {
+    public JavaScriptGenerator(JavaScriptModuleWrapper wrapper, References references) {
         this.wrapper = wrapper;
+        this.namer = new JavaScriptNamer(references);
     }
     
     public JavaScriptNode generate(SourceNode node, Iterable<String> coreValues) {
@@ -66,7 +71,7 @@ public class JavaScriptGenerator {
             Iterables.transform(Iterables.filter(source.getStatements(), isPublicDeclaration()), toJavaScriptExport(packageDeclaration))
         );
         
-        return wrapper.wrap(packageDeclaration, node.getImports(), js.statements(sourceStatements));
+        return wrapper.wrap(packageDeclaration, node.getImports(), js.statements(sourceStatements), namer);
     }
 
     private Function<String, JavaScriptStatementNode> coreValueToJavaScript() {
@@ -79,20 +84,11 @@ public class JavaScriptGenerator {
     }
 
     public JavaScriptExpressionNode generateExpression(ExpressionNode node) {
-        if (node instanceof BooleanLiteralNode) {
-            return js.call(js.id(CORE_VALUES_OBJECT_NAME + ".Boolean"), js.bool(((BooleanLiteralNode)node).getValue()));
-        }
-        if (node instanceof NumberLiteralNode) {
-            return js.call(js.id(CORE_VALUES_OBJECT_NAME + ".Number"), js.number(((NumberLiteralNode)node).getValue()));
-        }
-        if (node instanceof StringLiteralNode) {
-            return js.call(js.id(CORE_VALUES_OBJECT_NAME + ".String"), js.string(((StringLiteralNode)node).getValue()));
-        }
-        if (node instanceof UnitLiteralNode) {
-            return js.call(js.id(CORE_VALUES_OBJECT_NAME + ".Unit"));
+        if (node instanceof LiteralNode) {
+            return generateLiteral((LiteralNode) node);            
         }
         if (node instanceof VariableIdentifierNode) {
-            return js.id(((VariableIdentifierNode) node).getIdentifier());
+            return js.id(namer.javaScriptIdentifierFor((VariableIdentifierNode) node));
         }
         if (node instanceof ShortLambdaExpressionNode) {
             ShortLambdaExpressionNode lambda = (ShortLambdaExpressionNode)node;
@@ -125,10 +121,26 @@ public class JavaScriptGenerator {
         throw new RuntimeException("Cannot generate JavaScript for " + node);
     }
 
+    private JavaScriptFunctionCallNode generateLiteral(LiteralNode node) {
+        if (node instanceof BooleanLiteralNode) {
+            return js.call(js.id(CORE_VALUES_OBJECT_NAME + ".Boolean"), js.bool(((BooleanLiteralNode)node).getValue()));
+        }
+        if (node instanceof NumberLiteralNode) {
+            return js.call(js.id(CORE_VALUES_OBJECT_NAME + ".Number"), js.number(((NumberLiteralNode)node).getValue()));
+        }
+        if (node instanceof StringLiteralNode) {
+            return js.call(js.id(CORE_VALUES_OBJECT_NAME + ".String"), js.string(((StringLiteralNode)node).getValue()));
+        }
+        if (node instanceof UnitLiteralNode) {
+            return js.call(js.id(CORE_VALUES_OBJECT_NAME + ".Unit"));
+        }
+        throw new RuntimeException("Cannot generate JavaScript for " + node);
+    }
+
     public JavaScriptStatementNode generateStatement(StatementNode node) {
         if (node instanceof VariableDeclarationNode) {
             VariableDeclarationNode immutableVariable = (VariableDeclarationNode)node;
-            return js.var(immutableVariable.getIdentifier(), generateExpression(immutableVariable.getValue()));
+            return js.var(namer.javaScriptIdentifierFor(immutableVariable), generateExpression(immutableVariable.getValue()));
         }
         if (node instanceof ReturnNode) {
             ReturnNode returnNode = (ReturnNode)node;
@@ -145,20 +157,20 @@ public class JavaScriptGenerator {
             BlockNode statements = objectDeclaration.getStatements();
             List<JavaScriptStatementNode> javaScriptBody = newArrayList(transform(statements, toJavaScriptStatement()));
 
-            Set<String> publicMembers = new HashSet<String>();
+            List<DeclarationNode> publicMembers = new ArrayList<DeclarationNode>();
             for (StatementNode statement : statements) {
                 if (statement instanceof PublicDeclarationNode) {
-                    publicMembers.add(((PublicDeclarationNode) statement).getDeclaration().getIdentifier());
+                    publicMembers.add(((PublicDeclarationNode) statement).getDeclaration());
                 }
             }
             
             Map<String, JavaScriptExpressionNode> javaScriptProperties = new HashMap<String, JavaScriptExpressionNode>();
-            for (String publicMember : publicMembers) {
-                javaScriptProperties.put(publicMember, js.id(publicMember));
+            for (DeclarationNode publicMember : publicMembers) {
+                javaScriptProperties.put(publicMember.getIdentifier(), js.id(namer.javaScriptIdentifierFor(publicMember)));
             }
             
             javaScriptBody.add(js.ret(js.object(javaScriptProperties)));
-            return js.var(objectDeclaration.getIdentifier(), js.call(js.func(
+            return js.var(namer.javaScriptIdentifierFor(objectDeclaration), js.call(js.func(
                 Collections.<String>emptyList(),
                 javaScriptBody
             )));
@@ -178,7 +190,7 @@ public class JavaScriptGenerator {
         return new Function<FormalArgumentNode, String>() {
             @Override
             public String apply(FormalArgumentNode input) {
-                return input.getIdentifier();
+                return namer.javaScriptIdentifierFor(input);
             }
         };
     }
@@ -214,9 +226,10 @@ public class JavaScriptGenerator {
         return new Function<StatementNode, JavaScriptStatementNode>() {
             @Override
             public JavaScriptStatementNode apply(StatementNode input) {
-                String identifier = ((PublicDeclarationNode)input).getDeclaration().getIdentifier();
-                String fullIdentifier = Joiner.on(".").join(packageDeclaration.getPackageNames()) + "." + identifier;
-                return js.expressionStatement(js.call(js.id("SHED.exportValue"), js.string(fullIdentifier), js.id(identifier)));
+                DeclarationNode declaration = ((PublicDeclarationNode)input).getDeclaration();
+                String javaScriptIdentifier = namer.javaScriptIdentifierFor(declaration);
+                String fullIdentifier = Joiner.on(".").join(packageDeclaration.getPackageNames()) + "." + declaration.getIdentifier();
+                return js.expressionStatement(js.call(js.id("SHED.exportValue"), js.string(fullIdentifier), js.id(javaScriptIdentifier)));
             }
         };
     }

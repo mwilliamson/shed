@@ -22,7 +22,7 @@ public class BrowserModuleWrapper implements JavaScriptModuleWrapper {
     private final JavaScriptNodes js = new JavaScriptNodes();
 
     @Override
-    public JavaScriptNode wrap(PackageDeclarationNode packageDeclaration, Iterable<ImportNode> imports, JavaScriptStatements module) {
+    public JavaScriptNode wrap(PackageDeclarationNode packageDeclaration, Iterable<ImportNode> imports, JavaScriptStatements module, JavaScriptNamer namer) {
         List<JavaScriptExpressionNode> requireArguments = new ArrayList<JavaScriptExpressionNode>();
         requireArguments.add(js.string("shed.core"));
         for (ImportNode importNode : imports) {
@@ -30,7 +30,7 @@ public class BrowserModuleWrapper implements JavaScriptModuleWrapper {
         }
         ArrayList<String> importNames = newArrayList(Iterables.concat(
             singletonList(CORE_VALUES_OBJECT_NAME),
-            Iterables.transform(imports, toImportName())
+            Iterables.transform(imports, toImportName(namer))
         ));
         requireArguments.add(js.func(importNames, module.getStatements()));
         return js.statements(
@@ -43,11 +43,11 @@ public class BrowserModuleWrapper implements JavaScriptModuleWrapper {
         );
     }
 
-    private Function<ImportNode, String> toImportName() {
+    private Function<ImportNode, String> toImportName(final JavaScriptNamer namer) {
         return new Function<ImportNode, String>() {
             @Override
             public String apply(ImportNode input) {
-                return input.getNames().get(input.getNames().size() - 1);
+                return namer.javaScriptIdentifierFor(input);
             }
         };
     }

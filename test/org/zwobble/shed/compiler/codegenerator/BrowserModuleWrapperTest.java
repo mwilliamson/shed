@@ -6,6 +6,7 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptVariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
+import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -21,7 +22,8 @@ public class BrowserModuleWrapperTest {
         JavaScriptNode wrapped = wrapper.wrap(
             null, 
             asList(new ImportNode(asList("shed", "blah")), new ImportNode(asList("shed", "example"))), 
-            js.statements(original)
+            js.statements(original),
+            new JavaScriptNamer(new ReferencesBuilder().build())
         );
         assertThat(wrapped, is(
             (JavaScriptNode)js.statements(
@@ -32,7 +34,7 @@ public class BrowserModuleWrapperTest {
                         js.string("shed.blah"),
                         js.string("shed.example"),
                         js.func(
-                            asList(JavaScriptGenerator.CORE_VALUES_OBJECT_NAME, "blah", "example"),
+                            asList(JavaScriptGenerator.CORE_VALUES_OBJECT_NAME, "blah__1", "example__1"),
                             asList((JavaScriptStatementNode)original)
                         )
                     )

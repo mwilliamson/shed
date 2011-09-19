@@ -7,7 +7,9 @@ import org.zwobble.shed.compiler.parsing.nodes.PackageDeclarationNode;
 
 public class IdentityModuleWrapper implements JavaScriptModuleWrapper {
     @Override
-    public JavaScriptNode wrap(PackageDeclarationNode packageDeclaration, Iterable<ImportNode> imports, JavaScriptStatements module) {
+    public JavaScriptNode wrap(
+        PackageDeclarationNode packageDeclaration, Iterable<ImportNode> imports, JavaScriptStatements module, JavaScriptNamer namer
+    ) {
         return module;
     }
 }
