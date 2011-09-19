@@ -59,6 +59,14 @@ public class ReferenceResolverTest {
         SyntaxNode source = Nodes.block(declaration, Nodes.expressionStatement(reference));
         assertThat(resolveReferences(source), hasReference(reference, declaration));
     }
+    
+    @Test public void
+    referencesInVariableIntialisersAreResolved() {
+        VariableIdentifierNode reference = Nodes.id("x");
+        DeclarationNode declaration = Nodes.immutableVar("x", Nodes.number("42"));
+        SyntaxNode source = Nodes.block(declaration, Nodes.immutableVar("y", reference));
+        assertThat(resolveReferences(source), hasReference(reference, declaration));
+    }
 
     @Test public void
     referringToVariablesNotInScopeAddsError() {

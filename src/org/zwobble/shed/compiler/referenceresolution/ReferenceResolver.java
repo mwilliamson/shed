@@ -24,6 +24,7 @@ import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
+import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.Scope.NotDeclaredYet;
 import org.zwobble.shed.compiler.referenceresolution.Scope.NotInScope;
@@ -56,14 +57,6 @@ public class ReferenceResolver {
             for (StatementNode child : (BlockNode)node) {
                 resolveReferences(child, nodeLocations, references, scope, errors);
             }
-        } else if (node instanceof DeclarationNode) {
-            DeclarationNode declaration = (DeclarationNode)node;
-            if (scope.isDeclaredInCurrentScope(declaration.getIdentifier())) {
-                errors.add(new CompilerError(nodeLocations.locate(node), new DuplicateIdentifierError(declaration.getIdentifier())));
-            } else {
-                scope.add(declaration.getIdentifier(), declaration);
-            }
-            
         } else if (node instanceof ExpressionStatementNode) {
             resolveReferences(((ExpressionStatementNode) node).getExpression(), nodeLocations, references, scope, errors);
         } else if (node instanceof LambdaExpressionNode) {
@@ -91,8 +84,18 @@ public class ReferenceResolver {
             resolveReferences(ifElse.getCondition(), nodeLocations, references, scope, errors);
             resolveReferences(ifElse.getIfTrue(), nodeLocations, references, scope.extend(findDeclarations(ifElse.getIfTrue())), errors);
             resolveReferences(ifElse.getIfFalse(), nodeLocations, references, scope.extend(findDeclarations(ifElse.getIfFalse())), errors);
+        } else if (node instanceof VariableDeclarationNode) {
+            resolveReferences(((VariableDeclarationNode) node).getValue(), nodeLocations, references, scope, errors);
         } else {
             throw new RuntimeException("Don't how to resolve references for: " + node);
+        }
+        if (node instanceof DeclarationNode) {
+            DeclarationNode declaration = (DeclarationNode)node;
+            if (scope.isDeclaredInCurrentScope(declaration.getIdentifier())) {
+                errors.add(new CompilerError(nodeLocations.locate(node), new DuplicateIdentifierError(declaration.getIdentifier())));
+            } else {
+                scope.add(declaration.getIdentifier(), declaration);
+            }
         }
     }
     
