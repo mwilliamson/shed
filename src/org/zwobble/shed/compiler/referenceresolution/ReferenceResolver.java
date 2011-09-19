@@ -1,8 +1,6 @@
 package org.zwobble.shed.compiler.referenceresolution;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -20,6 +18,7 @@ import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.LambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
@@ -33,6 +32,8 @@ import org.zwobble.shed.compiler.referenceresolution.Scope.Result;
 import org.zwobble.shed.compiler.referenceresolution.Scope.Success;
 
 public class ReferenceResolver {
+    private final DeclarationFinder declarationFinder = new DeclarationFinder();
+    
     public ReferenceResolverResult resolveReferences(SyntaxNode node, NodeLocations nodeLocations) {
         ReferencesBuilder references = new ReferencesBuilder();
         List<CompilerError> errors = new ArrayList<CompilerError>();
@@ -93,6 +94,8 @@ public class ReferenceResolver {
             resolveReferences(ifElse.getIfFalse(), nodeLocations, references, scope.extend(findDeclarations(ifElse.getIfFalse())), errors);
         } else if (node instanceof VariableDeclarationNode) {
             resolveReferences(((VariableDeclarationNode) node).getValue(), nodeLocations, references, scope, errors);
+        } else if (node instanceof PublicDeclarationNode) {
+            resolveReferences(((PublicDeclarationNode) node).getDeclaration(), nodeLocations, references, scope, errors);
         } else if (node instanceof CallNode) {
             CallNode call = (CallNode) node;
             resolveReferences(call.getFunction(), nodeLocations, references, scope, errors);
@@ -114,31 +117,12 @@ public class ReferenceResolver {
             }
         }
     }
-    
-    private Set<String> findDeclarations(SyntaxNode node) {
-        if (isLiteralNode(node) || 
-            node instanceof ExpressionStatementNode || 
-            node instanceof VariableIdentifierNode || 
-            node instanceof ReturnNode ||
-            node instanceof LambdaExpressionNode ||
-            node instanceof IfThenElseStatementNode
-        ) {
-            return Collections.emptySet();
-        }
-        if (node instanceof DeclarationNode) {
-            return Collections.singleton(((DeclarationNode) node).getIdentifier());
-        }
-        if (node instanceof BlockNode) {
-            Set<String> declarations = new HashSet<String>();
-            for (StatementNode child : (BlockNode)node) {
-                declarations.addAll(findDeclarations(child));
-            }
-            return declarations;
-        }
-        throw new RuntimeException("Don't how to find declarations for: " + node);
-    }
 
     private boolean isLiteralNode(SyntaxNode node) {
         return node instanceof BooleanLiteralNode || node instanceof NumberLiteralNode || node instanceof StringLiteralNode;
+    }
+
+    private Set<String> findDeclarations(SyntaxNode node) {
+        return declarationFinder.findDeclarations(node);
     }
 }

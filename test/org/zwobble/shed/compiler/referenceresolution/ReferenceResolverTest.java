@@ -69,6 +69,14 @@ public class ReferenceResolverTest {
     }
     
     @Test public void
+    referencesInPublicVariableIntialisersAreResolved() {
+        VariableIdentifierNode reference = Nodes.id("x");
+        DeclarationNode declaration = Nodes.immutableVar("x", Nodes.number("42"));
+        SyntaxNode source = Nodes.block(declaration, Nodes.publik(Nodes.immutableVar("y", reference)));
+        assertThat(resolveReferences(source), hasReference(reference, declaration));
+    }
+    
+    @Test public void
     referencesInFunctionCallAreResolved() {
         DeclarationNode functionDeclaration = Nodes.immutableVar("func", Nodes.string("go"));
         DeclarationNode argumentDeclaration = Nodes.immutableVar("x", Nodes.number("42"));
