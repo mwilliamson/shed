@@ -5,28 +5,22 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
-import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
-import org.zwobble.shed.compiler.parsing.nodes.LambdaExpressionNode;
-import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
-import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
-import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
 public class DeclarationFinder {
     public Set<String> findDeclarations(SyntaxNode node) {
-        if (isLiteralNode(node) || 
+        if (node instanceof ExpressionNode || 
             node instanceof ExpressionStatementNode || 
-            node instanceof VariableIdentifierNode || 
             node instanceof ReturnNode ||
-            node instanceof LambdaExpressionNode ||
             node instanceof IfThenElseStatementNode
         ) {
             return Collections.emptySet();
@@ -56,9 +50,5 @@ public class DeclarationFinder {
             return declarations;
         }
         throw new RuntimeException("Don't how to find declarations for: " + node);
-    }
-
-    private boolean isLiteralNode(SyntaxNode node) {
-        return node instanceof BooleanLiteralNode || node instanceof NumberLiteralNode || node instanceof StringLiteralNode;
     }
 }
