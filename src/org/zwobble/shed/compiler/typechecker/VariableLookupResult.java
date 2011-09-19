@@ -14,16 +14,11 @@ public class VariableLookupResult {
         return new VariableLookupResult(Status.NOT_DECLARED, null);
     }
     
-    public static VariableLookupResult notDeclaredYet() {
-        return new VariableLookupResult(Status.NOT_DECLARED_YET, null);
-    }
-    
     private final Status status;
     private final Type type;
     
     public enum Status {
         SUCCESS,
-        NOT_DECLARED,
-        NOT_DECLARED_YET
+        NOT_DECLARED
     }
 }

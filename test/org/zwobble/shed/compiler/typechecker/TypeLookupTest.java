@@ -1,20 +1,14 @@
 package org.zwobble.shed.compiler.typechecker;
 
-import java.util.Collections;
-
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
-import org.zwobble.shed.compiler.types.ClassType;
+import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 import org.zwobble.shed.compiler.types.CoreTypes;
-import org.zwobble.shed.compiler.types.FormalTypeParameter;
-import org.zwobble.shed.compiler.types.InterfaceType;
-import org.zwobble.shed.compiler.types.ParameterisedType;
 import org.zwobble.shed.compiler.types.Type;
-import org.zwobble.shed.compiler.types.TypeApplication;
-
-import com.google.common.collect.ImmutableMap;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -26,51 +20,57 @@ import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 public class TypeLookupTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
+    private final ReferencesBuilder references = new ReferencesBuilder();
+
+    private final GlobalDeclarationNode stringDeclaration = new GlobalDeclarationNode("String");
+    private final VariableIdentifierNode stringReference = new VariableIdentifierNode("String");
     
     @Test public void
     canLookupTypesFromContext() {
-        StaticContext context = new StaticContext();
-        context.add("String", TypeApplication.applyTypes(CoreTypes.CLASS, asList(CoreTypes.STRING)));
-
-        TypeResult<Type> result = lookupTypeReference(new VariableIdentifierNode("String"), context);
+        TypeResult<Type> result = lookupTypeReference(stringReference, standardContext());
         assertThat(result, is(success(CoreTypes.STRING)));
     }
     
     @Test public void
     errorIfVariableDoesNotReferenceAFunctionTypeInCurrentContext() {
-        StaticContext context = new StaticContext();
-        context.add("String", CoreTypes.NUMBER);
-        TypeResult<Type> result = lookupTypeReference(new VariableIdentifierNode("String"), context);
+        VariableIdentifierNode reference = Nodes.id("length");
+        GlobalDeclarationNode declaration = new GlobalDeclarationNode("length");
+        references.addReference(reference, declaration);
+        
+        StaticContext context = standardContext();
+        context.add(declaration, CoreTypes.NUMBER);
+        
+        TypeResult<Type> result = lookupTypeReference(reference, context);
         assertThat(errorStrings(result), is(asList("Not a type but an instance of \"Number\"")));
     }
     
     @Test public void
     errorIncludesNodeLocation() {
-        StaticContext context = new StaticContext();
-        context.add("String", CoreTypes.NUMBER);
-        VariableIdentifierNode node = new VariableIdentifierNode("String");
-        nodeLocations.put(node, range(position(3, 5), position(7, 4)));
-        TypeResult<Type> result = lookupTypeReference(node, context);
+        VariableIdentifierNode reference = Nodes.id("length");
+        GlobalDeclarationNode declaration = new GlobalDeclarationNode("length");
+        references.addReference(reference, declaration);
+        
+        StaticContext context = standardContext();
+        context.add(declaration, CoreTypes.NUMBER);
+        
+        nodeLocations.put(reference, range(position(3, 5), position(7, 4)));
+        TypeResult<Type> result = lookupTypeReference(reference, context);
         assertThat(
             result.getErrors(),
             is((Object)asList(CompilerError.error(range(position(3, 5), position(7, 4)), "Not a type but an instance of \"Number\"")))
         );
     }
     
-    @Test public void
-    errorIfVariableDoesNotReferenceTypeInCurrentContext() {
-        StaticContext context = new StaticContext();
-        ParameterisedType listType = new ParameterisedType(
-            new ClassType(Collections.<String>emptyList(), "List", Collections.<InterfaceType>emptySet(), ImmutableMap.<String, Type>of()),
-            asList(new FormalTypeParameter("E"))
-        );
-        Type type = TypeApplication.applyTypes(listType, asList(CoreTypes.NUMBER));
-        context.add("String", type);
-        TypeResult<Type> result = lookupTypeReference(new VariableIdentifierNode("String"), context);
-        assertThat(errorStrings(result), is(asList("Not a type but an instance of \"List[Number]\"")));
-    }
-    
     private TypeResult<Type> lookupTypeReference(ExpressionNode typeReference, StaticContext context) {
         return TypeLookup.lookupTypeReference(typeReference, nodeLocations, context);
+    }
+    
+    private StaticContext standardContext() {
+        references.addReference(stringReference, stringDeclaration);
+        
+        StaticContext context = new StaticContext(references.build());
+        context.add(stringDeclaration, CoreTypes.classOf(CoreTypes.STRING));
+        
+        return context;
     }
 }

@@ -12,6 +12,8 @@ import org.zwobble.shed.compiler.parsing.ParseResult;
 import org.zwobble.shed.compiler.parsing.Parser;
 import org.zwobble.shed.compiler.parsing.TokenNavigator;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
+import org.zwobble.shed.compiler.referenceresolution.ReferenceResolver;
+import org.zwobble.shed.compiler.referenceresolution.ReferenceResolverResult;
 import org.zwobble.shed.compiler.tokeniser.TokenPosition;
 import org.zwobble.shed.compiler.tokeniser.Tokeniser;
 import org.zwobble.shed.compiler.typechecker.CoreModule;
@@ -34,6 +36,7 @@ public class ShedCompiler {
 
     private final Tokeniser tokeniser;
     private final Parser parser;
+    private final ReferenceResolver referenceResolver;
     private final JavaScriptGenerator javaScriptGenerator;
     private final JavaScriptWriter javaScriptWriter;
     private final JavaScriptOptimiser javaScriptOptimiser;
@@ -41,6 +44,7 @@ public class ShedCompiler {
     private ShedCompiler(JavaScriptModuleWrapper moduleWrapper, JavaScriptOptimiser javaScriptOptimiser) {
         this.tokeniser = new Tokeniser();
         this.parser = new Parser();
+        this.referenceResolver = new ReferenceResolver();
         this.javaScriptGenerator = new JavaScriptGenerator(moduleWrapper);
         this.javaScriptWriter = new JavaScriptWriter();
         this.javaScriptOptimiser = javaScriptOptimiser;
@@ -54,12 +58,17 @@ public class ShedCompiler {
         String javaScriptOutput = null;
         
         if (parseResult.isSuccess()) {
-            TypeResult<Void> typeCheckResult = TypeChecker.typeCheck(parseResult.get(), parseResult, defaultBrowserContext());
-            errors.addAll(typeCheckResult.getErrors());
-            
-            if (typeCheckResult.isSuccess()) {
-                JavaScriptNode javaScript = javaScriptGenerator.generate(parseResult.get(), CoreModule.VALUES.keySet());
-                javaScriptOutput = javaScriptOptimiser.optimise(javaScriptWriter.write(javaScript));
+            SourceNode sourceNode = parseResult.get();
+            ReferenceResolverResult referencesResult = referenceResolver.resolveReferences(sourceNode, parseResult, CoreModule.GLOBAL_DECLARATIONS);
+            errors.addAll(referencesResult.getErrors());
+            if (referencesResult.isSuccess()) {
+                TypeResult<Void> typeCheckResult = TypeChecker.typeCheck(sourceNode, parseResult, defaultBrowserContext(referencesResult.getReferences()));
+                errors.addAll(typeCheckResult.getErrors());
+                
+                if (typeCheckResult.isSuccess()) {
+                    JavaScriptNode javaScript = javaScriptGenerator.generate(sourceNode, CoreModule.VALUES.keySet());
+                    javaScriptOutput = javaScriptOptimiser.optimise(javaScriptWriter.write(javaScript));
+                }   
             }
         }
         return new CompilationResult(tokens, errors, javaScriptOutput);

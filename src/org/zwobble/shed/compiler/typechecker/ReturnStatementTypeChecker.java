@@ -14,9 +14,10 @@ import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 public class ReturnStatementTypeChecker {
-    public static TypeResult<StatementTypeCheckResult> typeCheckReturnStatement(ReturnNode returnStatement, NodeLocations nodeLocations, StaticContext context) {
-        Option<Type> expectedReturnType = context.currentScope().getReturnType();
-        if (!expectedReturnType.hasValue()) {
+    public static TypeResult<StatementTypeCheckResult> typeCheckReturnStatement(
+        ReturnNode returnStatement, NodeLocations nodeLocations, StaticContext context, Option<Type> returnType
+    ) {
+        if (!returnType.hasValue()) {
             return failure(StatementTypeCheckResult.alwaysReturns(), asList(
                 CompilerError.error(
                     nodeLocations.locate(returnStatement),
@@ -29,10 +30,10 @@ public class ReturnStatementTypeChecker {
         if (!expressionType.isSuccess()) {
             return failure(expressionType.getErrors());
         }
-        if (isSubType(expressionType.get(), expectedReturnType.get())) {
+        if (isSubType(expressionType.get(), returnType.get())) {
             return success(StatementTypeCheckResult.alwaysReturns());
         } else {
-            String expectedName = expectedReturnType.get().shortName();
+            String expectedName = returnType.get().shortName();
             String actualName = expressionType.get().shortName();
             return failure(StatementTypeCheckResult.alwaysReturns(), asList(
                 CompilerError.error(

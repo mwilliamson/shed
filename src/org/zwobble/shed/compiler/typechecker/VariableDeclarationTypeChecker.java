@@ -10,7 +10,6 @@ import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.types.Type;
 
 import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
-import static org.zwobble.shed.compiler.typechecker.TypeErrors.duplicateIdentifierError;
 import static org.zwobble.shed.compiler.typechecker.TypeInferer.inferType;
 import static org.zwobble.shed.compiler.typechecker.TypeLookup.lookupTypeReference;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
@@ -37,12 +36,8 @@ public class VariableDeclarationTypeChecker {
             }
         }
         
-        if (staticContext.isDeclaredInCurrentScope(variableDeclaration.getIdentifier())) {
-            errors.add(duplicateIdentifierError(variableDeclaration.getIdentifier(), nodeLocations.locate(variableDeclaration)));
-        }
-        
         if (errors.isEmpty()) {
-            staticContext.add(variableDeclaration.getIdentifier(), valueTypeResult.get());
+            staticContext.add(variableDeclaration, valueTypeResult.get());
             return success(StatementTypeCheckResult.noReturn());
         } else {
             return failure(errors);

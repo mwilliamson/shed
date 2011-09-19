@@ -1,62 +1,58 @@
 package org.zwobble.shed.compiler.typechecker;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.typechecker.VariableLookupResult.Status;
+import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.Identity;
+import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+import org.zwobble.shed.compiler.referenceresolution.References;
 import org.zwobble.shed.compiler.types.Type;
-
-import com.google.common.collect.Lists;
 
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
 
 public class StaticContext {
-    public static StaticContext defaultContext() {
-        StaticContext staticContext = new StaticContext();
+    public static StaticContext defaultContext(References references) {
+        StaticContext staticContext = new StaticContext(references);
         for (Entry<String, Type> value : CoreModule.VALUES.entrySet()) {
             addCore(staticContext, value.getKey(), value.getValue());
         }
         return staticContext;
     }
-    
-    private static void addCore(StaticContext context, String name, Type type) {
-        context.add(name, type);
-        context.addGlobal(asList("shed", "core", name), type);
+
+    private static void addCore(StaticContext staticContext, String identifier, Type type) {
+        staticContext.addGlobal(asList("shed", "core", identifier), type);
+        staticContext.add(CoreModule.GLOBAL_DECLARATIONS.get(identifier), type);
     }
     
-    private final List<StaticScope> scopes = new ArrayList<StaticScope>();
     private final Map<List<String>, Type> global = new HashMap<List<String>, Type>();
+    private final Map<Identity<DeclarationNode>, Type> types = new HashMap<Identity<DeclarationNode>, Type>();
+    private final References references;
     
-    public StaticContext() {
-        scopes.add(new StaticScope(none(Type.class)));
+    public StaticContext(References references) {
+        this.references = references;
     }
     
-    public void add(String identifier, Type type) {
-        currentScope().add(identifier, type);
+    public void add(DeclarationNode declaration, Type type) {
+        types.put(new Identity<DeclarationNode>(declaration), type);
     }
 
-    public void declaredSoon(String identifier) {
-        currentScope().declaredSoon(identifier);
+    public VariableLookupResult get(VariableIdentifierNode reference) {
+        return get(references.findReferent(reference));
     }
-    
-    public VariableLookupResult get(String identifier) {
-        for (StaticScope scope : Lists.reverse(scopes)) {
-            VariableLookupResult result = scope.get(identifier);
-            if (result.getStatus() != Status.NOT_DECLARED) {
-                return result;
-            }
+
+    public VariableLookupResult get(DeclarationNode declaration) {
+        Identity<DeclarationNode> key = new Identity<DeclarationNode>(declaration);
+        if (types.containsKey(key)) {
+            return VariableLookupResult.success(types.get(key));
+        } else {
+            return VariableLookupResult.notDeclared();            
         }
-        return new VariableLookupResult(Status.NOT_DECLARED, null);
-    }
-    
-    public boolean isDeclaredInCurrentScope(String identifier) {
-        return currentScope().isDeclared(identifier);
     }
 
     public void addGlobal(List<String> identifiers, Type type) {
@@ -69,29 +65,5 @@ public class StaticContext {
         } else {
             return none();
         }
-    }
-
-    public void enterNewFunctionScope(Type type) {
-        enterNewScope(some(type));
-    }
-    
-    public void enterNewNonFunctionScope() {
-        enterNewScope(Option.<Type>none());
-    }
-    
-    public void enterNewSubScope() {
-        enterNewScope(currentScope().getReturnType());
-    }
-    
-    public void exitScope() {
-        scopes.remove(scopes.size() - 1);
-    }
-
-    public StaticScope currentScope() {
-        return scopes.get(scopes.size() - 1);
-    }
-
-    private void enterNewScope(Option<Type> type) {
-        scopes.add(new StaticScope(type));
     }
 }

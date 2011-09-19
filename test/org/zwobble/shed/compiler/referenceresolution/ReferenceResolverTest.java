@@ -2,7 +2,6 @@ package org.zwobble.shed.compiler.referenceresolution;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -11,6 +10,7 @@ import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.CompilerErrorDescription;
 import org.zwobble.shed.compiler.CompilerTesting;
+import org.zwobble.shed.compiler.HasErrors;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
@@ -35,6 +35,7 @@ import com.google.common.collect.ImmutableMap;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 
 public class ReferenceResolverTest {
     private static final References EMPTY_REFERENCES = new References(ImmutableMap.<Identity<VariableIdentifierNode>, Identity<DeclarationNode>>of());
@@ -341,33 +342,8 @@ public class ReferenceResolverTest {
             }
         };
     }
-    
-    private Matcher<ReferenceResolverResult> isFailureWithErrors(CompilerErrorDescription... errorsArray) {
-        List<CompilerErrorDescription> errors = asList(errorsArray);
-        return hasErrors("failure with errors: " + errors, errors);
-    }
 
-    private Matcher<ReferenceResolverResult> isSuccess() {
-        return hasErrors("success", Collections.<CompilerErrorDescription>emptyList());
-    }
-    
-    private Matcher<ReferenceResolverResult> hasErrors(final String matcherDescription, final List<CompilerErrorDescription> errors) {
-        return new TypeSafeDiagnosingMatcher<ReferenceResolverResult>() {
-            @Override
-            public void describeTo(Description description) {
-                description.appendText(matcherDescription);
-            }
-
-            @Override
-            protected boolean matchesSafely(ReferenceResolverResult item, Description mismatchDescription) {
-                List<CompilerErrorDescription> actualErrors = CompilerTesting.errorDescriptions(item);
-                if (actualErrors.equals(errors)) {
-                    return true;
-                } else {
-                    mismatchDescription.appendText("had errors: " + actualErrors);
-                    return false;
-                }
-            }
-        };
+    private static Matcher<HasErrors> isSuccess() {
+        return CompilerTesting.hasErrors("success", Collections.<CompilerErrorDescription>emptyList());
     }
 }

@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.zwobble.shed.compiler.CompilerError;
+import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.SourceRange;
+import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
@@ -32,7 +34,6 @@ import static org.zwobble.shed.compiler.typechecker.VariableDeclarationTypeCheck
 
 public class TypeChecker {
     public static TypeResult<Void> typeCheck(SourceNode source, NodeLocations nodeLocations, StaticContext staticContext) {
-        staticContext.enterNewNonFunctionScope();
         List<CompilerError> errors = new ArrayList<CompilerError>();
         
         for (ImportNode importNode : source.getImports()) {
@@ -40,7 +41,7 @@ public class TypeChecker {
             errors.addAll(importTypeCheckResult.getErrors());
         }
 
-        TypeResult<StatementTypeCheckResult> blockResult = typeCheckBlock(source.getStatements(), nodeLocations, staticContext);
+        TypeResult<?> blockResult = typeCheckBlock(source.getStatements(), nodeLocations, staticContext, Option.<Type>none());
         errors.addAll(blockResult.getErrors());
         
         boolean seenPublicStatement = false;
@@ -53,7 +54,6 @@ public class TypeChecker {
             }
         }
         
-        staticContext.exitScope();
         if (errors.isEmpty()) {
             return success(null);
         } else {
@@ -61,25 +61,27 @@ public class TypeChecker {
         }
     }
     
-    public static TypeResult<StatementTypeCheckResult> typeCheckStatement(StatementNode statement, NodeLocations nodeLocations, StaticContext context) {
+    public static TypeResult<StatementTypeCheckResult> typeCheckStatement(
+        StatementNode statement, NodeLocations nodeLocations, StaticContext context, Option<Type> returnType
+    ) {
         if (statement instanceof VariableDeclarationNode) {
             return typeCheckVariableDeclaration((VariableDeclarationNode)statement, nodeLocations, context);
         }
         if (statement instanceof ReturnNode) {
-            return typeCheckReturnStatement((ReturnNode)statement, nodeLocations, context);
+            return typeCheckReturnStatement((ReturnNode)statement, nodeLocations, context, returnType);
         }
         if (statement instanceof ExpressionStatementNode) {
             TypeResult<Type> result = TypeInferer.inferType(((ExpressionStatementNode) statement).getExpression(), nodeLocations, context);
             return TypeResult.success(StatementTypeCheckResult.noReturn()).withErrorsFrom(result);
         }
         if (statement instanceof ObjectDeclarationNode) {
-            return typeCheckObjectDeclaration((ObjectDeclarationNode)statement, nodeLocations, context);
+            return typeCheckObjectDeclaration((ObjectDeclarationNode)statement, nodeLocations, context, returnType);
         }
         if (statement instanceof PublicDeclarationNode) {
-            return typeCheckStatement(((PublicDeclarationNode) statement).getDeclaration(), nodeLocations, context);
+            return typeCheckStatement(((PublicDeclarationNode) statement).getDeclaration(), nodeLocations, context, returnType);
         }
         if (statement instanceof IfThenElseStatementNode) {
-            return typeCheckIfThenElse((IfThenElseStatementNode)statement, nodeLocations, context);
+            return typeCheckIfThenElse((IfThenElseStatementNode)statement, nodeLocations, context, returnType);
         }
         throw new RuntimeException("Cannot check type of statement: " + statement);
     }
@@ -87,12 +89,13 @@ public class TypeChecker {
     public static TypeResult<StatementTypeCheckResult> typeCheckObjectDeclaration(
         ObjectDeclarationNode objectDeclaration,
         NodeLocations nodeLocations,
-        StaticContext context)
-    {
+        StaticContext context,
+        Option<Type> returnType
+    ) {
         TypeResult<StatementTypeCheckResult> result = TypeResult.success(StatementTypeCheckResult.noReturn());
-        context.enterNewNonFunctionScope();
 
-        TypeResult<StatementTypeCheckResult> blockResult = new BlockTypeChecker().typeCheckBlock(objectDeclaration.getStatements(), context, nodeLocations);
+        TypeResult<StatementTypeCheckResult> blockResult = 
+            typeCheckBlock(objectDeclaration.getStatements(), nodeLocations, context, returnType);
         result = result.withErrorsFrom(blockResult);
         
         if (result.isSuccess()) {
@@ -100,24 +103,14 @@ public class TypeChecker {
 
             for (StatementNode statement : objectDeclaration.getStatements()) {
                 if (statement instanceof PublicDeclarationNode) {
-                    String identifier = ((PublicDeclarationNode) statement).getDeclaration().getIdentifier();
-                    typeBuilder.put(identifier, context.get(identifier).getType());
+                    DeclarationNode declaration = ((PublicDeclarationNode) statement).getDeclaration();
+                    typeBuilder.put(declaration.getIdentifier(), context.get(declaration).getType());
                 }
             }
             
             InterfaceType type = new InterfaceType(null, "", typeBuilder.build());
 
-            context.exitScope();
-            
-            TypeResult<Void> addResult = StaticContexts.tryAdd(
-                context,
-                objectDeclaration.getIdentifier(),
-                type,
-                nodeLocations.locate(objectDeclaration)
-            );            
-            result = result.withErrorsFrom(addResult);
-        } else {
-            context.exitScope();
+            context.add(objectDeclaration, type);
         }
         
         return result;
@@ -126,18 +119,15 @@ public class TypeChecker {
     private static TypeResult<StatementTypeCheckResult> typeCheckIfThenElse(
         IfThenElseStatementNode statement,
         NodeLocations nodeLocations,
-        StaticContext context
+        StaticContext context,
+        Option<Type> returnType
     ) {
         TypeResult<Void> conditionResult =
             TypeInferer.inferType(statement.getCondition(), nodeLocations, context)
             .ifValueThen(checkIsBoolean(nodeLocations.locate(statement.getCondition())));
         
-        context.enterNewSubScope();
-        TypeResult<StatementTypeCheckResult> ifTrueResult = typeCheckBlock(statement.getIfTrue(), nodeLocations, context);
-        context.exitScope();
-        context.enterNewSubScope();
-        TypeResult<StatementTypeCheckResult> ifFalseResult = typeCheckBlock(statement.getIfFalse(), nodeLocations, context);
-        context.exitScope();
+        TypeResult<StatementTypeCheckResult> ifTrueResult = typeCheckBlock(statement.getIfTrue(), nodeLocations, context, returnType);
+        TypeResult<StatementTypeCheckResult> ifFalseResult = typeCheckBlock(statement.getIfFalse(), nodeLocations, context, returnType);
         
         boolean returns = 
             ifTrueResult.hasValue() && ifTrueResult.get().hasReturned() && 
@@ -168,8 +158,9 @@ public class TypeChecker {
     public static TypeResult<StatementTypeCheckResult> typeCheckBlock(
         Iterable<StatementNode> statements,
         NodeLocations nodeLocations,
-        StaticContext staticContext
+        StaticContext staticContext,
+        Option<Type> returnType
     ) {
-        return new BlockTypeChecker().typeCheckBlock(statements, staticContext, nodeLocations);
+        return new BlockTypeChecker().typeCheckBlock(statements, staticContext, nodeLocations, returnType);
     }
 }

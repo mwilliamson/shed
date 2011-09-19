@@ -69,7 +69,7 @@ public class ReferenceResolver {
                 references.addReference(variableIdentifier, ((Success)lookupResult).getNode());                
             }
             
-        } else if (isLiteralNode(node)) {
+        } else if (isLiteralNode(node) || node instanceof ImportNode) {
             // Do nothing
         } else if (node instanceof BlockNode) {
             for (StatementNode child : (BlockNode)node) {
@@ -117,7 +117,7 @@ public class ReferenceResolver {
         } else if (node instanceof SourceNode) {
             SourceNode source = (SourceNode) node;
             for (ImportNode importNode : source.getImports()) {
-                scope.add(importNode.getIdentifier(), importNode);
+                resolveReferences(importNode, nodeLocations, references, scope, errors);
             }
             for (StatementNode child : source.getStatements()) {
                 resolveReferences(child, nodeLocations, references, scope, errors);

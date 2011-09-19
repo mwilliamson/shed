@@ -1,9 +1,12 @@
 package org.zwobble.shed.compiler.typechecker;
 
 import org.junit.Test;
+import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
+import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
@@ -20,13 +23,13 @@ import static org.zwobble.shed.compiler.typechecker.ReturnStatementTypeChecker.t
 
 public class ReturnStatementTypeCheckerTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
-    private final StaticContext staticContext = new StaticContext();
+    private final ReferencesBuilder references = new ReferencesBuilder();
     
     @Test public void
-    cannotReturnFromTopLevel() {
+    cannotReturnIfReturnTypeIsNone() {
         ReturnNode returnStatement = new ReturnNode(new BooleanLiteralNode(true));
         assertThat(
-            errorStrings(typeCheckReturnStatement(returnStatement, nodeLocations, staticContext)),
+            errorStrings(typeCheck(returnStatement, staticContext(), Option.<Type>none())),
             is(asList("Cannot return from this scope"))
         );
     }
@@ -34,23 +37,35 @@ public class ReturnStatementTypeCheckerTest {
     @Test public void
     returnExpressionIsTypeChecked() {
         ReturnNode returnStatement = new ReturnNode(new VariableIdentifierNode("x"));
-        staticContext.enterNewFunctionScope(CoreTypes.STRING);
         assertThat(
-            errorStrings(typeCheckReturnStatement(returnStatement, nodeLocations, staticContext)),
-            is(asList("No variable \"x\" in scope"))
+            errorStrings(typeCheck(returnStatement, staticContext(), Option.some(CoreTypes.STRING))),
+            is(asList("Could not determine type of reference: x"))
         );
     }
     
     @Test public void
     returnExpressionCanBeSubTypeOfReturnType() {
-        ReturnNode returnStatement = new ReturnNode(new VariableIdentifierNode("x"));
         InterfaceType iterableType = new InterfaceType(asList("shed", "util"), "Iterable", ImmutableMap.<String, Type>of());
         ClassType listType = new ClassType(asList("shed", "util"), "List", newHashSet(iterableType), ImmutableMap.<String, Type>of());
-        staticContext.enterNewFunctionScope(iterableType);
-        staticContext.add("x", listType);
+        
+        VariableIdentifierNode reference = new VariableIdentifierNode("x");
+        GlobalDeclarationNode declaration = new GlobalDeclarationNode("x");
+        references.addReference(reference, declaration);
+        StaticContext context = staticContext();
+        context.add(declaration, listType);
+        
+        ReturnNode returnStatement = new ReturnNode(reference);
         assertThat(
-            typeCheckReturnStatement(returnStatement, nodeLocations, staticContext),
+            typeCheck(returnStatement, context, Option.<Type>some(iterableType)),
             is(TypeResult.success(StatementTypeCheckResult.alwaysReturns()))
         );
+    }
+    
+    private TypeResult<StatementTypeCheckResult> typeCheck(ReturnNode returnNode, StaticContext context, Option<Type> returnType) {
+        return typeCheckReturnStatement(returnNode, nodeLocations, context, returnType);
+    }
+    
+    private StaticContext staticContext() {
+        return StaticContext.defaultContext(references.build());
     }
 }

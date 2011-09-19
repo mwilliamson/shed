@@ -9,6 +9,7 @@ import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
+import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
@@ -19,6 +20,8 @@ import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
+import org.zwobble.shed.compiler.typechecker.errors.UntypedReferenceError;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
@@ -29,6 +32,8 @@ import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
 
 import com.google.common.collect.ImmutableMap;
+
+import static org.zwobble.shed.compiler.typechecker.TypeCheckerTesting.isFailureWithErrors;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -43,6 +48,16 @@ import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 public class TypeInfererTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
+    private final ReferencesBuilder references = new ReferencesBuilder();
+
+    private final GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Number");
+    private final VariableIdentifierNode numberReference = new VariableIdentifierNode("Number");
+    
+    private final GlobalDeclarationNode stringDeclaration = new GlobalDeclarationNode("String");
+    private final VariableIdentifierNode stringReference = new VariableIdentifierNode("String");
+
+    private final GlobalDeclarationNode booleanDeclaration = new GlobalDeclarationNode("Boolean");
+    private final VariableIdentifierNode booleanReference = new VariableIdentifierNode("Boolean");
     
     @Test public void
     canInferTypeOfBooleanLiteralsAsBoolean() {
@@ -67,34 +82,35 @@ public class TypeInfererTest {
     
     @Test public void
     variableReferencesHaveTypeOfVariable() {
-        StaticContext context = new StaticContext();
-        context.add("value", CoreTypes.STRING);
-        assertThat(inferType(new VariableIdentifierNode("value"), context), is(success(CoreTypes.STRING)));
+        VariableIdentifierNode reference = new VariableIdentifierNode("value");
+        GlobalDeclarationNode declaration = new GlobalDeclarationNode("value");
+        references.addReference(reference, declaration);
+        StaticContext context = blankContext();
+        context.add(declaration, CoreTypes.STRING);
+        assertThat(inferType(reference, context), is(success(CoreTypes.STRING)));
     }
     
     @Test public void
     cannotReferToVariableNotInContext() {
-        StaticContext context = new StaticContext();
         VariableIdentifierNode node = new VariableIdentifierNode("value");
         nodeLocations.put(node, range(position(3, 5), position(7, 4)));
-        TypeResult<Type> result = inferType(node, context);
+        TypeResult<Type> result = inferType(node, blankContext());
         assertThat(result, is(
-            (Object)failure(asList(CompilerError.error(
+            (Object)failure(asList(new CompilerError(
                 range(position(3, 5), position(7, 4)),
-                "No variable \"value\" in scope"
+                new UntypedReferenceError("value")
             )))
         ));
     }
     
     @Test public void
     canInferTypeOfShortLambdaExpressionWithoutArgumentsNorExplicitReturnType() {
-        StaticContext context = new StaticContext();
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
             none(ExpressionNode.class),
             new NumberLiteralNode("42")
         );
-        TypeResult<Type> result = inferType(functionExpression, context);
+        TypeResult<Type> result = inferType(functionExpression, blankContext());
         assertThat(result, is(success(
             TypeApplication.applyTypes(CoreTypes.functionType(0), asList(CoreTypes.NUMBER))
         )));
@@ -102,28 +118,25 @@ public class TypeInfererTest {
     
     @Test public void
     errorIfCannotTypeBodyOfShortLambdaExpression() {
-        StaticContext context = new StaticContext();
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
             none(ExpressionNode.class),
             new VariableIdentifierNode("blah")
         );
-        TypeResult<Type> result = inferType(functionExpression, context);
-        assertThat(errorStrings(result), is(asList("No variable \"blah\" in scope")));
+        TypeResult<Type> result = inferType(functionExpression, blankContext());
+        assertThat(errorStrings(result), is(asList("Could not determine type of reference: blah")));
     }
     
     @Test public void
     errorIfTypeSpecifierAndTypeBodyOfShortLambdaExpressionDoNotAgree() {
-        StaticContext context = new StaticContext();
-        context.add("String", TypeApplication.applyTypes(CoreTypes.CLASS, asList(CoreTypes.STRING)));
         NumberLiteralNode body = new NumberLiteralNode("42");
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
-            some(new VariableIdentifierNode("String")),
+            some(stringReference),
             body
         );
         nodeLocations.put(body, range(position(3, 5), position(7, 4)));
-        TypeResult<Type> result = inferType(functionExpression, context);
+        TypeResult<Type> result = inferType(functionExpression, standardContext());
         assertThat(
             result.getErrors(),
             is((Object)asList(CompilerError.error(
@@ -135,43 +148,50 @@ public class TypeInfererTest {
     
     @Test public void
     errorIfCannotFindArgumentType() {
-        StaticContext context = new StaticContext();
-        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             asList(
                 new FormalArgumentNode("name", new VariableIdentifierNode("Name")),
-                new FormalArgumentNode("age", new VariableIdentifierNode("Number")),
+                new FormalArgumentNode("age", numberReference),
                 new FormalArgumentNode("address", new VariableIdentifierNode("Address"))
             ),
             none(ExpressionNode.class),
             new BooleanLiteralNode(true)
         );
-        TypeResult<Type> result = inferType(functionExpression, context);
-        assertThat(errorStrings(result), is(asList("No variable \"Name\" in scope", "No variable \"Address\" in scope")));
+        TypeResult<Type> result = inferType(functionExpression, standardContext());
+        assertThat(result, isFailureWithErrors(
+            new UntypedReferenceError("Name"),
+            new UntypedReferenceError("Address")
+        ));
     }
     
     @Test public void
     errorIfCannotFindReturnType() {
-        StaticContext context = new StaticContext();
+        StaticContext context = blankContext();
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
             some(new VariableIdentifierNode("String")),
             new NumberLiteralNode("42")
         );
         TypeResult<Type> result = inferType(functionExpression, context);
-        assertThat(errorStrings(result), is(asList("No variable \"String\" in scope")));
+        assertThat(result, isFailureWithErrors(new UntypedReferenceError("String")));
     }
     
     @Test public void
     canInferTypesOfArgumentsOfShortLambdaExpression() {
-        StaticContext context = new StaticContext();
-        context.add("String", CoreTypes.classOf(CoreTypes.STRING));
-        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
+        GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Number");
+        VariableIdentifierNode numberReference = new VariableIdentifierNode("Number");
+        references.addReference(numberReference, numberDeclaration);
+        
+        GlobalDeclarationNode stringDeclaration = new GlobalDeclarationNode("String");
+        VariableIdentifierNode stringReference = new VariableIdentifierNode("String");
+        references.addReference(stringReference, stringDeclaration);
+        
+        StaticContext context = blankContext();
+        context.add(numberDeclaration, CoreTypes.classOf(CoreTypes.NUMBER));
+        context.add(stringDeclaration, CoreTypes.classOf(CoreTypes.STRING));
+        
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
-            asList(
-                new FormalArgumentNode("name", new VariableIdentifierNode("String")),
-                new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
-            ),
+            asList(new FormalArgumentNode("name", stringReference), new FormalArgumentNode("age", numberReference)),
             none(ExpressionNode.class),
             new BooleanLiteralNode(true)
         );
@@ -183,19 +203,15 @@ public class TypeInfererTest {
     
     @Test public void
     canFindTypeOfLongLambdaExpression() {
-        StaticContext context = new StaticContext();
-        context.add("String", CoreTypes.classOf(CoreTypes.STRING));
-        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
-        context.add("Boolean", CoreTypes.classOf(CoreTypes.BOOLEAN));
         LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
             asList(
-                new FormalArgumentNode("name", new VariableIdentifierNode("String")),
-                new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
+                new FormalArgumentNode("name", stringReference),
+                new FormalArgumentNode("age", numberReference)
             ),
-            new VariableIdentifierNode("Boolean"),
+            booleanReference,
             Nodes.block(new ReturnNode(new BooleanLiteralNode(true)))
         );
-        TypeResult<Type> result = inferType(functionExpression, context);
+        TypeResult<Type> result = inferType(functionExpression, standardContext());
         assertThat(result, is(success(
             (Type) TypeApplication.applyTypes(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN))
         )));
@@ -203,55 +219,50 @@ public class TypeInfererTest {
     
     @Test public void
     bodyOfLongLambdaExpressionIsTypeChecked() {
-        StaticContext context = new StaticContext();
-        context.add("String", CoreTypes.classOf(CoreTypes.STRING));
-        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
-        context.add("Boolean", CoreTypes.classOf(CoreTypes.BOOLEAN));
         LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
-            new VariableIdentifierNode("Boolean"),
+            booleanReference,
             Nodes.block(
                 new ImmutableVariableNode(
                     "x",
-                    some(new VariableIdentifierNode("String")),
+                    some(stringReference),
                     new BooleanLiteralNode(true)
                 ),
                 new ReturnNode(new BooleanLiteralNode(true))
             )
         );
-        TypeResult<Type> result = inferType(functionExpression, context);
+        TypeResult<Type> result = inferType(functionExpression, standardContext());
         assertThat(errorStrings(result), is(asList("Cannot initialise variable of type \"String\" with expression of type \"Boolean\"")));
     }
     
     @Test public void
     bodyOfLongLambdaExpressionMustReturnExpressionOfTypeSpecifiedInSignature() {
-        StaticContext context = new StaticContext();
-        context.add("Boolean", CoreTypes.classOf(CoreTypes.BOOLEAN));
         LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
-            new VariableIdentifierNode("Boolean"),
+            booleanReference,
             Nodes.block(
                 new ReturnNode(new NumberLiteralNode("4.2"))
             )
         );
-        TypeResult<Type> result = inferType(functionExpression, context);
+        TypeResult<Type> result = inferType(functionExpression, standardContext());
         assertThat(errorStrings(result), is(asList("Expected return expression of type \"Boolean\" but was of type \"Number\"")));
     }
     
     @Test public void
     longLambdaExpressionAddsArgumentsToFunctionScope() {
-        StaticContext context = new StaticContext();
-        context.add("String", CoreTypes.classOf(CoreTypes.STRING));
-        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
+        FormalArgumentNode ageArgument = new FormalArgumentNode("age", numberReference);
+        VariableIdentifierNode ageReference = new VariableIdentifierNode("age");
+        references.addReference(ageReference, ageArgument);
+        
         LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
             asList(
-                new FormalArgumentNode("name", new VariableIdentifierNode("String")),
-                new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
+                new FormalArgumentNode("name", stringReference),
+                ageArgument
             ),
-            new VariableIdentifierNode("Number"),
-            Nodes.block(new ReturnNode(new VariableIdentifierNode("age")))
+            numberReference,
+            Nodes.block(new ReturnNode(ageReference))
         );
-        TypeResult<Type> result = inferType(functionExpression, context);
+        TypeResult<Type> result = inferType(functionExpression, standardContext());
         assertThat(result, is(success(
             (Type) TypeApplication.applyTypes(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.NUMBER))
         )));
@@ -259,33 +270,32 @@ public class TypeInfererTest {
     
     @Test public void
     longLambdaExpressionHandlesUnrecognisedArgumentTypes() {
-        StaticContext context = new StaticContext();
-        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
         LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
             asList(
                 new FormalArgumentNode("name", new VariableIdentifierNode("Strink"))
             ),
-            new VariableIdentifierNode("Number"),
+            numberReference,
             Nodes.block(new ReturnNode(new NumberLiteralNode("4")))
         );
-        TypeResult<Type> result = inferType(functionExpression, context);
-        assertThat(errorStrings(result), is(asList("No variable \"Strink\" in scope")));
+        TypeResult<Type> result = inferType(functionExpression, standardContext());
+        assertThat(result, isFailureWithErrors(new UntypedReferenceError("Strink")));
     }
     
     @Test public void
     shortLambdaExpressionAddsArgumentsToFunctionScope() {
-        StaticContext context = new StaticContext();
-        context.add("String", CoreTypes.classOf(CoreTypes.STRING));
-        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
+        FormalArgumentNode ageArgument = new FormalArgumentNode("age", numberReference);
+        VariableIdentifierNode ageReference = new VariableIdentifierNode("age");
+        references.addReference(ageReference, ageArgument);
+        
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             asList(
-                new FormalArgumentNode("name", new VariableIdentifierNode("String")),
-                new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
+                new FormalArgumentNode("name", stringReference),
+                ageArgument
             ),
             none(ExpressionNode.class),
-            new VariableIdentifierNode("age")
+            ageReference
         );
-        TypeResult<Type> result = inferType(functionExpression, context);
+        TypeResult<Type> result = inferType(functionExpression, standardContext());
         assertThat(result, is(success(
             (Type) TypeApplication.applyTypes(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.NUMBER))
         )));
@@ -293,7 +303,6 @@ public class TypeInfererTest {
     
     @Test public void
     shortLambdaExpressionHandlesUnrecognisedArgumentTypes() {
-        StaticContext context = new StaticContext();
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             asList(
                 new FormalArgumentNode("name", new VariableIdentifierNode("Strink")),
@@ -302,95 +311,72 @@ public class TypeInfererTest {
             none(ExpressionNode.class),
             new NumberLiteralNode("4")
         );
-        TypeResult<Type> result = inferType(functionExpression, context);
-        assertThat(errorStrings(result), is(asList("No variable \"Strink\" in scope", "No variable \"Numer\" in scope")));
+        TypeResult<Type> result = inferType(functionExpression, standardContext());
+        assertThat(result, isFailureWithErrors(new UntypedReferenceError("Strink"), new UntypedReferenceError("Numer")));
     }
     
     @Test public void
     shortLambdaExpressionHandlesUnrecognisedUntypeableBodyWhenReturnTypeIsExplicit() {
-        StaticContext context = new StaticContext();
-        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             asList(
-                new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
+                new FormalArgumentNode("age", numberReference)
             ),
-            some(new VariableIdentifierNode("Number")),
+            some(numberReference),
             new VariableIdentifierNode("blah")
         );
-        TypeResult<Type> result = inferType(functionExpression, context);
-        assertThat(errorStrings(result), is(asList("No variable \"blah\" in scope")));
-    }
-    
-    @Test public void
-    shortLambdaExpressionCannotHaveTwoArgumentsWithSameName() {
-        StaticContext context = new StaticContext();
-        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
-        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
-            asList(
-                new FormalArgumentNode("age", new VariableIdentifierNode("Number")),
-                new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
-            ),
-            none(ExpressionNode.class),
-            new BooleanLiteralNode(true)
-        );
-        TypeResult<Type> result = inferType(functionExpression, context);
-        assertThat(errorStrings(result), is(asList("Duplicate argument name \"age\"")));
-    }
-    
-    @Test public void
-    longLambdaExpressionCannotHaveTwoArgumentsWithSameName() {
-        StaticContext context = new StaticContext();
-        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
-        LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
-            asList(
-                new FormalArgumentNode("age", new VariableIdentifierNode("Number")),
-                new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
-            ),
-            new VariableIdentifierNode("Number"),
-            Nodes.block(new ReturnNode(new NumberLiteralNode("4")))
-        );
-        TypeResult<Type> result = inferType(functionExpression, context);
-        assertThat(errorStrings(result), is(asList("Duplicate argument name \"age\"")));
+        TypeResult<Type> result = inferType(functionExpression, standardContext());
+        assertThat(result, isFailureWithErrors(new UntypedReferenceError("blah")));
     }
     
     @Test public void
     bodyOfLongLambdaExpressionMustReturn() {
-        StaticContext context = new StaticContext();
-        context.add("Boolean", CoreTypes.classOf(CoreTypes.BOOLEAN));
         LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
-            new VariableIdentifierNode("Boolean"),
+            booleanReference,
             Nodes.block()
         );
-        TypeResult<Type> result = inferType(functionExpression, context);
+        TypeResult<Type> result = inferType(functionExpression, standardContext());
         assertThat(errorStrings(result), is(asList("Expected return statement")));
     }
     
     @Test public void
     functionCallsHaveTypeOfReturnTypeOfFunctionWithNoArguments() {
-        StaticContext context = new StaticContext();
-        context.add("magic", TypeApplication.applyTypes(CoreTypes.functionType(0), asList(CoreTypes.NUMBER)));
-        CallNode call = Nodes.call(Nodes.id("magic"));
+        VariableIdentifierNode reference = Nodes.id("magic");
+        GlobalDeclarationNode declaration = new GlobalDeclarationNode("magic");
+        references.addReference(reference, declaration);
+        
+        StaticContext context = standardContext();
+        context.add(declaration, CoreTypes.functionTypeOf(CoreTypes.NUMBER));
+        
+        CallNode call = Nodes.call(reference);
         TypeResult<Type> result = inferType(call, context);
         assertThat(result, is(success(CoreTypes.NUMBER)));
     }
     
     @Test public void
     functionCallsHaveTypeOfReturnTypeOfFunctionWithCorrectArguments() {
-        StaticContext context = new StaticContext();
+        VariableIdentifierNode reference = Nodes.id("isLength");
+        GlobalDeclarationNode declaration = new GlobalDeclarationNode("isLength");
+        references.addReference(reference, declaration);
+        
+        StaticContext context = standardContext();
         // isLength: (String, Number) -> Boolean 
-        context.add("isLength", TypeApplication.applyTypes(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
-        CallNode call = Nodes.call(Nodes.id("isLength"), Nodes.string("Blah"), Nodes.number("4"));
+        context.add(declaration, CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN));
+        CallNode call = Nodes.call(reference, Nodes.string("Blah"), Nodes.number("4"));
         TypeResult<Type> result = inferType(call, context);
         assertThat(result, is(success(CoreTypes.BOOLEAN)));
     }
     
     @Test public void
     errorIfActualArgumentsAreNotAssignableToFormalArguments() {
-        StaticContext context = new StaticContext();
+        VariableIdentifierNode reference = Nodes.id("isLength");
+        GlobalDeclarationNode declaration = new GlobalDeclarationNode("isLength");
+        references.addReference(reference, declaration);
+        
+        StaticContext context = standardContext();
         // isLength: (String, Number) -> Boolean 
-        context.add("isLength", TypeApplication.applyTypes(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
-        CallNode call = Nodes.call(Nodes.id("isLength"), Nodes.number("4"), Nodes.string("Blah"));
+        context.add(declaration, CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN));
+        CallNode call = Nodes.call(reference, Nodes.number("4"), Nodes.string("Blah"));
         TypeResult<Type> result = inferType(call, context);
         assertThat(
             errorStrings(result),
@@ -403,11 +389,16 @@ public class TypeInfererTest {
     
     @Test public void
     cannotCallNonFunctionTypeApplications() {
-        StaticContext context = new StaticContext();
+        VariableIdentifierNode reference = Nodes.id("isLength");
+        GlobalDeclarationNode declaration = new GlobalDeclarationNode("isLength");
+        references.addReference(reference, declaration);
+        
         ClassType classType = new ClassType(asList("example"), "List", Collections.<InterfaceType>emptySet(), ImmutableMap.<String, Type>of());
         ParameterisedType typeFunction = new ParameterisedType(classType, asList(new FormalTypeParameter("T")));
-        context.add("isLength", TypeApplication.applyTypes(typeFunction, asList(CoreTypes.STRING)));
-        CallNode call = Nodes.call(Nodes.id("isLength"));
+        StaticContext context = standardContext();
+        context.add(declaration, TypeApplication.applyTypes(typeFunction, asList(CoreTypes.STRING)));
+        
+        CallNode call = Nodes.call(reference);
         TypeResult<Type> result = inferType(call, context);
         assertThat(
             errorStrings(result),
@@ -419,9 +410,13 @@ public class TypeInfererTest {
     
     @Test public void
     cannotCallTypesThatArentFunctionApplications() {
-        StaticContext context = new StaticContext();
-        context.add("isLength", CoreTypes.BOOLEAN);
-        CallNode call = Nodes.call(Nodes.id("isLength"));
+        VariableIdentifierNode reference = Nodes.id("isLength");
+        GlobalDeclarationNode declaration = new GlobalDeclarationNode("isLength");
+        references.addReference(reference, declaration);
+        
+        StaticContext context = standardContext();
+        context.add(declaration, CoreTypes.BOOLEAN);
+        CallNode call = Nodes.call(reference);
         TypeResult<Type> result = inferType(call, context);
         assertThat(
             errorStrings(result),
@@ -433,9 +428,15 @@ public class TypeInfererTest {
     
     @Test public void
     errorIfCallingFunctionWithWrongNumberOfArguments() {
-        StaticContext context = new StaticContext();
-        context.add("isLength", TypeApplication.applyTypes(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
-        CallNode call = Nodes.call(Nodes.id("isLength"), Nodes.number("4"));
+        VariableIdentifierNode reference = Nodes.id("isLength");
+        GlobalDeclarationNode declaration = new GlobalDeclarationNode("isLength");
+        references.addReference(reference, declaration);
+        
+        StaticContext context = standardContext();
+        // isLength: (String, Number) -> Boolean 
+        context.add(declaration, CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN));
+        
+        CallNode call = Nodes.call(reference, Nodes.number("4"));
         TypeResult<Type> result = inferType(call, context);
         assertThat(
             errorStrings(result),
@@ -445,28 +446,37 @@ public class TypeInfererTest {
     
     @Test public void
     memberAccessHasTypeOfMember() {
-        StaticContext context = new StaticContext();
+        VariableIdentifierNode reference = Nodes.id("heAintHeavy");
+        GlobalDeclarationNode declaration = new GlobalDeclarationNode("heAintHeavy");
+        references.addReference(reference, declaration);
+        
+        StaticContext context = standardContext();
         InterfaceType interfaceType = new InterfaceType(
             asList("shed", "example"),
             "Brother",
             ImmutableMap.<String, Type>of("age", CoreTypes.NUMBER)
         );
-        context.add("heAintHeavy", interfaceType);
-        MemberAccessNode memberAccess = Nodes.member(Nodes.id("heAintHeavy"), "age");
+        context.add(declaration, interfaceType);
+        
+        MemberAccessNode memberAccess = Nodes.member(reference, "age");
         TypeResult<Type> result = inferType(memberAccess, context);
         assertThat(result, is(success(CoreTypes.NUMBER)));
     }
     
     @Test public void
     memberAccessFailsIfInterfaceDoesNotHaveSpecifiedMember() {
-        StaticContext context = new StaticContext();
+        VariableIdentifierNode reference = Nodes.id("heAintHeavy");
+        GlobalDeclarationNode declaration = new GlobalDeclarationNode("heAintHeavy");
+        references.addReference(reference, declaration);
+        
+        StaticContext context = standardContext();
         InterfaceType interfaceType = new InterfaceType(
             asList("shed", "example"),
             "Brother",
             ImmutableMap.<String, Type>of("age", CoreTypes.NUMBER)
         );
-        context.add("heAintHeavy", interfaceType);
-        MemberAccessNode memberAccess = Nodes.member(Nodes.id("heAintHeavy"), "height");
+        context.add(declaration, interfaceType);
+        MemberAccessNode memberAccess = Nodes.member(reference, "height");
         TypeResult<Type> result = inferType(memberAccess, context);
         assertThat(
             errorStrings(result),
@@ -476,15 +486,18 @@ public class TypeInfererTest {
     
     @Test public void
     applyingTypeUpdatesParameterisedTypeWithType() {
-        StaticContext context = new StaticContext();
+        VariableIdentifierNode listReference = Nodes.id("List");
+        GlobalDeclarationNode listDeclaration = new GlobalDeclarationNode("List");
+        references.addReference(listReference, listDeclaration);
+        
+        StaticContext context = standardContext();
         FormalTypeParameter typeParameter = new FormalTypeParameter("T");
         ParameterisedType listTypeFunction = new ParameterisedType(
             new InterfaceType(asList("shed"), "List", ImmutableMap.<String, Type>of()),
             asList(typeParameter)
         );
-        context.add("List", listTypeFunction);
-        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
-        TypeApplicationNode typeApplication = Nodes.typeApply(Nodes.id("List"), Nodes.id("Number"));
+        context.add(listDeclaration, listTypeFunction);
+        TypeApplicationNode typeApplication = Nodes.typeApply(listReference, numberReference);
         
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             asList(new FormalArgumentNode("dummy", typeApplication)),
@@ -493,28 +506,49 @@ public class TypeInfererTest {
         );
         TypeResult<Type> result = inferType(functionExpression, context);
         assertThat(result, is((Object)success(
-            TypeApplication.applyTypes(CoreTypes.functionType(1), asList(TypeApplication.applyTypes(listTypeFunction, asList(CoreTypes.NUMBER)), CoreTypes.NUMBER))
+            CoreTypes.functionTypeOf(TypeApplication.applyTypes(listTypeFunction, asList(CoreTypes.NUMBER)), CoreTypes.NUMBER)
         )));
     }
     
     @Test public void
     applyingTypeUpdatesFunctionArgumentAndReturnTypes() {
-        StaticContext context = new StaticContext();
+        VariableIdentifierNode identityReference = Nodes.id("identity");
+        GlobalDeclarationNode identityDeclaration = new GlobalDeclarationNode("identity");
+        references.addReference(identityReference, identityDeclaration);
+        
+        StaticContext context = standardContext();
+        
         FormalTypeParameter typeParameter = new FormalTypeParameter("T");
-        context.add("Number", CoreTypes.classOf(CoreTypes.NUMBER));
-        context.add("identity", new ParameterisedFunctionType(
+        context.add(identityDeclaration, new ParameterisedFunctionType(
             TypeApplication.applyTypes(
                 CoreTypes.functionType(1),
                 Arrays.<Type>asList(typeParameter, typeParameter)
             ),
             asList(typeParameter)
         ));
-        CallNode call = Nodes.call(Nodes.typeApply(Nodes.id("identity"), Nodes.id("Number")), Nodes.number("2"));
+        CallNode call = Nodes.call(Nodes.typeApply(identityReference, numberReference), Nodes.number("2"));
         TypeResult<Type> result = inferType(call, context);
         assertThat(result, is(success(CoreTypes.NUMBER)));
     }
     
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
         return TypeInferer.inferType(expression, nodeLocations, context);
+    }
+    
+    private StaticContext blankContext() {
+        return new StaticContext(references.build());
+    }
+    
+    private StaticContext standardContext() {
+        references.addReference(numberReference, numberDeclaration);
+        references.addReference(stringReference, stringDeclaration);
+        references.addReference(booleanReference, booleanDeclaration);
+        
+        StaticContext context = blankContext();
+        context.add(numberDeclaration, CoreTypes.classOf(CoreTypes.NUMBER));
+        context.add(stringDeclaration, CoreTypes.classOf(CoreTypes.STRING));
+        context.add(booleanDeclaration, CoreTypes.classOf(CoreTypes.BOOLEAN));
+        
+        return context;
     }
 }

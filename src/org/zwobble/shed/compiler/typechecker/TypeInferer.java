@@ -54,7 +54,7 @@ public class TypeInferer {
             return success(CoreTypes.UNIT);
         }
         if (expression instanceof VariableIdentifierNode) {
-            return lookupVariableReference(((VariableIdentifierNode)expression).getIdentifier(), nodeLocations.locate(expression), context);
+            return lookupVariableReference((VariableIdentifierNode)expression, nodeLocations.locate(expression), context);
         }
         if (expression instanceof ShortLambdaExpressionNode) {
             return inferType((ShortLambdaExpressionNode)expression, nodeLocations, context);
@@ -78,13 +78,11 @@ public class TypeInferer {
         List<TypeResult<FormalArgumentType>> argumentTypesResult = inferArgumentTypes(lambdaExpression.getFormalArguments(), nodeLocations, context);
         TypeResult<List<FormalArgumentType>> result = combine(argumentTypesResult);
         
-        context.enterNewNonFunctionScope();
         for (TypeResult<FormalArgumentType> argumentTypeResult : argumentTypesResult) {
             TypeResult<Void> addArgumentToContextResult = argumentTypeResult.use(addArgumentToContext(context, nodeLocations));
             result = result.withErrorsFrom(addArgumentToContextResult);
         }
         final TypeResult<Type> expressionTypeResult = inferType(lambdaExpression.getBody(), nodeLocations, context);
-        context.exitScope();
         
         result = result.withErrorsFrom(expressionTypeResult);
         
@@ -131,13 +129,13 @@ public class TypeInferer {
             public TypeResult<Void> apply(Type returnType) {
                 TypeResult<Void> result = success();
 
-                context.enterNewFunctionScope(returnType);
                 for (TypeResult<FormalArgumentType> argumentTypeResult : argumentTypeResults) {
                     TypeResult<Void> addArgumentToContextResult = argumentTypeResult.use(addArgumentToContext(context, nodeLocations));
                     result = result.withErrorsFrom(addArgumentToContextResult);
                 }
                 
-                TypeResult<StatementTypeCheckResult> blockResult = new BlockTypeChecker().typeCheckBlock(lambdaExpression.getBody(), context, nodeLocations);
+                TypeResult<StatementTypeCheckResult> blockResult = 
+                    new BlockTypeChecker().typeCheckBlock(lambdaExpression.getBody(), context, nodeLocations, Option.some(returnType));
                 
                 result = result.withErrorsFrom(blockResult);
                 
@@ -147,7 +145,6 @@ public class TypeInferer {
                         "Expected return statement"
                     ))));
                 }
-                context.exitScope();
                 return result;
             }
         });
@@ -308,15 +305,8 @@ public class TypeInferer {
         return new Function<FormalArgumentType, TypeResult<Void>>() {
             @Override
             public TypeResult<Void> apply(FormalArgumentType argument) {
-                if (context.isDeclaredInCurrentScope(argument.getName())) {
-                    return failure(asList(CompilerError.error(
-                        nodeLocations.locate(argument.getNode()),
-                        "Duplicate argument name \"" + argument.getName() + "\""
-                    )));
-                } else {
-                    context.add(argument.getName(), argument.getType());
-                    return success();
-                }
+                context.add(argument.getNode(), argument.getType());
+                return success();
             }
         };
     }

@@ -4,8 +4,11 @@ import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
+import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
@@ -17,7 +20,6 @@ import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
@@ -26,35 +28,38 @@ import static org.zwobble.shed.compiler.typechecker.VariableDeclarationTypeCheck
 
 public class VariableDeclarationTypeCheckerTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
-    private final StaticContext staticContext = new StaticContext();
+    private final ReferencesBuilder references = new ReferencesBuilder();
+
+    private final GlobalDeclarationNode stringDeclaration = new GlobalDeclarationNode("String");
+    private final VariableIdentifierNode stringReference = new VariableIdentifierNode("String");
 
     @Test public void
     declaringVariableAddsItToScope() {
+        StaticContext staticContext = standardContext();
         ImmutableVariableNode variableNode = new ImmutableVariableNode(
             "x",
             none(ExpressionNode.class),
             new BooleanLiteralNode(true)
         );
         
-        staticContext.add("Boolean", CoreTypes.classOf(CoreTypes.BOOLEAN));
         assertThat(
             typeCheckVariableDeclaration(variableNode, nodeLocations, staticContext),
             is(TypeResult.success(StatementTypeCheckResult.noReturn()))
         );
-        assertThat(staticContext.get("x"), is(VariableLookupResult.success(CoreTypes.BOOLEAN)));
+        assertThat(staticContext.get(variableNode), is(VariableLookupResult.success(CoreTypes.BOOLEAN)));
     }
     
     @Test public void
     errorsIfAttemptingToInitialiseAVariableWithExpressionOfWrongType() {
+        StaticContext staticContext = standardContext();
         BooleanLiteralNode booleanNode = new BooleanLiteralNode(true);
         ImmutableVariableNode variableNode = new ImmutableVariableNode(
             "x",
-            some(new VariableIdentifierNode("String")),
+            some(stringReference),
             booleanNode
         );
         nodeLocations.put(booleanNode, range(position(4, 12), position(6, 6)));
         
-        staticContext.add("String", CoreTypes.classOf(CoreTypes.STRING));
         assertThat(
             typeCheckVariableDeclaration(variableNode, nodeLocations, staticContext),
             is(TypeResult.<StatementTypeCheckResult>failure(asList(CompilerError.error(
@@ -66,15 +71,24 @@ public class VariableDeclarationTypeCheckerTest {
 
     @Test public void
     canInstantiateVariableWithSubType() {
+        VariableIdentifierNode iterableTypeReference = Nodes.id("Iterable");
+        GlobalDeclarationNode iterableTypeDeclaration = new GlobalDeclarationNode("Iterable");
+        references.addReference(iterableTypeReference, iterableTypeDeclaration);
+
+        VariableIdentifierNode listReference = Nodes.id("myList");
+        GlobalDeclarationNode listDeclaration = new GlobalDeclarationNode("myList");
+        references.addReference(listReference, listDeclaration);
+        
+        StaticContext staticContext = standardContext();
         InterfaceType iterableType = new InterfaceType(asList("shed", "util"), "Iterable", ImmutableMap.<String, Type>of());
         ClassType listType = new ClassType(asList("shed", "util"), "List", newHashSet(iterableType), ImmutableMap.<String, Type>of());
-        staticContext.add("myList", listType);
-        staticContext.add("Iterable", CoreTypes.classOf(iterableType));
+        staticContext.add(listDeclaration, listType);
+        staticContext.add(iterableTypeDeclaration, CoreTypes.classOf(iterableType));
         
         ImmutableVariableNode variableNode = new ImmutableVariableNode(
             "x",
-            some(new VariableIdentifierNode("Iterable")),
-            new VariableIdentifierNode("myList")
+            some(iterableTypeReference),
+            listReference
         );
         
         assertThat(
@@ -83,16 +97,12 @@ public class VariableDeclarationTypeCheckerTest {
         );
     }
     
-    @Test public void
-    errorsIfDeclaringVariableWithNameAlreadyDeclaredInSameScope() {
-        ImmutableVariableNode variableNode = new ImmutableVariableNode("x", none(ExpressionNode.class), new BooleanLiteralNode(true));
-        nodeLocations.put(variableNode, range(position(4, 12), position(6, 6)));
+    private StaticContext standardContext() {
+        references.addReference(stringReference, stringDeclaration);
         
-        staticContext.add("x", CoreTypes.BOOLEAN);
+        StaticContext context = new StaticContext(references.build());
+        context.add(stringDeclaration, CoreTypes.classOf(CoreTypes.STRING));
         
-        assertThat(
-            errorStrings(typeCheckVariableDeclaration(variableNode, nodeLocations, staticContext)),
-            is(asList("The variable \"x\" has already been declared in this scope"))
-        );
+        return context;
     }
 }

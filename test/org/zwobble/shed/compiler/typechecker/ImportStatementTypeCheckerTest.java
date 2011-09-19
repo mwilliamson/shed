@@ -4,6 +4,9 @@ import java.util.Collections;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
+import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
+import org.zwobble.shed.compiler.typechecker.errors.UnresolvedImportError;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
@@ -14,46 +17,36 @@ import com.google.common.collect.ImmutableMap;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
+import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.typechecker.ImportStatementTypeChecker.typeCheckImportStatement;
 
 public class ImportStatementTypeCheckerTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
-    private final StaticContext staticContext = new StaticContext();    
+    private final ReferencesBuilder references = new ReferencesBuilder();
     
     @Test public void
-    importingValuesAddsThemToCurrentScope() {
+    importingValuesAssignsTypeToImportStatement() {
+        ImportNode importStatement = new ImportNode(asList("shed", "time", "DateTime"));
+        VariableIdentifierNode reference = new VariableIdentifierNode("DateTime");
+        references.addReference(reference, importStatement);
+        StaticContext staticContext = new StaticContext(references.build());
+        
         Type dateTime = new ClassType(asList("shed", "time"), "DateTime", Collections.<InterfaceType>emptySet(), ImmutableMap.<String, Type>of());
         staticContext.addGlobal(asList("shed", "time", "DateTime"), CoreTypes.classOf(dateTime));
-        
-        ImportNode importStatement = new ImportNode(asList("shed", "time", "DateTime"));
         
         assertThat(
             typeCheckImportStatement(importStatement, nodeLocations, staticContext),
             is(TypeResult.<Void>success(null))
         );
-        assertThat(staticContext.get("DateTime"), is(VariableLookupResult.success(CoreTypes.classOf(dateTime))));
+        assertThat(staticContext.get(reference), is(VariableLookupResult.success(CoreTypes.classOf(dateTime))));
     }
     
     @Test public void
     errorIfTryingToImportNonExistentGlobal() {
         ImportNode importStatement = new ImportNode(asList("shed", "time", "DateTime"));
         assertThat(
-            errorStrings(typeCheckImportStatement(importStatement, nodeLocations, staticContext)),
-            is(asList("The import \"shed.time.DateTime\" cannot be resolved"))
-        );
-    }
-    
-    @Test public void
-    errorIfImportingTwoValuesWithTheSameName() {
-        Type dateTime = new ClassType(asList("shed", "time"), "DateTime", Collections.<InterfaceType>emptySet(), ImmutableMap.<String, Type>of());
-        staticContext.addGlobal(asList("shed", "time", "DateTime"), CoreTypes.classOf(dateTime));
-        staticContext.add("DateTime", CoreTypes.classOf(dateTime));
-        
-        ImportNode importStatement = new ImportNode(asList("shed", "time", "DateTime"));
-        assertThat(
-            errorStrings(typeCheckImportStatement(importStatement, nodeLocations, staticContext)),
-            is(asList("The variable \"DateTime\" has already been declared in this scope"))
+            typeCheckImportStatement(importStatement, nodeLocations, new StaticContext(references.build())),
+            isFailureWithErrors(new UnresolvedImportError(asList("shed", "time", "DateTime")))
         );
     }
 }

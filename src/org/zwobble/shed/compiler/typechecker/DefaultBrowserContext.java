@@ -2,6 +2,7 @@ package org.zwobble.shed.compiler.typechecker;
 
 import java.util.Collections;
 
+import org.zwobble.shed.compiler.referenceresolution.References;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
@@ -14,8 +15,8 @@ import com.google.common.collect.ImmutableMap;
 import static java.util.Arrays.asList;
 
 public class DefaultBrowserContext {
-    public static StaticContext defaultBrowserContext() {
-        StaticContext context = StaticContext.defaultContext();
+    public static StaticContext defaultBrowserContext(References references) {
+        StaticContext context = StaticContext.defaultContext(references);
         
         FormalTypeParameter formalTypeParameter = new FormalTypeParameter("T");
         Type importValueType = new ParameterisedFunctionType(
