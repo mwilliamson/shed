@@ -3,6 +3,7 @@ package org.zwobble.shed.compiler.referenceresolution;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.zwobble.shed.compiler.CompilerError;
@@ -15,6 +16,7 @@ import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
+import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LambdaExpressionNode;
@@ -42,10 +44,10 @@ import com.google.common.collect.Sets;
 public class ReferenceResolver {
     private final DeclarationFinder declarationFinder = new DeclarationFinder();
     
-    public ReferenceResolverResult resolveReferences(SyntaxNode node, NodeLocations nodeLocations) {
+    public ReferenceResolverResult resolveReferences(SyntaxNode node, NodeLocations nodeLocations, Map<String, GlobalDeclarationNode> globalDeclarations) {
         ReferencesBuilder references = new ReferencesBuilder();
         List<CompilerError> errors = new ArrayList<CompilerError>();
-        resolveReferences(node, nodeLocations, references, new SubScope(new TopScope(), findDeclarations(node)), errors);
+        resolveReferences(node, nodeLocations, references, new SubScope(new TopScope(globalDeclarations), findDeclarations(node)), errors);
         return ReferenceResolverResult.build(references.build(), errors);
     }
 

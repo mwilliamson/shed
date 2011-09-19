@@ -313,7 +313,7 @@ public class ReferenceResolverTest {
     }
 
     private ReferenceResolverResult resolveReferences(SyntaxNode node) {
-        return resolver.resolveReferences(node, nodeLocations);
+        return resolver.resolveReferences(node, nodeLocations, CoreModule.GLOBAL_DECLARATIONS);
     }
     
     private Matcher<ReferenceResolverResult> hasReference(final VariableIdentifierNode reference, final DeclarationNode declaration) {

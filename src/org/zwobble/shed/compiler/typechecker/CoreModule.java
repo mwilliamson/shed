@@ -28,7 +28,6 @@ public class CoreModule {
             valuesBuilder.put(((ClassType)functionType.getBaseType()).getName(), functionType);
         }
         VALUES = valuesBuilder.build();
-        
 
         Builder<String, GlobalDeclarationNode> declarationsBuilder = ImmutableMap.builder();
         for (String identifier : VALUES.keySet()) {
