@@ -31,6 +31,7 @@ import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
+import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
@@ -114,6 +115,12 @@ public class ReferenceResolver {
             }
         } else if (node instanceof MemberAccessNode) {
             resolveReferences(((MemberAccessNode) node).getExpression(), nodeLocations, references, scope, errors);
+        } else if (node instanceof TypeApplicationNode) {
+            TypeApplicationNode typeApplication = (TypeApplicationNode) node;
+            resolveReferences(typeApplication.getBaseValue(), nodeLocations, references, scope, errors);
+            for (ExpressionNode typeParameter : typeApplication.getParameters()) {
+                resolveReferences(typeParameter, nodeLocations, references, scope, errors);
+            }
         } else if (node instanceof SourceNode) {
             SourceNode source = (SourceNode) node;
             for (ImportNode importNode : source.getImports()) {

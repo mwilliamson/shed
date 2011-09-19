@@ -312,6 +312,16 @@ public class ReferenceResolverTest {
         SyntaxNode source = Nodes.block(declaration, Nodes.expressionStatement(reference));
         assertThat(resolveReferences(source), hasReference(reference, declaration));
     }
+    
+    @Test public void
+    referencesInTypeAplicationAreResolved() {
+        DeclarationNode listDeclaration = Nodes.object("List", Nodes.block());
+        VariableIdentifierNode listReference = Nodes.id("List");
+        VariableIdentifierNode numberReference = Nodes.id("Number");
+        SyntaxNode source = Nodes.block(listDeclaration, Nodes.expressionStatement(Nodes.typeApply(listReference, numberReference)));
+        assertThat(resolveReferences(source), hasReference(listReference, listDeclaration));
+        assertThat(resolveReferences(source), hasReference(numberReference, CoreModule.GLOBAL_DECLARATIONS.get("Number")));
+    }
 
     private ReferenceResolverResult resolveReferences(SyntaxNode node) {
         return resolver.resolveReferences(node, nodeLocations, CoreModule.GLOBAL_DECLARATIONS);
