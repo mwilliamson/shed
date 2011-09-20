@@ -72,15 +72,20 @@ public class Expressions {
     private static Rule<ExpressionNode> assignmentExpression() {
         return then(
             oneOrMoreWithSeparator(callExpression(), softSeparator(symbol("="))),
-            new SimpleParseAction<List<ExpressionNode>, ExpressionNode>() {
+            new ParseAction<List<ExpressionNode>, ExpressionNode>() {
                 @Override
-                public ExpressionNode apply(List<ExpressionNode> result) {
-                    Iterator<ExpressionNode> iterator = Lists.reverse(result).iterator();
+                public ParseResult<ExpressionNode> apply(ParseResult<List<ExpressionNode>> result) {
+                    Iterator<ExpressionNode> iterator = Lists.reverse(result.get()).iterator();
                     ExpressionNode expression = iterator.next();
+                    ParseResult<ExpressionNode> assignmentResult = result.changeValue(expression, result.locate(expression));
+                    
+                    SourcePosition end = result.locate(expression).getEnd();
                     while (iterator.hasNext()) {
-                        expression = new AssignmentExpressionNode(iterator.next(), expression);
+                        ExpressionNode target = iterator.next();
+                        expression = new AssignmentExpressionNode(target, expression);
+                        assignmentResult = assignmentResult.changeValue(expression, range(result.locate(target).getStart(), end));
                     }
-                    return expression;
+                    return assignmentResult;
                 }
             }
         );
