@@ -7,6 +7,7 @@ import java.util.Map;
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
+import org.zwobble.shed.compiler.parsing.SourceRange;
 import org.zwobble.shed.compiler.parsing.nodes.AssignmentExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
@@ -20,6 +21,7 @@ import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+import org.zwobble.shed.compiler.typechecker.errors.InvalidAssignmentError;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ParameterisedFunctionType;
 import org.zwobble.shed.compiler.types.ParameterisedType;
@@ -261,9 +263,26 @@ public class TypeInferer {
     private static TypeResult<ValueInfo> inferAssignmentType(
         AssignmentExpressionNode expression, NodeLocations nodeLocations, StaticContext context
     ) {
-        return inferType(expression.getValue(), nodeLocations, context).ifValueThen(toValueInfo());
+        SourceRange location = nodeLocations.locate(expression);
+        TypeResult<Type> valueType = inferType(expression.getValue(), nodeLocations, context);
+        TypeResult<ValueInfo> targetInfo = inferValueInfo(expression.getTarget(), nodeLocations, context)
+            .ifValueThen(checkIsAssignable(location));
+        return valueType.withErrorsFrom(targetInfo).ifValueThen(toValueInfo());
     }
     
+    private static Function<ValueInfo, TypeResult<ValueInfo>> checkIsAssignable(final SourceRange location) {
+        return new Function<ValueInfo, TypeResult<ValueInfo>>() {
+            @Override
+            public TypeResult<ValueInfo> apply(ValueInfo input) {
+                if (input.isAssignable()) {
+                    return TypeResult.success(input);
+                } else {
+                    return TypeResult.failure(input, new CompilerError(location, new InvalidAssignmentError()));
+                }
+            }
+        };
+    }
+
     private static Function<ExpressionNode, Type> toParameterType(final NodeLocations nodeLocations, final StaticContext context) {
         return new Function<ExpressionNode, Type>() {
             @Override

@@ -21,6 +21,7 @@ import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
+import org.zwobble.shed.compiler.typechecker.errors.InvalidAssignmentError;
 import org.zwobble.shed.compiler.typechecker.errors.UntypedReferenceError;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -32,6 +33,8 @@ import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
 
 import com.google.common.collect.ImmutableMap;
+
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
 
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
@@ -541,10 +544,24 @@ public class TypeInfererTest {
         
         StaticContext context = standardContext();
         
+        context.add(declaration, assignableValue(CoreTypes.NUMBER));
+        
+        TypeResult<Type> result = inferType(Nodes.assign(reference, Nodes.number("4")), context);
+        assertThat(result, is(success(CoreTypes.NUMBER)));
+    }
+    
+    @Test public void
+    cannotAssignToUnassignableValue() {
+        VariableIdentifierNode reference = Nodes.id("x");
+        GlobalDeclarationNode declaration = new GlobalDeclarationNode("x");
+        references.addReference(reference, declaration);
+        
+        StaticContext context = standardContext();
+        
         context.add(declaration, unassignableValue(CoreTypes.NUMBER));
         
-        TypeResult<Type> result = inferType(Nodes.assign(Nodes.id("y"), reference), context);
-        assertThat(result, is(success(CoreTypes.NUMBER)));
+        TypeResult<Type> result = inferType(Nodes.assign(reference, Nodes.number("4")), context);
+        assertThat(result, isFailureWithErrors(new InvalidAssignmentError()));
     }
     
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
