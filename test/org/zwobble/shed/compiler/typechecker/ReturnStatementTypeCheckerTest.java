@@ -47,8 +47,8 @@ public class ReturnStatementTypeCheckerTest {
     
     @Test public void
     returnExpressionCanBeSubTypeOfReturnType() {
-        InterfaceType iterableType = new InterfaceType(asList("shed", "util"), "Iterable", ImmutableMap.<String, Type>of());
-        ClassType listType = new ClassType(asList("shed", "util"), "List", newHashSet(iterableType), ImmutableMap.<String, Type>of());
+        InterfaceType iterableType = new InterfaceType(asList("shed", "util"), "Iterable", ImmutableMap.<String, ValueInfo>of());
+        ClassType listType = new ClassType(asList("shed", "util"), "List", newHashSet(iterableType), ImmutableMap.<String, ValueInfo>of());
         
         VariableIdentifierNode reference = new VariableIdentifierNode("x");
         GlobalDeclarationNode declaration = new GlobalDeclarationNode("x");

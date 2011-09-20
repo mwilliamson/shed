@@ -13,7 +13,6 @@ import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
-import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -99,8 +98,8 @@ public class VariableDeclarationTypeCheckerTest {
         references.addReference(listReference, listDeclaration);
         
         StaticContext staticContext = standardContext();
-        InterfaceType iterableType = new InterfaceType(asList("shed", "util"), "Iterable", ImmutableMap.<String, Type>of());
-        ClassType listType = new ClassType(asList("shed", "util"), "List", newHashSet(iterableType), ImmutableMap.<String, Type>of());
+        InterfaceType iterableType = new InterfaceType(asList("shed", "util"), "Iterable", ImmutableMap.<String, ValueInfo>of());
+        ClassType listType = new ClassType(asList("shed", "util"), "List", newHashSet(iterableType), ImmutableMap.<String, ValueInfo>of());
         staticContext.add(listDeclaration, unassignableValue(listType));
         staticContext.add(iterableTypeDeclaration, unassignableValue(CoreTypes.classOf(iterableType)));
         

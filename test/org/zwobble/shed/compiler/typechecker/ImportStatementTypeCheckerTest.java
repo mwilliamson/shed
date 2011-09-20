@@ -33,7 +33,7 @@ public class ImportStatementTypeCheckerTest {
         references.addReference(reference, importStatement);
         StaticContext staticContext = new StaticContext(references.build());
         
-        Type dateTime = new ClassType(asList("shed", "time"), "DateTime", Collections.<InterfaceType>emptySet(), ImmutableMap.<String, Type>of());
+        Type dateTime = new ClassType(asList("shed", "time"), "DateTime", Collections.<InterfaceType>emptySet(), ImmutableMap.<String, ValueInfo>of());
         staticContext.addGlobal(asList("shed", "time", "DateTime"), CoreTypes.classOf(dateTime));
         
         assertThat(

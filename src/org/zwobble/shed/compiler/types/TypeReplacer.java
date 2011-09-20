@@ -3,7 +3,11 @@ package org.zwobble.shed.compiler.types;
 import java.util.List;
 import java.util.Map;
 
+import org.zwobble.shed.compiler.typechecker.ValueInfo;
+
 import com.google.common.base.Function;
+
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
 
 import static com.google.common.collect.Lists.transform;
 import static com.google.common.collect.Maps.transformValues;
@@ -21,7 +25,7 @@ public class TypeReplacer {
                 classType.getScope(),
                 classType.getName(),
                 classType.getSuperTypes(),
-                transformValues(classType.getMembers(), toReplacement(replacements))
+                transformValues(classType.getMembers(), replaceType(replacements))
             );
         }
         
@@ -30,7 +34,7 @@ public class TypeReplacer {
             return new InterfaceType(
                 interfaceType.getScope(),
                 interfaceType.getName(),
-                transformValues(interfaceType.getMembers(), toReplacement(replacements))
+                transformValues(interfaceType.getMembers(), replaceType(replacements))
             );
         }
         
@@ -55,6 +59,20 @@ public class TypeReplacer {
             @Override
             public Type apply(Type input) {
                 return replaceTypes(input, replacements);
+            }
+        };
+    }
+
+    private Function<ValueInfo, ValueInfo> replaceType(final Map<FormalTypeParameter, Type> replacements) {
+        return new Function<ValueInfo, ValueInfo>() {
+            @Override
+            public ValueInfo apply(ValueInfo input) {
+                Type replacedType = replaceTypes(input.getType(), replacements);
+                if (input.isAssignable()) {
+                    return assignableValue(replacedType);
+                } else {
+                    return ValueInfo.unassignableValue(replacedType);
+                }
             }
         };
     }

@@ -225,11 +225,11 @@ public class TypeInferer {
         final NodeLocations nodeLocations,
         StaticContext context
     ) {
-        return inferType(memberAccess.getExpression(), nodeLocations, context).ifValueThen(new Function<Type, TypeResult<Type>>() {
+        return inferType(memberAccess.getExpression(), nodeLocations, context).ifValueThen(new Function<Type, TypeResult<ValueInfo>>() {
             @Override
-            public TypeResult<Type> apply(Type leftType) {
+            public TypeResult<ValueInfo> apply(Type leftType) {
                 String name = memberAccess.getMemberName();
-                Map<String, Type> members = ((ScalarType)leftType).getMembers();
+                Map<String, ValueInfo> members = ((ScalarType)leftType).getMembers();
                 
                 if (members.containsKey(name)) {
                     return TypeResult.success(members.get(name));
@@ -237,7 +237,7 @@ public class TypeInferer {
                     return TypeResult.failure(asList(CompilerError.error(nodeLocations.locate(memberAccess), "No such member: " + name)));
                 }
             }
-        }).ifValueThen(toValueInfo());
+        });
     }
 
     private static TypeResult<ValueInfo> inferTypeApplicationType(

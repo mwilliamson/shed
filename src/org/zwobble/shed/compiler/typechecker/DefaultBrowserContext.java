@@ -12,6 +12,8 @@ import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.ImmutableMap;
 
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+
 import static java.util.Arrays.asList;
 
 public class DefaultBrowserContext {
@@ -28,7 +30,7 @@ public class DefaultBrowserContext {
             asList("shed", "javascript"),
             "JavaScriptImporter",
             Collections.<InterfaceType>emptySet(),
-            ImmutableMap.of("importValue", importValueType)
+            ImmutableMap.of("importValue", unassignableValue(importValueType))
         );
         
         context.addGlobal(asList("shed", "javascript", "JavaScriptImporter"), CoreTypes.functionTypeOf(javaScriptImporterType));
@@ -37,7 +39,7 @@ public class DefaultBrowserContext {
             asList("shed"),
             "browser",
             Collections.<InterfaceType>emptySet(),
-            ImmutableMap.of("alert", CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.UNIT))
+            ImmutableMap.of("alert", unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.UNIT)))
         );
         
         context.addGlobal(asList("shed", "browser"), browserType);

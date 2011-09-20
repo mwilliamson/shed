@@ -106,12 +106,12 @@ public class TypeChecker {
         result = result.withErrorsFrom(blockResult);
         
         if (result.isSuccess()) {
-            Builder<String, Type> typeBuilder = ImmutableMap.builder();
+            Builder<String, ValueInfo> typeBuilder = ImmutableMap.builder();
 
             for (StatementNode statement : objectDeclaration.getStatements()) {
                 if (statement instanceof PublicDeclarationNode) {
                     DeclarationNode declaration = ((PublicDeclarationNode) statement).getDeclaration();
-                    typeBuilder.put(declaration.getIdentifier(), context.get(declaration).getType());
+                    typeBuilder.put(declaration.getIdentifier(), context.get(declaration).getValueInfo());
                 }
             }
             

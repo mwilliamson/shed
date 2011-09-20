@@ -399,7 +399,7 @@ public class TypeInfererTest {
         GlobalDeclarationNode declaration = new GlobalDeclarationNode("isLength");
         references.addReference(reference, declaration);
         
-        ClassType classType = new ClassType(asList("example"), "List", Collections.<InterfaceType>emptySet(), ImmutableMap.<String, Type>of());
+        ClassType classType = new ClassType(asList("example"), "List", Collections.<InterfaceType>emptySet(), ImmutableMap.<String, ValueInfo>of());
         ParameterisedType typeFunction = new ParameterisedType(classType, asList(new FormalTypeParameter("T")));
         StaticContext context = standardContext();
         context.add(declaration, unassignableValue(TypeApplication.applyTypes(typeFunction, asList(CoreTypes.STRING))));
@@ -460,7 +460,7 @@ public class TypeInfererTest {
         InterfaceType interfaceType = new InterfaceType(
             asList("shed", "example"),
             "Brother",
-            ImmutableMap.<String, Type>of("age", CoreTypes.NUMBER)
+            ImmutableMap.of("age", unassignableValue(CoreTypes.NUMBER))
         );
         context.add(declaration, unassignableValue(interfaceType));
         
@@ -479,7 +479,7 @@ public class TypeInfererTest {
         InterfaceType interfaceType = new InterfaceType(
             asList("shed", "example"),
             "Brother",
-            ImmutableMap.<String, Type>of("age", CoreTypes.NUMBER)
+            ImmutableMap.of("age", unassignableValue(CoreTypes.NUMBER))
         );
         context.add(declaration, unassignableValue(interfaceType));
         MemberAccessNode memberAccess = Nodes.member(reference, "height");
@@ -499,7 +499,7 @@ public class TypeInfererTest {
         StaticContext context = standardContext();
         FormalTypeParameter typeParameter = new FormalTypeParameter("T");
         ParameterisedType listTypeFunction = new ParameterisedType(
-            new InterfaceType(asList("shed"), "List", ImmutableMap.<String, Type>of()),
+            new InterfaceType(asList("shed"), "List", ImmutableMap.<String, ValueInfo>of()),
             asList(typeParameter)
         );
         context.add(listDeclaration, unassignableValue(listTypeFunction));

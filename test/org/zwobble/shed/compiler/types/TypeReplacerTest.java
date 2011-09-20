@@ -11,6 +11,7 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 public class TypeReplacerTest {
     @Test public void
@@ -73,7 +74,7 @@ public class TypeReplacerTest {
                 asList("shed", "example"),
                 "List",
                 Collections.<InterfaceType>emptySet(),
-                ImmutableMap.<String, Type>of("first", formalTypeParameter)
+                ImmutableMap.of("first", unassignableValue(formalTypeParameter))
             ),
             ImmutableMap.<FormalTypeParameter, Type>of(formalTypeParameter, CoreTypes.NUMBER)
         );
@@ -81,7 +82,7 @@ public class TypeReplacerTest {
             asList("shed", "example"),
             "List",
             Collections.<InterfaceType>emptySet(),
-            ImmutableMap.<String, Type>of("first", CoreTypes.NUMBER)
+            ImmutableMap.of("first", unassignableValue(CoreTypes.NUMBER))
         )));
     }
     
@@ -94,14 +95,14 @@ public class TypeReplacerTest {
             new InterfaceType(
                 asList("shed", "example"),
                 "List",
-                ImmutableMap.<String, Type>of("first", formalTypeParameter)
+                ImmutableMap.of("first", unassignableValue(formalTypeParameter))
             ),
             ImmutableMap.<FormalTypeParameter, Type>of(formalTypeParameter, CoreTypes.NUMBER)
         );
         assertThat(replacement, is((Type)new InterfaceType(
             asList("shed", "example"),
             "List",
-            ImmutableMap.<String, Type>of("first", CoreTypes.NUMBER)
+            ImmutableMap.of("first", unassignableValue(CoreTypes.NUMBER))
         )));
     }
     
@@ -113,14 +114,14 @@ public class TypeReplacerTest {
         InterfaceType listInterface = new InterfaceType(
             asList("shed", "example"),
             "List",
-            ImmutableMap.<String, Type>of("first", new FormalTypeParameter("E"))
+            ImmutableMap.of("first", unassignableValue(new FormalTypeParameter("E")))
         );
         Type replacement = typeReplacer.replaceTypes(
             new TypeApplication(
                 new InterfaceType(
                     asList("shed", "example"),
                     "List",
-                    ImmutableMap.<String, Type>of("first", formalTypeParameter)
+                    ImmutableMap.of("first", unassignableValue(formalTypeParameter))
                 ),
                 listInterface,
                 Arrays.<Type>asList(formalTypeParameter)
@@ -131,7 +132,7 @@ public class TypeReplacerTest {
             new InterfaceType(
                 asList("shed", "example"),
                 "List",
-                ImmutableMap.<String, Type>of("first", CoreTypes.NUMBER)
+                ImmutableMap.of("first", unassignableValue(CoreTypes.NUMBER))
             ),
             listInterface,
             Arrays.<Type>asList(CoreTypes.NUMBER)

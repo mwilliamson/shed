@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.zwobble.shed.compiler.typechecker.ValueInfo;
+
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 
@@ -16,7 +18,7 @@ import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.IntRange.range;
 
 public class CoreTypes {
-    public static final InterfaceType OBJECT = new InterfaceType(Collections.<String>emptyList(), "Object", ImmutableMap.<String, Type>of());
+    public static final InterfaceType OBJECT = new InterfaceType(Collections.<String>emptyList(), "Object", ImmutableMap.<String, ValueInfo>of());
     public static final Type BOOLEAN = coreType("Boolean");
     public static final Type NUMBER = coreType("Number");
     public static final Type STRING = coreType("String");
@@ -27,7 +29,7 @@ public class CoreTypes {
             Collections.<String>emptyList(),
             name,
             Collections.singleton(OBJECT),
-            Collections.<String, Type>emptyMap()
+            Collections.<String, ValueInfo>emptyMap()
         );
     }
     

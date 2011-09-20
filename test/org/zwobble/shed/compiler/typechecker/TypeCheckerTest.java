@@ -116,7 +116,7 @@ public class TypeCheckerTest {
             TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext, Option.<Type>none());
         assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
         ScalarType browserType = (ScalarType)staticContext.get(objectDeclarationNode).getType();
-        assertThat(browserType.getMembers(), is((Object)ImmutableMap.of("name", CoreTypes.STRING)));
+        assertThat(browserType.getMembers(), is((Object)ImmutableMap.of("name", ValueInfo.unassignableValue(CoreTypes.STRING))));
     }
     
     @Test public void

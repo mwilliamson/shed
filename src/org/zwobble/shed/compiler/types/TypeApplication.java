@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.zwobble.shed.compiler.typechecker.ValueInfo;
+
 import lombok.Data;
 
 import com.google.common.base.Function;
@@ -58,7 +60,7 @@ public class TypeApplication implements ScalarType {
     }
     
     @Override
-    public Map<String, Type> getMembers() {
+    public Map<String, ValueInfo> getMembers() {
         return replacedType.getMembers();
     }
 }
