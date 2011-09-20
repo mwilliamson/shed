@@ -6,6 +6,7 @@ import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
+import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
@@ -16,8 +17,6 @@ import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.ImmutableMap;
 
-import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
-
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -26,6 +25,8 @@ import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
 import static org.zwobble.shed.compiler.parsing.SourceRange.range;
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.typechecker.VariableDeclarationTypeChecker.typeCheckVariableDeclaration;
 
 public class VariableDeclarationTypeCheckerTest {
@@ -49,6 +50,22 @@ public class VariableDeclarationTypeCheckerTest {
             is(TypeResult.success(StatementTypeCheckResult.noReturn()))
         );
         assertThat(staticContext.get(variableNode), is(VariableLookupResult.success(unassignableValue(CoreTypes.BOOLEAN))));
+    }
+    
+    @Test public void
+    declaringMutableVariableAddsItToScopeAsAssignableValue() {
+        StaticContext staticContext = standardContext();
+        MutableVariableNode variableNode = new MutableVariableNode(
+            "x",
+            none(ExpressionNode.class),
+            new BooleanLiteralNode(true)
+        );
+        
+        assertThat(
+            typeCheckVariableDeclaration(variableNode, nodeLocations, staticContext),
+            is(TypeResult.success(StatementTypeCheckResult.noReturn()))
+        );
+        assertThat(staticContext.get(variableNode), is(VariableLookupResult.success(assignableValue(CoreTypes.BOOLEAN))));
     }
     
     @Test public void

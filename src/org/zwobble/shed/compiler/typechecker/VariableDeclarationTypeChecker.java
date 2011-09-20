@@ -6,6 +6,7 @@ import java.util.List;
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.types.Type;
 
@@ -39,7 +40,12 @@ public class VariableDeclarationTypeChecker {
         }
         
         if (errors.isEmpty()) {
-            staticContext.add(variableDeclaration, unassignableValue(valueTypeResult.get()));
+            Type type = valueTypeResult.get();
+            ValueInfo valueInfo = variableDeclaration instanceof MutableVariableNode
+                ? ValueInfo.assignableValue(type)
+                : unassignableValue(type);
+                
+            staticContext.add(variableDeclaration, valueInfo);
             return success(StatementTypeCheckResult.noReturn());
         } else {
             return failure(errors);
