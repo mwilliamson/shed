@@ -31,11 +31,15 @@ public class TypeResult<T> implements HasErrors {
     }
     
     public static <T> TypeResult<T> failure(CompilerError error) {
-        return new TypeResult<T>(false, false, null, asList(error));
+        return failure(asList(error));
     }
     
     public static <T> TypeResult<T> failure(T value, List<? extends CompilerError> errors) {
         return new TypeResult<T>(false, true, value, errors);
+    }
+    
+    public static <T> TypeResult<T> failure(T value, CompilerError error) {
+        return failure(value, asList(error));
     }
     
     public static <T> TypeResult<List<T>> combine(Iterable<? extends TypeResult<? extends T>> results) {
@@ -105,8 +109,12 @@ public class TypeResult<T> implements HasErrors {
         }
     }
     
-    public TypeResult<T> withErrorsFrom(TypeResult<?> other) {
-        return thenResult(other, hasValue, value);
+    public TypeResult<T> withErrorsFrom(TypeResult<?>... others) {
+        TypeResult<T> result = this;
+        for (TypeResult<?> otherResult : others) {
+            result = result.thenResult(otherResult, hasValue, value);
+        }
+        return result;
     }
     
     private <R> TypeResult<R> thenResult(TypeResult<R> result) {

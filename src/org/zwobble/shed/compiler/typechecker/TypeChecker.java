@@ -145,8 +145,10 @@ public class TypeChecker {
     private static TypeResult<StatementTypeCheckResult> typeCheckWhile(
         WhileStatementNode statement, NodeLocations nodeLocations, StaticContext context, Option<Type> returnType
     ) {
-        TypeResult<Void> conditionResult = typeAndCheckCondition(statement.getCondition(), nodeLocations, context);
-        return success(StatementTypeCheckResult.noReturn()).withErrorsFrom(conditionResult);
+        TypeResult<?> conditionResult = typeAndCheckCondition(statement.getCondition(), nodeLocations, context);
+        TypeResult<?> bodyResult = typeCheckBlock(statement.getBody(), nodeLocations, context, returnType);
+        return success(StatementTypeCheckResult.noReturn())
+            .withErrorsFrom(conditionResult, bodyResult);
     }
 
     private static TypeResult<Void> typeAndCheckCondition(

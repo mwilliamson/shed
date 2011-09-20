@@ -5,6 +5,7 @@ import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
+import org.zwobble.shed.compiler.typechecker.errors.WrongReturnTypeError;
 import org.zwobble.shed.compiler.types.Type;
 
 import static java.util.Arrays.asList;
@@ -33,14 +34,13 @@ public class ReturnStatementTypeChecker {
         if (isSubType(expressionType.get(), returnType.get())) {
             return success(StatementTypeCheckResult.alwaysReturns());
         } else {
-            String expectedName = returnType.get().shortName();
-            String actualName = expressionType.get().shortName();
-            return failure(StatementTypeCheckResult.alwaysReturns(), asList(
-                CompilerError.error(
+            return failure(
+                StatementTypeCheckResult.alwaysReturns(),
+                new CompilerError(
                     nodeLocations.locate(expression),
-                    "Expected return expression of type \"" + expectedName + "\" but was of type \"" + actualName + "\""
+                    new WrongReturnTypeError(returnType.get(), expressionType.get())
                 )
-            ));
+            );
         }
     }
 }

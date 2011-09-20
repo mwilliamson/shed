@@ -20,6 +20,7 @@ import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.WhileStatementNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 import org.zwobble.shed.compiler.typechecker.errors.ConditionNotBooleanError;
+import org.zwobble.shed.compiler.typechecker.errors.WrongReturnTypeError;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.Type;
@@ -207,6 +208,14 @@ public class TypeCheckerTest {
         TypeResult<StatementTypeCheckResult> result = 
             TypeChecker.typeCheckStatement(loop, nodeLocations, staticContext(), some(CoreTypes.STRING));
         assertThat(result, isFailureWithErrors(new ConditionNotBooleanError(CoreTypes.NUMBER)));
+    }
+    
+    @Test public void
+    bodyOfWhileLoopIsTypeChecked() {
+        WhileStatementNode loop = Nodes.whileLoop(Nodes.bool(true), Nodes.block(Nodes.returnStatement(Nodes.number("42"))));
+        TypeResult<StatementTypeCheckResult> result = 
+            TypeChecker.typeCheckStatement(loop, nodeLocations, staticContext(), some(CoreTypes.STRING));
+        assertThat(result, isFailureWithErrors(new WrongReturnTypeError(CoreTypes.STRING, CoreTypes.NUMBER)));
     }
     
     private TypeResult<Void> typeCheck(SourceNode source) {
