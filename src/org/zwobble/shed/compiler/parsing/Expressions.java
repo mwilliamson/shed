@@ -16,11 +16,12 @@ import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
-import static org.zwobble.shed.compiler.parsing.Rules.oneOrMoreWithSeparator;
+import com.google.common.collect.Lists;
 
 import static org.zwobble.shed.compiler.parsing.Blocks.block;
 import static org.zwobble.shed.compiler.parsing.Rules.firstOf;
 import static org.zwobble.shed.compiler.parsing.Rules.guard;
+import static org.zwobble.shed.compiler.parsing.Rules.oneOrMoreWithSeparator;
 import static org.zwobble.shed.compiler.parsing.Rules.optional;
 import static org.zwobble.shed.compiler.parsing.Rules.sequence;
 import static org.zwobble.shed.compiler.parsing.Rules.symbol;
@@ -43,7 +44,12 @@ public class Expressions {
     }
     
     public static Rule<ExpressionNode> expression() {
-        return assignmentExpression();
+        return new Rule<ExpressionNode>() {
+            @Override
+            public ParseResult<ExpressionNode> parse(TokenNavigator tokens) {
+                return assignmentExpression().parse(tokens);
+            }
+        }; 
     }
 
     public static Rule<ExpressionNode> typeExpression() {
@@ -69,10 +75,10 @@ public class Expressions {
             new SimpleParseAction<List<ExpressionNode>, ExpressionNode>() {
                 @Override
                 public ExpressionNode apply(List<ExpressionNode> result) {
-                    Iterator<ExpressionNode> iterator = result.iterator();
+                    Iterator<ExpressionNode> iterator = Lists.reverse(result).iterator();
                     ExpressionNode expression = iterator.next();
-                    if (iterator.hasNext()) {
-                        expression = new AssignmentExpressionNode(expression, iterator.next());
+                    while (iterator.hasNext()) {
+                        expression = new AssignmentExpressionNode(iterator.next(), expression);
                     }
                     return expression;
                 }
@@ -81,20 +87,15 @@ public class Expressions {
     }
     
     private static Rule<ExpressionNode> callExpression() {
-        return new Rule<ExpressionNode>() {
-            @Override
-            public ParseResult<ExpressionNode> parse(TokenNavigator tokens) {
-                final Rule<ExpressionNode> left = primaryExpression(); 
-                final Rule<List<PartialCallExpression>> calls = partialCallExpression();
-                return then(
-                    sequence(OnError.FINISH,
-                        left,
-                        calls
-                    ),
-                    foldPartialCalls(left, calls)
-                 ).parse(tokens);
-            }
-        };
+        final Rule<ExpressionNode> left = primaryExpression(); 
+        final Rule<List<PartialCallExpression>> calls = partialCallExpression();
+        return then(
+            sequence(OnError.FINISH,
+                left,
+                calls
+            ),
+            foldPartialCalls(left, calls)
+         );
     }
 
     private static ParseAction<RuleValues, ExpressionNode> foldPartialCalls(

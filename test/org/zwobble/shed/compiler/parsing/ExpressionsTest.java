@@ -226,4 +226,12 @@ public class ExpressionsTest {
             isSuccessWithNode(Nodes.assign(Nodes.id("x"), Nodes.number("4")))
         );
     }
+    
+    @Test public void
+    assignmentsAreRightAssociative() {
+        assertThat(
+            Expressions.expression().parse(tokens("x = y = 4")),
+            isSuccessWithNode(Nodes.assign(Nodes.id("x"), Nodes.assign(Nodes.id("y"), Nodes.number("4"))))
+        );
+    }
 }
