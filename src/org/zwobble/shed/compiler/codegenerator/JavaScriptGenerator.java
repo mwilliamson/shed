@@ -12,6 +12,7 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptFunctionCall
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.AssignmentExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
@@ -118,6 +119,10 @@ public class JavaScriptGenerator {
             TypeApplicationNode typeApplication = (TypeApplicationNode)node;
             List<JavaScriptExpressionNode> jsArguments = transform(typeApplication.getParameters(), toJavaScriptExpression());
             return js.call(generateExpression(typeApplication.getBaseValue()), jsArguments);
+        }
+        if (node instanceof AssignmentExpressionNode) {
+            AssignmentExpressionNode assignment = (AssignmentExpressionNode) node;
+            return js.assign(generateExpression(assignment.getTarget()), generateExpression(assignment.getValue()));
         }
         throw new RuntimeException("Cannot generate JavaScript for " + node);
     }

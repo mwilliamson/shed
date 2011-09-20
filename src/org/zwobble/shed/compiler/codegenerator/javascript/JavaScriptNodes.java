@@ -96,4 +96,8 @@ public class JavaScriptNodes {
     public JavaScriptExpressionNode operator(String operator, JavaScriptExpressionNode firstOperand, JavaScriptExpressionNode secondOperand) {
         return new JavaScriptBinaryOperatorNode(operator, firstOperand, secondOperand);
     }
+    
+    public JavaScriptExpressionNode assign(JavaScriptExpressionNode target, JavaScriptExpressionNode value) {
+        return new JavaScriptAssignmentNode(target, value);
+    }
 }

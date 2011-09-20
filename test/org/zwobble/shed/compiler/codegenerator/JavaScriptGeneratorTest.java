@@ -11,6 +11,7 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatements;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
+import org.zwobble.shed.compiler.parsing.nodes.AssignmentExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
@@ -359,6 +360,22 @@ public class JavaScriptGeneratorTest {
                 )
             )
         ));
+    }
+    
+    @Test public void
+    assignmentsAreConvertedToJavaScriptAssignments() {
+        VariableIdentifierNode firstReference = Nodes.id("x");
+        VariableIdentifierNode secondReference = Nodes.id("y");
+        ReferencesBuilder references = new ReferencesBuilder();
+        references.addReference(firstReference, new GlobalDeclarationNode("x"));
+        references.addReference(secondReference, new GlobalDeclarationNode("y"));
+        
+        AssignmentExpressionNode source = Nodes.assign(firstReference, Nodes.assign(secondReference, Nodes.number("372")));
+        assertGeneratedJavaScript(
+            references.build(),
+            source,
+            js.assign(js.id("x"), js.assign(js.id("y"), generateLiteral(Nodes.number("372"))))
+        );
     }
     
     private void assertGeneratedJavaScript(ExpressionNode source, JavaScriptNode expectedJavaScript) {
