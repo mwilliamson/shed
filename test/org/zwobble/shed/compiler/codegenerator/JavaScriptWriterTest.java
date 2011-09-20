@@ -183,6 +183,14 @@ public class JavaScriptWriterTest {
         );
     }
     
+    @Test public void
+    assignmentWritesOutBothSides() {
+        assertThat(
+            write(js.assign(js.id("first"), js.id("second")), 0),
+            is("first = second")
+        );
+    }
+    
     private String write(JavaScriptNode node, int indentationLevel) {
         StringBuilder builder = new StringBuilder();
         writer.write(node, builder, indentationLevel);
