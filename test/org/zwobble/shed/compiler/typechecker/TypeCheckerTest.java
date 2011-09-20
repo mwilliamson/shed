@@ -17,20 +17,24 @@ import org.zwobble.shed.compiler.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+import org.zwobble.shed.compiler.parsing.nodes.WhileStatementNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
+import org.zwobble.shed.compiler.typechecker.errors.ConditionNotBooleanError;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.ImmutableMap;
 
+import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
+import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
-import static org.zwobble.shed.compiler.typechecker.TypeCheckerTesting.isFailureWithErrors;
 
 public class TypeCheckerTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
@@ -160,7 +164,7 @@ public class TypeCheckerTest {
             );
         TypeResult<StatementTypeCheckResult> result = 
             TypeChecker.typeCheckStatement(ifThenElseNode, nodeLocations, staticContext(), some(CoreTypes.STRING));
-        assertThat(result, is(TypeResult.<StatementTypeCheckResult>success(StatementTypeCheckResult.noReturn())));
+        assertThat(result, is(success(StatementTypeCheckResult.noReturn())));
     }
     
     @Test public void
@@ -173,7 +177,7 @@ public class TypeCheckerTest {
             );
         TypeResult<StatementTypeCheckResult> result = 
             TypeChecker.typeCheckStatement(ifThenElseNode, nodeLocations, staticContext(), some(CoreTypes.STRING));
-        assertThat(result, is(TypeResult.<StatementTypeCheckResult>success(StatementTypeCheckResult.noReturn())));
+        assertThat(result, is(success(StatementTypeCheckResult.noReturn())));
     }
     
     @Test public void
@@ -186,7 +190,23 @@ public class TypeCheckerTest {
             );
         TypeResult<StatementTypeCheckResult> result = 
             TypeChecker.typeCheckStatement(ifThenElseNode, nodeLocations, staticContext(), some(CoreTypes.STRING));
-        assertThat(result, is(TypeResult.<StatementTypeCheckResult>success(StatementTypeCheckResult.alwaysReturns())));
+        assertThat(result, is(success(StatementTypeCheckResult.alwaysReturns())));
+    }
+    
+    @Test public void
+    whileLoopNeverReturnsFromFunction() {
+        WhileStatementNode loop = Nodes.whileLoop(Nodes.bool(true), Nodes.block());
+        TypeResult<StatementTypeCheckResult> result = 
+            TypeChecker.typeCheckStatement(loop, nodeLocations, staticContext(), some(CoreTypes.STRING));
+        assertThat(result, is(success(StatementTypeCheckResult.noReturn())));
+    }
+    
+    @Test public void
+    conditionOfWhileLoopMustBeBoolean() {
+        WhileStatementNode loop = Nodes.whileLoop(Nodes.number("42"), Nodes.block());
+        TypeResult<StatementTypeCheckResult> result = 
+            TypeChecker.typeCheckStatement(loop, nodeLocations, staticContext(), some(CoreTypes.STRING));
+        assertThat(result, isFailureWithErrors(new ConditionNotBooleanError(CoreTypes.NUMBER)));
     }
     
     private TypeResult<Void> typeCheck(SourceNode source) {

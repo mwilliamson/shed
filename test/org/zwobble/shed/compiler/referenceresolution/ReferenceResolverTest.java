@@ -8,9 +8,7 @@ import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerError;
-import org.zwobble.shed.compiler.CompilerErrorDescription;
 import org.zwobble.shed.compiler.CompilerTesting;
-import org.zwobble.shed.compiler.HasErrors;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
@@ -36,6 +34,7 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
+import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 
 public class ReferenceResolverTest {
     private static final References EMPTY_REFERENCES = new References(ImmutableMap.<Identity<VariableIdentifierNode>, Identity<DeclarationNode>>of());
@@ -351,9 +350,5 @@ public class ReferenceResolverTest {
                 }
             }
         };
-    }
-
-    private static Matcher<HasErrors> isSuccess() {
-        return CompilerTesting.hasErrors("success", Collections.<CompilerErrorDescription>emptyList());
     }
 }

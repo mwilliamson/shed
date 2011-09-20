@@ -1,8 +1,10 @@
 package org.zwobble.shed.compiler;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 
 import com.google.common.base.Function;
@@ -36,29 +38,60 @@ public class CompilerTesting {
             }
         };
     }
+
+    public static Matcher<HasErrors> isSuccess() {
+        return hasErrors("success", Collections.<CompilerErrorDescription>emptyList());
+    }
     
     public static TypeSafeDiagnosingMatcher<HasErrors> isFailureWithErrors(CompilerErrorDescription... errorsArray) {
         List<CompilerErrorDescription> errors = asList(errorsArray);
-        return hasErrors("failure with errors: " + errors, errors);
-    }
-    
-    public static TypeSafeDiagnosingMatcher<HasErrors> hasErrors(final String matcherDescription, final List<CompilerErrorDescription> errors) {
+        final HasErrorsMatcher errorMatcher = hasErrors("failure with errors: " + errors, errors);
+        
         return new TypeSafeDiagnosingMatcher<HasErrors>() {
             @Override
             public void describeTo(Description description) {
-                description.appendText(matcherDescription);
+                errorMatcher.describeTo(description);
             }
 
             @Override
             protected boolean matchesSafely(HasErrors item, Description mismatchDescription) {
-                List<CompilerErrorDescription> actualErrors = CompilerTesting.errorDescriptions(item);
-                if (actualErrors.equals(errors)) {
-                    return true;
-                } else {
-                    mismatchDescription.appendText("had errors: " + actualErrors);
+                if (item.isSuccess()) {
+                    mismatchDescription.appendText("was success");
                     return false;
+                } else {
+                    return errorMatcher.matchesSafely(item, mismatchDescription);
                 }
             }
         };
+    }
+    
+    private static HasErrorsMatcher hasErrors(final String matcherDescription, final List<CompilerErrorDescription> errors) {
+        return new HasErrorsMatcher(matcherDescription, errors);
+    }
+    
+    private static class HasErrorsMatcher extends TypeSafeDiagnosingMatcher<HasErrors> {
+        private final String matcherDescription;
+        private final List<CompilerErrorDescription> errors;
+
+        public HasErrorsMatcher(String matcherDescription, List<CompilerErrorDescription> errors) {
+            this.matcherDescription = matcherDescription;
+            this.errors = errors;
+        }
+        
+        @Override
+        public void describeTo(Description description) {
+            description.appendText(matcherDescription);
+        }
+
+        @Override
+        protected boolean matchesSafely(HasErrors item, Description mismatchDescription) {
+            List<CompilerErrorDescription> actualErrors = errorDescriptions(item);
+            if (actualErrors.equals(errors)) {
+                return true;
+            } else {
+                mismatchDescription.appendText("had errors: " + actualErrors);
+                return false;
+            }
+        }
     }
 }
