@@ -204,10 +204,26 @@ public class ExpressionsTest {
     }
     
     @Test public void
+    canParseTypeApplicationAsTypeExpression() {
+        assertThat(
+            Expressions.typeExpression().parse(tokens("Map[String, Number]")),
+            isSuccessWithNode(Nodes.typeApply(Nodes.id("Map"), Nodes.id("String"), Nodes.id("Number")))
+        );
+    }
+    
+    @Test public void
     canParseUnitLiteral() {
         assertThat(
             Expressions.expression().parse(tokens("()")),
             isSuccessWithNode(Nodes.unit())
+        );
+    }
+    
+    @Test public void
+    canParseSimpleAssignment() {
+        assertThat(
+            Expressions.expression().parse(tokens("x = 4")),
+            isSuccessWithNode(Nodes.assign(Nodes.id("x"), Nodes.number("4")))
         );
     }
 }

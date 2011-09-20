@@ -1,8 +1,10 @@
 package org.zwobble.shed.compiler.parsing;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.parsing.nodes.AssignmentExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
@@ -13,6 +15,8 @@ import org.zwobble.shed.compiler.parsing.nodes.PartialNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+
+import static org.zwobble.shed.compiler.parsing.Rules.oneOrMoreWithSeparator;
 
 import static org.zwobble.shed.compiler.parsing.Blocks.block;
 import static org.zwobble.shed.compiler.parsing.Rules.firstOf;
@@ -39,10 +43,44 @@ public class Expressions {
     }
     
     public static Rule<ExpressionNode> expression() {
-        return callExpression();
+        return assignmentExpression();
+    }
+
+    public static Rule<ExpressionNode> typeExpression() {
+        return new Rule<ExpressionNode>() {
+            @Override
+            public ParseResult<ExpressionNode> parse(TokenNavigator tokens) {
+                final Rule<ExpressionNode> left = variableIdentifier(); 
+                final Rule<List<PartialCallExpression>> typeApplications = zeroOrMore(typeApplication());
+                return then(
+                    sequence(OnError.FINISH,
+                        left,
+                        typeApplications
+                    ),
+                    foldPartialCalls(left, typeApplications)
+                ).parse(tokens);
+            }
+        };
     }
     
-    public static Rule<ExpressionNode> callExpression() {
+    private static Rule<ExpressionNode> assignmentExpression() {
+        return then(
+            oneOrMoreWithSeparator(callExpression(), softSeparator(symbol("="))),
+            new SimpleParseAction<List<ExpressionNode>, ExpressionNode>() {
+                @Override
+                public ExpressionNode apply(List<ExpressionNode> result) {
+                    Iterator<ExpressionNode> iterator = result.iterator();
+                    ExpressionNode expression = iterator.next();
+                    if (iterator.hasNext()) {
+                        expression = new AssignmentExpressionNode(expression, iterator.next());
+                    }
+                    return expression;
+                }
+            }
+        );
+    }
+    
+    private static Rule<ExpressionNode> callExpression() {
         return new Rule<ExpressionNode>() {
             @Override
             public ParseResult<ExpressionNode> parse(TokenNavigator tokens) {
@@ -53,24 +91,30 @@ public class Expressions {
                         left,
                         calls
                     ),
-                    new ParseAction<RuleValues, ExpressionNode>() {
-                        @Override
-                        public ParseResult<ExpressionNode> apply(ParseResult<RuleValues> valuesResult) {
-                            RuleValues values = valuesResult.get();
-                            ExpressionNode leftExpression = values.get(left);
-                            ParseResult<ExpressionNode> result = valuesResult.changeValue(leftExpression);
-                            List<PartialCallExpression> callExpressions = values.get(calls);
-                            for (PartialCallExpression callExpression : callExpressions) {
-                                SourcePosition start = result.locate(leftExpression).getStart();
-                                SourcePosition end = result.locate(callExpression).getEnd();
-                                SourceRange sourceRange = range(start, end);
-                                leftExpression = callExpression.complete(leftExpression);
-                                result = result.changeValue(leftExpression, sourceRange);
-                            }
-                            return result;
-                        }
-                    }
+                    foldPartialCalls(left, calls)
                  ).parse(tokens);
+            }
+        };
+    }
+
+    private static ParseAction<RuleValues, ExpressionNode> foldPartialCalls(
+        final Rule<ExpressionNode> left,
+        final Rule<List<PartialCallExpression>> calls) {
+        return new ParseAction<RuleValues, ExpressionNode>() {
+            @Override
+            public ParseResult<ExpressionNode> apply(ParseResult<RuleValues> valuesResult) {
+                RuleValues values = valuesResult.get();
+                ExpressionNode leftExpression = values.get(left);
+                ParseResult<ExpressionNode> result = valuesResult.changeValue(leftExpression);
+                List<PartialCallExpression> callExpressions = values.get(calls);
+                for (PartialCallExpression callExpression : callExpressions) {
+                    SourcePosition start = result.locate(leftExpression).getStart();
+                    SourcePosition end = result.locate(callExpression).getEnd();
+                    SourceRange sourceRange = range(start, end);
+                    leftExpression = callExpression.complete(leftExpression);
+                    result = result.changeValue(leftExpression, sourceRange);
+                }
+                return result;
             }
         };
     }
@@ -145,7 +189,7 @@ public class Expressions {
     }
     
     private static Rule<PartialCallExpression> typeApplication() {
-        final Rule<List<ExpressionNode>> arguments = argumentList();
+        final Rule<List<ExpressionNode>> arguments = zeroOrMoreWithSeparator(typeExpression(), softSeparator(COMMA));
         
         return then(
             sequence(OnError.FINISH,

@@ -10,7 +10,7 @@ import static org.zwobble.shed.compiler.parsing.Rules.then;
 
 public class TypeReferences {
     public static Rule<ExpressionNode> typeSpecifier() {
-        final Rule<ExpressionNode> typeReference = Expressions.expression();
+        final Rule<ExpressionNode> typeReference = Expressions.typeExpression();
         return then(
             sequence(OnError.FINISH,
                 guard(symbol(":")),

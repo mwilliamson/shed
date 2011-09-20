@@ -72,4 +72,8 @@ public class Nodes {
     public static WhileStatementNode whileLoop(ExpressionNode condition, BlockNode body) {
         return new WhileStatementNode(condition, body);
     }
+
+    public static AssignmentExpressionNode assign(ExpressionNode target, ExpressionNode value) {
+        return new AssignmentExpressionNode(target, value);
+    }
 }
