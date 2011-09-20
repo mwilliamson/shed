@@ -3,6 +3,7 @@ package org.zwobble.shed.compiler.codegenerator;
 import java.util.List;
 import java.util.Map;
 
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptBinaryOperatorNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptBooleanLiteralNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptExpressionNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptExpressionStatement;
@@ -149,6 +150,15 @@ public class JavaScriptWriter {
             write(whileNode.getCondition(), builder, indentationLevel);
             builder.append(") ");
             writeBlock(builder, indentationLevel, whileNode.getBody());
+            return;
+        }
+        if (node instanceof JavaScriptBinaryOperatorNode) {
+            JavaScriptBinaryOperatorNode operator = (JavaScriptBinaryOperatorNode) node;
+            write(operator.getFirstOperand(), builder, indentationLevel);
+            builder.append(" ");
+            builder.append(operator.getOperator());
+            builder.append(" ");
+            write(operator.getSecondOperand(), builder, indentationLevel);
             return;
         }
         throw new RuntimeException("Don't know how to write JavaScript node: " + node);

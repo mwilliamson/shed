@@ -165,6 +165,14 @@ public class JavaScriptWriterTest {
         );
     }
     
+    @Test public void
+    binaryOperatorWritesOperatorAndBothOperands() {
+        assertThat(
+            write(js.operator("!==", js.id("first"), js.id("second")), 0),
+            is("first !== second")
+        );
+    }
+    
     private String write(JavaScriptNode node, int indentationLevel) {
         StringBuilder builder = new StringBuilder();
         writer.write(node, builder, indentationLevel);
