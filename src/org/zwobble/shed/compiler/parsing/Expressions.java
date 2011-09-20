@@ -38,29 +38,16 @@ public class Expressions {
         ExpressionNode complete(ExpressionNode expression);
     }
     
-    @SuppressWarnings("unchecked")
     public static Rule<ExpressionNode> expression() {
+        return callExpression();
+    }
+    
+    public static Rule<ExpressionNode> callExpression() {
         return new Rule<ExpressionNode>() {
             @Override
             public ParseResult<ExpressionNode> parse(TokenNavigator tokens) {
-                final Rule<ExpressionNode> left = guard(firstOf("expression",
-                    longLambdaExpression(),
-                    shortLambdaExpression(),
-                    variableIdentifier(),
-                    Literals.numberLiteral(),
-                    Literals.stringLiteral(),
-                    Literals.booleanLiteral(),
-                    Literals.unitLiteral(),
-                    expressionInParens()
-                )); 
-                
-                final Rule<List<PartialCallExpression>> calls = zeroOrMore(
-                    firstOf("function call or member access",
-                        functionCall(),
-                        memberAccess(),
-                        typeApplication()
-                    )
-                );
+                final Rule<ExpressionNode> left = primaryExpression(); 
+                final Rule<List<PartialCallExpression>> calls = partialCallExpression();
                 return then(
                     sequence(OnError.FINISH,
                         left,
@@ -86,6 +73,31 @@ public class Expressions {
                  ).parse(tokens);
             }
         };
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Rule<List<PartialCallExpression>> partialCallExpression() {
+        return zeroOrMore(
+            firstOf("function call or member access",
+                functionCall(),
+                memberAccess(),
+                typeApplication()
+            )
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Rule<ExpressionNode> primaryExpression() {
+        return guard(firstOf("expression",
+            longLambdaExpression(),
+            shortLambdaExpression(),
+            variableIdentifier(),
+            Literals.numberLiteral(),
+            Literals.stringLiteral(),
+            Literals.booleanLiteral(),
+            Literals.unitLiteral(),
+            expressionInParens()
+        ));
     }
     
     private static Rule<PartialCallExpression> functionCall() {
