@@ -69,6 +69,10 @@ public class JavaScriptNodes {
         return new JavaScriptForInNode(name, object, statements);
     }
 
+    public JavaScriptStatementNode ifThen(JavaScriptExpressionNode condition, JavaScriptStatementNode... ifTrue) {
+        return new JavaScriptIfThenElseNode(condition, asList(ifTrue), Collections.<JavaScriptStatementNode>emptyList());
+    }
+
     public JavaScriptStatementNode ifThenElse(JavaScriptExpressionNode condition, List<JavaScriptStatementNode> ifTrue, List<JavaScriptStatementNode> ifFalse) {
         return new JavaScriptIfThenElseNode(condition, ifTrue, ifFalse);
     }
@@ -83,5 +87,13 @@ public class JavaScriptNodes {
     
     public JavaScriptStatementNode scope(List<JavaScriptStatementNode> statements) {
         return expressionStatement(call(func(Collections.<String>emptyList(), statements)));
+    }
+
+    public JavaScriptExpressionNode undefined() {
+        return id("undefined");
+    }
+
+    public JavaScriptExpressionNode operator(String operator, JavaScriptExpressionNode firstOperand, JavaScriptExpressionNode secondOperand) {
+        return new JavaScriptBinaryOperatorNode(operator, firstOperand, secondOperand);
     }
 }

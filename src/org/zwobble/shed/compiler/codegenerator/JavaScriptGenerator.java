@@ -37,6 +37,7 @@ import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+import org.zwobble.shed.compiler.parsing.nodes.WhileStatementNode;
 import org.zwobble.shed.compiler.referenceresolution.References;
 
 import com.google.common.base.Function;
@@ -181,6 +182,22 @@ public class JavaScriptGenerator {
                 generateExpression(ifThenElse.getCondition()),
                 transform(ifThenElse.getIfTrue(), toJavaScriptStatement()),
                 transform(ifThenElse.getIfFalse(), toJavaScriptStatement())
+            );
+        }
+        if (node instanceof WhileStatementNode) {
+            WhileStatementNode whileNode = (WhileStatementNode) node;
+            String loopBodyIdentifier = namer.freshJavaScriptIdentifier("__tmp_loopBody");
+            String resultIdentifier = namer.freshJavaScriptIdentifier("__tmp_loopBodyResult");
+            return js.statements(
+                js.var(loopBodyIdentifier, js.func(
+                    Collections.<String>emptyList(),
+                    transform(whileNode.getBody(), toJavaScriptStatement())
+                )),
+                js.whileLoop(
+                    generateExpression(whileNode.getCondition()),
+                    js.var(resultIdentifier, js.call(js.id(loopBodyIdentifier))),
+                    js.ifThen(js.operator("!==", js.id(resultIdentifier), js.undefined()), js.ret(js.id(resultIdentifier)))
+                )
             );
         }
         throw new RuntimeException("Cannot generate JavaScript for " + node);

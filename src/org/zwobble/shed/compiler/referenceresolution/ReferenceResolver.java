@@ -35,6 +35,7 @@ import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+import org.zwobble.shed.compiler.parsing.nodes.WhileStatementNode;
 import org.zwobble.shed.compiler.referenceresolution.Scope.NotDeclaredYet;
 import org.zwobble.shed.compiler.referenceresolution.Scope.NotInScope;
 import org.zwobble.shed.compiler.referenceresolution.Scope.Result;
@@ -101,8 +102,12 @@ public class ReferenceResolver {
         } else if (node instanceof IfThenElseStatementNode) {
             IfThenElseStatementNode ifElse = (IfThenElseStatementNode) node;
             resolveReferences(ifElse.getCondition(), nodeLocations, references, scope, errors);
-            resolveReferences(ifElse.getIfTrue(), nodeLocations, references, scope.extend(findDeclarations(ifElse.getIfTrue())), errors);
-            resolveReferences(ifElse.getIfFalse(), nodeLocations, references, scope.extend(findDeclarations(ifElse.getIfFalse())), errors);
+            resolveReferencesInExtendedScope(ifElse.getIfTrue(), nodeLocations, references, scope, errors);
+            resolveReferencesInExtendedScope(ifElse.getIfFalse(), nodeLocations, references, scope, errors);
+        } else if (node instanceof WhileStatementNode) {
+            WhileStatementNode whileNode = (WhileStatementNode) node;
+            resolveReferences(whileNode.getCondition(), nodeLocations, references, scope, errors);
+            resolveReferencesInExtendedScope(whileNode.getBody(), nodeLocations, references, scope, errors);
         } else if (node instanceof VariableDeclarationNode) {
             resolveReferences(((VariableDeclarationNode) node).getValue(), nodeLocations, references, scope, errors);
         } else if (node instanceof PublicDeclarationNode) {
@@ -136,6 +141,12 @@ public class ReferenceResolver {
         } else {
             throw new RuntimeException("Don't how to resolve references for: " + node);
         }
+    }
+
+    private void resolveReferencesInExtendedScope(
+        BlockNode body, NodeLocations nodeLocations, ReferencesBuilder references, SubScope scope, List<CompilerError> errors
+    ) {
+        resolveReferences(body, nodeLocations, references, scope.extend(findDeclarations(body)), errors);
     }
 
     private void addDeclarations(SyntaxNode node, NodeLocations nodeLocations, SubScope scope, List<CompilerError> errors) {

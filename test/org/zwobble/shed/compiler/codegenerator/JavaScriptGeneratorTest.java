@@ -37,6 +37,7 @@ import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+import org.zwobble.shed.compiler.parsing.nodes.WhileStatementNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferenceResolver;
 import org.zwobble.shed.compiler.referenceresolution.References;
 import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
@@ -337,6 +338,26 @@ public class JavaScriptGeneratorTest {
             generateLiteral(Nodes.bool(true)),
             Arrays.<JavaScriptStatementNode>asList(js.var("x__1", generateLiteral(Nodes.number("5")))),
             Arrays.<JavaScriptStatementNode>asList(js.var("x__2", generateLiteral(Nodes.number("8"))))
+        ));
+    }
+    
+    @Test public void
+    whileLoopIsConvertedToWhileLoopWithBodyAsFunction() {
+        StatementNode body = Nodes.returnStatement(Nodes.number("8"));
+        WhileStatementNode source =  Nodes.whileLoop(Nodes.bool(true), Nodes.block(body));
+        assertGeneratedJavaScript(source, js.statements(
+            js.var("__tmp_loopBody__1", js.func(
+                Collections.<String>emptyList(),
+                Arrays.<JavaScriptStatementNode>asList(js.ret(generateLiteral(Nodes.number("8"))))
+            )),
+            js.whileLoop(
+                generateLiteral(Nodes.bool(true)),
+                js.var("__tmp_loopBodyResult__1", js.call(js.id("__tmp_loopBody__1"))),
+                js.ifThen(
+                    js.operator("!==", js.id("__tmp_loopBodyResult__1"), js.undefined()),
+                    js.ret(js.id("__tmp_loopBodyResult__1"))
+                )
+            )
         ));
     }
     

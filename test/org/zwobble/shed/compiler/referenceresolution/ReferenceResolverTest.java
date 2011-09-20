@@ -321,6 +321,26 @@ public class ReferenceResolverTest {
         assertThat(resolveReferences(source), hasReference(listReference, listDeclaration));
         assertThat(resolveReferences(source), hasReference(numberReference, CoreModule.GLOBAL_DECLARATIONS.get("Number")));
     }
+    
+    @Test public void
+    referencesAreResolvedForConditionAndBodyOfWhileLoop() {
+        ImmutableVariableNode booleanDeclaration = Nodes.immutableVar("go", Nodes.bool(true));
+        ImmutableVariableNode bodyDeclaration = Nodes.immutableVar("boys", Nodes.string("The boys"));
+        
+        VariableIdentifierNode booleanReference = Nodes.id("go");
+        VariableIdentifierNode bodyReference = Nodes.id("boys");
+        
+        SyntaxNode source = Nodes.block(
+            booleanDeclaration,
+            Nodes.whileLoop(
+                booleanReference,
+                Nodes.block(bodyDeclaration, Nodes.expressionStatement(bodyReference))
+            )
+        );
+        ReferenceResolverResult references = resolveReferences(source);
+        assertThat(references, hasReference(booleanReference, booleanDeclaration));
+        assertThat(references, hasReference(bodyReference, bodyDeclaration));
+    }
 
     private ReferenceResolverResult resolveReferences(SyntaxNode node) {
         return resolver.resolveReferences(node, nodeLocations, CoreModule.GLOBAL_DECLARATIONS);

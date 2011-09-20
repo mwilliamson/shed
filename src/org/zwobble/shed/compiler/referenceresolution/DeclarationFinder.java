@@ -15,13 +15,15 @@ import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
+import org.zwobble.shed.compiler.parsing.nodes.WhileStatementNode;
 
 public class DeclarationFinder {
     public Set<String> findDeclarations(SyntaxNode node) {
         if (node instanceof ExpressionNode || 
             node instanceof ExpressionStatementNode || 
             node instanceof ReturnNode ||
-            node instanceof IfThenElseStatementNode
+            node instanceof IfThenElseStatementNode ||
+            node instanceof WhileStatementNode
         ) {
             return Collections.emptySet();
         }
