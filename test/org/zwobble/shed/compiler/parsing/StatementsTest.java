@@ -98,4 +98,15 @@ public class StatementsTest {
             ))
         );
     }
+    
+    @Test public void
+    canParseWhileStatement() {
+        assertThat(
+            Statements.statement().parse(tokens("while true { go(); }")),
+            isSuccessWithNode(Nodes.whileLoop(
+                Nodes.bool(true),
+                Nodes.block(Nodes.expressionStatement(Nodes.call(Nodes.id("go"))))
+            ))
+        );
+    }
 }

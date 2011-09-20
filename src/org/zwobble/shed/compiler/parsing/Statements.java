@@ -14,6 +14,7 @@ import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.WhileStatementNode;
 import org.zwobble.shed.compiler.tokeniser.Keyword;
 
 import static org.zwobble.shed.compiler.parsing.Expressions.expression;
@@ -41,6 +42,7 @@ public class Statements {
                     declaration(),
                     returnStatement(),
                     ifThenElseStatement(),
+                    whileStatement(),
                     expressionStatement()
                 ).parse(tokens);
             }
@@ -122,6 +124,24 @@ public class Statements {
                 @Override
                 public IfThenElseStatementNode apply(RuleValues result) {
                     return new IfThenElseStatementNode(result.get(condition), result.get(ifTrue), result.get(ifFalse));
+                }
+            }
+        );
+    }
+    
+    public static Rule<WhileStatementNode> whileStatement() {
+        final Rule<ExpressionNode> condition = expression();
+        final Rule<BlockNode> body = Blocks.block();
+        return then( 
+            sequence(OnError.FINISH,
+                guard(keyword(Keyword.WHILE)),
+                condition,
+                body
+            ),
+            new SimpleParseAction<RuleValues, WhileStatementNode>() {
+                @Override
+                public WhileStatementNode apply(RuleValues result) {
+                    return new WhileStatementNode(result.get(condition), result.get(body));
                 }
             }
         );

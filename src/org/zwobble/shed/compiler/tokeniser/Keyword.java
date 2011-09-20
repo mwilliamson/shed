@@ -11,7 +11,8 @@ public enum Keyword {
     FALSE,
     OBJECT,
     IF,
-    ELSE;
+    ELSE,
+    WHILE;
     
     public String keywordName() {
         return name().toLowerCase();

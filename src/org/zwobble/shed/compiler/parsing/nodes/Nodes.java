@@ -68,4 +68,8 @@ public class Nodes {
     public static BlockNode block(StatementNode... statements) {
         return new BlockNode(asList(statements));
     }
+
+    public static WhileStatementNode whileLoop(ExpressionNode condition, BlockNode body) {
+        return new WhileStatementNode(condition, body);
+    }
 }
