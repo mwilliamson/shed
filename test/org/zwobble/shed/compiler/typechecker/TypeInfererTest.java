@@ -465,8 +465,27 @@ public class TypeInfererTest {
         context.add(declaration, unassignableValue(interfaceType));
         
         MemberAccessNode memberAccess = Nodes.member(reference, "age");
-        TypeResult<Type> result = inferType(memberAccess, context);
-        assertThat(result, is(success(CoreTypes.NUMBER)));
+        TypeResult<ValueInfo> result = inferValueInfo(memberAccess, context);
+        assertThat(result, is(success(unassignableValue(CoreTypes.NUMBER))));
+    }
+    
+    @Test public void
+    memberAccessIsAssignableIfMemberIsAssignable() {
+        VariableIdentifierNode reference = Nodes.id("heAintHeavy");
+        GlobalDeclarationNode declaration = new GlobalDeclarationNode("heAintHeavy");
+        references.addReference(reference, declaration);
+        
+        StaticContext context = standardContext();
+        InterfaceType interfaceType = new InterfaceType(
+            asList("shed", "example"),
+            "Brother",
+            ImmutableMap.of("age", assignableValue(CoreTypes.NUMBER))
+        );
+        context.add(declaration, unassignableValue(interfaceType));
+        
+        MemberAccessNode memberAccess = Nodes.member(reference, "age");
+        TypeResult<ValueInfo> result = inferValueInfo(memberAccess, context);
+        assertThat(result, is(success(assignableValue(CoreTypes.NUMBER))));
     }
     
     @Test public void
@@ -595,6 +614,10 @@ public class TypeInfererTest {
     
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
         return TypeInferer.inferType(expression, nodeLocations, context);
+    }
+    
+    private TypeResult<ValueInfo> inferValueInfo(ExpressionNode expression, StaticContext context) {
+        return TypeInferer.inferValueInfo(expression, nodeLocations, context);
     }
     
     private StaticContext blankContext() {
