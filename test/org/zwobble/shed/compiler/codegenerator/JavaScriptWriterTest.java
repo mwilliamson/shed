@@ -166,6 +166,16 @@ public class JavaScriptWriterTest {
     }
     
     @Test public void
+    emptyWhileLoopSplitsBracesWithNewLine() {
+        assertThat(
+            write(js.whileLoop(
+                js.id("isMorning")
+            ), 1),
+            is("    while (isMorning) {\n    }")
+        );
+    }
+    
+    @Test public void
     binaryOperatorWritesOperatorAndBothOperands() {
         assertThat(
             write(js.operator("!==", js.id("first"), js.id("second")), 0),

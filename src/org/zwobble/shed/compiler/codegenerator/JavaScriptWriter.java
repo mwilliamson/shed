@@ -166,14 +166,12 @@ public class JavaScriptWriter {
 
     private void writeBlock(StringBuilder builder, int indentationLevel, List<JavaScriptStatementNode> statements) {
         builder.append("{\n");
-        if (statements.size() == 0) {
-            builder.append("}");
-        } else {
+        if (statements.size() > 0) {
             Joiner.on("\n").appendTo(builder, transform(statements, stringify(indentationLevel + 1)));
             builder.append("\n");
-            builder.append(indentationAtLevel(indentationLevel));
-            builder.append("}");
         }
+        builder.append(indentationAtLevel(indentationLevel));
+        builder.append("}");
     }
 
     private void writeJavaScriptString(String value, StringBuilder builder) {
