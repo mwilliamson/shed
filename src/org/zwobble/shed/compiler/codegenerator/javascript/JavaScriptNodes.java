@@ -72,6 +72,10 @@ public class JavaScriptNodes {
     public JavaScriptStatementNode ifThenElse(JavaScriptExpressionNode condition, List<JavaScriptStatementNode> ifTrue, List<JavaScriptStatementNode> ifFalse) {
         return new JavaScriptIfThenElseNode(condition, ifTrue, ifFalse);
     }
+
+    public JavaScriptStatementNode whileLoop(JavaScriptExpressionNode condition, JavaScriptStatementNode... body) {
+        return new JavaScriptWhileNode(condition, asList(body));
+    }
     
     public JavaScriptStatementNode scope(JavaScriptStatementNode... statements) {
         return scope(asList(statements));

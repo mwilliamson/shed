@@ -19,6 +19,7 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNod
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatements;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStringLiteralNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptVariableDeclarationNode;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptWhileNode;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -139,6 +140,15 @@ public class JavaScriptWriter {
             writeBlock(builder, indentationLevel, ifThenElse.getIfTrue());
             builder.append(" else ");
             writeBlock(builder, indentationLevel, ifThenElse.getIfFalse());
+            return;
+        }
+        if (node instanceof JavaScriptWhileNode) {
+            JavaScriptWhileNode whileNode = (JavaScriptWhileNode) node;
+            builder.append(indentationAtLevel(indentationLevel));
+            builder.append("while (");
+            write(whileNode.getCondition(), builder, indentationLevel);
+            builder.append(") ");
+            writeBlock(builder, indentationLevel, whileNode.getBody());
             return;
         }
         throw new RuntimeException("Don't know how to write JavaScript node: " + node);

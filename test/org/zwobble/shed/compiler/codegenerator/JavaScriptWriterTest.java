@@ -154,6 +154,17 @@ public class JavaScriptWriterTest {
         );
     }
     
+    @Test public void
+    whileLoopWritesConditionAndBody() {
+        assertThat(
+            write(js.whileLoop(
+                js.id("isMorning"),
+                js.expressionStatement(js.call(js.id("beSleepy")))
+            ), 1),
+            is("    while (isMorning) {\n        beSleepy();\n    }")
+        );
+    }
+    
     private String write(JavaScriptNode node, int indentationLevel) {
         StringBuilder builder = new StringBuilder();
         writer.write(node, builder, indentationLevel);
