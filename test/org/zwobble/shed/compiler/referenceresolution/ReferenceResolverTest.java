@@ -341,6 +341,23 @@ public class ReferenceResolverTest {
         assertThat(references, hasReference(booleanReference, booleanDeclaration));
         assertThat(references, hasReference(bodyReference, bodyDeclaration));
     }
+    
+    @Test public void
+    referencesAreResolvedForBothSidesOfAnAssignment() {
+        ImmutableVariableNode leftDeclaration = Nodes.immutableVar("x", Nodes.number("347"));
+        ImmutableVariableNode rightDeclaration = Nodes.immutableVar("y", Nodes.number("348"));
+        
+        VariableIdentifierNode leftReference = Nodes.id("x");
+        VariableIdentifierNode rightReference = Nodes.id("y");
+        
+        SyntaxNode source = Nodes.block(
+            leftDeclaration, rightDeclaration,
+            Nodes.expressionStatement(Nodes.assign(leftReference, rightReference))
+        );
+        ReferenceResolverResult references = resolveReferences(source);
+        assertThat(references, hasReference(leftReference, leftDeclaration));
+        assertThat(references, hasReference(rightReference, rightDeclaration));
+    }
 
     private ReferenceResolverResult resolveReferences(SyntaxNode node) {
         return resolver.resolveReferences(node, nodeLocations, CoreModule.GLOBAL_DECLARATIONS);

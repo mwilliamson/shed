@@ -9,6 +9,7 @@ import java.util.Set;
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
+import org.zwobble.shed.compiler.parsing.nodes.AssignmentExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
@@ -138,6 +139,10 @@ public class ReferenceResolver {
             ObjectDeclarationNode objectDeclaration = (ObjectDeclarationNode) node;
             SubScope bodyScope = new SubScope(scope, findDeclarations(objectDeclaration.getStatements()));
             resolveReferences(objectDeclaration.getStatements(), nodeLocations, references, bodyScope, errors);
+        } else if (node instanceof AssignmentExpressionNode) {
+            AssignmentExpressionNode assignment = (AssignmentExpressionNode)node;
+            resolveReferences(assignment.getTarget(), nodeLocations, references, scope, errors);
+            resolveReferences(assignment.getValue(), nodeLocations, references, scope, errors);
         } else {
             throw new RuntimeException("Don't how to resolve references for: " + node);
         }
