@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class ValueInfo {
-    public static ValueInfo valueInfo(Type type) {
+    public static ValueInfo unassignableValue(Type type) {
         return new ValueInfo(type);
     }
     

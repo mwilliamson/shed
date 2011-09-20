@@ -33,6 +33,8 @@ import org.zwobble.shed.compiler.types.TypeApplication;
 
 import com.google.common.collect.ImmutableMap;
 
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+
 import static org.zwobble.shed.compiler.typechecker.TypeCheckerTesting.isFailureWithErrors;
 
 import static java.util.Arrays.asList;
@@ -86,7 +88,7 @@ public class TypeInfererTest {
         GlobalDeclarationNode declaration = new GlobalDeclarationNode("value");
         references.addReference(reference, declaration);
         StaticContext context = blankContext();
-        context.add(declaration, CoreTypes.STRING);
+        context.add(declaration, unassignableValue(CoreTypes.STRING));
         assertThat(inferType(reference, context), is(success(CoreTypes.STRING)));
     }
     
@@ -187,8 +189,8 @@ public class TypeInfererTest {
         references.addReference(stringReference, stringDeclaration);
         
         StaticContext context = blankContext();
-        context.add(numberDeclaration, CoreTypes.classOf(CoreTypes.NUMBER));
-        context.add(stringDeclaration, CoreTypes.classOf(CoreTypes.STRING));
+        context.add(numberDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.NUMBER)));
+        context.add(stringDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.STRING)));
         
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             asList(new FormalArgumentNode("name", stringReference), new FormalArgumentNode("age", numberReference)),
@@ -346,7 +348,7 @@ public class TypeInfererTest {
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
-        context.add(declaration, CoreTypes.functionTypeOf(CoreTypes.NUMBER));
+        context.add(declaration, unassignableValue(CoreTypes.functionTypeOf(CoreTypes.NUMBER)));
         
         CallNode call = Nodes.call(reference);
         TypeResult<Type> result = inferType(call, context);
@@ -361,7 +363,7 @@ public class TypeInfererTest {
         
         StaticContext context = standardContext();
         // isLength: (String, Number) -> Boolean 
-        context.add(declaration, CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN));
+        context.add(declaration, unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
         CallNode call = Nodes.call(reference, Nodes.string("Blah"), Nodes.number("4"));
         TypeResult<Type> result = inferType(call, context);
         assertThat(result, is(success(CoreTypes.BOOLEAN)));
@@ -375,7 +377,7 @@ public class TypeInfererTest {
         
         StaticContext context = standardContext();
         // isLength: (String, Number) -> Boolean 
-        context.add(declaration, CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN));
+        context.add(declaration, unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
         CallNode call = Nodes.call(reference, Nodes.number("4"), Nodes.string("Blah"));
         TypeResult<Type> result = inferType(call, context);
         assertThat(
@@ -396,7 +398,7 @@ public class TypeInfererTest {
         ClassType classType = new ClassType(asList("example"), "List", Collections.<InterfaceType>emptySet(), ImmutableMap.<String, Type>of());
         ParameterisedType typeFunction = new ParameterisedType(classType, asList(new FormalTypeParameter("T")));
         StaticContext context = standardContext();
-        context.add(declaration, TypeApplication.applyTypes(typeFunction, asList(CoreTypes.STRING)));
+        context.add(declaration, unassignableValue(TypeApplication.applyTypes(typeFunction, asList(CoreTypes.STRING))));
         
         CallNode call = Nodes.call(reference);
         TypeResult<Type> result = inferType(call, context);
@@ -415,7 +417,7 @@ public class TypeInfererTest {
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
-        context.add(declaration, CoreTypes.BOOLEAN);
+        context.add(declaration, unassignableValue(CoreTypes.BOOLEAN));
         CallNode call = Nodes.call(reference);
         TypeResult<Type> result = inferType(call, context);
         assertThat(
@@ -434,7 +436,7 @@ public class TypeInfererTest {
         
         StaticContext context = standardContext();
         // isLength: (String, Number) -> Boolean 
-        context.add(declaration, CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN));
+        context.add(declaration, unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
         
         CallNode call = Nodes.call(reference, Nodes.number("4"));
         TypeResult<Type> result = inferType(call, context);
@@ -456,7 +458,7 @@ public class TypeInfererTest {
             "Brother",
             ImmutableMap.<String, Type>of("age", CoreTypes.NUMBER)
         );
-        context.add(declaration, interfaceType);
+        context.add(declaration, unassignableValue(interfaceType));
         
         MemberAccessNode memberAccess = Nodes.member(reference, "age");
         TypeResult<Type> result = inferType(memberAccess, context);
@@ -475,7 +477,7 @@ public class TypeInfererTest {
             "Brother",
             ImmutableMap.<String, Type>of("age", CoreTypes.NUMBER)
         );
-        context.add(declaration, interfaceType);
+        context.add(declaration, unassignableValue(interfaceType));
         MemberAccessNode memberAccess = Nodes.member(reference, "height");
         TypeResult<Type> result = inferType(memberAccess, context);
         assertThat(
@@ -496,7 +498,7 @@ public class TypeInfererTest {
             new InterfaceType(asList("shed"), "List", ImmutableMap.<String, Type>of()),
             asList(typeParameter)
         );
-        context.add(listDeclaration, listTypeFunction);
+        context.add(listDeclaration, unassignableValue(listTypeFunction));
         TypeApplicationNode typeApplication = Nodes.typeApply(listReference, numberReference);
         
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
@@ -519,13 +521,13 @@ public class TypeInfererTest {
         StaticContext context = standardContext();
         
         FormalTypeParameter typeParameter = new FormalTypeParameter("T");
-        context.add(identityDeclaration, new ParameterisedFunctionType(
+        context.add(identityDeclaration, unassignableValue(new ParameterisedFunctionType(
             TypeApplication.applyTypes(
                 CoreTypes.functionType(1),
                 Arrays.<Type>asList(typeParameter, typeParameter)
             ),
             asList(typeParameter)
-        ));
+        )));
         CallNode call = Nodes.call(Nodes.typeApply(identityReference, numberReference), Nodes.number("2"));
         TypeResult<Type> result = inferType(call, context);
         assertThat(result, is(success(CoreTypes.NUMBER)));
@@ -539,7 +541,7 @@ public class TypeInfererTest {
         
         StaticContext context = standardContext();
         
-        context.add(declaration, CoreTypes.NUMBER);
+        context.add(declaration, unassignableValue(CoreTypes.NUMBER));
         
         TypeResult<Type> result = inferType(Nodes.assign(Nodes.id("y"), reference), context);
         assertThat(result, is(success(CoreTypes.NUMBER)));
@@ -559,9 +561,9 @@ public class TypeInfererTest {
         references.addReference(booleanReference, booleanDeclaration);
         
         StaticContext context = blankContext();
-        context.add(numberDeclaration, CoreTypes.classOf(CoreTypes.NUMBER));
-        context.add(stringDeclaration, CoreTypes.classOf(CoreTypes.STRING));
-        context.add(booleanDeclaration, CoreTypes.classOf(CoreTypes.BOOLEAN));
+        context.add(numberDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.NUMBER)));
+        context.add(stringDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.STRING)));
+        context.add(booleanDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.BOOLEAN)));
         
         return context;
     }

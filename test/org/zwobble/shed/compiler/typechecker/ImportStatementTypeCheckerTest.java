@@ -14,6 +14,8 @@ import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.ImmutableMap;
 
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -38,7 +40,7 @@ public class ImportStatementTypeCheckerTest {
             typeCheckImportStatement(importStatement, nodeLocations, staticContext),
             is(TypeResult.<Void>success(null))
         );
-        assertThat(staticContext.get(reference), is(VariableLookupResult.success(CoreTypes.classOf(dateTime))));
+        assertThat(staticContext.get(reference), is(VariableLookupResult.success(unassignableValue(CoreTypes.classOf(dateTime)))));
     }
     
     @Test public void

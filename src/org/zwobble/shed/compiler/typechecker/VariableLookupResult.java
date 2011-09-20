@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class VariableLookupResult {
-    public static VariableLookupResult success(Type type) {
+    public static VariableLookupResult success(ValueInfo type) {
         return new VariableLookupResult(Status.SUCCESS, type);
     }
     
@@ -15,7 +15,11 @@ public class VariableLookupResult {
     }
     
     private final Status status;
-    private final Type type;
+    private final ValueInfo valueInfo;
+    
+    public Type getType() {
+        return valueInfo.getType();
+    }
     
     public enum Status {
         SUCCESS,

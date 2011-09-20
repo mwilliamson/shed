@@ -12,6 +12,8 @@ import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.References;
 import org.zwobble.shed.compiler.types.Type;
 
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
@@ -27,18 +29,18 @@ public class StaticContext {
 
     private static void addCore(StaticContext staticContext, String identifier, Type type) {
         staticContext.addGlobal(asList("shed", "core", identifier), type);
-        staticContext.add(CoreModule.GLOBAL_DECLARATIONS.get(identifier), type);
+        staticContext.add(CoreModule.GLOBAL_DECLARATIONS.get(identifier), unassignableValue(type));
     }
     
     private final Map<List<String>, Type> global = new HashMap<List<String>, Type>();
-    private final Map<Identity<DeclarationNode>, Type> types = new HashMap<Identity<DeclarationNode>, Type>();
+    private final Map<Identity<DeclarationNode>, ValueInfo> types = new HashMap<Identity<DeclarationNode>, ValueInfo>();
     private final References references;
     
     public StaticContext(References references) {
         this.references = references;
     }
     
-    public void add(DeclarationNode declaration, Type type) {
+    public void add(DeclarationNode declaration, ValueInfo type) {
         types.put(new Identity<DeclarationNode>(declaration), type);
     }
 

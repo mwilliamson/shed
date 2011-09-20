@@ -16,6 +16,8 @@ import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.ImmutableMap;
 
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -46,7 +48,7 @@ public class VariableDeclarationTypeCheckerTest {
             typeCheckVariableDeclaration(variableNode, nodeLocations, staticContext),
             is(TypeResult.success(StatementTypeCheckResult.noReturn()))
         );
-        assertThat(staticContext.get(variableNode), is(VariableLookupResult.success(CoreTypes.BOOLEAN)));
+        assertThat(staticContext.get(variableNode), is(VariableLookupResult.success(unassignableValue(CoreTypes.BOOLEAN))));
     }
     
     @Test public void
@@ -82,8 +84,8 @@ public class VariableDeclarationTypeCheckerTest {
         StaticContext staticContext = standardContext();
         InterfaceType iterableType = new InterfaceType(asList("shed", "util"), "Iterable", ImmutableMap.<String, Type>of());
         ClassType listType = new ClassType(asList("shed", "util"), "List", newHashSet(iterableType), ImmutableMap.<String, Type>of());
-        staticContext.add(listDeclaration, listType);
-        staticContext.add(iterableTypeDeclaration, CoreTypes.classOf(iterableType));
+        staticContext.add(listDeclaration, unassignableValue(listType));
+        staticContext.add(iterableTypeDeclaration, unassignableValue(CoreTypes.classOf(iterableType)));
         
         ImmutableVariableNode variableNode = new ImmutableVariableNode(
             "x",
@@ -101,7 +103,7 @@ public class VariableDeclarationTypeCheckerTest {
         references.addReference(stringReference, stringDeclaration);
         
         StaticContext context = new StaticContext(references.build());
-        context.add(stringDeclaration, CoreTypes.classOf(CoreTypes.STRING));
+        context.add(stringDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.STRING)));
         
         return context;
     }

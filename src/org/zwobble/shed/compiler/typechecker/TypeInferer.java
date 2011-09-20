@@ -31,6 +31,8 @@ import org.zwobble.shed.compiler.types.TypeFunction;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+
 import static com.google.common.collect.Lists.transform;
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
@@ -43,16 +45,16 @@ import static org.zwobble.shed.compiler.typechecker.VariableLookup.lookupVariabl
 public class TypeInferer {
     public static TypeResult<ValueInfo> inferValueInfo(ExpressionNode expression, NodeLocations nodeLocations, StaticContext context) {
         if (expression instanceof BooleanLiteralNode) {
-            return success(ValueInfo.valueInfo(CoreTypes.BOOLEAN));            
+            return success(ValueInfo.unassignableValue(CoreTypes.BOOLEAN));            
         }
         if (expression instanceof NumberLiteralNode) {
-            return success(ValueInfo.valueInfo(CoreTypes.NUMBER));
+            return success(ValueInfo.unassignableValue(CoreTypes.NUMBER));
         }
         if (expression instanceof StringLiteralNode) {
-            return success(ValueInfo.valueInfo(CoreTypes.STRING));
+            return success(ValueInfo.unassignableValue(CoreTypes.STRING));
         }
         if (expression instanceof UnitLiteralNode) {
-            return success(ValueInfo.valueInfo(CoreTypes.UNIT));
+            return success(ValueInfo.unassignableValue(CoreTypes.UNIT));
         }
         if (expression instanceof VariableIdentifierNode) {
             return lookupVariableReference((VariableIdentifierNode)expression, nodeLocations.locate(expression), context);
@@ -325,7 +327,7 @@ public class TypeInferer {
         return new Function<FormalArgumentType, TypeResult<Void>>() {
             @Override
             public TypeResult<Void> apply(FormalArgumentType argument) {
-                context.add(argument.getNode(), argument.getType());
+                context.add(argument.getNode(), unassignableValue(argument.getType()));
                 return success();
             }
         };
@@ -335,7 +337,7 @@ public class TypeInferer {
         return new Function<Type, TypeResult<ValueInfo>>() {
             @Override
             public TypeResult<ValueInfo> apply(Type input) {
-                return success(ValueInfo.valueInfo(input));
+                return success(unassignableValue(input));
             }
         };
     }

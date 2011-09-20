@@ -14,6 +14,8 @@ import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.ImmutableMap;
 
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -52,7 +54,7 @@ public class ReturnStatementTypeCheckerTest {
         GlobalDeclarationNode declaration = new GlobalDeclarationNode("x");
         references.addReference(reference, declaration);
         StaticContext context = staticContext();
-        context.add(declaration, listType);
+        context.add(declaration, unassignableValue(listType));
         
         ReturnNode returnStatement = new ReturnNode(reference);
         assertThat(

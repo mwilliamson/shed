@@ -9,6 +9,8 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.types.Type;
 
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+
 import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
 import static org.zwobble.shed.compiler.typechecker.TypeInferer.inferType;
 import static org.zwobble.shed.compiler.typechecker.TypeLookup.lookupTypeReference;
@@ -37,7 +39,7 @@ public class VariableDeclarationTypeChecker {
         }
         
         if (errors.isEmpty()) {
-            staticContext.add(variableDeclaration, valueTypeResult.get());
+            staticContext.add(variableDeclaration, unassignableValue(valueTypeResult.get()));
             return success(StatementTypeCheckResult.noReturn());
         } else {
             return failure(errors);

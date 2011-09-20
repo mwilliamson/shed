@@ -14,7 +14,7 @@ public class VariableLookup {
     public static TypeResult<ValueInfo> lookupVariableReference(VariableIdentifierNode reference, SourceRange nodeLocation, StaticContext context) {
         VariableLookupResult result = context.get(reference);
         if (result.getStatus() == Status.SUCCESS) {
-            return success(ValueInfo.valueInfo(result.getType()));
+            return success(ValueInfo.unassignableValue(result.getType()));
         } else {
             return failure(asList(new CompilerError(
                 nodeLocation,

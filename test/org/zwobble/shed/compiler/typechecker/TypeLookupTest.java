@@ -10,6 +10,8 @@ import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
 
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -38,7 +40,7 @@ public class TypeLookupTest {
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
-        context.add(declaration, CoreTypes.NUMBER);
+        context.add(declaration, unassignableValue(CoreTypes.NUMBER));
         
         TypeResult<Type> result = lookupTypeReference(reference, context);
         assertThat(errorStrings(result), is(asList("Not a type but an instance of \"Number\"")));
@@ -51,7 +53,7 @@ public class TypeLookupTest {
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
-        context.add(declaration, CoreTypes.NUMBER);
+        context.add(declaration, unassignableValue(CoreTypes.NUMBER));
         
         nodeLocations.put(reference, range(position(3, 5), position(7, 4)));
         TypeResult<Type> result = lookupTypeReference(reference, context);
@@ -69,7 +71,7 @@ public class TypeLookupTest {
         references.addReference(stringReference, stringDeclaration);
         
         StaticContext context = new StaticContext(references.build());
-        context.add(stringDeclaration, CoreTypes.classOf(CoreTypes.STRING));
+        context.add(stringDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.STRING)));
         
         return context;
     }
