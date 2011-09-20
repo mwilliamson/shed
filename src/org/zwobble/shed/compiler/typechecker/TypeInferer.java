@@ -22,6 +22,7 @@ import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.typechecker.errors.InvalidAssignmentError;
+import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ParameterisedFunctionType;
 import org.zwobble.shed.compiler.types.ParameterisedType;
@@ -264,10 +265,19 @@ public class TypeInferer {
         AssignmentExpressionNode expression, NodeLocations nodeLocations, StaticContext context
     ) {
         SourceRange location = nodeLocations.locate(expression);
-        TypeResult<Type> valueType = inferType(expression.getValue(), nodeLocations, context);
+        TypeResult<Type> valueTypeResult = inferType(expression.getValue(), nodeLocations, context);
         TypeResult<ValueInfo> targetInfo = inferValueInfo(expression.getTarget(), nodeLocations, context)
             .ifValueThen(checkIsAssignable(location));
-        return valueType.withErrorsFrom(targetInfo).ifValueThen(toValueInfo());
+        
+        TypeResult<ValueInfo> result = valueTypeResult.withErrorsFrom(targetInfo).ifValueThen(toValueInfo());
+        if (valueTypeResult.hasValue() && targetInfo.hasValue()) {
+            Type valueType = valueTypeResult.get();
+            Type targetType = targetInfo.get().getType();
+            if (!isSubType(valueType, targetType)) {
+                result = result.withErrorsFrom(failure(new CompilerError(location, new TypeMismatchError(targetType, valueType))));
+            }
+        }
+        return result;
     }
     
     private static Function<ValueInfo, TypeResult<ValueInfo>> checkIsAssignable(final SourceRange location) {

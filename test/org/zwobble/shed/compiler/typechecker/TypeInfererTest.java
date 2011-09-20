@@ -22,6 +22,7 @@ import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 import org.zwobble.shed.compiler.typechecker.errors.InvalidAssignmentError;
+import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.typechecker.errors.UntypedReferenceError;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -562,6 +563,34 @@ public class TypeInfererTest {
         
         TypeResult<Type> result = inferType(Nodes.assign(reference, Nodes.number("4")), context);
         assertThat(result, isFailureWithErrors(new InvalidAssignmentError()));
+    }
+    
+    @Test public void
+    cannotAssignValueIfNotSubTypeOfVariableType() {
+        VariableIdentifierNode reference = Nodes.id("x");
+        GlobalDeclarationNode declaration = new GlobalDeclarationNode("x");
+        references.addReference(reference, declaration);
+        
+        StaticContext context = standardContext();
+        
+        context.add(declaration, assignableValue(CoreTypes.NUMBER));
+        
+        TypeResult<Type> result = inferType(Nodes.assign(reference, Nodes.bool(true)), context);
+        assertThat(result, isFailureWithErrors(new TypeMismatchError(CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
+    }
+    
+    @Test public void
+    canAssignValueIfSubTypeOfVariableType() {
+        VariableIdentifierNode reference = Nodes.id("x");
+        GlobalDeclarationNode declaration = new GlobalDeclarationNode("x");
+        references.addReference(reference, declaration);
+        
+        StaticContext context = standardContext();
+        
+        context.add(declaration, assignableValue(CoreTypes.OBJECT));
+        
+        TypeResult<Type> result = inferType(Nodes.assign(reference, Nodes.bool(true)), context);
+        assertThat(result, is(success(CoreTypes.BOOLEAN)));
     }
     
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
