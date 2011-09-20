@@ -7,6 +7,7 @@ import java.util.Map;
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
+import org.zwobble.shed.compiler.parsing.nodes.AssignmentExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
@@ -70,6 +71,9 @@ public class TypeInferer {
         }
         if (expression instanceof TypeApplicationNode) {
             return inferTypeApplicationType((TypeApplicationNode)expression, nodeLocations, context);
+        }
+        if (expression instanceof AssignmentExpressionNode) {
+            return inferAssignmentType((AssignmentExpressionNode)expression, nodeLocations, context);
         }
         throw new RuntimeException("Cannot infer type of expression: " + expression);
     }
@@ -240,6 +244,12 @@ public class TypeInferer {
                 }
             }
         });
+    }
+
+    private static TypeResult<Type> inferAssignmentType(
+        AssignmentExpressionNode expression, NodeLocations nodeLocations, StaticContext context
+    ) {
+        return inferType(expression.getValue(), nodeLocations, context);
     }
     
     private static Function<ExpressionNode, Type> toParameterType(final NodeLocations nodeLocations, final StaticContext context) {

@@ -531,6 +531,20 @@ public class TypeInfererTest {
         assertThat(result, is(success(CoreTypes.NUMBER)));
     }
     
+    @Test public void
+    assignmentHasTypeOfAssignedValue() {
+        VariableIdentifierNode reference = Nodes.id("x");
+        GlobalDeclarationNode declaration = new GlobalDeclarationNode("x");
+        references.addReference(reference, declaration);
+        
+        StaticContext context = standardContext();
+        
+        context.add(declaration, CoreTypes.NUMBER);
+        
+        TypeResult<Type> result = inferType(Nodes.assign(Nodes.id("y"), reference), context);
+        assertThat(result, is(success(CoreTypes.NUMBER)));
+    }
+    
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
         return TypeInferer.inferType(expression, nodeLocations, context);
     }
