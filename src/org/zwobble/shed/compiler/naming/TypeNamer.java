@@ -1,17 +1,19 @@
 package org.zwobble.shed.compiler.naming;
 
+import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeDeclarationNode;
 
 public class TypeNamer {
-    public FullyQualifiedNames generateFullyQualifiedNames(TypeDeclarationNode node) {
+    public FullyQualifiedNames generateFullyQualifiedNames(SyntaxNode node) {
         FullyQualifiedNamesBuilder builder = new FullyQualifiedNamesBuilder();
         generateFullyQualifiedNames(node, builder, FullyQualifiedName.EMPTY);
         return builder.build();
     }
     
-    private void generateFullyQualifiedNames(TypeDeclarationNode node, FullyQualifiedNamesBuilder builder, FullyQualifiedName currentName) {
+    private void generateFullyQualifiedNames(SyntaxNode node, FullyQualifiedNamesBuilder builder, FullyQualifiedName currentName) {
         if (node instanceof TypeDeclarationNode) {
-            builder.addFullyQualifiedName(node, currentName.extend(node.getIdentifier()));
+            TypeDeclarationNode typeDeclaration = (TypeDeclarationNode) node;
+            builder.addFullyQualifiedName(typeDeclaration, currentName.extend(typeDeclaration.getIdentifier()));
         }
     }
 }
