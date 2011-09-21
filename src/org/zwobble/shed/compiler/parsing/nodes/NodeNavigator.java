@@ -10,7 +10,7 @@ import static java.util.Collections.singletonList;
 
 public class NodeNavigator {
     public static Iterable<? extends SyntaxNode> children(SyntaxNode node) {
-        if (node instanceof LiteralNode || node instanceof ImportNode) {
+        if (isNodeWithNoChildren(node)) {
             return Collections.emptyList();
         }
         if (node instanceof AssignmentExpressionNode) {
@@ -47,6 +47,46 @@ public class NodeNavigator {
             LongLambdaExpressionNode lambda = (LongLambdaExpressionNode) node;
             return concat(lambda.getFormalArguments(), asList(lambda.getReturnType(), lambda.getBody()));
         }
+        if (node instanceof MemberAccessNode) {
+            return singletonList(((MemberAccessNode) node).getExpression());
+        }
+        if (node instanceof ObjectDeclarationNode) {
+            return singletonList(((ObjectDeclarationNode) node).getStatements());
+        }
+        if (node instanceof PublicDeclarationNode) {
+            return singletonList(((PublicDeclarationNode) node).getDeclaration());
+        }
+        if (node instanceof ReturnNode) {
+            return singletonList(((ReturnNode) node).getExpression());
+        }
+        if (node instanceof ShortLambdaExpressionNode) {
+            ShortLambdaExpressionNode lambda = (ShortLambdaExpressionNode) node;
+            Option<? extends ExpressionNode> returnType = lambda.getReturnType();
+            Iterable<? extends ExpressionNode> typeNodes = returnType.hasValue() 
+                ? singletonList(returnType.get()) 
+                : Collections.<ExpressionNode>emptyList();
+            return concat(lambda.getFormalArguments(), typeNodes, singletonList(lambda.getBody()));
+        }
+        if (node instanceof SourceNode) {
+            SourceNode source = (SourceNode) node;
+            return concat(singletonList(source.getPackageDeclaration()), source.getImports(), source.getStatements());
+        }
+        if (node instanceof TypeApplicationNode) {
+            TypeApplicationNode typeApplication = (TypeApplicationNode) node;
+            return concat(singletonList(typeApplication.getBaseValue()), typeApplication.getParameters());
+        }
+        if (node instanceof WhileStatementNode) {
+            WhileStatementNode whileStatement = (WhileStatementNode) node;
+            return asList(whileStatement.getCondition(), whileStatement.getBody());
+        }
         throw new RuntimeException("Cannot find children of: " + node);
+    }
+
+    private static boolean isNodeWithNoChildren(SyntaxNode node) {
+        return 
+            node instanceof LiteralNode || 
+            node instanceof ImportNode || 
+            node instanceof PackageDeclarationNode || 
+            node instanceof VariableIdentifierNode;
     }
 }

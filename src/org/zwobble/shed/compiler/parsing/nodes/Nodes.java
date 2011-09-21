@@ -6,6 +6,8 @@ import static org.zwobble.shed.compiler.Option.some;
 
 import java.util.List;
 
+import org.zwobble.shed.compiler.Option;
+
 public class Nodes {
     public static VariableIdentifierNode id(String identifier) {
         return new VariableIdentifierNode(identifier);
@@ -89,5 +91,21 @@ public class Nodes {
 
     public static LongLambdaExpressionNode longLambda(List<FormalArgumentNode> arguments, ExpressionNode type, BlockNode body) {
         return new LongLambdaExpressionNode(arguments, type, body);
+    }
+
+    public static PackageDeclarationNode packageDeclaration(String... names) {
+        return new PackageDeclarationNode(asList(names));
+    }
+
+    public static ShortLambdaExpressionNode shortLambda(List<FormalArgumentNode> arguments, ExpressionNode returnType, ExpressionNode body) {
+        return new ShortLambdaExpressionNode(arguments, some(returnType), body);
+    }
+
+    public static ShortLambdaExpressionNode shortLambda(List<FormalArgumentNode> arguments, ExpressionNode body) {
+        return new ShortLambdaExpressionNode(arguments, Option.<ExpressionNode>none(), body);
+    }
+
+    public static SourceNode source(PackageDeclarationNode packageDeclaration, List<ImportNode> imports, List<StatementNode> statements) {
+        return new SourceNode(packageDeclaration, imports, statements);
     }
 }
