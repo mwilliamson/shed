@@ -49,8 +49,42 @@ public class NodeNavigatorTest {
     
     @Test public void
     formalArgumentChildrenIsTypeExpression() {
-        ExpressionNode expression = Nodes.number("42");
-        assertThat(children(Nodes.expressionStatement(expression)), isNodes(expression));
+        ExpressionNode expression = Nodes.id("Number");
+        assertThat(children(Nodes.formalArgument("age", expression)), isNodes(expression));
+    }
+    
+    @Test public void
+    ifThenElseChildrenAreConditionAndBothBranches() {
+        ExpressionNode condition = Nodes.bool(true);
+        BlockNode ifTrue = Nodes.block(Nodes.returnStatement(Nodes.number("59")));
+        BlockNode ifFalse = Nodes.block(Nodes.returnStatement(Nodes.number("60")));
+        assertThat(children(Nodes.ifThenElse(condition, ifTrue, ifFalse)), isNodes(condition, ifTrue, ifFalse));
+    }
+    
+    @Test public void
+    variableDeclarationChildrenIsValue() {
+        ExpressionNode value = Nodes.bool(true);
+        assertThat(children(Nodes.immutableVar("isPlaying", value)), isNodes(value));
+    }
+    
+    @Test public void
+    variableDeclarationChildrenIncludesTypeSpecifierIfPresent() {
+        ExpressionNode value = Nodes.bool(true);
+        VariableIdentifierNode typeSpecifier = Nodes.id("Boolean");
+        assertThat(children(Nodes.immutableVar("isPlaying", typeSpecifier, value)), isNodes(typeSpecifier, value));
+    }
+    
+    @Test public void
+    importNodeHasNoChildren() {
+        assertThat(children(Nodes.importNode("shed", "example")), isNodes());
+    }
+    
+    @Test public void
+    longLambdaChildrenIsArgumentsAndTypeSpecifierAndBody() {
+        FormalArgumentNode formalArgument = Nodes.formalArgument("x", Nodes.id("Number"));
+        VariableIdentifierNode typeSpecifier = Nodes.id("Boolean");
+        BlockNode body = Nodes.block();
+        assertThat(children(Nodes.longLambda(asList(formalArgument), typeSpecifier, body)), isNodes(formalArgument, typeSpecifier, body));
     }
     
     private Matcher<Iterable<? extends SyntaxNode>> isNodes(SyntaxNode... nodes) {

@@ -4,6 +4,8 @@ import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
 
+import java.util.List;
+
 public class Nodes {
     public static VariableIdentifierNode id(String identifier) {
         return new VariableIdentifierNode(identifier);
@@ -75,5 +77,17 @@ public class Nodes {
 
     public static AssignmentExpressionNode assign(ExpressionNode target, ExpressionNode value) {
         return new AssignmentExpressionNode(target, value);
+    }
+
+    public static FormalArgumentNode formalArgument(String identifier, ExpressionNode type) {
+        return new FormalArgumentNode(identifier, type);
+    }
+
+    public static ImportNode importNode(String... names) {
+        return new ImportNode(asList(names));
+    }
+
+    public static LongLambdaExpressionNode longLambda(List<FormalArgumentNode> arguments, ExpressionNode type, BlockNode body) {
+        return new LongLambdaExpressionNode(arguments, type, body);
     }
 }
