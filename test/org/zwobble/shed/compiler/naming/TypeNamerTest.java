@@ -1,10 +1,16 @@
 package org.zwobble.shed.compiler.naming;
 
-import org.junit.Ignore;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.junit.Test;
+import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
-import org.zwobble.shed.compiler.parsing.nodes.TypeDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
+import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -20,7 +26,6 @@ public class TypeNamerTest {
         assertThat(names.fullyQualifiedNameOf(objectDeclaration), is(fullyQualifiedName("bob")));
     }
     
-    @Ignore
     @Test public void
     nestedTypesIncludeNameOfParent() {
         ObjectDeclarationNode nestedObjectDeclaration = Nodes.object("road", Nodes.block());
@@ -29,7 +34,16 @@ public class TypeNamerTest {
         assertThat(names.fullyQualifiedNameOf(nestedObjectDeclaration), is(fullyQualifiedName("neverEnding", "road")));
     }
     
-    private FullyQualifiedNames generateNames(TypeDeclarationNode node) {
+    @Test public void
+    sourceFileAddsPackageDeclarationToName() {
+        ObjectDeclarationNode objectDeclaration = Nodes.object("bob", Nodes.block());
+        List<StatementNode> body = Arrays.<StatementNode>asList(objectDeclaration);
+        SourceNode source = Nodes.source(Nodes.packageDeclaration("shed", "example"), Collections.<ImportNode>emptyList(), body);
+        FullyQualifiedNames names = generateNames(source);
+        assertThat(names.fullyQualifiedNameOf(objectDeclaration), is(fullyQualifiedName("shed", "example", "bob")));
+    }
+    
+    private FullyQualifiedNames generateNames(SyntaxNode node) {
         return namer.generateFullyQualifiedNames(node);
     }
 }

@@ -1,6 +1,7 @@
 package org.zwobble.shed.compiler.naming;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.google.common.base.Joiner;
@@ -20,8 +21,12 @@ public class FullyQualifiedName {
     private final List<String> identifiers;
 
     public FullyQualifiedName extend(String identifier) {
+        return extend(Collections.singletonList(identifier));
+    }
+    
+    public FullyQualifiedName extend(List<String> extraIdentifiers) {
         List<String> extendedIdentifiers = new ArrayList<String>(identifiers);
-        extendedIdentifiers.add(identifier);
+        extendedIdentifiers.addAll(extraIdentifiers);
         return new FullyQualifiedName(extendedIdentifiers);
     }
     
