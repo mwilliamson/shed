@@ -6,6 +6,7 @@ import java.util.Collections;
 import org.junit.Test;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.SimpleErrorDescription;
+import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
@@ -27,8 +28,6 @@ import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.ImmutableMap;
 
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -36,13 +35,16 @@ import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
+import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
+import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 public class TypeCheckerTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
     private final ReferencesBuilder references = new ReferencesBuilder();
+    private final FullyQualifiedNamesBuilder fullNames = new FullyQualifiedNamesBuilder();
     
     private StaticContext staticContext() {
-        return StaticContext.defaultContext(references.build());
+        return StaticContext.defaultContext(references.build(), fullNames.build());
     }
     
     @Test public void
@@ -111,12 +113,14 @@ public class TypeCheckerTest {
                 Nodes.immutableVar("version", Nodes.number("1.2")),
                 Nodes.publik(Nodes.immutableVar("name", Nodes.string("firefox")))
             ));
+        fullNames.addFullyQualifiedName(objectDeclarationNode, fullyQualifiedName("shed", "browser"));
         StaticContext staticContext = staticContext();
         TypeResult<StatementTypeCheckResult> result = 
             TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext, Option.<Type>none());
         assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
         ScalarType browserType = (ScalarType)staticContext.get(objectDeclarationNode).getType();
         assertThat(browserType.getMembers(), is((Object)ImmutableMap.of("name", ValueInfo.unassignableValue(CoreTypes.STRING))));
+        assertThat(browserType.getFullyQualifiedName(), is(fullyQualifiedName("shed", "browser")));
     }
     
     @Test public void

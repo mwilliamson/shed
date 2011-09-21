@@ -2,6 +2,7 @@ package org.zwobble.shed.compiler.typechecker;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
@@ -14,14 +15,14 @@ import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.ImmutableMap;
 
-import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
-
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
+import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.typechecker.ReturnStatementTypeChecker.typeCheckReturnStatement;
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 public class ReturnStatementTypeCheckerTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
@@ -47,8 +48,8 @@ public class ReturnStatementTypeCheckerTest {
     
     @Test public void
     returnExpressionCanBeSubTypeOfReturnType() {
-        InterfaceType iterableType = new InterfaceType(asList("shed", "util"), "Iterable", ImmutableMap.<String, ValueInfo>of());
-        ClassType listType = new ClassType(asList("shed", "util"), "List", newHashSet(iterableType), ImmutableMap.<String, ValueInfo>of());
+        InterfaceType iterableType = new InterfaceType(fullyQualifiedName("shed", "util", "Iterable"), ImmutableMap.<String, ValueInfo>of());
+        ClassType listType = new ClassType(fullyQualifiedName("shed", "util", "List"), newHashSet(iterableType), ImmutableMap.<String, ValueInfo>of());
         
         VariableIdentifierNode reference = new VariableIdentifierNode("x");
         GlobalDeclarationNode declaration = new GlobalDeclarationNode("x");
@@ -68,6 +69,6 @@ public class ReturnStatementTypeCheckerTest {
     }
     
     private StaticContext staticContext() {
-        return StaticContext.defaultContext(references.build());
+        return StaticContext.defaultContext(references.build(), new FullyQualifiedNamesBuilder().build());
     }
 }

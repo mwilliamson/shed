@@ -2,6 +2,7 @@ package org.zwobble.shed.compiler.typechecker;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerError;
+import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
@@ -23,6 +24,7 @@ import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 public class TypeLookupTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
     private final ReferencesBuilder references = new ReferencesBuilder();
+    private final FullyQualifiedNamesBuilder fullNames = new FullyQualifiedNamesBuilder();
 
     private final GlobalDeclarationNode stringDeclaration = new GlobalDeclarationNode("String");
     private final VariableIdentifierNode stringReference = new VariableIdentifierNode("String");
@@ -70,7 +72,7 @@ public class TypeLookupTest {
     private StaticContext standardContext() {
         references.addReference(stringReference, stringDeclaration);
         
-        StaticContext context = new StaticContext(references.build());
+        StaticContext context = new StaticContext(references.build(), fullNames.build());
         context.add(stringDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.STRING)));
         
         return context;

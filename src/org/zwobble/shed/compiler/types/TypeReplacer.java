@@ -22,8 +22,7 @@ public class TypeReplacer {
         if (type instanceof ClassType) {
             ClassType classType = (ClassType) type;
             return new ClassType(
-                classType.getScope(),
-                classType.getName(),
+                classType.getFullyQualifiedName(),
                 classType.getSuperTypes(),
                 transformValues(classType.getMembers(), replaceType(replacements))
             );
@@ -32,8 +31,7 @@ public class TypeReplacer {
         if (type instanceof InterfaceType) {
             InterfaceType interfaceType = (InterfaceType) type;
             return new InterfaceType(
-                interfaceType.getScope(),
-                interfaceType.getName(),
+                interfaceType.getFullyQualifiedName(),
                 transformValues(interfaceType.getMembers(), replaceType(replacements))
             );
         }

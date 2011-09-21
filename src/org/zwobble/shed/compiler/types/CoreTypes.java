@@ -16,9 +16,10 @@ import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.IntRange.range;
+import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 
 public class CoreTypes {
-    public static final InterfaceType OBJECT = new InterfaceType(Collections.<String>emptyList(), "Object", ImmutableMap.<String, ValueInfo>of());
+    public static final InterfaceType OBJECT = new InterfaceType(fullyQualifiedName("Object"), ImmutableMap.<String, ValueInfo>of());
     public static final Type BOOLEAN = coreType("Boolean");
     public static final Type NUMBER = coreType("Number");
     public static final Type STRING = coreType("String");
@@ -26,8 +27,7 @@ public class CoreTypes {
     
     private static ScalarType coreType(String name) {
         return new ClassType(
-            Collections.<String>emptyList(),
-            name,
+            fullyQualifiedName(name),
             Collections.singleton(OBJECT),
             Collections.<String, ValueInfo>emptyMap()
         );

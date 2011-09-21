@@ -28,12 +28,12 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
-import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
-
+import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.typechecker.ImportStatementTypeChecker.typeCheckImportStatement;
 import static org.zwobble.shed.compiler.typechecker.ReturnStatementTypeChecker.typeCheckReturnStatement;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.typechecker.VariableDeclarationTypeChecker.typeCheckVariableDeclaration;
 
 public class TypeChecker {
@@ -115,7 +115,7 @@ public class TypeChecker {
                 }
             }
             
-            InterfaceType type = new InterfaceType(null, "", typeBuilder.build());
+            InterfaceType type = new InterfaceType(context.fullyQualifiedNameOf(objectDeclaration), typeBuilder.build());
 
             context.add(objectDeclaration, unassignableValue(type));
         }

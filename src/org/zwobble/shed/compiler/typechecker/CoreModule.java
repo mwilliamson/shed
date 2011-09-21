@@ -25,7 +25,7 @@ public class CoreModule {
         for (int i = 0; i < 20; i += 1) {
             ParameterisedType functionType = CoreTypes.functionType(i);
             // TODO: remove assumption that the base type is a ClassType
-            valuesBuilder.put(((ClassType)functionType.getBaseType()).getName(), functionType);
+            valuesBuilder.put(((ClassType)functionType.getBaseType()).getFullyQualifiedName().last(), functionType);
         }
         VALUES = valuesBuilder.build();
 

@@ -2,6 +2,7 @@ package org.zwobble.shed.compiler.typechecker;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerError;
+import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
@@ -22,6 +23,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
+import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
 import static org.zwobble.shed.compiler.parsing.SourceRange.range;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
@@ -31,6 +33,7 @@ import static org.zwobble.shed.compiler.typechecker.VariableDeclarationTypeCheck
 public class VariableDeclarationTypeCheckerTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
     private final ReferencesBuilder references = new ReferencesBuilder();
+    private final FullyQualifiedNamesBuilder fullNames = new FullyQualifiedNamesBuilder();
 
     private final GlobalDeclarationNode stringDeclaration = new GlobalDeclarationNode("String");
     private final VariableIdentifierNode stringReference = new VariableIdentifierNode("String");
@@ -98,8 +101,8 @@ public class VariableDeclarationTypeCheckerTest {
         references.addReference(listReference, listDeclaration);
         
         StaticContext staticContext = standardContext();
-        InterfaceType iterableType = new InterfaceType(asList("shed", "util"), "Iterable", ImmutableMap.<String, ValueInfo>of());
-        ClassType listType = new ClassType(asList("shed", "util"), "List", newHashSet(iterableType), ImmutableMap.<String, ValueInfo>of());
+        InterfaceType iterableType = new InterfaceType(fullyQualifiedName("shed", "util", "Iterable"), ImmutableMap.<String, ValueInfo>of());
+        ClassType listType = new ClassType(fullyQualifiedName("shed", "util", "List"), newHashSet(iterableType), ImmutableMap.<String, ValueInfo>of());
         staticContext.add(listDeclaration, unassignableValue(listType));
         staticContext.add(iterableTypeDeclaration, unassignableValue(CoreTypes.classOf(iterableType)));
         
@@ -118,7 +121,7 @@ public class VariableDeclarationTypeCheckerTest {
     private StaticContext standardContext() {
         references.addReference(stringReference, stringDeclaration);
         
-        StaticContext context = new StaticContext(references.build());
+        StaticContext context = new StaticContext(references.build(), fullNames.build());
         context.add(stringDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.STRING)));
         
         return context;

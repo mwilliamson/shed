@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 
 import lombok.Data;
@@ -44,6 +45,11 @@ public class TypeApplication implements ScalarType {
     public String shortName() {
         Iterable<String> typeParameterNames = transform(typeParameters, toShortName());
         return baseType.shortName() + "[" + Joiner.on(", ").join(typeParameterNames) + "]";
+    }
+    
+    @Override
+    public FullyQualifiedName getFullyQualifiedName() {
+        return baseType.getFullyQualifiedName().replaceLast(shortName());
     }
     
     private Function<Type, String> toShortName() {

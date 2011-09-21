@@ -5,6 +5,7 @@ import java.util.Collections;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerError;
+import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
@@ -35,26 +36,25 @@ import org.zwobble.shed.compiler.types.TypeApplication;
 
 import com.google.common.collect.ImmutableMap;
 
-import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
-
-import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
-
-import static org.zwobble.shed.compiler.typechecker.TypeCheckerTesting.isFailureWithErrors;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
+import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
 import static org.zwobble.shed.compiler.parsing.SourceRange.range;
+import static org.zwobble.shed.compiler.typechecker.TypeCheckerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 public class TypeInfererTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
     private final ReferencesBuilder references = new ReferencesBuilder();
+    private final FullyQualifiedNamesBuilder fullNames = new FullyQualifiedNamesBuilder();
 
     private final GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Number");
     private final VariableIdentifierNode numberReference = new VariableIdentifierNode("Number");
@@ -399,7 +399,7 @@ public class TypeInfererTest {
         GlobalDeclarationNode declaration = new GlobalDeclarationNode("isLength");
         references.addReference(reference, declaration);
         
-        ClassType classType = new ClassType(asList("example"), "List", Collections.<InterfaceType>emptySet(), ImmutableMap.<String, ValueInfo>of());
+        ClassType classType = new ClassType(fullyQualifiedName("example", "List"), Collections.<InterfaceType>emptySet(), ImmutableMap.<String, ValueInfo>of());
         ParameterisedType typeFunction = new ParameterisedType(classType, asList(new FormalTypeParameter("T")));
         StaticContext context = standardContext();
         context.add(declaration, unassignableValue(TypeApplication.applyTypes(typeFunction, asList(CoreTypes.STRING))));
@@ -458,8 +458,7 @@ public class TypeInfererTest {
         
         StaticContext context = standardContext();
         InterfaceType interfaceType = new InterfaceType(
-            asList("shed", "example"),
-            "Brother",
+            fullyQualifiedName("shed", "example", "Brother"),
             ImmutableMap.of("age", unassignableValue(CoreTypes.NUMBER))
         );
         context.add(declaration, unassignableValue(interfaceType));
@@ -477,8 +476,7 @@ public class TypeInfererTest {
         
         StaticContext context = standardContext();
         InterfaceType interfaceType = new InterfaceType(
-            asList("shed", "example"),
-            "Brother",
+            fullyQualifiedName("shed", "example", "Brother"),
             ImmutableMap.of("age", assignableValue(CoreTypes.NUMBER))
         );
         context.add(declaration, unassignableValue(interfaceType));
@@ -496,8 +494,7 @@ public class TypeInfererTest {
         
         StaticContext context = standardContext();
         InterfaceType interfaceType = new InterfaceType(
-            asList("shed", "example"),
-            "Brother",
+            fullyQualifiedName("shed", "example", "Brother"),
             ImmutableMap.of("age", unassignableValue(CoreTypes.NUMBER))
         );
         context.add(declaration, unassignableValue(interfaceType));
@@ -518,7 +515,7 @@ public class TypeInfererTest {
         StaticContext context = standardContext();
         FormalTypeParameter typeParameter = new FormalTypeParameter("T");
         ParameterisedType listTypeFunction = new ParameterisedType(
-            new InterfaceType(asList("shed"), "List", ImmutableMap.<String, ValueInfo>of()),
+            new InterfaceType(fullyQualifiedName("shed", "List"), ImmutableMap.<String, ValueInfo>of()),
             asList(typeParameter)
         );
         context.add(listDeclaration, unassignableValue(listTypeFunction));
@@ -621,7 +618,7 @@ public class TypeInfererTest {
     }
     
     private StaticContext blankContext() {
-        return new StaticContext(references.build());
+        return new StaticContext(references.build(), fullNames.build());
     }
     
     private StaticContext standardContext() {

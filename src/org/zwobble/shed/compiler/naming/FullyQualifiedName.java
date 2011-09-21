@@ -30,6 +30,16 @@ public class FullyQualifiedName {
         return new FullyQualifiedName(extendedIdentifiers);
     }
     
+    public String last() {
+        return identifiers.get(identifiers.size() - 1);
+    }
+    
+    public FullyQualifiedName replaceLast(String last) {
+        List<String> replacedIdentifiers = new ArrayList<String>(identifiers);
+        replacedIdentifiers.set(replacedIdentifiers.size() - 1, last);
+        return new FullyQualifiedName(replacedIdentifiers);
+    }
+    
     @Override
     public String toString() {
         return Joiner.on(".").join(identifiers);
