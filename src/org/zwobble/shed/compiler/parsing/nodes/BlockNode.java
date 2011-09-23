@@ -13,4 +13,9 @@ public class BlockNode implements SyntaxNode, Iterable<StatementNode> {
     public Iterator<StatementNode> iterator() {
         return statements.iterator();
     }
+    
+    @Override
+    public SyntaxNodeStructure describeStructure() {
+        return SyntaxNodeStructure.build(statements);
+    }
 }
