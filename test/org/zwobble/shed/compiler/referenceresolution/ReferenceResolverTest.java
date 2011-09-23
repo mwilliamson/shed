@@ -14,6 +14,7 @@ import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
+import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
@@ -357,6 +358,19 @@ public class ReferenceResolverTest {
         ReferenceResolverResult references = resolveReferences(source);
         assertThat(references, hasReference(leftReference, leftDeclaration));
         assertThat(references, hasReference(rightReference, rightDeclaration));
+    }
+    
+    @Test public void
+    functionDeclarationAddsArgumentsToScope() {
+        FormalArgumentNode firstArgument = new FormalArgumentNode("first", Nodes.id("String"));
+        VariableIdentifierNode reference = Nodes.id("first");
+        SyntaxNode source = new FunctionDeclarationNode(
+            "go",
+            asList(firstArgument, new FormalArgumentNode("second", Nodes.id("Number"))),
+            Nodes.id("String"),
+            Nodes.block(Nodes.returnStatement(reference))
+        );
+        assertThat(resolveReferences(source), hasReference(reference, firstArgument));
     }
 
     private ReferenceResolverResult resolveReferences(SyntaxNode node) {

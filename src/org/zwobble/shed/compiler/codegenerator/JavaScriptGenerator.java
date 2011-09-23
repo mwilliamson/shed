@@ -20,6 +20,8 @@ import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
+import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.FunctionWithBodyNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LiteralNode;
@@ -100,9 +102,7 @@ public class JavaScriptGenerator {
         }
         if (node instanceof LongLambdaExpressionNode) {
             LongLambdaExpressionNode lambda = (LongLambdaExpressionNode)node;
-            List<JavaScriptStatementNode> javaScriptBody = transform(lambda.getBody(), toJavaScriptStatement());
-            List<String> argumentNames = transform(lambda.getFormalArguments(), toFormalArgumentName());
-            return js.func(argumentNames, javaScriptBody);
+            return generateFunctionWithBody(lambda);
         }
         if (node instanceof CallNode) {
             CallNode call = (CallNode) node;
@@ -205,7 +205,17 @@ public class JavaScriptGenerator {
                 )
             );
         }
+        if (node instanceof FunctionDeclarationNode) {
+            FunctionDeclarationNode function = (FunctionDeclarationNode) node;
+            return js.var(namer.javaScriptIdentifierFor(function), generateFunctionWithBody(function));
+        }
         throw new RuntimeException("Cannot generate JavaScript for " + node);
+    }
+
+    private JavaScriptExpressionNode generateFunctionWithBody(FunctionWithBodyNode function) {
+        List<JavaScriptStatementNode> javaScriptBody = transform(function.getBody(), toJavaScriptStatement());
+        List<String> argumentNames = transform(function.getFormalArguments(), toFormalArgumentName());
+        return js.func(argumentNames, javaScriptBody);
     }
 
     private Function<FormalArgumentNode, String> toFormalArgumentName() {

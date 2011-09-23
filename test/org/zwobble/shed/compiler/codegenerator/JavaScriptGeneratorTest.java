@@ -17,6 +17,7 @@ import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
+import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
@@ -375,6 +376,26 @@ public class JavaScriptGeneratorTest {
             references.build(),
             source,
             js.assign(js.id("x"), js.assign(js.id("y"), generateLiteral(Nodes.number("372"))))
+        );
+    }
+    
+    @Test public void
+    functionDeclarationIsConvertedIntoJavaScriptAnonymousFunctionAssignedToVariable() {
+        ReturnNode returnNode = new ReturnNode(Nodes.number("42"));
+        FunctionDeclarationNode source = new FunctionDeclarationNode(
+            "rank",
+            asList(
+                new FormalArgumentNode("name", new VariableIdentifierNode("String")),
+                new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
+            ),
+            new VariableIdentifierNode("Number"),
+            Nodes.block(returnNode)
+        );
+        assertGeneratedJavaScript(
+            source,
+            js.var("rank__1", js.func(asList("name__1", "age__1"), asList(
+                (JavaScriptStatementNode)js.ret(generateLiteral(Nodes.number("42")))
+            )))
         );
     }
     

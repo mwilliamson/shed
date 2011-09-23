@@ -17,6 +17,7 @@ import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
+import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
@@ -82,8 +83,8 @@ public class ReferenceResolver {
             resolveReferences(((ExpressionStatementNode) node).getExpression(), nodeLocations, references, scope, errors);
         } else if (node instanceof LambdaExpressionNode) {
             LambdaExpressionNode lambda = (LambdaExpressionNode) node;
-            SubScope lambdaScope = new SubScope(scope, Sets.union(argumentDeclarations(lambda), findDeclarations(lambda.getBody())));
             List<FormalArgumentNode> formalArguments = lambda.getFormalArguments();
+            SubScope lambdaScope = new SubScope(scope, Sets.union(argumentDeclarations(formalArguments), findDeclarations(lambda.getBody())));
             for (FormalArgumentNode formalArgument : formalArguments) {
                 lambdaScope.add(formalArgument.getIdentifier(), formalArgument);
                 resolveReferences(formalArgument.getType(), nodeLocations, references, lambdaScope, errors);
@@ -143,6 +144,16 @@ public class ReferenceResolver {
             AssignmentExpressionNode assignment = (AssignmentExpressionNode)node;
             resolveReferences(assignment.getTarget(), nodeLocations, references, scope, errors);
             resolveReferences(assignment.getValue(), nodeLocations, references, scope, errors);
+        } else if (node instanceof FunctionDeclarationNode) {
+            FunctionDeclarationNode function = (FunctionDeclarationNode)node;
+            List<FormalArgumentNode> formalArguments = function.getFormalArguments();
+            SubScope lambdaScope = new SubScope(scope, Sets.union(argumentDeclarations(formalArguments), findDeclarations(function.getBody())));
+            for (FormalArgumentNode formalArgument : formalArguments) {
+                lambdaScope.add(formalArgument.getIdentifier(), formalArgument);
+                resolveReferences(formalArgument.getType(), nodeLocations, references, lambdaScope, errors);
+            }
+            resolveReferences(function.getReturnType(), nodeLocations, references, scope, errors);
+            resolveReferences(function.getBody(), nodeLocations, references, lambdaScope, errors);
         } else {
             throw new RuntimeException("Don't how to resolve references for: " + node);
         }
@@ -165,9 +176,9 @@ public class ReferenceResolver {
         }
     }
 
-    private Set<String> argumentDeclarations(LambdaExpressionNode lambda) {
+    private Set<String> argumentDeclarations(List<FormalArgumentNode> formalArguments) {
         Set<String> declarations = new HashSet<String>();
-        for (FormalArgumentNode formalArgument : lambda.getFormalArguments()) {
+        for (FormalArgumentNode formalArgument : formalArguments) {
             declarations.add(formalArgument.getIdentifier());
         }
         return declarations;
