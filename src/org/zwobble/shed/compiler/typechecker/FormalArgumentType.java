@@ -7,7 +7,6 @@ import org.zwobble.shed.compiler.types.Type;
 
 @Data
 public class FormalArgumentType {
-    private final String name;
     private final Type type;
     private final FormalArgumentNode node;
 }

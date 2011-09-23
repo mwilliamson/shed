@@ -12,7 +12,6 @@ import org.zwobble.shed.compiler.parsing.nodes.AssignmentExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
-import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
@@ -35,15 +34,13 @@ import org.zwobble.shed.compiler.types.TypeFunction;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
-import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
-
-import static com.google.common.collect.Lists.transform;
 import static java.util.Arrays.asList;
+import static org.zwobble.shed.compiler.typechecker.ArgumentTypeInferer.inferArgumentTypesAndAddToContext;
 import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
 import static org.zwobble.shed.compiler.typechecker.TypeLookup.lookupTypeReference;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.combine;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.typechecker.VariableLookup.lookupVariableReference;
 
 public class TypeInferer {
@@ -94,13 +91,7 @@ public class TypeInferer {
     }
 
     private static TypeResult<ValueInfo> inferType(final ShortLambdaExpressionNode lambdaExpression, final NodeLocations nodeLocations, StaticContext context) {
-        List<TypeResult<FormalArgumentType>> argumentTypesResult = inferArgumentTypes(lambdaExpression.getFormalArguments(), nodeLocations, context);
-        TypeResult<List<FormalArgumentType>> result = combine(argumentTypesResult);
-        
-        for (TypeResult<FormalArgumentType> argumentTypeResult : argumentTypesResult) {
-            TypeResult<Void> addArgumentToContextResult = argumentTypeResult.use(addArgumentToContext(context, nodeLocations));
-            result = result.withErrorsFrom(addArgumentToContextResult);
-        }
+        TypeResult<List<Type>> result = inferArgumentTypesAndAddToContext(lambdaExpression.getFormalArguments(), nodeLocations, context);
         final TypeResult<Type> expressionTypeResult = inferType(lambdaExpression.getBody(), nodeLocations, context);
         
         result = result.withErrorsFrom(expressionTypeResult);
@@ -137,21 +128,15 @@ public class TypeInferer {
 
     private static TypeResult<ValueInfo>
     inferLongLambdaExpressionType(final LongLambdaExpressionNode lambdaExpression, final NodeLocations nodeLocations, final StaticContext context) {
-        final List<TypeResult<FormalArgumentType>> argumentTypeResults = inferArgumentTypes(lambdaExpression.getFormalArguments(), nodeLocations, context);
-        final TypeResult<List<FormalArgumentType>> combinedArgumentTypesResult = combine(argumentTypeResults);
+        final TypeResult<List<Type>> argumentTypeResults = inferArgumentTypesAndAddToContext(lambdaExpression.getFormalArguments(), nodeLocations, context);
         TypeResult<Type> returnTypeResult = lookupTypeReference(lambdaExpression.getReturnType(), nodeLocations, context);
 
-        TypeResult<?> result = combinedArgumentTypesResult.withErrorsFrom(returnTypeResult);
+        TypeResult<?> result = argumentTypeResults.withErrorsFrom(returnTypeResult);
         TypeResult<Void> bodyResult = returnTypeResult.use(new Function<Type, TypeResult<Void>>() {
             @Override
             public TypeResult<Void> apply(Type returnType) {
                 TypeResult<Void> result = success();
 
-                for (TypeResult<FormalArgumentType> argumentTypeResult : argumentTypeResults) {
-                    TypeResult<Void> addArgumentToContextResult = argumentTypeResult.use(addArgumentToContext(context, nodeLocations));
-                    result = result.withErrorsFrom(addArgumentToContextResult);
-                }
-                
                 TypeResult<StatementTypeCheckResult> blockResult = 
                     new BlockTypeChecker().typeCheckBlock(lambdaExpression.getBody(), context, nodeLocations, Option.some(returnType));
                 
@@ -171,7 +156,7 @@ public class TypeInferer {
         return returnTypeResult.use(new Function<Type, TypeResult<Type>>() {
             @Override
             public TypeResult<Type> apply(Type returnType) {
-                return combinedArgumentTypesResult.use(buildFunctionType(returnType));
+                return argumentTypeResults.use(buildFunctionType(returnType));
             }
         }).withErrorsFrom(result).ifValueThen(toValueInfo());
     }
@@ -306,58 +291,13 @@ public class TypeInferer {
         };
     }
 
-    private static Function<List<FormalArgumentType>, TypeResult<Type>> buildFunctionType(final Type returnType) {
-        return new Function<List<FormalArgumentType>, TypeResult<Type>>() {
+    private static Function<List<Type>, TypeResult<Type>> buildFunctionType(final Type returnType) {
+        return new Function<List<Type>, TypeResult<Type>>() {
             @Override
-            public TypeResult<Type> apply(List<FormalArgumentType> argumentTypes) {
-                List<Type> typeParameters = new ArrayList<Type>(transform(argumentTypes, toType()));
+            public TypeResult<Type> apply(List<Type> argumentTypes) {
+                List<Type> typeParameters = new ArrayList<Type>(argumentTypes);
                 typeParameters.add(returnType);
                 return success(TypeApplication.applyTypes(CoreTypes.functionType(argumentTypes.size()), typeParameters));
-            }
-        };
-    }
-
-    private static Function<FormalArgumentType, Type> toType() {
-        return new Function<FormalArgumentType, Type>() {
-            @Override
-            public Type apply(FormalArgumentType argument) {
-                return argument.getType();
-            }
-        };
-    }
-
-    private static List<TypeResult<FormalArgumentType>>
-    inferArgumentTypes(List<FormalArgumentNode> formalArguments, NodeLocations nodeLocations, StaticContext context) {
-        return transform(formalArguments, inferArgumentType(nodeLocations, context));
-    }
-
-    private static Function<FormalArgumentNode, TypeResult<FormalArgumentType>>
-    inferArgumentType(final NodeLocations nodeLocations, final StaticContext context) {
-        return new Function<FormalArgumentNode, TypeResult<FormalArgumentType>>() {
-            @Override
-            public TypeResult<FormalArgumentType> apply(FormalArgumentNode argument) {
-                TypeResult<Type> lookupTypeReference = lookupTypeReference(argument.getType(), nodeLocations, context);
-                return lookupTypeReference.ifValueThen(buildFormalArgumentType(argument));
-            }
-        };
-    }
-    
-    private static Function<Type, TypeResult<FormalArgumentType>> buildFormalArgumentType(final FormalArgumentNode node) {
-        return new Function<Type, TypeResult<FormalArgumentType>>() {
-            @Override
-            public TypeResult<FormalArgumentType> apply(Type type) {
-                return success(new FormalArgumentType(node.getIdentifier(), type, node));
-            }
-        };
-    }
-
-    private static Function<FormalArgumentType, TypeResult<Void>>
-    addArgumentToContext(final StaticContext context, final NodeLocations nodeLocations) {
-        return new Function<FormalArgumentType, TypeResult<Void>>() {
-            @Override
-            public TypeResult<Void> apply(FormalArgumentType argument) {
-                context.add(argument.getNode(), unassignableValue(argument.getType()));
-                return success();
             }
         };
     }
