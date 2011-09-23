@@ -9,6 +9,7 @@ import java.util.Set;
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
@@ -29,6 +30,9 @@ public class ReferenceResolver {
     }
 
     private void resolveReferences(SyntaxNode node, NodeLocations nodeLocations, ReferencesBuilder references, SubScope scope, List<CompilerError> errors) {
+        if (node instanceof FunctionDeclarationNode) {
+            addDeclaration((FunctionDeclarationNode)node, nodeLocations, scope, errors);
+        }
         addReferences(node, nodeLocations, references, scope, errors);
         addDeclarations(node, nodeLocations, scope, errors);
     }
@@ -67,13 +71,18 @@ public class ReferenceResolver {
     }
 
     private void addDeclarations(SyntaxNode node, NodeLocations nodeLocations, SubScope scope, List<CompilerError> errors) {
-        if (node instanceof DeclarationNode) {
+        if (node instanceof DeclarationNode && !(node instanceof FunctionDeclarationNode)) {
             DeclarationNode declaration = (DeclarationNode)node;
-            if (scope.isDeclaredInCurrentScope(declaration.getIdentifier())) {
-                errors.add(new CompilerError(nodeLocations.locate(node), new DuplicateIdentifierError(declaration.getIdentifier())));
-            } else {
-                scope.add(declaration.getIdentifier(), declaration);
-            }
+            addDeclaration(declaration, nodeLocations, scope, errors);
+        }
+    }
+
+    private void addDeclaration(DeclarationNode declaration, NodeLocations nodeLocations,
+        SubScope scope, List<CompilerError> errors) {
+        if (scope.isDeclaredInCurrentScope(declaration.getIdentifier())) {
+            errors.add(new CompilerError(nodeLocations.locate(declaration), new DuplicateIdentifierError(declaration.getIdentifier())));
+        } else {
+            scope.add(declaration.getIdentifier(), declaration);
         }
     }
 

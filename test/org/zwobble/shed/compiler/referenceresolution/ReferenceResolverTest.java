@@ -372,6 +372,18 @@ public class ReferenceResolverTest {
         );
         assertThat(resolveReferences(source), hasReference(reference, firstArgument));
     }
+    
+    @Test public void
+    functionDeclarationCanReferToItself() {
+        VariableIdentifierNode functionReference = Nodes.id("now");
+        FunctionDeclarationNode functionDeclaration = new FunctionDeclarationNode(
+            "now",
+            Collections.<FormalArgumentNode>emptyList(),
+            Nodes.id("Number"),
+            Nodes.block(Nodes.returnStatement(functionReference))
+        );
+        assertThat(resolveReferences(functionDeclaration), hasReference(functionReference, functionDeclaration));
+    }
 
     private ReferenceResolverResult resolveReferences(SyntaxNode node) {
         return resolver.resolveReferences(node, nodeLocations, CoreModule.GLOBAL_DECLARATIONS);
