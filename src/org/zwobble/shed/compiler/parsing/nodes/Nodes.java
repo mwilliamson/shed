@@ -108,4 +108,8 @@ public class Nodes {
     public static SourceNode source(PackageDeclarationNode packageDeclaration, List<ImportNode> imports, List<StatementNode> statements) {
         return new SourceNode(packageDeclaration, imports, statements);
     }
+
+    public static FunctionDeclarationNode func(String identifier, List<FormalArgumentNode> formalArguments, ExpressionNode returnType, BlockNode body) {
+        return new FunctionDeclarationNode(identifier, formalArguments, returnType, body);
+    }
 }

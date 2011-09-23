@@ -18,6 +18,7 @@ import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
 import com.google.common.collect.Lists;
 
+import static org.zwobble.shed.compiler.parsing.Arguments.formalArgumentList;
 import static org.zwobble.shed.compiler.parsing.Blocks.block;
 import static org.zwobble.shed.compiler.parsing.Rules.firstOf;
 import static org.zwobble.shed.compiler.parsing.Rules.guard;
@@ -29,7 +30,6 @@ import static org.zwobble.shed.compiler.parsing.Rules.then;
 import static org.zwobble.shed.compiler.parsing.Rules.tokenOfType;
 import static org.zwobble.shed.compiler.parsing.Rules.zeroOrMore;
 import static org.zwobble.shed.compiler.parsing.Rules.zeroOrMoreWithSeparator;
-import static org.zwobble.shed.compiler.parsing.Separator.hardSeparator;
 import static org.zwobble.shed.compiler.parsing.Separator.softSeparator;
 import static org.zwobble.shed.compiler.parsing.SourceRange.range;
 import static org.zwobble.shed.compiler.parsing.TypeReferences.typeSpecifier;
@@ -37,8 +37,6 @@ import static org.zwobble.shed.compiler.tokeniser.TokenType.IDENTIFIER;
 
 
 public class Expressions {
-    private static final Rule<?> COMMA = guard(symbol(","));
-    
     private static interface PartialCallExpression extends PartialNode {
         ExpressionNode complete(ExpressionNode expression);
     }
@@ -195,7 +193,7 @@ public class Expressions {
     }
     
     private static Rule<PartialCallExpression> typeApplication() {
-        final Rule<List<ExpressionNode>> arguments = zeroOrMoreWithSeparator(typeExpression(), softSeparator(COMMA));
+        final Rule<List<ExpressionNode>> arguments = zeroOrMoreWithSeparator(typeExpression(), softSeparator(guard(symbol(","))));
         
         return then(
             sequence(OnError.FINISH,
@@ -294,42 +292,7 @@ public class Expressions {
         );
     }
     
-    private static Rule<List<FormalArgumentNode>> formalArgumentList() {
-        final Rule<List<FormalArgumentNode>> formalArguments = zeroOrMoreWithSeparator(formalArgument(), hardSeparator(COMMA));
-        return then(
-            sequence(OnError.FINISH,
-                guard(symbol("(")),
-                formalArguments,
-                guard(symbol(")"))
-            ),
-            new SimpleParseAction<RuleValues, List<FormalArgumentNode>>() {
-                @Override
-                public List<FormalArgumentNode> apply(RuleValues result) {
-                    return result.get(formalArguments);
-                }
-            }
-        );
-        
-    }
-
-    private static Rule<FormalArgumentNode> formalArgument() {
-        final Rule<String> name;
-        final Rule<ExpressionNode> type = typeSpecifier();
-        return then(
-            sequence(OnError.FINISH,
-                name = guard(tokenOfType(IDENTIFIER)),
-                type
-            ),
-            new SimpleParseAction<RuleValues, FormalArgumentNode>() {
-                @Override
-                public FormalArgumentNode apply(RuleValues result) {
-                    return new FormalArgumentNode(result.get(name), result.get(type));
-                }
-            }
-        );
-    }
-    
     private static Rule<List<ExpressionNode>> argumentList() {
-        return zeroOrMoreWithSeparator(expression(), softSeparator(COMMA));
+        return zeroOrMoreWithSeparator(expression(), softSeparator(guard(symbol(","))));
     }
 }

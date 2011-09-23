@@ -1,12 +1,15 @@
 package org.zwobble.shed.compiler.parsing;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
+import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
@@ -70,7 +73,8 @@ public class Statements {
         return firstOf("declaration",
             immutableVariable(),
             mutableVariable(),
-            objectDeclaration()
+            objectDeclaration(),
+            functionDeclaration()
         );
     }
 
@@ -177,6 +181,33 @@ public class Statements {
                     String objectName = result.get(identifier);
                     BlockNode statements = result.get(body);
                     return new ObjectDeclarationNode(objectName, statements);
+                }
+            }
+        );
+    }
+    
+    public static Rule<FunctionDeclarationNode> functionDeclaration() {
+        final Rule<String> identifier = tokenOfType(IDENTIFIER);
+        final Rule<List<FormalArgumentNode>> formalArguments = Arguments.formalArgumentList();
+        final Rule<ExpressionNode> returnType = TypeReferences.typeSpecifier();
+        final Rule<BlockNode> body = Blocks.block();
+        return then(
+            sequence(OnError.FINISH,
+                guard(keyword(Keyword.FUN)),
+                identifier,
+                formalArguments,
+                returnType,
+                body
+            ),
+            new SimpleParseAction<RuleValues, FunctionDeclarationNode>() {
+                @Override
+                public FunctionDeclarationNode apply(RuleValues result) {
+                    return new FunctionDeclarationNode(
+                        result.get(identifier),
+                        result.get(formalArguments),
+                        result.get(returnType),
+                        result.get(body)
+                    );
                 }
             }
         );

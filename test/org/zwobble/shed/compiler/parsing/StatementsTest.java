@@ -8,6 +8,7 @@ import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertThat;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
@@ -106,6 +107,19 @@ public class StatementsTest {
             isSuccessWithNode(Nodes.whileLoop(
                 Nodes.bool(true),
                 Nodes.block(Nodes.expressionStatement(Nodes.call(Nodes.id("go"))))
+            ))
+        );
+    }
+    
+    @Test public void
+    canParseFunctionDeclarations() {
+        assertThat(
+            Statements.statement().parse(tokens("fun repeat(str: String, times: Number): String { return \"\"; }")),
+            isSuccessWithNode(Nodes.func(
+                "repeat",
+                asList(Nodes.formalArgument("str", Nodes.id("String")), Nodes.formalArgument("times", Nodes.id("Number"))),
+                Nodes.id("String"),
+                Nodes.block(Nodes.returnStatement(Nodes.string("")))
             ))
         );
     }

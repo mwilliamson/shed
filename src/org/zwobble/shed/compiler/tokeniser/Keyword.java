@@ -12,7 +12,8 @@ public enum Keyword {
     OBJECT,
     IF,
     ELSE,
-    WHILE;
+    WHILE,
+    FUN;
     
     public String keywordName() {
         return name().toLowerCase();
