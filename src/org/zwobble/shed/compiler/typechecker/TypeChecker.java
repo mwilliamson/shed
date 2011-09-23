@@ -10,6 +10,7 @@ import org.zwobble.shed.compiler.parsing.SourceRange;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
@@ -89,6 +90,9 @@ public class TypeChecker {
         if (statement instanceof WhileStatementNode) {
             return typeCheckWhile((WhileStatementNode)statement, nodeLocations, context, returnType);
         }
+        if (statement instanceof FunctionDeclarationNode) {
+            return typeCheckFunctionDeclaration((FunctionDeclarationNode)statement, nodeLocations, context);
+        }
         throw new RuntimeException("Cannot check type of statement: " + statement);
     }
 
@@ -120,6 +124,27 @@ public class TypeChecker {
         }
         
         return result;
+    }
+
+    public static TypeResult<StatementTypeCheckResult> typeCheckFunctionDeclaration(
+        FunctionDeclarationNode functionDeclaration,
+        NodeLocations nodeLocations,
+        StaticContext context
+    ) {
+        TypeResult<ValueInfo> typeResult = TypeInferer.inferFunctionType(functionDeclaration, nodeLocations, context);
+        return typeResult.ifValueThen(addToContext(functionDeclaration, context));
+    }
+
+    private static Function<ValueInfo, TypeResult<StatementTypeCheckResult>> addToContext(
+        final DeclarationNode declaration, final StaticContext context
+    ) {
+        return new Function<ValueInfo, TypeResult<StatementTypeCheckResult>>() {
+            @Override
+            public TypeResult<StatementTypeCheckResult> apply(ValueInfo input) {
+                context.add(declaration, input);
+                return success(StatementTypeCheckResult.noReturn());
+            }
+        };
     }
 
     private static TypeResult<StatementTypeCheckResult> typeCheckIfThenElse(
