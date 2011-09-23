@@ -159,6 +159,14 @@ public class NodeNavigatorTest {
         assertThat(children(Nodes.whileLoop(condition, body)), isNodes(condition, body));
     }
     
+    @Test public void
+    functionDeclarationChildrenAreArgumentsAndReturnTypeAndBody() {
+        FormalArgumentNode formalArgument = Nodes.formalArgument("delay", Nodes.id("TimeSpan"));
+        ExpressionNode returnType = Nodes.id("Unit");
+        BlockNode body = Nodes.block();
+        assertThat(children(Nodes.func("go", asList(formalArgument), returnType, body)), isNodes(formalArgument, returnType, body));
+    }
+    
     private Matcher<Iterable<? extends SyntaxNode>> isNodes(SyntaxNode... nodes) {
         Collection<Matcher<? super SyntaxNode>> matchers = newArrayList(transform(asList(nodes), toSameMatcher()));
         return new IsIterableContainingInAnyOrder<SyntaxNode>(matchers);

@@ -79,6 +79,13 @@ public class NodeNavigator {
             WhileStatementNode whileStatement = (WhileStatementNode) node;
             return asList(whileStatement.getCondition(), whileStatement.getBody());
         }
+        if (node instanceof FunctionDeclarationNode) {
+            FunctionDeclarationNode functionDeclaration = (FunctionDeclarationNode) node;
+            return concat(
+                functionDeclaration.getFormalArguments(),
+                asList(functionDeclaration.getReturnType(), functionDeclaration.getBody())
+            );
+        }
         throw new RuntimeException("Cannot find children of: " + node);
     }
 
