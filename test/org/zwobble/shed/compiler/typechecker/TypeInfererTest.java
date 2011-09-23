@@ -145,9 +145,9 @@ public class TypeInfererTest {
         TypeResult<Type> result = inferType(functionExpression, standardContext());
         assertThat(
             result.getErrors(),
-            is((Object)asList(CompilerError.error(
+            is(asList(new CompilerError(
                 range(position(3, 5), position(7, 4)),
-                "Type mismatch: expected expression of type \"String\" but was of type \"Number\""
+                new TypeMismatchError(CoreTypes.STRING, CoreTypes.NUMBER)
             )))
         );
     }

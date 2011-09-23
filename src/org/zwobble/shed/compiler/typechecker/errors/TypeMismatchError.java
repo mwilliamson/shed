@@ -12,7 +12,7 @@ public class TypeMismatchError implements CompilerErrorDescription {
     
     @Override
     public String describe() {
-        return "Expected type " + expectedType.shortName() + " but was type " + actualType.shortName();
+        return "Expected expression of type " + expectedType.shortName() + " but was of type " + actualType.shortName();
     }
     
     @Override

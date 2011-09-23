@@ -26,7 +26,7 @@ public class TypeResult<T> implements HasErrors {
         return new TypeResult<T>(true, true, value, Collections.<CompilerError>emptyList());
     }
     
-    public static <T> TypeResult<T> failure(List<? extends CompilerError> errors) {
+    public static <T> TypeResult<T> failure(List<CompilerError> errors) {
         return new TypeResult<T>(false, false, null, errors);
     }
     
@@ -34,7 +34,7 @@ public class TypeResult<T> implements HasErrors {
         return failure(asList(error));
     }
     
-    public static <T> TypeResult<T> failure(T value, List<? extends CompilerError> errors) {
+    public static <T> TypeResult<T> failure(T value, List<CompilerError> errors) {
         return new TypeResult<T>(false, true, value, errors);
     }
     
@@ -60,9 +60,9 @@ public class TypeResult<T> implements HasErrors {
     private final boolean success;
     private final boolean hasValue;
     private final T value;
-    private final List<? extends CompilerError> errors;
+    private final List<CompilerError> errors;
     
-    private TypeResult(boolean success, boolean hasValue, T value, List<? extends CompilerError> errors) {
+    private TypeResult(boolean success, boolean hasValue, T value, List<CompilerError> errors) {
         this.success = success;
         this.hasValue = hasValue;
         this.value = value;
@@ -74,7 +74,7 @@ public class TypeResult<T> implements HasErrors {
     }
     
     @Override
-    public List<? extends CompilerError> getErrors() {
+    public List<CompilerError> getErrors() {
         return errors;
     }
     
@@ -98,7 +98,6 @@ public class TypeResult<T> implements HasErrors {
             return new TypeResult<R>(false, false, null, Collections.<CompilerError>emptyList());
         }
     }
-    
     
     public <R> TypeResult<R> ifValueThen(Function<T, TypeResult<R>> function) {
         if (hasValue()) {

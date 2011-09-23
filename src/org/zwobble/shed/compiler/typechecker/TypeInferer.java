@@ -22,6 +22,7 @@ import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.typechecker.errors.InvalidAssignmentError;
+import org.zwobble.shed.compiler.typechecker.errors.MissingReturnStatementError;
 import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ParameterisedFunctionType;
@@ -116,11 +117,10 @@ public class TypeInferer {
                             if (expressionType.equals(returnType)) {
                                 return success();
                             } else {
-                                return failure(asList(CompilerError.error(
+                                return failure(new CompilerError(
                                     nodeLocations.locate(lambdaExpression.getBody()),
-                                    "Type mismatch: expected expression of type \"" + returnType.shortName() +
-                                        "\" but was of type \"" + expressionType.shortName() + "\""
-                                )));
+                                    new TypeMismatchError(returnType, expressionType)
+                                ));
                             }
                         }
                     });
@@ -158,10 +158,10 @@ public class TypeInferer {
                 result = result.withErrorsFrom(blockResult);
                 
                 if (!blockResult.get().hasReturned()) {
-                    result = result.withErrorsFrom(TypeResult.<Type>failure(asList(CompilerError.error(
+                    result = result.withErrorsFrom(TypeResult.<Type>failure(new CompilerError(
                         nodeLocations.locate(lambdaExpression),
-                        "Expected return statement"
-                    ))));
+                        new MissingReturnStatementError()
+                    )));
                 }
                 return result;
             }
