@@ -6,17 +6,15 @@ import java.util.List;
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
-import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.types.Type;
-
-import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
 import static org.zwobble.shed.compiler.typechecker.TypeInferer.inferType;
 import static org.zwobble.shed.compiler.typechecker.TypeLookup.lookupTypeReference;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 public class VariableDeclarationTypeChecker {
     public static TypeResult<StatementTypeCheckResult>
@@ -41,7 +39,7 @@ public class VariableDeclarationTypeChecker {
         
         if (errors.isEmpty()) {
             Type type = valueTypeResult.get();
-            ValueInfo valueInfo = variableDeclaration instanceof MutableVariableNode
+            ValueInfo valueInfo = variableDeclaration.isMutable()
                 ? ValueInfo.assignableValue(type)
                 : unassignableValue(type);
                 

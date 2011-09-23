@@ -16,7 +16,6 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
-import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
@@ -25,6 +24,7 @@ import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
+import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.typechecker.CoreModule;
 import org.zwobble.shed.compiler.typechecker.SimpleNodeLocations;
@@ -153,7 +153,7 @@ public class ReferenceResolverTest {
     @Test public void
     canReferToVariableInParentScope() {
         VariableIdentifierNode reference = Nodes.id("theNight");
-        ImmutableVariableNode declaration = Nodes.immutableVar("theNight", Nodes.string("feelsMySoul"));
+        VariableDeclarationNode declaration = Nodes.immutableVar("theNight", Nodes.string("feelsMySoul"));
         SyntaxNode source = Nodes.block(
             declaration,
             Nodes.expressionStatement(new ShortLambdaExpressionNode(
@@ -241,9 +241,9 @@ public class ReferenceResolverTest {
 
     @Test public void
     referencesAreResolvedForConditionAndBranchesOfIfElse() {
-        ImmutableVariableNode booleanDeclaration = Nodes.immutableVar("go", Nodes.bool(true));
-        ImmutableVariableNode ifTrueDeclaration = Nodes.immutableVar("boys", Nodes.string("The boys"));
-        ImmutableVariableNode ifFalseDeclaration = Nodes.immutableVar("girls", Nodes.string("The girls"));
+        VariableDeclarationNode booleanDeclaration = Nodes.immutableVar("go", Nodes.bool(true));
+        VariableDeclarationNode ifTrueDeclaration = Nodes.immutableVar("boys", Nodes.string("The boys"));
+        VariableDeclarationNode ifFalseDeclaration = Nodes.immutableVar("girls", Nodes.string("The girls"));
         
         VariableIdentifierNode booleanReference = Nodes.id("go");
         VariableIdentifierNode ifTrueReference = Nodes.id("boys");
@@ -325,8 +325,8 @@ public class ReferenceResolverTest {
     
     @Test public void
     referencesAreResolvedForConditionAndBodyOfWhileLoop() {
-        ImmutableVariableNode booleanDeclaration = Nodes.immutableVar("go", Nodes.bool(true));
-        ImmutableVariableNode bodyDeclaration = Nodes.immutableVar("boys", Nodes.string("The boys"));
+        VariableDeclarationNode booleanDeclaration = Nodes.immutableVar("go", Nodes.bool(true));
+        VariableDeclarationNode bodyDeclaration = Nodes.immutableVar("boys", Nodes.string("The boys"));
         
         VariableIdentifierNode booleanReference = Nodes.id("go");
         VariableIdentifierNode bodyReference = Nodes.id("boys");
@@ -345,8 +345,8 @@ public class ReferenceResolverTest {
     
     @Test public void
     referencesAreResolvedForBothSidesOfAnAssignment() {
-        ImmutableVariableNode leftDeclaration = Nodes.immutableVar("x", Nodes.number("347"));
-        ImmutableVariableNode rightDeclaration = Nodes.immutableVar("y", Nodes.number("348"));
+        VariableDeclarationNode leftDeclaration = Nodes.immutableVar("x", Nodes.number("347"));
+        VariableDeclarationNode rightDeclaration = Nodes.immutableVar("y", Nodes.number("348"));
         
         VariableIdentifierNode leftReference = Nodes.id("x");
         VariableIdentifierNode rightReference = Nodes.id("y");

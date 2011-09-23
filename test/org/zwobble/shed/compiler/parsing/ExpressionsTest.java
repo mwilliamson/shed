@@ -3,12 +3,10 @@ package org.zwobble.shed.compiler.parsing;
 import java.util.Collections;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
-import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
@@ -18,10 +16,6 @@ import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
-import static org.zwobble.shed.compiler.parsing.SourceRange.range;
-
-import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -29,6 +23,8 @@ import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.parsing.ParserTesting.isSuccessWithNode;
 import static org.zwobble.shed.compiler.parsing.ParserTesting.tokens;
+import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
+import static org.zwobble.shed.compiler.parsing.SourceRange.range;
 
 public class ExpressionsTest {
     @Test public void
@@ -102,7 +98,7 @@ public class ExpressionsTest {
                 Collections.<FormalArgumentNode>emptyList(),
                 new VariableIdentifierNode("String"),
                 Nodes.block(
-                    new ImmutableVariableNode("x", Option.<ExpressionNode>none(), new NumberLiteralNode("2")),
+                    Nodes.immutableVar("x", new NumberLiteralNode("2")),
                     new ReturnNode(new NumberLiteralNode("3"))
                 )
             ))

@@ -8,12 +8,10 @@ import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.SimpleErrorDescription;
 import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
-import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
-import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
@@ -37,7 +35,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
-import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
@@ -58,7 +55,7 @@ public class TypeCheckerTest {
         SourceNode source = new SourceNode(
             new PackageDeclarationNode(asList("shed", "example")),
             Collections.<ImportNode>emptyList(),
-            asList((StatementNode)new ImmutableVariableNode("x", none(ExpressionNode.class), new BooleanLiteralNode(true)))
+            asList((StatementNode)Nodes.immutableVar("x", new BooleanLiteralNode(true)))
         );
         assertThat(typeCheck(source).isSuccess(), is(true));
     }

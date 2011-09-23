@@ -4,11 +4,9 @@ import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
-import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
-import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
-import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
+import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 import org.zwobble.shed.compiler.types.ClassType;
@@ -21,8 +19,6 @@ import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.zwobble.shed.compiler.Option.none;
-import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
 import static org.zwobble.shed.compiler.parsing.SourceRange.range;
@@ -41,11 +37,7 @@ public class VariableDeclarationTypeCheckerTest {
     @Test public void
     declaringVariableAddsItToScope() {
         StaticContext staticContext = standardContext();
-        ImmutableVariableNode variableNode = new ImmutableVariableNode(
-            "x",
-            none(ExpressionNode.class),
-            new BooleanLiteralNode(true)
-        );
+        VariableDeclarationNode variableNode = Nodes.immutableVar("x", Nodes.bool(true));
         
         assertThat(
             typeCheckVariableDeclaration(variableNode, nodeLocations, staticContext),
@@ -57,11 +49,7 @@ public class VariableDeclarationTypeCheckerTest {
     @Test public void
     declaringMutableVariableAddsItToScopeAsAssignableValue() {
         StaticContext staticContext = standardContext();
-        MutableVariableNode variableNode = new MutableVariableNode(
-            "x",
-            none(ExpressionNode.class),
-            new BooleanLiteralNode(true)
-        );
+        VariableDeclarationNode variableNode = Nodes.mutableVar("x", Nodes.bool(true));
         
         assertThat(
             typeCheckVariableDeclaration(variableNode, nodeLocations, staticContext),
@@ -74,11 +62,7 @@ public class VariableDeclarationTypeCheckerTest {
     errorsIfAttemptingToInitialiseAVariableWithExpressionOfWrongType() {
         StaticContext staticContext = standardContext();
         BooleanLiteralNode booleanNode = new BooleanLiteralNode(true);
-        ImmutableVariableNode variableNode = new ImmutableVariableNode(
-            "x",
-            some(stringReference),
-            booleanNode
-        );
+        VariableDeclarationNode variableNode = Nodes.immutableVar("x", stringReference, booleanNode);
         nodeLocations.put(booleanNode, range(position(4, 12), position(6, 6)));
         
         assertThat(
@@ -106,11 +90,7 @@ public class VariableDeclarationTypeCheckerTest {
         staticContext.add(listDeclaration, unassignableValue(listType));
         staticContext.add(iterableTypeDeclaration, unassignableValue(CoreTypes.classOf(iterableType)));
         
-        ImmutableVariableNode variableNode = new ImmutableVariableNode(
-            "x",
-            some(iterableTypeReference),
-            listReference
-        );
+        VariableDeclarationNode variableNode = Nodes.immutableVar("x", iterableTypeReference, listReference);
         
         assertThat(
             typeCheckVariableDeclaration(variableNode, nodeLocations, staticContext),

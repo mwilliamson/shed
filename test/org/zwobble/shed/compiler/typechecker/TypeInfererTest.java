@@ -11,7 +11,6 @@ import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
-import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
@@ -229,11 +228,7 @@ public class TypeInfererTest {
             Collections.<FormalArgumentNode>emptyList(),
             booleanReference,
             Nodes.block(
-                new ImmutableVariableNode(
-                    "x",
-                    some(stringReference),
-                    new BooleanLiteralNode(true)
-                ),
+                Nodes.immutableVar("x", stringReference, Nodes.bool(true)),
                 new ReturnNode(new BooleanLiteralNode(true))
             )
         );

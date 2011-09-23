@@ -1,17 +1,12 @@
 package org.zwobble.shed.compiler.parsing;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
-import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
-import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertThat;
-import static org.zwobble.shed.compiler.Option.none;
-import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.parsing.ParserTesting.isSuccessWithNode;
 import static org.zwobble.shed.compiler.parsing.ParserTesting.tokens;
 
@@ -20,7 +15,7 @@ public class StatementsTest {
     canDeclareImmutableVariables() {
         assertThat(
             Statements.immutableVariable().parse(tokens("val magic = 42;")),
-            isSuccessWithNode(new ImmutableVariableNode("magic", none(ExpressionNode.class), new NumberLiteralNode("42")))
+            isSuccessWithNode(Nodes.immutableVar("magic", new NumberLiteralNode("42")))
         );
     }
     
@@ -28,7 +23,7 @@ public class StatementsTest {
     canDeclareImmutableVariablesWithExplicitType() {
         assertThat(
             Statements.immutableVariable().parse(tokens("val magic : Integer = 42;")),
-            isSuccessWithNode(new ImmutableVariableNode("magic", some(new VariableIdentifierNode("Integer")), new NumberLiteralNode("42")))
+            isSuccessWithNode(Nodes.immutableVar("magic", new VariableIdentifierNode("Integer"), new NumberLiteralNode("42")))
         );
     }
     
@@ -36,7 +31,7 @@ public class StatementsTest {
     canDeclareMutableVariables() {
         assertThat(
             Statements.mutableVariable().parse(tokens("var magic = 42;")),
-            isSuccessWithNode(new MutableVariableNode("magic", none(ExpressionNode.class), new NumberLiteralNode("42")))
+            isSuccessWithNode(Nodes.mutableVar("magic", new NumberLiteralNode("42")))
         );
     }
     
@@ -44,7 +39,7 @@ public class StatementsTest {
     canDeclareMutableVariablesWithExplicitType() {
         assertThat(
             Statements.mutableVariable().parse(tokens("var magic : Integer = 42;")),
-            isSuccessWithNode(new MutableVariableNode("magic", some(new VariableIdentifierNode("Integer")), new NumberLiteralNode("42")))
+            isSuccessWithNode(Nodes.mutableVar("magic", new VariableIdentifierNode("Integer"), new NumberLiteralNode("42")))
         );
     }
     

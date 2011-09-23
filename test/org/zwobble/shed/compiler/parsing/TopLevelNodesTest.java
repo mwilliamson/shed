@@ -5,10 +5,8 @@ import java.util.Collections;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerError;
-import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
-import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
-import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
+import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
@@ -19,7 +17,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
-import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.parsing.ParserTesting.isSuccessWithNode;
 import static org.zwobble.shed.compiler.parsing.ParserTesting.tokens;
 import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
@@ -46,7 +43,7 @@ public class TopLevelNodesTest {
             isSuccessWithNode(new SourceNode(
                 new PackageDeclarationNode(asList("shed", "util", "collections")),
                 Collections.<ImportNode>emptyList(),
-                asList((StatementNode)new ImmutableVariableNode("x", none(ExpressionNode.class), new NumberLiteralNode("1")))
+                asList((StatementNode)Nodes.immutableVar("x", new NumberLiteralNode("1")))
             ))
         );
     }
@@ -62,8 +59,8 @@ public class TopLevelNodesTest {
                     new ImportNode(asList("shed", "util"))
                 ),
                 Arrays.<StatementNode>asList(
-                    new ImmutableVariableNode("x", none(ExpressionNode.class), new NumberLiteralNode("1")),
-                    new MutableVariableNode("y", none(ExpressionNode.class), new NumberLiteralNode("2"))
+                    Nodes.immutableVar("x", new NumberLiteralNode("1")),
+                    Nodes.mutableVar("y", new NumberLiteralNode("2"))
                 )
             ))
         );
@@ -119,7 +116,7 @@ public class TopLevelNodesTest {
             is(new SourceNode(
                 new PackageDeclarationNode(asList("shed", "util", "collections")),
                 asList(new ImportNode(asList("shed", "stuff"))),
-                asList((StatementNode)new ImmutableVariableNode("y", none(ExpressionNode.class), new NumberLiteralNode("2")))
+                asList((StatementNode)Nodes.immutableVar("y", new NumberLiteralNode("2")))
             ))
         );
     }

@@ -37,12 +37,20 @@ public class Nodes {
         return new ExpressionStatementNode(expression);
     }
     
-    public static ImmutableVariableNode immutableVar(String name, ExpressionNode expression) {
-        return new ImmutableVariableNode(name, none(ExpressionNode.class), expression);
+    public static VariableDeclarationNode immutableVar(String name, ExpressionNode expression) {
+        return VariableDeclarationNode.immutable(name, none(ExpressionNode.class), expression);
     }
     
-    public static ImmutableVariableNode immutableVar(String name, ExpressionNode type, ExpressionNode expression) {
-        return new ImmutableVariableNode(name, some(type), expression);
+    public static VariableDeclarationNode immutableVar(String name, ExpressionNode type, ExpressionNode expression) {
+        return VariableDeclarationNode.immutable(name, some(type), expression);
+    }
+    
+    public static VariableDeclarationNode mutableVar(String name, ExpressionNode expression) {
+        return VariableDeclarationNode.mutable(name, none(ExpressionNode.class), expression);
+    }
+    
+    public static VariableDeclarationNode mutableVar(String name, ExpressionNode type, ExpressionNode expression) {
+        return VariableDeclarationNode.mutable(name, some(type), expression);
     }
     
     public static ObjectDeclarationNode object(String name, BlockNode body) {

@@ -11,12 +11,11 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
-import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
-import org.zwobble.shed.compiler.parsing.nodes.MutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.WhileStatementNode;
 import org.zwobble.shed.compiler.tokeniser.Keyword;
 
@@ -78,20 +77,20 @@ public class Statements {
         );
     }
 
-    public static Rule<ImmutableVariableNode> immutableVariable() {
-        return variable(Keyword.VAL, new VariableNodeConstructor<ImmutableVariableNode>() {
+    public static Rule<VariableDeclarationNode> immutableVariable() {
+        return variable(Keyword.VAL, new VariableNodeConstructor<VariableDeclarationNode>() {
             @Override
-            public ImmutableVariableNode apply(String identifier, Option<ExpressionNode> typeReference, ExpressionNode expression) {
-                return new ImmutableVariableNode(identifier, typeReference, expression);
+            public VariableDeclarationNode apply(String identifier, Option<ExpressionNode> typeReference, ExpressionNode expression) {
+                return VariableDeclarationNode.immutable(identifier, typeReference, expression);
             }
         });
     }
 
-    public static Rule<MutableVariableNode> mutableVariable() {
-        return variable(Keyword.VAR, new VariableNodeConstructor<MutableVariableNode>() {
+    public static Rule<VariableDeclarationNode> mutableVariable() {
+        return variable(Keyword.VAR, new VariableNodeConstructor<VariableDeclarationNode>() {
             @Override
-            public MutableVariableNode apply(String identifier, Option<ExpressionNode> typeReference, ExpressionNode expression) {
-                return new MutableVariableNode(identifier, typeReference, expression);
+            public VariableDeclarationNode apply(String identifier, Option<ExpressionNode> typeReference, ExpressionNode expression) {
+                return VariableDeclarationNode.mutable(identifier, typeReference, expression);
             }
         });
     }

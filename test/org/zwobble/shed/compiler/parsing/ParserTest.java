@@ -1,9 +1,9 @@
 package org.zwobble.shed.compiler.parsing;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.parsing.nodes.ImmutableVariableNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
+import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -31,7 +31,7 @@ public class ParserTest {
     mapsFromArgumentNodesToLocations() {
         ParseResult<SourceNode> parseResult = parser.parse(tokens("package blah;\n\nval x = (y: Nuber, z: String) => y;"));
         
-        ImmutableVariableNode immutableVariable = (ImmutableVariableNode) parseResult.get().getStatements().get(0);
+        VariableDeclarationNode immutableVariable = (VariableDeclarationNode) parseResult.get().getStatements().get(0);
         ShortLambdaExpressionNode lambda = (ShortLambdaExpressionNode) immutableVariable.getValue();
         
         assertThat(
