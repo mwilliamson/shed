@@ -2,10 +2,14 @@ package org.zwobble.shed.compiler.parsing.nodes;
 
 import java.util.List;
 
+import lombok.Data;
+
+import org.zwobble.shed.compiler.parsing.nodes.structure.SyntaxNodeStructure;
+
 import static com.google.common.collect.Iterables.concat;
 import static java.util.Arrays.asList;
-
-import lombok.Data;
+import static org.zwobble.shed.compiler.parsing.nodes.structure.ScopedNodes.sameScope;
+import static org.zwobble.shed.compiler.parsing.nodes.structure.ScopedNodes.subScope;
 
 @Data
 public class FunctionDeclarationNode implements DeclarationNode, FunctionWithBodyNode {
@@ -16,9 +20,9 @@ public class FunctionDeclarationNode implements DeclarationNode, FunctionWithBod
     
     @Override
     public SyntaxNodeStructure describeStructure() {
-        return SyntaxNodeStructure.build(concat(
-            formalArguments,
-            asList(returnType, body)
+        return SyntaxNodeStructure.build(
+            sameScope(asList(returnType)),
+            subScope(concat(formalArguments, asList(body))
         ));
     }
 }

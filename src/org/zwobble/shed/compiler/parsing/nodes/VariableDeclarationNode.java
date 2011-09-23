@@ -3,8 +3,11 @@ package org.zwobble.shed.compiler.parsing.nodes;
 import lombok.Data;
 
 import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.parsing.nodes.structure.SyntaxNodeStructure;
 
 import static java.util.Arrays.asList;
+
+import static org.zwobble.shed.compiler.parsing.nodes.structure.ScopedNodes.sameScope;
 
 @Data
 public class VariableDeclarationNode implements DeclarationNode {
@@ -24,9 +27,9 @@ public class VariableDeclarationNode implements DeclarationNode {
     @Override
     public SyntaxNodeStructure describeStructure() {
         if (typeReference.hasValue()) {
-            return SyntaxNodeStructure.build(asList(value, typeReference.get()));
+            return SyntaxNodeStructure.build(sameScope(asList(value, typeReference.get())));
         } else {
-            return SyntaxNodeStructure.build(asList(value));
+            return SyntaxNodeStructure.build(sameScope(asList(value)));
         }
     }
 }

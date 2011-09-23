@@ -5,6 +5,10 @@ import java.util.List;
 
 import lombok.Data;
 
+import org.zwobble.shed.compiler.parsing.nodes.structure.SyntaxNodeStructure;
+
+import static org.zwobble.shed.compiler.parsing.nodes.structure.ScopedNodes.extendedScope;
+
 @Data
 public class BlockNode implements SyntaxNode, Iterable<StatementNode> {
     private final List<StatementNode> statements;
@@ -16,6 +20,6 @@ public class BlockNode implements SyntaxNode, Iterable<StatementNode> {
     
     @Override
     public SyntaxNodeStructure describeStructure() {
-        return SyntaxNodeStructure.build(statements);
+        return SyntaxNodeStructure.build(extendedScope(statements));
     }
 }

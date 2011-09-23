@@ -6,9 +6,12 @@ import java.util.List;
 import lombok.Data;
 
 import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.parsing.nodes.structure.SyntaxNodeStructure;
 
 import static com.google.common.collect.Iterables.concat;
 import static java.util.Collections.singletonList;
+import static org.zwobble.shed.compiler.parsing.nodes.structure.ScopedNodes.sameScope;
+import static org.zwobble.shed.compiler.parsing.nodes.structure.ScopedNodes.subScope;
 
 @Data
 public class ShortLambdaExpressionNode implements LambdaExpressionNode {
@@ -21,6 +24,9 @@ public class ShortLambdaExpressionNode implements LambdaExpressionNode {
         Iterable<? extends ExpressionNode> typeNodes = returnType.hasValue() 
             ? singletonList(returnType.get()) 
             : Collections.<ExpressionNode>emptyList();
-        return SyntaxNodeStructure.build(concat(formalArguments, typeNodes, singletonList(body)));
+        return SyntaxNodeStructure.build(
+            sameScope(typeNodes),
+            subScope(concat(formalArguments, singletonList(body)))
+        );
     }
 }

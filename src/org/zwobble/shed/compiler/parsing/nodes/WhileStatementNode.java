@@ -2,7 +2,10 @@ package org.zwobble.shed.compiler.parsing.nodes;
 
 import lombok.Data;
 
+import org.zwobble.shed.compiler.parsing.nodes.structure.SyntaxNodeStructure;
+
 import static java.util.Arrays.asList;
+import static org.zwobble.shed.compiler.parsing.nodes.structure.ScopedNodes.sameScope;
 
 @Data
 public class WhileStatementNode implements StatementNode {
@@ -11,6 +14,6 @@ public class WhileStatementNode implements StatementNode {
     
     @Override
     public SyntaxNodeStructure describeStructure() {
-        return SyntaxNodeStructure.build(asList(condition, body));
+        return SyntaxNodeStructure.build(sameScope(asList(condition, body)));
     }
 }

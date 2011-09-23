@@ -1,11 +1,14 @@
 package org.zwobble.shed.compiler.parsing.nodes;
 
-import java.util.Collections;
 import java.util.List;
 
 import lombok.Data;
 
+import org.zwobble.shed.compiler.parsing.nodes.structure.SyntaxNodeStructure;
+
 import static com.google.common.collect.Iterables.concat;
+import static java.util.Collections.singletonList;
+import static org.zwobble.shed.compiler.parsing.nodes.structure.ScopedNodes.sameScope;
 
 @Data
 public class TypeApplicationNode implements ExpressionNode {
@@ -14,6 +17,6 @@ public class TypeApplicationNode implements ExpressionNode {
     
     @Override
     public SyntaxNodeStructure describeStructure() {
-        return SyntaxNodeStructure.build(concat(Collections.singletonList(baseValue), parameters));
+        return SyntaxNodeStructure.build(sameScope(concat(singletonList(baseValue), parameters)));
     }
 }

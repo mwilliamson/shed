@@ -2,7 +2,10 @@ package org.zwobble.shed.compiler.parsing.nodes;
 
 import lombok.Data;
 
+import org.zwobble.shed.compiler.parsing.nodes.structure.SyntaxNodeStructure;
+
 import static java.util.Collections.singletonList;
+import static org.zwobble.shed.compiler.parsing.nodes.structure.ScopedNodes.sameScope;
 
 @Data
 public class PublicDeclarationNode implements StatementNode {
@@ -10,6 +13,6 @@ public class PublicDeclarationNode implements StatementNode {
     
     @Override
     public SyntaxNodeStructure describeStructure() {
-        return SyntaxNodeStructure.build(singletonList(declaration));
+        return SyntaxNodeStructure.build(sameScope(singletonList(declaration)));
     }
 }

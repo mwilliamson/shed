@@ -1,8 +1,8 @@
 package org.zwobble.shed.compiler.parsing.nodes;
 
-import java.util.Collections;
-
 import lombok.Data;
+
+import org.zwobble.shed.compiler.parsing.nodes.structure.SyntaxNodeStructure;
 
 @Data
 public class GlobalDeclarationNode implements DeclarationNode {
@@ -10,6 +10,6 @@ public class GlobalDeclarationNode implements DeclarationNode {
     
     @Override
     public SyntaxNodeStructure describeStructure() {
-        return SyntaxNodeStructure.build(Collections.<SyntaxNode>emptyList());
+        return SyntaxNodeStructure.LEAF;
     }
 }

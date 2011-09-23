@@ -1,8 +1,12 @@
 package org.zwobble.shed.compiler.parsing.nodes;
 
+import lombok.Data;
+
+import org.zwobble.shed.compiler.parsing.nodes.structure.SyntaxNodeStructure;
+
 import static java.util.Arrays.asList;
 
-import lombok.Data;
+import static org.zwobble.shed.compiler.parsing.nodes.structure.ScopedNodes.sameScope;
 
 @Data
 public class AssignmentExpressionNode implements ExpressionNode {
@@ -11,6 +15,6 @@ public class AssignmentExpressionNode implements ExpressionNode {
     
     @Override
     public SyntaxNodeStructure describeStructure() {
-        return SyntaxNodeStructure.build(asList(target, value));
+        return SyntaxNodeStructure.build(sameScope(asList(target, value)));
     }
 }
