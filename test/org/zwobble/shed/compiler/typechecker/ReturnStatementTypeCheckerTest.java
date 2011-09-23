@@ -8,6 +8,7 @@ import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
+import org.zwobble.shed.compiler.typechecker.errors.CannotReturnHereError;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
@@ -20,6 +21,7 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
+import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.typechecker.ReturnStatementTypeChecker.typeCheckReturnStatement;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
@@ -32,8 +34,8 @@ public class ReturnStatementTypeCheckerTest {
     cannotReturnIfReturnTypeIsNone() {
         ReturnNode returnStatement = new ReturnNode(new BooleanLiteralNode(true));
         assertThat(
-            errorStrings(typeCheck(returnStatement, staticContext(), Option.<Type>none())),
-            is(asList("Cannot return from this scope"))
+            typeCheck(returnStatement, staticContext(), Option.<Type>none()),
+            isFailureWithErrors(new CannotReturnHereError())
         );
     }
     

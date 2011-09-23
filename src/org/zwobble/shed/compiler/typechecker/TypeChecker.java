@@ -79,7 +79,7 @@ public class TypeChecker {
             return TypeResult.success(StatementTypeCheckResult.noReturn()).withErrorsFrom(result);
         }
         if (statement instanceof ObjectDeclarationNode) {
-            return typeCheckObjectDeclaration((ObjectDeclarationNode)statement, nodeLocations, context, returnType);
+            return typeCheckObjectDeclaration((ObjectDeclarationNode)statement, nodeLocations, context);
         }
         if (statement instanceof PublicDeclarationNode) {
             return typeCheckStatement(((PublicDeclarationNode) statement).getDeclaration(), nodeLocations, context, returnType);
@@ -99,13 +99,12 @@ public class TypeChecker {
     public static TypeResult<StatementTypeCheckResult> typeCheckObjectDeclaration(
         ObjectDeclarationNode objectDeclaration,
         NodeLocations nodeLocations,
-        StaticContext context,
-        Option<Type> returnType
+        StaticContext context
     ) {
         TypeResult<StatementTypeCheckResult> result = TypeResult.success(StatementTypeCheckResult.noReturn());
 
         TypeResult<StatementTypeCheckResult> blockResult = 
-            typeCheckBlock(objectDeclaration.getStatements(), nodeLocations, context, returnType);
+            typeCheckBlock(objectDeclaration.getStatements(), nodeLocations, context, Option.<Type>none());
         result = result.withErrorsFrom(blockResult);
         
         if (result.isSuccess()) {

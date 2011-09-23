@@ -3,7 +3,6 @@ package org.zwobble.shed.compiler.typechecker;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.SimpleErrorDescription;
@@ -99,7 +98,7 @@ public class TypeCheckerTest {
             Nodes.block(Nodes.immutableVar("version", stringReference, Nodes.number("1.2")))
         );
         TypeResult<?> result =
-            TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext(), Option.<Type>none());
+            TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext());
         assertThat(result, isFailureWithErrors(
             new SimpleErrorDescription("Cannot initialise variable of type \"String\" with expression of type \"Number\"")
         ));
@@ -109,11 +108,10 @@ public class TypeCheckerTest {
     objectDeclarationDoesNotReturnFromScope() {
         ObjectDeclarationNode objectDeclarationNode = new ObjectDeclarationNode("browser", Nodes.block());
         TypeResult<StatementTypeCheckResult> result = 
-            TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext(), Option.<Type>none());
+            TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext());
         assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
     }
     
-    @Ignore
     @Test public void
     objectDeclarationBodyCannotReturn() {
         ObjectDeclarationNode objectDeclarationNode = new ObjectDeclarationNode(
@@ -121,7 +119,7 @@ public class TypeCheckerTest {
             Nodes.block(Nodes.returnStatement(Nodes.number("42")))
         );
         TypeResult<StatementTypeCheckResult> result = 
-            TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext(), some(CoreTypes.NUMBER));
+            TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext());
         assertThat(result, isFailureWithErrors(new CannotReturnHereError()));
     }
     
@@ -135,7 +133,7 @@ public class TypeCheckerTest {
         fullNames.addFullyQualifiedName(objectDeclarationNode, fullyQualifiedName("shed", "browser"));
         StaticContext staticContext = staticContext();
         TypeResult<StatementTypeCheckResult> result = 
-            TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext, Option.<Type>none());
+            TypeChecker.typeCheckObjectDeclaration(objectDeclarationNode, nodeLocations, staticContext);
         assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
         ScalarType browserType = (ScalarType)staticContext.get(objectDeclarationNode).getType();
         assertThat(browserType.getMembers(), is((Object)ImmutableMap.of("name", ValueInfo.unassignableValue(CoreTypes.STRING))));

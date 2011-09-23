@@ -5,10 +5,10 @@ import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
+import org.zwobble.shed.compiler.typechecker.errors.CannotReturnHereError;
 import org.zwobble.shed.compiler.typechecker.errors.WrongReturnTypeError;
 import org.zwobble.shed.compiler.types.Type;
 
-import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
 import static org.zwobble.shed.compiler.typechecker.TypeInferer.inferType;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
@@ -19,12 +19,13 @@ public class ReturnStatementTypeChecker {
         ReturnNode returnStatement, NodeLocations nodeLocations, StaticContext context, Option<Type> returnType
     ) {
         if (!returnType.hasValue()) {
-            return failure(StatementTypeCheckResult.alwaysReturns(), asList(
-                CompilerError.error(
+            return failure(
+                StatementTypeCheckResult.alwaysReturns(),
+                new CompilerError(
                     nodeLocations.locate(returnStatement),
-                    "Cannot return from this scope"
+                    new CannotReturnHereError()
                 )
-            ));
+            );
         }
         ExpressionNode expression = returnStatement.getExpression();
         TypeResult<Type> expressionType = inferType(expression, nodeLocations, context);
