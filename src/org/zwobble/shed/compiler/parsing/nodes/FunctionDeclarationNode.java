@@ -5,7 +5,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class FunctionDeclarationNode implements DeclarationNode {
+public class FunctionDeclarationNode implements DeclarationNode, FunctionWithBodyNode {
     private final String identifier;
     private final List<FormalArgumentNode> formalArguments;
     private final ExpressionNode returnType;

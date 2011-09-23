@@ -12,6 +12,7 @@ import org.zwobble.shed.compiler.parsing.nodes.AssignmentExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.FunctionWithBodyNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
@@ -64,7 +65,7 @@ public class TypeInferer {
             return inferType((ShortLambdaExpressionNode)expression, nodeLocations, context);
         }
         if (expression instanceof LongLambdaExpressionNode) {
-            return inferLongLambdaExpressionType((LongLambdaExpressionNode)expression, nodeLocations, context);
+            return inferFunctionType((LongLambdaExpressionNode)expression, nodeLocations, context);
         }
         if (expression instanceof CallNode) {
             return inferCallType((CallNode)expression, nodeLocations, context);
@@ -126,10 +127,10 @@ public class TypeInferer {
         }
     }
 
-    private static TypeResult<ValueInfo>
-    inferLongLambdaExpressionType(final LongLambdaExpressionNode lambdaExpression, final NodeLocations nodeLocations, final StaticContext context) {
-        final TypeResult<List<Type>> argumentTypeResults = inferArgumentTypesAndAddToContext(lambdaExpression.getFormalArguments(), nodeLocations, context);
-        TypeResult<Type> returnTypeResult = lookupTypeReference(lambdaExpression.getReturnType(), nodeLocations, context);
+    public static TypeResult<ValueInfo>
+    inferFunctionType(final FunctionWithBodyNode function, final NodeLocations nodeLocations, final StaticContext context) {
+        final TypeResult<List<Type>> argumentTypeResults = inferArgumentTypesAndAddToContext(function.getFormalArguments(), nodeLocations, context);
+        TypeResult<Type> returnTypeResult = lookupTypeReference(function.getReturnType(), nodeLocations, context);
 
         TypeResult<?> result = argumentTypeResults.withErrorsFrom(returnTypeResult);
         TypeResult<Void> bodyResult = returnTypeResult.use(new Function<Type, TypeResult<Void>>() {
@@ -138,13 +139,13 @@ public class TypeInferer {
                 TypeResult<Void> result = success();
 
                 TypeResult<StatementTypeCheckResult> blockResult = 
-                    new BlockTypeChecker().typeCheckBlock(lambdaExpression.getBody(), context, nodeLocations, Option.some(returnType));
+                    new BlockTypeChecker().typeCheckBlock(function.getBody(), context, nodeLocations, Option.some(returnType));
                 
                 result = result.withErrorsFrom(blockResult);
                 
                 if (!blockResult.get().hasReturned()) {
                     result = result.withErrorsFrom(TypeResult.<Type>failure(new CompilerError(
-                        nodeLocations.locate(lambdaExpression),
+                        nodeLocations.locate(function),
                         new MissingReturnStatementError()
                     )));
                 }
