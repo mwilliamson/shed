@@ -1,7 +1,5 @@
 package org.zwobble.shed.compiler.parsing.nodes;
 
-import java.util.Collections;
-
 import lombok.Data;
 
 @Data
@@ -10,6 +8,6 @@ public class VariableIdentifierNode implements ExpressionNode {
     
     @Override
     public SyntaxNodeStructure describeStructure() {
-        return SyntaxNodeStructure.build(Collections.<SyntaxNode>emptyList());
+        return SyntaxNodeStructure.LEAF;
     }
 }
