@@ -3,6 +3,7 @@ package org.zwobble.shed.compiler.typechecker;
 import java.util.Arrays;
 import java.util.Collections;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.SimpleErrorDescription;
@@ -247,6 +248,30 @@ public class TypeCheckerTest {
             Nodes.block(Nodes.returnStatement(Nodes.number("42")))
         );
         references.addReference(numberReference, numberDeclaration);
+        StaticContext staticContext = staticContext();
+        staticContext.add(numberDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.NUMBER)));
+        TypeResult<StatementTypeCheckResult> result = 
+            TypeChecker.typeCheckStatement(functionDeclaration, nodeLocations, staticContext, Option.<Type>none());
+        assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
+        assertThat(staticContext.get(functionDeclaration), is(success(unassignableValue(CoreTypes.functionTypeOf(CoreTypes.NUMBER)))));
+    }
+    
+    @Ignore
+    @Test public void
+    functionDeclarationCanCallItself() {
+        // TODO: split type checking the body from type checking arguments/return types so that function decl can do the latter before the former
+        GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Number");
+        VariableIdentifierNode numberReference = Nodes.id("Number");
+        
+        VariableIdentifierNode functionReference = Nodes.id("now");
+        FunctionDeclarationNode functionDeclaration = new FunctionDeclarationNode(
+            "now",
+            Collections.<FormalArgumentNode>emptyList(),
+            numberReference,
+            Nodes.block(Nodes.returnStatement(functionReference))
+        );
+        references.addReference(numberReference, numberDeclaration);
+        references.addReference(functionReference, functionDeclaration);
         StaticContext staticContext = staticContext();
         staticContext.add(numberDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.NUMBER)));
         TypeResult<StatementTypeCheckResult> result = 
