@@ -3,11 +3,13 @@ package org.zwobble.shed.compiler.typechecker;
 import java.util.Arrays;
 import java.util.Collections;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerTesting;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.SimpleErrorDescription;
 import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
+import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
@@ -257,6 +259,25 @@ public class TypeCheckerTest {
     }
     
     @Test public void
+    functionDeclarationBodyIsTypeChecked() {
+        GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Number");
+        VariableIdentifierNode numberReference = Nodes.id("Number");
+        
+        FunctionDeclarationNode functionDeclaration = new FunctionDeclarationNode(
+            "now",
+            Collections.<FormalArgumentNode>emptyList(),
+            numberReference,
+            Nodes.block(Nodes.returnStatement(Nodes.bool(true)))
+        );
+        references.addReference(numberReference, numberDeclaration);
+        StaticContext staticContext = staticContext();
+        staticContext.add(numberDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.NUMBER)));
+        TypeResult<StatementTypeCheckResult> result = 
+            TypeChecker.typeCheckStatement(functionDeclaration, nodeLocations, staticContext, Option.<Type>none());
+        assertThat(result, CompilerTesting.isFailureWithErrors(new WrongReturnTypeError(CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
+    }
+    
+    @Test public void
     functionDeclarationCanCallItself() {
         GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Number");
         VariableIdentifierNode numberReference = Nodes.id("Number");
@@ -278,23 +299,40 @@ public class TypeCheckerTest {
         assertThat(staticContext.get(functionDeclaration), is(success(unassignableValue(CoreTypes.functionTypeOf(CoreTypes.NUMBER)))));
     }
     
+    @Ignore
     @Test public void
-    functionDeclarationBodyIsTypeCheckedCanCallItself() {
+    functionDeclarationsCanBeMutuallyRecursive() {
         GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Number");
         VariableIdentifierNode numberReference = Nodes.id("Number");
-        
-        FunctionDeclarationNode functionDeclaration = new FunctionDeclarationNode(
-            "now",
-            Collections.<FormalArgumentNode>emptyList(),
-            numberReference,
-            Nodes.block(Nodes.returnStatement(Nodes.bool(true)))
-        );
         references.addReference(numberReference, numberDeclaration);
+        
+        VariableIdentifierNode firstFunctionReference = Nodes.id("first");
+        VariableIdentifierNode secondFunctionReference = Nodes.id("second");
+        VariableIdentifierNode thirdFunctionReference = Nodes.id("third");
+        
+        FunctionDeclarationNode firstFunctionDeclaration = new FunctionDeclarationNode(
+            "first", Collections.<FormalArgumentNode>emptyList(), numberReference,
+            Nodes.block(Nodes.returnStatement(Nodes.call(secondFunctionReference)))
+        );
+        FunctionDeclarationNode secondFunctionDeclaration = new FunctionDeclarationNode(
+            "second", Collections.<FormalArgumentNode>emptyList(), numberReference,
+            Nodes.block(Nodes.returnStatement(Nodes.call(thirdFunctionReference)))
+        );
+        FunctionDeclarationNode thirdFunctionDeclaration = new FunctionDeclarationNode(
+            "third", Collections.<FormalArgumentNode>emptyList(), numberReference,
+            Nodes.block(Nodes.returnStatement(Nodes.call(firstFunctionReference)))
+        );
+        references.addReference(firstFunctionReference, firstFunctionDeclaration);
+        references.addReference(secondFunctionReference, secondFunctionDeclaration);
+        references.addReference(thirdFunctionReference, thirdFunctionDeclaration);
+        
         StaticContext staticContext = staticContext();
         staticContext.add(numberDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.NUMBER)));
+        BlockNode block = Nodes.block(firstFunctionDeclaration, secondFunctionDeclaration, thirdFunctionDeclaration);
         TypeResult<StatementTypeCheckResult> result = 
-            TypeChecker.typeCheckStatement(functionDeclaration, nodeLocations, staticContext, Option.<Type>none());
-        assertThat(result, CompilerTesting.isFailureWithErrors(new WrongReturnTypeError(CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
+            TypeChecker.typeCheckBlock(block, nodeLocations, staticContext, Option.<Type>none());
+        assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
+        assertThat(staticContext.get(firstFunctionDeclaration), is(success(unassignableValue(CoreTypes.functionTypeOf(CoreTypes.NUMBER)))));
     }
     
     private TypeResult<Void> typeCheck(SourceNode source) {
