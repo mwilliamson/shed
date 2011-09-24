@@ -3,8 +3,8 @@ package org.zwobble.shed.compiler.typechecker;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.junit.Ignore;
 import org.junit.Test;
+import org.zwobble.shed.compiler.CompilerTesting;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.SimpleErrorDescription;
 import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
@@ -256,10 +256,8 @@ public class TypeCheckerTest {
         assertThat(staticContext.get(functionDeclaration), is(success(unassignableValue(CoreTypes.functionTypeOf(CoreTypes.NUMBER)))));
     }
     
-    @Ignore
     @Test public void
     functionDeclarationCanCallItself() {
-        // TODO: split type checking the body from type checking arguments/return types so that function decl can do the latter before the former
         GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Number");
         VariableIdentifierNode numberReference = Nodes.id("Number");
         
@@ -268,7 +266,7 @@ public class TypeCheckerTest {
             "now",
             Collections.<FormalArgumentNode>emptyList(),
             numberReference,
-            Nodes.block(Nodes.returnStatement(functionReference))
+            Nodes.block(Nodes.returnStatement(Nodes.call(functionReference)))
         );
         references.addReference(numberReference, numberDeclaration);
         references.addReference(functionReference, functionDeclaration);
@@ -278,6 +276,25 @@ public class TypeCheckerTest {
             TypeChecker.typeCheckStatement(functionDeclaration, nodeLocations, staticContext, Option.<Type>none());
         assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
         assertThat(staticContext.get(functionDeclaration), is(success(unassignableValue(CoreTypes.functionTypeOf(CoreTypes.NUMBER)))));
+    }
+    
+    @Test public void
+    functionDeclarationBodyIsTypeCheckedCanCallItself() {
+        GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Number");
+        VariableIdentifierNode numberReference = Nodes.id("Number");
+        
+        FunctionDeclarationNode functionDeclaration = new FunctionDeclarationNode(
+            "now",
+            Collections.<FormalArgumentNode>emptyList(),
+            numberReference,
+            Nodes.block(Nodes.returnStatement(Nodes.bool(true)))
+        );
+        references.addReference(numberReference, numberDeclaration);
+        StaticContext staticContext = staticContext();
+        staticContext.add(numberDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.NUMBER)));
+        TypeResult<StatementTypeCheckResult> result = 
+            TypeChecker.typeCheckStatement(functionDeclaration, nodeLocations, staticContext, Option.<Type>none());
+        assertThat(result, CompilerTesting.isFailureWithErrors(new WrongReturnTypeError(CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
     }
     
     private TypeResult<Void> typeCheck(SourceNode source) {

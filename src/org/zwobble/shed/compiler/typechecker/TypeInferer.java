@@ -65,7 +65,7 @@ public class TypeInferer {
             return inferType((ShortLambdaExpressionNode)expression, nodeLocations, context);
         }
         if (expression instanceof LongLambdaExpressionNode) {
-            return inferFunctionType((LongLambdaExpressionNode)expression, nodeLocations, context);
+            return inferFunctionTypeAndTypeCheckBody((LongLambdaExpressionNode)expression, nodeLocations, context);
         }
         if (expression instanceof CallNode) {
             return inferCallType((CallNode)expression, nodeLocations, context);
@@ -128,15 +128,34 @@ public class TypeInferer {
     }
 
     public static TypeResult<ValueInfo>
-    inferFunctionType(final FunctionWithBodyNode function, final NodeLocations nodeLocations, final StaticContext context) {
+    inferFunctionTypeAndTypeCheckBody(final FunctionWithBodyNode function, final NodeLocations nodeLocations, final StaticContext context) {
+        TypeResult<ValueInfo> typeResult = inferFunctionType(function, nodeLocations, context);
+        return typeResult.ifValueThen(typeCheckBody(function, nodeLocations, context));
+    }
+    
+    public static TypeResult<ValueInfo> inferFunctionType(
+        final FunctionWithBodyNode function, final NodeLocations nodeLocations, final StaticContext context
+    ) {
         final TypeResult<List<Type>> argumentTypeResults = inferArgumentTypesAndAddToContext(function.getFormalArguments(), nodeLocations, context);
         TypeResult<Type> returnTypeResult = lookupTypeReference(function.getReturnType(), nodeLocations, context);
-
-        TypeResult<?> result = argumentTypeResults.withErrorsFrom(returnTypeResult);
-        TypeResult<Void> bodyResult = returnTypeResult.use(new Function<Type, TypeResult<Void>>() {
+        
+        return returnTypeResult.ifValueThen(new Function<Type, TypeResult<Type>>() {
             @Override
-            public TypeResult<Void> apply(Type returnType) {
-                TypeResult<Void> result = success();
+            public TypeResult<Type> apply(Type returnType) {
+                return argumentTypeResults.ifValueThen(buildFunctionType(returnType));
+            }
+        }).ifValueThen(toValueInfo());
+    }
+
+    public static Function<ValueInfo, TypeResult<ValueInfo>> typeCheckBody(
+        final FunctionWithBodyNode function, final NodeLocations nodeLocations,final StaticContext context
+    ) {
+        return new Function<ValueInfo, TypeResult<ValueInfo>>() {
+            @Override
+            public TypeResult<ValueInfo> apply(ValueInfo returnTypeInfo) {
+                List<Type> functionTypeParameters = ((TypeApplication)returnTypeInfo.getType()).getTypeParameters();
+                Type returnType = functionTypeParameters.get(functionTypeParameters.size() - 1);
+                TypeResult<ValueInfo> result = success(returnTypeInfo);
 
                 TypeResult<StatementTypeCheckResult> blockResult = 
                     new BlockTypeChecker().typeCheckBlock(function.getBody(), context, nodeLocations, Option.some(returnType));
@@ -151,15 +170,7 @@ public class TypeInferer {
                 }
                 return result;
             }
-        });
-        result = result.withErrorsFrom(bodyResult);
-        
-        return returnTypeResult.use(new Function<Type, TypeResult<Type>>() {
-            @Override
-            public TypeResult<Type> apply(Type returnType) {
-                return argumentTypeResults.use(buildFunctionType(returnType));
-            }
-        }).withErrorsFrom(result).ifValueThen(toValueInfo());
+        };
     }
 
     private static TypeResult<ValueInfo> inferCallType(final CallNode expression, final NodeLocations nodeLocations, final StaticContext context) {

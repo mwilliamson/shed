@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.zwobble.shed.compiler.CompilerError;
+import org.zwobble.shed.compiler.Function0;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.SourceRange;
@@ -131,17 +132,24 @@ public class TypeChecker {
         StaticContext context
     ) {
         TypeResult<ValueInfo> typeResult = TypeInferer.inferFunctionType(functionDeclaration, nodeLocations, context);
-        return typeResult.ifValueThen(addToContext(functionDeclaration, context));
+        typeResult.ifValueThen(addToContext(functionDeclaration, context));
+        TypeResult<ValueInfo> bodyResult = typeResult.ifValueThen(TypeInferer.typeCheckBody(functionDeclaration, nodeLocations, context));
+        return typeResult.withErrorsFrom(bodyResult).then(new Function0<TypeResult<StatementTypeCheckResult>>() {
+            @Override
+            public TypeResult<StatementTypeCheckResult> apply() {
+                return TypeResult.success(StatementTypeCheckResult.noReturn());
+            }
+        });
     }
 
-    private static Function<ValueInfo, TypeResult<StatementTypeCheckResult>> addToContext(
+    private static Function<ValueInfo, TypeResult<Void>> addToContext(
         final DeclarationNode declaration, final StaticContext context
     ) {
-        return new Function<ValueInfo, TypeResult<StatementTypeCheckResult>>() {
+        return new Function<ValueInfo, TypeResult<Void>>() {
             @Override
-            public TypeResult<StatementTypeCheckResult> apply(ValueInfo input) {
+            public TypeResult<Void> apply(ValueInfo input) {
                 context.add(declaration, input);
-                return success(StatementTypeCheckResult.noReturn());
+                return success();
             }
         };
     }
