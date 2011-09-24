@@ -1,5 +1,7 @@
 package org.zwobble.shed.compiler.typechecker;
 
+import javax.inject.Inject;
+
 import org.zwobble.shed.compiler.Function0;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
@@ -10,6 +12,7 @@ import org.zwobble.shed.compiler.types.Type;
 public class BlockTypeChecker {
     private final AllStatementsTypeChecker statementsTypeChecker;
 
+    @Inject
     public BlockTypeChecker(AllStatementsTypeChecker statementsTypeChecker) {
         this.statementsTypeChecker = statementsTypeChecker;
     }

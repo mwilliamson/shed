@@ -1,5 +1,7 @@
 package org.zwobble.shed.compiler.typechecker;
 
+import javax.inject.Inject;
+
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.WhileStatementNode;
@@ -11,6 +13,7 @@ public class WhileStatementTypeChecker implements StatementTypeChecker<WhileStat
     private final ConditionTypeChecker conditionTypeChecker;
     private final BlockTypeChecker blockTypeChecker;
 
+    @Inject
     public WhileStatementTypeChecker(ConditionTypeChecker conditionTypeChecker, BlockTypeChecker blockTypeChecker) {
         this.conditionTypeChecker = conditionTypeChecker;
         this.blockTypeChecker = blockTypeChecker;

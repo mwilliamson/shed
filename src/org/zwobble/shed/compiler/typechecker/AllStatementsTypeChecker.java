@@ -1,8 +1,9 @@
 package org.zwobble.shed.compiler.typechecker;
 
 import java.util.HashMap;
-
 import java.util.Map;
+
+import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
@@ -17,28 +18,31 @@ import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.WhileStatementNode;
 import org.zwobble.shed.compiler.types.Type;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+
 public class AllStatementsTypeChecker {
     public static AllStatementsTypeChecker build() {
-        AllStatementsTypeChecker typeChecker = new AllStatementsTypeChecker();
-        BlockTypeChecker blockTypeChecker = new BlockTypeChecker(typeChecker);
-        ConditionTypeChecker conditionTypeChecker = new ConditionTypeChecker();
-        typeChecker.add(VariableDeclarationNode.class, new VariableDeclarationTypeChecker());
-        typeChecker.add(PublicDeclarationNode.class, new PublicDeclarationTypeChecker(typeChecker));
-        typeChecker.add(ReturnNode.class, new ReturnStatementTypeChecker());
-        typeChecker.add(ExpressionStatementNode.class, new ExpressionStatementTypeChecker());
-        typeChecker.add(ObjectDeclarationNode.class, new ObjectDeclarationTypeChecker(blockTypeChecker));
-        typeChecker.add(IfThenElseStatementNode.class, new IfThenElseTypeChecker(conditionTypeChecker, blockTypeChecker));
-        typeChecker.add(WhileStatementNode.class, new WhileStatementTypeChecker(conditionTypeChecker, blockTypeChecker));
-        typeChecker.add(FunctionDeclarationNode.class, new FunctionDeclarationTypeChecker());
-        return typeChecker;
+        return new AllStatementsTypeChecker(Guice.createInjector());
     }
     
-    private final Map<Class<?>, StatementTypeChecker<?>> typeCheckers = new HashMap<Class<?>, StatementTypeChecker<?>>();
+    private final Map<Class<?>, Class<? extends StatementTypeChecker<?>>> typeCheckers = new HashMap<Class<?>, Class<? extends StatementTypeChecker<?>>>();
+    private final Injector injector;
     
-    private AllStatementsTypeChecker() {
+    @Inject
+    public AllStatementsTypeChecker(Injector injector) {
+        this.injector = injector;
+        add(VariableDeclarationNode.class, VariableDeclarationTypeChecker.class);
+        add(PublicDeclarationNode.class, PublicDeclarationTypeChecker.class);
+        add(ReturnNode.class, ReturnStatementTypeChecker.class);
+        add(ExpressionStatementNode.class, ExpressionStatementTypeChecker.class);
+        add(ObjectDeclarationNode.class, ObjectDeclarationTypeChecker.class);
+        add(IfThenElseStatementNode.class, IfThenElseTypeChecker.class);
+        add(WhileStatementNode.class, WhileStatementTypeChecker.class);
+        add(FunctionDeclarationNode.class, FunctionDeclarationTypeChecker.class);
     }
     
-    private <T extends StatementNode> void add(Class<T> statementType, StatementTypeChecker<T> typeChecker) {
+    private <T extends StatementNode> void add(Class<T> statementType, Class<? extends StatementTypeChecker<T>> typeChecker) {
         typeCheckers.put(statementType, typeChecker);
     }
 
@@ -52,6 +56,7 @@ public class AllStatementsTypeChecker {
     @SuppressWarnings("unchecked")
     @Deprecated
     public <T extends StatementNode> StatementTypeChecker<T> getTypeChecker(T statement) {
-        return (StatementTypeChecker<T>) typeCheckers.get(statement.getClass());
+        Class<? extends StatementTypeChecker<?>> typeCheckerClass = typeCheckers.get(statement.getClass());
+        return (StatementTypeChecker<T>) injector.getInstance(typeCheckerClass);
     }
 }

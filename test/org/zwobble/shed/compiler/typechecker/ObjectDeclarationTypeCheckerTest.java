@@ -81,7 +81,7 @@ public class ObjectDeclarationTypeCheckerTest {
     private TypeResult<StatementTypeCheckResult> typeCheckObjectDeclaration(
         ObjectDeclarationNode objectDeclaration, StaticContext staticContext
     ) {
-        StatementTypeChecker<ObjectDeclarationNode> typeChecker = AllStatementsTypeChecker.build().getTypeChecker(objectDeclaration);
+        ObjectDeclarationTypeChecker typeChecker = TypeCheckerInjector.inject(ObjectDeclarationTypeChecker.class);
         return typeChecker.typeCheck(objectDeclaration, nodeLocations, staticContext, Option.<Type>none());
     }
 }

@@ -1,5 +1,7 @@
 package org.zwobble.shed.compiler.typechecker;
 
+import javax.inject.Inject;
+
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
@@ -8,6 +10,7 @@ import org.zwobble.shed.compiler.types.Type;
 public class PublicDeclarationTypeChecker implements StatementTypeChecker<PublicDeclarationNode> {
     private final AllStatementsTypeChecker statementsTypeChecker;
 
+    @Inject
     public PublicDeclarationTypeChecker(AllStatementsTypeChecker statementsTypeChecker) {
         this.statementsTypeChecker = statementsTypeChecker;
     }

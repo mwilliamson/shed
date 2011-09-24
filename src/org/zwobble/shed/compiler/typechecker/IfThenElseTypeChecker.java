@@ -1,5 +1,7 @@
 package org.zwobble.shed.compiler.typechecker;
 
+import javax.inject.Inject;
+
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
@@ -10,6 +12,7 @@ public class IfThenElseTypeChecker implements StatementTypeChecker<IfThenElseSta
     private final ConditionTypeChecker conditionTypeChecker;
     private final BlockTypeChecker blockTypeChecker;
 
+    @Inject
     public IfThenElseTypeChecker(ConditionTypeChecker conditionTypeChecker, BlockTypeChecker blockTypeChecker) {
         this.conditionTypeChecker = conditionTypeChecker;
         this.blockTypeChecker = blockTypeChecker;
