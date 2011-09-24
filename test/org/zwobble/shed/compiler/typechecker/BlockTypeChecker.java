@@ -6,21 +6,25 @@ import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.types.Type;
 
-import static org.zwobble.shed.compiler.typechecker.TypeChecker.typeCheckStatement;
-
 
 public class BlockTypeChecker {
+    private final AllStatementsTypeChecker statementsTypeChecker;
+
+    public BlockTypeChecker(AllStatementsTypeChecker statementsTypeChecker) {
+        this.statementsTypeChecker = statementsTypeChecker;
+    }
+    
     public TypeResult<StatementTypeCheckResult> typeCheckBlock(
         Iterable<StatementNode> statements,
-        StaticContext context,
         NodeLocations nodeLocations,
+        StaticContext context,
         Option<Type> returnType
     ) {
         TypeResult<Void> result = TypeResult.success(null);
         
         boolean hasReturnedYet = false;
         for (StatementNode statement : statements) {
-            TypeResult<StatementTypeCheckResult> statementResult = typeCheckStatement(statement, nodeLocations, context, returnType);
+            TypeResult<StatementTypeCheckResult> statementResult = statementsTypeChecker.typeCheck(statement, nodeLocations, context, returnType);
             result = result.withErrorsFrom(statementResult);
             if (statementResult.hasValue()) {
                 hasReturnedYet |= statementResult.get().hasReturned();   

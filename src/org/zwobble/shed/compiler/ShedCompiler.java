@@ -19,8 +19,10 @@ import org.zwobble.shed.compiler.referenceresolution.ReferenceResolverResult;
 import org.zwobble.shed.compiler.referenceresolution.References;
 import org.zwobble.shed.compiler.tokeniser.TokenPosition;
 import org.zwobble.shed.compiler.tokeniser.Tokeniser;
+import org.zwobble.shed.compiler.typechecker.AllStatementsTypeChecker;
+import org.zwobble.shed.compiler.typechecker.BlockTypeChecker;
 import org.zwobble.shed.compiler.typechecker.CoreModule;
-import org.zwobble.shed.compiler.typechecker.TypeChecker;
+import org.zwobble.shed.compiler.typechecker.SourceTypeChecker;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 
 import static org.zwobble.shed.compiler.typechecker.DefaultBrowserContext.defaultBrowserContext;
@@ -67,7 +69,7 @@ public class ShedCompiler {
             if (referencesResult.isSuccess()) {
                 FullyQualifiedNames fullNames = new TypeNamer().generateFullyQualifiedNames(sourceNode);
                 References references = referencesResult.getReferences();
-                TypeResult<Void> typeCheckResult = TypeChecker.typeCheck(sourceNode, parseResult, defaultBrowserContext(references, fullNames));
+                TypeResult<Void> typeCheckResult = new SourceTypeChecker(new BlockTypeChecker(AllStatementsTypeChecker.build())).typeCheck(sourceNode, parseResult, defaultBrowserContext(references, fullNames));
                 errors.addAll(typeCheckResult.getErrors());
                 
                 if (typeCheckResult.isSuccess()) {

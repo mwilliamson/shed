@@ -23,7 +23,6 @@ import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
-import static org.zwobble.shed.compiler.typechecker.ReturnStatementTypeChecker.typeCheckReturnStatement;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 public class ReturnStatementTypeCheckerTest {
@@ -67,7 +66,7 @@ public class ReturnStatementTypeCheckerTest {
     }
     
     private TypeResult<StatementTypeCheckResult> typeCheck(ReturnNode returnNode, StaticContext context, Option<Type> returnType) {
-        return typeCheckReturnStatement(returnNode, nodeLocations, context, returnType);
+        return new ReturnStatementTypeChecker().typeCheck(returnNode, nodeLocations, context, returnType);
     }
     
     private StaticContext staticContext() {

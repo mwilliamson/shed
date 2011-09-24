@@ -2,7 +2,9 @@ package org.zwobble.shed.compiler.typechecker;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerError;
+import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
+import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
@@ -12,6 +14,7 @@ import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
+import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -24,7 +27,6 @@ import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
 import static org.zwobble.shed.compiler.parsing.SourceRange.range;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
-import static org.zwobble.shed.compiler.typechecker.VariableDeclarationTypeChecker.typeCheckVariableDeclaration;
 
 public class VariableDeclarationTypeCheckerTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
@@ -96,6 +98,12 @@ public class VariableDeclarationTypeCheckerTest {
             typeCheckVariableDeclaration(variableNode, nodeLocations, staticContext),
             is(TypeResult.success(StatementTypeCheckResult.noReturn()))
         );
+    }
+    
+    private TypeResult<StatementTypeCheckResult> typeCheckVariableDeclaration(
+        VariableDeclarationNode node, NodeLocations nodeLocations, StaticContext context
+    ) {
+        return new VariableDeclarationTypeChecker().typeCheck(node, nodeLocations, context, Option.<Type>none());
     }
     
     private StaticContext standardContext() {

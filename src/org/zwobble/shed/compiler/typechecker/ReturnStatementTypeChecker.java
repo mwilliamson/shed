@@ -14,8 +14,9 @@ import static org.zwobble.shed.compiler.typechecker.TypeInferer.inferType;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
-public class ReturnStatementTypeChecker {
-    public static TypeResult<StatementTypeCheckResult> typeCheckReturnStatement(
+public class ReturnStatementTypeChecker implements StatementTypeChecker<ReturnNode> {
+    @Override
+    public TypeResult<StatementTypeCheckResult> typeCheck(
         ReturnNode returnStatement, NodeLocations nodeLocations, StaticContext context, Option<Type> returnType
     ) {
         if (!returnType.hasValue()) {

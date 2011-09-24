@@ -9,6 +9,7 @@ import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.SourceRange;
 import org.zwobble.shed.compiler.parsing.nodes.AssignmentExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
@@ -158,7 +159,7 @@ public class TypeInferer {
                 TypeResult<ValueInfo> result = success(returnTypeInfo);
 
                 TypeResult<StatementTypeCheckResult> blockResult = 
-                    new BlockTypeChecker().typeCheckBlock(function.getBody(), context, nodeLocations, Option.some(returnType));
+                    typeCheckBlock(function.getBody(), nodeLocations, context, Option.some(returnType));
                 
                 result = result.withErrorsFrom(blockResult);
                 
@@ -321,5 +322,11 @@ public class TypeInferer {
                 return success(unassignableValue(input));
             }
         };
+    }
+
+    private static TypeResult<StatementTypeCheckResult> typeCheckBlock(
+        BlockNode block, NodeLocations nodeLocations, StaticContext context, Option<Type> returnType
+    ) {
+        return new BlockTypeChecker(AllStatementsTypeChecker.build()).typeCheckBlock(block, nodeLocations, context, returnType);
     }
 }
