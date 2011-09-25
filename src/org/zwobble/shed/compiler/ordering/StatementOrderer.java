@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
+import org.zwobble.shed.compiler.CompilerError;
+import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.ordering.errors.UnpullableDeclarationError;
+import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
@@ -19,40 +23,87 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
+import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
 import static org.zwobble.shed.compiler.parsing.nodes.NodeNavigator.descendents;
 
 public class StatementOrderer {
-    public TypeResult<Iterable<StatementNode>> reorder(Iterable<StatementNode> statements, References references) {
+    public TypeResult<Iterable<StatementNode>> reorder(
+        Iterable<StatementNode> statements, NodeLocations nodeLocations, References references
+    ) {
         List<StatementNode> orderedStatements = new LinkedList<StatementNode>();
         Iterables.addAll(orderedStatements, filter(statements, not(reorderable())));
         
-        insertReorderableStatements(statements, orderedStatements, references);
+        TypeResult<Void> result = insertReorderableStatements(statements, orderedStatements, nodeLocations, references);
         
-        return TypeResult.<Iterable<StatementNode>>success(orderedStatements);
+        return TypeResult.<Iterable<StatementNode>>success(orderedStatements).withErrorsFrom(result);
     }
 
 
-    private void insertReorderableStatements(Iterable<StatementNode> statements, List<StatementNode> orderedStatements, References references) {
-        Iterable<StatementNode> reorderableStatements = filter(statements, reorderable());
-        for (StatementNode reorderableStatement : reorderableStatements) {
-            insertReorderableStatement(reorderableStatement, orderedStatements, references);
+    private TypeResult<Void> insertReorderableStatements(
+        Iterable<StatementNode> statements, List<StatementNode> orderedStatements, NodeLocations nodeLocations, References references
+    ) {
+        TypeResult<Void> result = success();
+        Iterable<DeclarationNode> reorderableStatements = filterToReorderableStatements(statements);
+        for (DeclarationNode reorderableStatement : reorderableStatements) {
+            result = result.withErrorsFrom(insertReorderableStatement(reorderableStatement, orderedStatements, nodeLocations, references));
+        }
+        return result;
+    }
+
+    private TypeResult<Void> insertReorderableStatement(
+        DeclarationNode reorderableStatement, List<StatementNode> orderedStatements, NodeLocations nodeLocations, References references
+    ) {
+        Option<Integer> firstDependentIndex = findFirstDependentIndex(reorderableStatement, orderedStatements, references);
+        Option<Integer> lastDependencyIndex = findLastDependencyIndex(reorderableStatement, orderedStatements, references);
+        if (firstDependentIndex.hasValue()) {
+            if (lastDependencyIndex.hasValue() && lastDependencyIndex.get() <= firstDependentIndex.get()) {
+                return TypeResult.failure(new CompilerError(
+                    nodeLocations.locate(reorderableStatement),
+                    new UnpullableDeclarationError(
+                        reorderableStatement,
+                        orderedStatements.get(lastDependencyIndex.get()),
+                        orderedStatements.get(firstDependentIndex.get())
+                    )
+                ));
+            } else {
+                orderedStatements.add(firstDependentIndex.get(), reorderableStatement);
+                return success();
+            }
+        } else {
+            orderedStatements.add(reorderableStatement);
+            return success();
         }
     }
-    
-    
-    private void insertReorderableStatement(StatementNode reorderableStatement, List<StatementNode> orderedStatements, References references) {
-        ListIterator<StatementNode> iterator = orderedStatements.listIterator(orderedStatements.size());
-        while (iterator.hasPrevious()) {
-            Set<Identity<DeclarationNode>> referredDeclarations = referredDeclarations(iterator.previous(), references);
-            if (!referredDeclarations.contains(new Identity<StatementNode>(reorderableStatement))) {
-                orderedStatements.add(iterator.nextIndex() + 1, reorderableStatement);
-                return;
+
+
+    private Option<Integer> findFirstDependentIndex(
+        StatementNode reorderableStatement, List<StatementNode> orderedStatements, References references
+    ) {
+        ListIterator<StatementNode> iterator = orderedStatements.listIterator();
+        while (iterator.hasNext()) {
+            Set<Identity<DeclarationNode>> referredDeclarations = referredDeclarations(iterator.next(), references);
+            if (referredDeclarations.contains(new Identity<StatementNode>(reorderableStatement))) {
+                return Option.some(iterator.previousIndex());
             }
         }
-        orderedStatements.add(0, reorderableStatement);
+        return Option.none();
+    }
+    
+    private Option<Integer> findLastDependencyIndex(
+        StatementNode reorderableStatement, List<StatementNode> orderedStatements, References references
+    ) {
+        Set<Identity<DeclarationNode>> referredDeclarations = referredDeclarations(reorderableStatement, references);
+        ListIterator<StatementNode> iterator = orderedStatements.listIterator(orderedStatements.size());
+        while (iterator.hasPrevious()) {
+            if (referredDeclarations.contains(new Identity<StatementNode>(iterator.previous()))) {
+                return Option.some(iterator.nextIndex());
+            }
+        }
+        return Option.none();
     }
 
     private Set<Identity<DeclarationNode>> referredDeclarations(SyntaxNode node, References references) {
@@ -72,6 +123,10 @@ public class StatementOrderer {
 
     private Iterable<VariableIdentifierNode> variableReferences(SyntaxNode node, References references) {
         return filter(descendents(node), VariableIdentifierNode.class);
+    }
+    
+    private Iterable<DeclarationNode> filterToReorderableStatements(Iterable<StatementNode> statements) {
+        return filter(filter(statements, DeclarationNode.class), reorderable());
     }
 
     private Predicate<StatementNode> reorderable() {
