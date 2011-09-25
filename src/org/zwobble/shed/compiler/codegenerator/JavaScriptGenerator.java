@@ -48,7 +48,6 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.Eager.transform;
 
@@ -161,7 +160,7 @@ public class JavaScriptGenerator {
         if (node instanceof ObjectDeclarationNode) {
             ObjectDeclarationNode objectDeclaration = (ObjectDeclarationNode) node;
             BlockNode statements = objectDeclaration.getStatements();
-            List<JavaScriptStatementNode> javaScriptBody = newArrayList(transform(statements, toJavaScriptStatement()));
+            List<JavaScriptStatementNode> javaScriptBody = generateBlock(statements);
 
             List<DeclarationNode> publicMembers = new ArrayList<DeclarationNode>();
             for (StatementNode statement : statements) {
@@ -185,8 +184,8 @@ public class JavaScriptGenerator {
             IfThenElseStatementNode ifThenElse = (IfThenElseStatementNode) node;
             return js.ifThenElse(
                 generateExpression(ifThenElse.getCondition()),
-                transform(ifThenElse.getIfTrue(), toJavaScriptStatement()),
-                transform(ifThenElse.getIfFalse(), toJavaScriptStatement())
+                generateBlock(ifThenElse.getIfTrue()),
+                generateBlock(ifThenElse.getIfFalse())
             );
         }
         if (node instanceof WhileStatementNode) {
@@ -212,8 +211,12 @@ public class JavaScriptGenerator {
         throw new RuntimeException("Cannot generate JavaScript for " + node);
     }
 
+    public List<JavaScriptStatementNode> generateBlock(BlockNode statements) {
+        return transform(statements, toJavaScriptStatement());
+    }
+
     private JavaScriptExpressionNode generateFunctionWithBody(FunctionWithBodyNode function) {
-        List<JavaScriptStatementNode> javaScriptBody = transform(function.getBody(), toJavaScriptStatement());
+        List<JavaScriptStatementNode> javaScriptBody = generateBlock(function.getBody());
         List<String> argumentNames = transform(function.getFormalArguments(), toFormalArgumentName());
         return js.func(argumentNames, javaScriptBody);
     }

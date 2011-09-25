@@ -11,6 +11,7 @@ import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.CompilerTesting;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
+import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
@@ -20,6 +21,7 @@ import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.PackageDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
@@ -181,19 +183,21 @@ public class ReferenceResolverTest {
     }
 
     @Test public void
-    cannotReferToVariableInCurrentScopeAndParentScopeNotYetDefinedInCurrentScope() {
+    alwaysUseDeclarationInCurrentScopeEvenIfDeclarationIsLaterThanReference() {
+        VariableIdentifierNode reference = Nodes.id("wind");
+        VariableDeclarationNode declaration = Nodes.immutableVar("wind", Nodes.bool(false));
         SyntaxNode source = Nodes.block(
             Nodes.immutableVar("wind", Nodes.string("decide")),
             Nodes.expressionStatement(new LongLambdaExpressionNode(
                 Collections.<FormalArgumentNode>emptyList(),
                 Nodes.id("String"),
                 Nodes.block(
-                    Nodes.expressionStatement(Nodes.id("wind")),
-                    Nodes.immutableVar("wind", Nodes.bool(false))
+                    Nodes.expressionStatement(reference),
+                    declaration
                 )
             ))
         );
-        assertThat(resolveReferences(source), isFailureWithErrors(new VariableNotDeclaredYetError("wind")));
+        assertThat(resolveReferences(source), hasReference(reference, declaration));
     }
 
     @Test public void
@@ -383,6 +387,21 @@ public class ReferenceResolverTest {
             Nodes.block(Nodes.returnStatement(functionReference))
         );
         assertThat(resolveReferences(functionDeclaration), hasReference(functionReference, functionDeclaration));
+    }
+    
+    @Test public void
+    functionDeclarationsArePulledToTheTopOfBlock() {
+        ReturnNode returnNode = new ReturnNode(Nodes.number("42"));
+        FunctionDeclarationNode functionDeclaration = new FunctionDeclarationNode(
+            "magic",
+            Collections.<FormalArgumentNode>emptyList(),
+            new VariableIdentifierNode("Number"),
+            Nodes.block(returnNode)
+        );
+        VariableIdentifierNode functionReference = Nodes.id("magic");
+        StatementNode functionCall = Nodes.expressionStatement(Nodes.call(functionReference));
+        BlockNode source = Nodes.block(functionCall, functionDeclaration);
+        assertThat(resolveReferences(source), hasReference(functionReference, functionDeclaration));
     }
 
     private ReferenceResolverResult resolveReferences(SyntaxNode node) {

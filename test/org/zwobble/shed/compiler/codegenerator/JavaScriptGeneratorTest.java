@@ -3,6 +3,7 @@ package org.zwobble.shed.compiler.codegenerator;
 import java.util.Arrays;
 import java.util.Collections;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptExpressionNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
@@ -11,6 +12,7 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNod
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatements;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.AssignmentExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
@@ -397,12 +399,43 @@ public class JavaScriptGeneratorTest {
         );
     }
     
+    @Ignore
+    @Test public void
+    functionDeclarationIsPulledToTopOfFunction() {
+        ReturnNode returnNode = new ReturnNode(Nodes.number("42"));
+        FunctionDeclarationNode function = new FunctionDeclarationNode(
+            "magic",
+            Collections.<FormalArgumentNode>emptyList(),
+            new VariableIdentifierNode("Number"),
+            Nodes.block(returnNode)
+        );
+        StatementNode functionCall = Nodes.expressionStatement(Nodes.call(Nodes.id("magic")));
+        BlockNode source = Nodes.block(functionCall, function);
+        assertGeneratedJavaScript(
+            source,
+            js.statements(
+                js.var("magic__1", js.func(Collections.<String>emptyList(), asList(
+                    (JavaScriptStatementNode)js.ret(generateLiteral(Nodes.number("42")))
+                ))),
+                js.expressionStatement(js.call(js.id("magic__1")))
+            )
+        );
+    }
+    
     private void assertGeneratedJavaScript(ExpressionNode source, JavaScriptNode expectedJavaScript) {
         assertGeneratedJavaScript(resolveReferences(source), source, expectedJavaScript);
     }
     
     private void assertGeneratedJavaScript(References references, ExpressionNode source, JavaScriptNode expectedJavaScript) {
         assertThat(generator(references).generateExpression(source), is(expectedJavaScript));
+    }
+    
+    private void assertGeneratedJavaScript(BlockNode source, JavaScriptStatements expectedJavaScript) {
+        assertGeneratedJavaScript(resolveReferences(source), source, expectedJavaScript);
+    }
+    
+    private void assertGeneratedJavaScript(References references, BlockNode source, JavaScriptStatements expectedJavaScript) {
+        assertThat(generator(references).generateBlock(source), is(expectedJavaScript.getStatements()));
     }
     
     private void assertGeneratedJavaScript(StatementNode source, JavaScriptNode expectedJavaScript) {
