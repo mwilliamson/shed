@@ -7,6 +7,7 @@ import java.util.Map;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.zwobble.shed.compiler.ordering.errors.UnpullableDeclarationError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
@@ -18,9 +19,11 @@ import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferenceResolver;
 import org.zwobble.shed.compiler.referenceresolution.ReferenceResolverResult;
 import org.zwobble.shed.compiler.referenceresolution.References;
+import org.zwobble.shed.compiler.referenceresolution.VariableNotDeclaredYetError;
 import org.zwobble.shed.compiler.typechecker.SimpleNodeLocations;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 
@@ -71,6 +74,32 @@ public class StatementOrdererTest {
         assertThat(
             reorder(Nodes.block(functionDeclaration, variableDeclaration)),
             isFailureWithErrors(new UnpullableDeclarationError(functionDeclaration, variableDeclaration, variableDeclaration))
+        );
+    }
+
+    @Test public void
+    errorIfUsingVariableNotYetDeclared() {
+        VariableIdentifierNode variableReference = Nodes.id("x");
+        VariableDeclarationNode variableDeclaration = Nodes.immutableVar("x", Nodes.number("4"));
+        
+        assertThat(
+            reorder(Nodes.block(Nodes.expressionStatement(variableReference), variableDeclaration)),
+            isFailureWithErrors(new VariableNotDeclaredYetError("x"))
+        );
+    }
+
+    @Ignore
+    @Test public void
+    functionDeclarationsCanCallEachOther() {
+        FunctionDeclarationNode firstFunctionDeclaration = Nodes.func(
+            "first", NO_ARGS, Nodes.id("Number"), Nodes.block(Nodes.returnStatement(Nodes.call(Nodes.id("second"))))
+        );
+        FunctionDeclarationNode secondFunctionDeclaration = Nodes.func(
+            "second", NO_ARGS, Nodes.id("Number"), Nodes.block(Nodes.returnStatement(Nodes.call(Nodes.id("first"))))
+        );
+        assertThat(
+            reorder(Nodes.block(firstFunctionDeclaration, secondFunctionDeclaration)),
+            isOrdering(firstFunctionDeclaration, secondFunctionDeclaration)
         );
     }
     

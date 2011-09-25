@@ -16,19 +16,21 @@ import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.References;
+import org.zwobble.shed.compiler.referenceresolution.VariableNotDeclaredYetError;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
 import static org.zwobble.shed.compiler.parsing.nodes.NodeNavigator.descendents;
+import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
+import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 public class StatementOrderer {
     public TypeResult<Iterable<StatementNode>> reorder(
@@ -37,9 +39,29 @@ public class StatementOrderer {
         List<StatementNode> orderedStatements = new LinkedList<StatementNode>();
         Iterables.addAll(orderedStatements, filter(statements, not(reorderable())));
         
-        TypeResult<Void> result = insertReorderableStatements(statements, orderedStatements, nodeLocations, references);
+        TypeResult<?> nonReorderableResult = checkDeclarationOrder(orderedStatements, nodeLocations, references);
+        TypeResult<?> reorderableResult = insertReorderableStatements(statements, orderedStatements, nodeLocations, references);
         
-        return TypeResult.<Iterable<StatementNode>>success(orderedStatements).withErrorsFrom(result);
+        return TypeResult.<Iterable<StatementNode>>success(orderedStatements).withErrorsFrom(reorderableResult, nonReorderableResult);
+    }
+
+
+    private TypeResult<?> checkDeclarationOrder(List<StatementNode> orderedStatements, NodeLocations nodeLocations, References references) {
+        TypeResult<?> result = success();
+        Set<Identity<DeclarationNode>> undeclaredVariables = Sets.newHashSet();
+        for (StatementNode statement : Lists.reverse(orderedStatements)) {
+            if (statement instanceof DeclarationNode) {
+                undeclaredVariables.add(new Identity<DeclarationNode>((DeclarationNode)statement));
+            }
+            for (VariableIdentifierNode reference : variableReferences(statement, references)) {
+                if (undeclaredVariables.contains(new Identity<SyntaxNode>(references.findReferent(reference)))) {
+                    result = result.withErrorsFrom(failure(
+                        new CompilerError(nodeLocations.locate(statement), new VariableNotDeclaredYetError(reference.getIdentifier()))
+                    ));
+                }
+            }
+        }
+        return result;
     }
 
 
@@ -119,7 +141,6 @@ public class StatementOrderer {
             }
         };
     }
-
 
     private Iterable<VariableIdentifierNode> variableReferences(SyntaxNode node, References references) {
         return filter(descendents(node), VariableIdentifierNode.class);
