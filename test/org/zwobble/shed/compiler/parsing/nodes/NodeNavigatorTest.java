@@ -167,6 +167,16 @@ public class NodeNavigatorTest {
         assertThat(children(Nodes.func("go", asList(formalArgument), returnType, body)), isNodes(formalArgument, returnType, body));
     }
     
+    @Test public void
+    canFindAllDescendantsOfNode() {
+        NumberLiteralNode value = Nodes.number("4");
+        VariableIdentifierNode reference = Nodes.id("x");
+        AssignmentExpressionNode assignment = Nodes.assign(reference, value);
+        ExpressionStatementNode statement = Nodes.expressionStatement(assignment);
+        BlockNode body = Nodes.block(statement);
+        assertThat(descendents(body), isNodes(body, statement, assignment, reference, value));
+    }
+    
     private Matcher<Iterable<? extends SyntaxNode>> isNodes(SyntaxNode... nodes) {
         Collection<Matcher<? super SyntaxNode>> matchers = newArrayList(transform(asList(nodes), toSameMatcher()));
         return new IsIterableContainingInAnyOrder<SyntaxNode>(matchers);
@@ -183,5 +193,9 @@ public class NodeNavigatorTest {
 
     private Iterable<? extends SyntaxNode> children(SyntaxNode node) {
         return NodeNavigator.children(node);
+    }
+
+    private Iterable<SyntaxNode> descendents(SyntaxNode node) {
+        return NodeNavigator.descendents(node);
     }
 }

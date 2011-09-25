@@ -16,4 +16,13 @@ public class NodeNavigator {
         }
         return nodes;
     }
+
+    public static Iterable<SyntaxNode> descendents(SyntaxNode node) {
+        List<SyntaxNode> nodes = new ArrayList<SyntaxNode>();
+        nodes.add(node);
+        for (SyntaxNode child : children(node)) {
+            Iterables.addAll(nodes, descendents(child));
+        }
+        return nodes;
+    }
 }
