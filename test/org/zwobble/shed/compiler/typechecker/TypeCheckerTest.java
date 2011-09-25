@@ -2,7 +2,6 @@ package org.zwobble.shed.compiler.typechecker;
 
 import java.util.Collections;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerTesting;
 import org.zwobble.shed.compiler.Option;
@@ -200,7 +199,6 @@ public class TypeCheckerTest {
         assertThat(staticContext.get(functionDeclaration), is(success(unassignableValue(CoreTypes.functionTypeOf(CoreTypes.NUMBER)))));
     }
     
-    @Ignore
     @Test public void
     functionDeclarationsCanBeMutuallyRecursive() {
         GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Number");
@@ -242,6 +240,6 @@ public class TypeCheckerTest {
     }
 
     private TypeResult<StatementTypeCheckResult> typeCheckStatement(StatementNode statement, StaticContext context, Option<Type> returnType) {
-        return AllStatementsTypeChecker.build().typeCheck(statement, nodeLocations, context, returnType);
+        return typeCheckBlock(Nodes.block(statement), context, returnType);
     }
 }

@@ -25,6 +25,11 @@ public class BlockTypeChecker {
     ) {
         TypeResult<Void> result = TypeResult.success(null);
         
+        for (StatementNode statement : statements) {
+            TypeResult<?> statementResult = statementsTypeChecker.forwardDeclare(statement, nodeLocations, context);
+            result = result.withErrorsFrom(statementResult);
+        }
+        
         boolean hasReturnedYet = false;
         for (StatementNode statement : statements) {
             TypeResult<StatementTypeCheckResult> statementResult = statementsTypeChecker.typeCheck(statement, nodeLocations, context, returnType);
