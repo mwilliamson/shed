@@ -15,10 +15,10 @@ import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferenceResolver;
 import org.zwobble.shed.compiler.referenceresolution.ReferenceResolverResult;
 import org.zwobble.shed.compiler.referenceresolution.References;
-import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 import org.zwobble.shed.compiler.typechecker.SimpleNodeLocations;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 
@@ -32,7 +32,6 @@ import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 
 public class StatementOrdererTest {
     private static final List<FormalArgumentNode> NO_ARGS = Collections.<FormalArgumentNode>emptyList();
-    private final ReferencesBuilder references = new ReferencesBuilder();
 
     @Test public void
     ordinaryStatementsHaveOrderUnaltered() {
@@ -46,6 +45,14 @@ public class StatementOrdererTest {
         ExpressionStatementNode functionCall = Nodes.expressionStatement(Nodes.call(Nodes.id("go")));
         FunctionDeclarationNode functionDeclaration = Nodes.func("go", NO_ARGS, Nodes.id("Number"), Nodes.block());
         assertThat(reorder(Nodes.block(functionCall, functionDeclaration)), isOrdering(functionDeclaration, functionCall));
+    }
+
+    @Test public void
+    functionDeclarationIsPushedDownIfItReliesOnVariableDeclaredLater() {
+        VariableDeclarationNode variableDeclaration = Nodes.immutableVar("x", Nodes.number("4"));
+        BlockNode body = Nodes.block(Nodes.returnStatement(Nodes.id("x")));
+        FunctionDeclarationNode functionDeclaration = Nodes.func("go", NO_ARGS, Nodes.id("Number"), body);
+        assertThat(reorder(Nodes.block(functionDeclaration, variableDeclaration)), isOrdering(variableDeclaration, functionDeclaration));
     }
     
     private Matcher<TypeResult<Iterable<StatementNode>>> isOrdering(final StatementNode... statements) {
@@ -69,8 +76,7 @@ public class StatementOrdererTest {
     }
     
     private TypeResult<Iterable<StatementNode>> reorder(BlockNode block) {
-        resolveReferences(block);
-        return new StatementOrderer().reorder(block, references.build());
+        return new StatementOrderer().reorder(block, resolveReferences(block));
     }
 
     private References resolveReferences(BlockNode block) {

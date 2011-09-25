@@ -3,9 +3,11 @@ package org.zwobble.shed.compiler.ordering;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
@@ -15,9 +17,9 @@ import org.zwobble.shed.compiler.typechecker.TypeResult;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 
 import static com.google.common.base.Predicates.not;
-import static com.google.common.collect.Iterables.contains;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
 import static org.zwobble.shed.compiler.parsing.nodes.NodeNavigator.descendents;
@@ -43,13 +45,19 @@ public class StatementOrderer {
     
     private void insertReorderableStatement(StatementNode reorderableStatement, List<StatementNode> orderedStatements, References references) {
         ListIterator<StatementNode> iterator = orderedStatements.listIterator(orderedStatements.size());
-        while (iterator.hasPrevious() && contains(referredDeclarations(iterator.previous(), references), reorderableStatement)) {
+        while (iterator.hasPrevious()) {
+            Set<Identity<DeclarationNode>> referredDeclarations = referredDeclarations(iterator.previous(), references);
+            if (!referredDeclarations.contains(new Identity<StatementNode>(reorderableStatement))) {
+                orderedStatements.add(iterator.nextIndex() + 1, reorderableStatement);
+                return;
+            }
         }
-        iterator.add(reorderableStatement);
+        orderedStatements.add(0, reorderableStatement);
     }
 
-    private Iterable<DeclarationNode> referredDeclarations(SyntaxNode node, References references) {
-        return transform(variableReferences(node, references), toReferredDeclaration(references));
+    private Set<Identity<DeclarationNode>> referredDeclarations(SyntaxNode node, References references) {
+        Iterable<DeclarationNode> declarations = transform(variableReferences(node, references), toReferredDeclaration(references));
+        return Sets.newHashSet(transform(declarations, Identity.<DeclarationNode>toIdentity()));
     }
 
     private Function<VariableIdentifierNode, DeclarationNode> toReferredDeclaration(final References references) {

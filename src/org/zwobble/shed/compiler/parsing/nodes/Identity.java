@@ -1,9 +1,20 @@
 package org.zwobble.shed.compiler.parsing.nodes;
 
+import com.google.common.base.Function;
+
 import lombok.ToString;
 
 @ToString
 public class Identity<T extends Node> {
+    public static <T extends Node> Function<T, Identity<T>> toIdentity() {
+        return new Function<T, Identity<T>>() {
+            @Override
+            public Identity<T> apply(T input) {
+                return new Identity<T>(input);
+            }
+        };
+    }
+    
     private final T node;
 
     public Identity(T node) {
