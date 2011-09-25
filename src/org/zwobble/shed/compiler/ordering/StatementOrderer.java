@@ -87,7 +87,7 @@ public class StatementOrderer {
                     nodeLocations.locate(reorderableStatement),
                     new UnpullableDeclarationError(
                         reorderableStatement,
-                        orderedStatements.get(lastDependencyIndex.get()),
+                        (DeclarationNode)orderedStatements.get(lastDependencyIndex.get()),
                         orderedStatements.get(firstDependentIndex.get())
                     )
                 ));
