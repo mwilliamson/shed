@@ -106,18 +106,30 @@ public class StatementOrderer {
             }
         }
         List<Entry<Identity<DeclarationNode>, Integer>> positions = newArrayList(minPositions.entrySet());
-        Collections.sort(positions, byPositionDescending());
+        Collections.sort(positions, byPositionDescending(reorderableStatements));
         for (Entry<Identity<DeclarationNode>, Integer> position : positions) {
             orderedStatements.add(position.getValue(), position.getKey().get());
         }
         return result;
     }
 
-    private Comparator<Entry<Identity<DeclarationNode>, Integer>> byPositionDescending() {
+    private Comparator<Entry<Identity<DeclarationNode>, Integer>> byPositionDescending(Iterable<DeclarationNode> reorderableStatements) {
+        final Map<Identity<DeclarationNode>, Integer> originalPositions = new HashMap<Identity<DeclarationNode>, Integer>();
+        int position = 0;
+        for (DeclarationNode statement : reorderableStatements) {
+            originalPositions.put(new Identity<DeclarationNode>(statement), position);
+            position++;
+        }
+        
         return new Comparator<Map.Entry<Identity<DeclarationNode>,Integer>>() {
             @Override
             public int compare(Entry<Identity<DeclarationNode>, Integer> first, Entry<Identity<DeclarationNode>, Integer> second) {
-                return second.getValue().compareTo(first.getValue());
+                int positionComparison = second.getValue().compareTo(first.getValue());
+                if (positionComparison != 0) {
+                    return positionComparison;
+                } else {
+                    return originalPositions.get(second.getKey()).compareTo(originalPositions.get(first.getKey()));
+                }
             }
         };
     }
