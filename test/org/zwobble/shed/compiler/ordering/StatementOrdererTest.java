@@ -101,6 +101,22 @@ public class StatementOrdererTest {
             isOrdering(firstFunctionDeclaration, secondFunctionDeclaration)
         );
     }
+
+    @Ignore
+    @Test public void
+    errorIfMutuallyRecursiveFunctionsCannotBeDeclaredTogether() {
+        FunctionDeclarationNode firstFunctionDeclaration = Nodes.func(
+            "first", NO_ARGS, Nodes.id("Number"), Nodes.block(Nodes.returnStatement(Nodes.call(Nodes.id("second"))))
+        );
+        VariableDeclarationNode variable = Nodes.immutableVar("x", Nodes.call(Nodes.id("first")));
+        FunctionDeclarationNode secondFunctionDeclaration = Nodes.func(
+            "second", NO_ARGS, Nodes.id("Number"), Nodes.block(Nodes.expressionStatement(Nodes.id("x")), Nodes.returnStatement(Nodes.call(Nodes.id("first"))))
+        );
+        assertThat(
+            reorder(Nodes.block(firstFunctionDeclaration, variable, secondFunctionDeclaration)),
+            isFailureWithErrors(new UnpullableDeclarationError(secondFunctionDeclaration, variable, firstFunctionDeclaration))
+        );
+    }
     
     private Matcher<TypeResult<Iterable<StatementNode>>> isOrdering(final StatementNode... statements) {
         return allOf(isSuccess(), new TypeSafeDiagnosingMatcher<TypeResult<Iterable<StatementNode>>>() {
