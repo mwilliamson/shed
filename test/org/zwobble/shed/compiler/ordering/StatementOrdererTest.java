@@ -88,7 +88,6 @@ public class StatementOrdererTest {
         );
     }
 
-    @Ignore
     @Test public void
     functionDeclarationsCanCallEachOther() {
         FunctionDeclarationNode firstFunctionDeclaration = Nodes.func(

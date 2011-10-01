@@ -1,8 +1,13 @@
 package org.zwobble.shed.compiler.ordering;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.zwobble.shed.compiler.CompilerError;
@@ -28,6 +33,7 @@ import com.google.common.collect.Sets;
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
+import static com.google.common.collect.Lists.newArrayList;
 import static org.zwobble.shed.compiler.parsing.nodes.NodeNavigator.descendents;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
@@ -68,21 +74,16 @@ public class StatementOrderer {
     private TypeResult<Void> insertReorderableStatements(
         Iterable<StatementNode> statements, List<StatementNode> orderedStatements, NodeLocations nodeLocations, References references
     ) {
-        TypeResult<Void> result = success();
         Iterable<DeclarationNode> reorderableStatements = filterToReorderableStatements(statements);
+        Map<Identity<DeclarationNode>, Integer> minPositions = new HashMap<Identity<DeclarationNode>, Integer>();
+        Map<Identity<DeclarationNode>, Integer> maxPositions = new HashMap<Identity<DeclarationNode>, Integer>();
+        
+        TypeResult<Void> result = success();
         for (DeclarationNode reorderableStatement : reorderableStatements) {
-            result = result.withErrorsFrom(insertReorderableStatement(reorderableStatement, orderedStatements, nodeLocations, references));
-        }
-        return result;
-    }
 
-    private TypeResult<Void> insertReorderableStatement(
-        DeclarationNode reorderableStatement, List<StatementNode> orderedStatements, NodeLocations nodeLocations, References references
-    ) {
-        Option<Integer> firstDependentIndex = findFirstDependentIndex(reorderableStatement, orderedStatements, references);
-        Option<Integer> lastDependencyIndex = findLastDependencyIndex(reorderableStatement, orderedStatements, references);
-        if (firstDependentIndex.hasValue()) {
-            if (lastDependencyIndex.hasValue() && lastDependencyIndex.get() <= firstDependentIndex.get()) {
+            Option<Integer> firstDependentIndex = findFirstDependentIndex(reorderableStatement, orderedStatements, references);
+            Option<Integer> lastDependencyIndex = findLastDependencyIndex(reorderableStatement, orderedStatements, references);
+            if (firstDependentIndex.hasValue() && lastDependencyIndex.hasValue() && lastDependencyIndex.get() <= firstDependentIndex.get()) {
                 return TypeResult.failure(new CompilerError(
                     nodeLocations.locate(reorderableStatement),
                     new UnpullableDeclarationError(
@@ -91,16 +92,35 @@ public class StatementOrderer {
                         orderedStatements.get(firstDependentIndex.get())
                     )
                 ));
-            } else {
-                orderedStatements.add(firstDependentIndex.get(), reorderableStatement);
-                return success();
             }
-        } else {
-            orderedStatements.add(reorderableStatement);
-            return success();
+            Identity<DeclarationNode> reorderableStatementIdentity = new Identity<DeclarationNode>(reorderableStatement);
+            if (lastDependencyIndex.hasValue()) {
+                minPositions.put(reorderableStatementIdentity, lastDependencyIndex.get() + 1);                
+            } else {
+                minPositions.put(reorderableStatementIdentity, 0);
+            }
+            if (firstDependentIndex.hasValue()) {
+                maxPositions.put(reorderableStatementIdentity, firstDependentIndex.get());
+            } else {
+                maxPositions.put(reorderableStatementIdentity, orderedStatements.size());
+            }
         }
+        List<Entry<Identity<DeclarationNode>, Integer>> positions = newArrayList(minPositions.entrySet());
+        Collections.sort(positions, byPositionDescending());
+        for (Entry<Identity<DeclarationNode>, Integer> position : positions) {
+            orderedStatements.add(position.getValue(), position.getKey().get());
+        }
+        return result;
     }
 
+    private Comparator<Entry<Identity<DeclarationNode>, Integer>> byPositionDescending() {
+        return new Comparator<Map.Entry<Identity<DeclarationNode>,Integer>>() {
+            @Override
+            public int compare(Entry<Identity<DeclarationNode>, Integer> first, Entry<Identity<DeclarationNode>, Integer> second) {
+                return second.getValue().compareTo(first.getValue());
+            }
+        };
+    }
 
     private Option<Integer> findFirstDependentIndex(
         StatementNode reorderableStatement, List<StatementNode> orderedStatements, References references
