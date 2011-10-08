@@ -39,7 +39,7 @@ public class DependencyGraphCheckerTest {
         DeclarationNode declaration = Nodes.func("go", NO_ARGS, Nodes.id("Number"), Nodes.block());
         StatementNode reference = Nodes.expressionStatement(Nodes.call(Nodes.id("go")));
         DependencyGraph graph = new DependencyGraph();
-        graph.addStrictLogicalDependency(declaration, reference);
+        graph.addDependency(declaration, reference);
         
         assertThat(check(asList(reference, declaration), graph), isSuccess());
     }
@@ -51,8 +51,8 @@ public class DependencyGraphCheckerTest {
         FunctionDeclarationNode functionDeclaration = Nodes.func("go", NO_ARGS, Nodes.id("Number"), body);
         
         DependencyGraph graph = new DependencyGraph();
-        graph.addStrictLogicalDependency(variableDeclaration, functionDeclaration);
-        graph.addStrictLogicalDependency(functionDeclaration, variableDeclaration);
+        graph.addDependency(variableDeclaration, functionDeclaration);
+        graph.addDependency(functionDeclaration, variableDeclaration);
         
         assertThat(
             check(asList(variableDeclaration, functionDeclaration), graph),
@@ -68,8 +68,8 @@ public class DependencyGraphCheckerTest {
         FunctionDeclarationNode functionDeclaration = Nodes.func("go", NO_ARGS, Nodes.id("Number"), body);
         
         DependencyGraph graph = new DependencyGraph();
-        graph.addStrictLogicalDependency(variableDeclaration, functionDeclaration);
-        graph.addStrictLogicalDependency(functionDeclaration, variableDeclaration);
+        graph.addDependency(variableDeclaration, functionDeclaration);
+        graph.addDependency(functionDeclaration, variableDeclaration);
         
         assertThat(
             check(asList(first, variableDeclaration, functionDeclaration), graph),
@@ -83,7 +83,7 @@ public class DependencyGraphCheckerTest {
         VariableDeclarationNode variableDeclaration = Nodes.immutableVar("x", Nodes.number("4"));
 
         DependencyGraph graph = new DependencyGraph();
-        graph.addStrictLogicalDependency(variableDeclaration, variableReference);
+        graph.addDependency(variableDeclaration, variableReference);
         
         assertThat(
             check(asList(variableReference, variableDeclaration), graph),
@@ -99,8 +99,8 @@ public class DependencyGraphCheckerTest {
         FunctionDeclarationNode functionDeclaration = Nodes.func("go", NO_ARGS, Nodes.id("Number"), functionBody);
 
         DependencyGraph graph = new DependencyGraph();
-        graph.addStrictLogicalDependency(functionDeclaration, call);
-        graph.addStrictLogicalDependency(variableDeclaration, functionDeclaration);
+        graph.addDependency(functionDeclaration, call);
+        graph.addDependency(variableDeclaration, functionDeclaration);
         
         assertThat(
             check(asList(call, variableDeclaration), graph),
@@ -114,14 +114,21 @@ public class DependencyGraphCheckerTest {
         StatementNode variableReference = Nodes.expressionStatement(Nodes.id("x"));
         
         DependencyGraph graph = new DependencyGraph();
-        graph.addStrictLogicalDependency(variableDeclaration, variableReference);
-        assertThat(
-            check(asList(
-                variableDeclaration,
-                variableReference
-            ), graph),
-            isSuccess()
-        );
+        graph.addDependency(variableDeclaration, variableReference);
+        assertThat(check(asList(variableDeclaration, variableReference), graph), isSuccess());
+    }
+    
+    @Test public void
+    functionsCanBeMutuallyRecursive() {
+        FunctionDeclarationNode firstFunction = Nodes.func("first", NO_ARGS, Nodes.id("Number"), Nodes.block());
+        FunctionDeclarationNode secondFunction = Nodes.func("second", NO_ARGS, Nodes.id("Number"), Nodes.block());
+        StatementNode call = Nodes.expressionStatement(Nodes.call(Nodes.id("first")));
+        
+        DependencyGraph graph = new DependencyGraph();
+        graph.addDependency(firstFunction, secondFunction);
+        graph.addDependency(secondFunction, firstFunction);
+        graph.addDependency(firstFunction, call);
+        assertThat(check(asList(firstFunction, secondFunction, call), graph), isSuccess());
     }
     
     private TypeResult<Void> check(List<? extends StatementNode> statements, DependencyGraph graph) {

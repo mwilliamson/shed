@@ -13,7 +13,7 @@ import static org.zwobble.shed.compiler.Eager.transform;
 public class DependencyGraph {
     private final Multimap<Identity<StatementNode>, Identity<DeclarationNode>> dependencies = HashMultimap.create();
     
-    public void addStrictLogicalDependency(DeclarationNode dependency, StatementNode dependent) {
+    public void addDependency(DeclarationNode dependency, StatementNode dependent) {
         dependencies.put(identity(dependent), identity(dependency));
     }
 

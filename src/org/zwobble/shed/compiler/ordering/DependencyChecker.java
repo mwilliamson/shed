@@ -78,7 +78,7 @@ public class DependencyChecker {
         private void addStatementDependencies(DependencyGraph graph, StatementNode statement, Iterable<StatementNode> statements) {
             Set<Identity<StatementNode>> statementIdentities = Sets.newHashSet(transform(statements, Identity.<StatementNode>toIdentity()));
             for (DeclarationNode dependency : findDependenciesDeclaredInBlock(statement, statementIdentities)) {
-                graph.addStrictLogicalDependency(dependency, statement);
+                graph.addDependency(dependency, statement);
             }
         }
 

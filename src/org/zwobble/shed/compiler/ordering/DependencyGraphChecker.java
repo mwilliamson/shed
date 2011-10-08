@@ -34,13 +34,13 @@ public class DependencyGraphChecker {
         return new Predicate<StatementNode>() {
             @Override
             public boolean apply(StatementNode input) {
-                return input instanceof FunctionDeclarationNode;
+                return isReorderableStatement(input);
             }
         };
     }
     
     private static boolean isReorderableStatement(StatementNode statement) {
-        return isReorderableStatement().apply(statement);
+        return statement instanceof FunctionDeclarationNode;
     }
 
     private static class Visitor {
