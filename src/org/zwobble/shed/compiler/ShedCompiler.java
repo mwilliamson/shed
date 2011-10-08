@@ -10,6 +10,7 @@ import org.zwobble.shed.compiler.codegenerator.JavaScriptWriter;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.naming.FullyQualifiedNames;
 import org.zwobble.shed.compiler.naming.TypeNamer;
+import org.zwobble.shed.compiler.ordering.DependencyChecker;
 import org.zwobble.shed.compiler.parsing.ParseResult;
 import org.zwobble.shed.compiler.parsing.Parser;
 import org.zwobble.shed.compiler.parsing.TokenNavigator;
@@ -71,6 +72,9 @@ public class ShedCompiler {
                 References references = referencesResult.getReferences();
                 TypeResult<Void> typeCheckResult = new SourceTypeChecker(new BlockTypeChecker(AllStatementsTypeChecker.build())).typeCheck(sourceNode, parseResult, defaultBrowserContext(references, fullNames));
                 errors.addAll(typeCheckResult.getErrors());
+                
+                TypeResult<Void> dependencyCheckResult = new DependencyChecker().check(sourceNode, references, parseResult);
+                errors.addAll(dependencyCheckResult.getErrors());
                 
                 if (typeCheckResult.isSuccess()) {
                     JavaScriptNode javaScript = javaScriptGenerator(references).generate(sourceNode, CoreModule.VALUES.keySet());
