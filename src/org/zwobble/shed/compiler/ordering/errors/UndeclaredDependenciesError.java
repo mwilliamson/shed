@@ -9,7 +9,7 @@ import org.zwobble.shed.compiler.CompilerErrorDescription;
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
-public class CircularDependencyError implements CompilerErrorDescription {
+public class UndeclaredDependenciesError implements CompilerErrorDescription {
     private final Iterable<String> identifiers;
     
     @Override

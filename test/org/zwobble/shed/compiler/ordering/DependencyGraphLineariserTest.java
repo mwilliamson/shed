@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.ordering.errors.CircularDependencyError;
+import org.zwobble.shed.compiler.ordering.errors.UndeclaredDependenciesError;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
@@ -57,7 +57,7 @@ public class DependencyGraphLineariserTest {
         
         assertThat(
             linearise(asList(variableDeclaration, functionDeclaration), graph),
-            isFailureWithErrors(new CircularDependencyError(asList("x", "go")))
+            isFailureWithErrors(new UndeclaredDependenciesError(asList("go", "x")))
         );
     }
     
@@ -74,7 +74,7 @@ public class DependencyGraphLineariserTest {
         
         assertThat(
             linearise(asList(first, variableDeclaration, functionDeclaration), graph),
-            isFailureWithErrors(new CircularDependencyError(asList("x", "go")))
+            isFailureWithErrors(new UndeclaredDependenciesError(asList("go", "x")))
         );
     }
 
@@ -88,7 +88,24 @@ public class DependencyGraphLineariserTest {
         
         assertThat(
             linearise(asList(variableReference, variableDeclaration), graph),
-            isFailureWithErrors(new VariableNotDeclaredYetError("x"))
+            isFailureWithErrors(new UndeclaredDependenciesError(asList("x")))
+        );
+    }
+
+    @Test public void
+    errorIfFunctionCannotBeUsedSinceDependencyIsNotDeclaredYet() {
+        StatementNode call = Nodes.expressionStatement(Nodes.id("go()"));
+        VariableDeclarationNode variableDeclaration = Nodes.immutableVar("x", Nodes.number("4"));
+        BlockNode functionBody = Nodes.block(Nodes.returnStatement(Nodes.id("x")));
+        FunctionDeclarationNode functionDeclaration = Nodes.func("go", NO_ARGS, Nodes.id("Number"), functionBody);
+
+        DependencyGraph graph = new DependencyGraph();
+        graph.addStrictLogicalDependency(functionDeclaration, call);
+        graph.addStrictLogicalDependency(variableDeclaration, functionDeclaration);
+        
+        assertThat(
+            linearise(asList(call, variableDeclaration), graph),
+            isFailureWithErrors(new UndeclaredDependenciesError(asList("go", "x")))
         );
     }
     

@@ -3,22 +3,18 @@ package org.zwobble.shed.compiler.ordering;
 import java.util.Queue;
 import java.util.Set;
 
-import lombok.Data;
-
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.CompilerErrorDescription;
-import org.zwobble.shed.compiler.ordering.errors.CircularDependencyError;
+import org.zwobble.shed.compiler.ordering.errors.UndeclaredDependenciesError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
-import org.zwobble.shed.compiler.referenceresolution.VariableNotDeclaredYetError;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -48,15 +44,9 @@ public class DependencyGraphLineariser {
         return isReorderableStatement().apply(statement);
     }
 
-    @Data
-    private static class Dependent {
-        private final Identity<StatementNode> statement;
-        private final DependencyType dependencyType;
-    }
-    
     private static class Visitor {
         private final Set<Identity<StatementNode>> declared = Sets.newHashSet();
-        private final Queue<Dependent> dependents = Lists.newLinkedList();
+        private final Queue<Identity<DeclarationNode>> dependents = Lists.newLinkedList();
         private TypeResult<Void> result = TypeResult.success();
         private final Iterable<? extends StatementNode> fixedStatements;
         private final DependencyGraph graph;
@@ -70,53 +60,38 @@ public class DependencyGraphLineariser {
         
         public TypeResult<Void> visitAll() {
             for (StatementNode statement : fixedStatements) {
-                visit(statement);
+                visitFixedStatement(statement);
             }
             return result;
         }
         
-        private void visit(StatementNode statement) {
-            if (isAlreadyDeclared(statement)) {
-                return;
+        private void visitFixedStatement(StatementNode statement) {
+            for (DeclarationNode dependency : graph.dependenciesOf(statement)) {
+                visitDependency(dependency);
             }
-            if (isBeingDeclared(statement)) {
-                addCircularDependencyError(statement);
-                return;
-            }
-            for (Dependency dependency : graph.dependenciesOf(statement)) {
-                DeclarationNode declaration = dependency.getDeclaration();
-                if (isReorderableStatement(declaration)) {
-                    
-                } else if (!isAlreadyDeclared(declaration) && !isBeingDeclared(declaration)) {
-                    CompilerErrorDescription description = new VariableNotDeclaredYetError(declaration.getIdentifier());
-                    result = result.withErrorsFrom(TypeResult.failure(new CompilerError(
-                        nodeLocations.locate(statement),
-                        description
-                    )));
-                    return;
-                }
-                dependents.add(new Dependent(identity(statement), dependency.getType()));
-                visit(declaration);
-                dependents.remove();
-            }
-            declared.add(identity(statement));
         }
 
-        private boolean isAlreadyDeclared(StatementNode statement) {
+        private void visitDependency(DeclarationNode declaration) {
+            if (isAlreadyDeclared(declaration) || (isReorderableStatement(declaration) && isBeingDeclared(declaration))) {
+                return;
+            }
+            dependents.add(identity(declaration));
+            if (isFixedStatement().apply(declaration)) {
+                addCircularDependencyError(declaration);
+                return;
+            } else {
+                for (DeclarationNode dependency : graph.dependenciesOf(declaration)) {
+                    visitDependency(dependency);
+                }
+            }
+        }
+
+        private boolean isAlreadyDeclared(DeclarationNode statement) {
             return declared.contains(identity(statement));
         }
 
-        private boolean isBeingDeclared(StatementNode statement) {
-            return Iterables.any(dependents, isStatement(statement));
-        }
-
-        private Predicate<Dependent> isStatement(final StatementNode statement) {
-            return new Predicate<Dependent>() {
-                @Override
-                public boolean apply(Dependent input) {
-                    return input.getStatement().equals(new Identity<StatementNode>(statement));
-                }
-            };
+        private boolean isBeingDeclared(DeclarationNode statement) {
+            return dependents.contains(identity(statement));
         }
 
         private void addCircularDependencyError(StatementNode statement) {
@@ -128,20 +103,20 @@ public class DependencyGraphLineariser {
         }
 
         private CompilerErrorDescription describeCircularDependencyError() {
-            return new CircularDependencyError(transform(dependents, toDeclarationIdentifier()));
+            return new UndeclaredDependenciesError(transform(dependents, toIdentifier()));
         }
 
-        private Function<Dependent, String> toDeclarationIdentifier() {
-            return new Function<Dependent, String>() {
+        private Function<Identity<DeclarationNode>, String> toIdentifier() {
+            return new Function<Identity<DeclarationNode>, String>() {
                 @Override
-                public String apply(Dependent input) {
-                    return ((DeclarationNode)input.getStatement().get()).getIdentifier();
+                public String apply(Identity<DeclarationNode> input) {
+                    return input.get().getIdentifier();
                 }
             };
         }
     }
 
-    private static Identity<StatementNode> identity(StatementNode statement) {
-        return new Identity<StatementNode>(statement);
+    private static Identity<DeclarationNode> identity(DeclarationNode declaration) {
+        return new Identity<DeclarationNode>(declaration);
     }
 }
