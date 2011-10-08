@@ -1,4 +1,4 @@
-package org.zwobble.shed.compiler.ordering;
+package org.zwobble.shed.compiler.dependencies;
 
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;

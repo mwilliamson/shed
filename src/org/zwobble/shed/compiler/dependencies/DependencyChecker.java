@@ -1,4 +1,4 @@
-package org.zwobble.shed.compiler.ordering;
+package org.zwobble.shed.compiler.dependencies;
 
 import java.util.Set;
 

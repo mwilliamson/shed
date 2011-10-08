@@ -1,10 +1,10 @@
-package org.zwobble.shed.compiler.ordering;
+package org.zwobble.shed.compiler.dependencies;
 
 import java.util.Queue;
 import java.util.Set;
 
 import org.zwobble.shed.compiler.CompilerError;
-import org.zwobble.shed.compiler.ordering.errors.UndeclaredDependenciesError;
+import org.zwobble.shed.compiler.dependencies.errors.UndeclaredDependenciesError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;

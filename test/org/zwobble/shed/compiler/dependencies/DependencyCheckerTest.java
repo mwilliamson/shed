@@ -1,4 +1,4 @@
-package org.zwobble.shed.compiler.ordering;
+package org.zwobble.shed.compiler.dependencies;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.ordering.errors.UndeclaredDependenciesError;
+import org.zwobble.shed.compiler.dependencies.DependencyChecker;
+import org.zwobble.shed.compiler.dependencies.errors.UndeclaredDependenciesError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;

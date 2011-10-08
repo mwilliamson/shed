@@ -1,4 +1,4 @@
-package org.zwobble.shed.compiler.ordering.errors;
+package org.zwobble.shed.compiler.dependencies.errors;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
