@@ -25,4 +25,8 @@ public class NodeNavigator {
         }
         return nodes;
     }
+    
+    public static Iterable<SyntaxNode> descendantsInSameScope(SyntaxNode node) {
+        return null;
+    }
 }

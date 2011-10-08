@@ -1,116 +1,111 @@
 package org.zwobble.shed.compiler.ordering;
 
-import java.util.Queue;
 import java.util.Set;
 
-import org.zwobble.shed.compiler.CompilerError;
-import org.zwobble.shed.compiler.ordering.errors.UndeclaredDependenciesError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
+import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
-import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
+import org.zwobble.shed.compiler.parsing.nodes.Node;
+import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
+import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+import org.zwobble.shed.compiler.referenceresolution.References;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.filter;
-import static org.zwobble.shed.compiler.Eager.transform;
+import static com.google.common.collect.Iterables.transform;
+import static org.zwobble.shed.compiler.parsing.nodes.NodeNavigator.descendents;
 
 public class DependencyChecker {
-    public TypeResult<Void> check(Iterable<? extends StatementNode> statements, DependencyGraph graph, NodeLocations nodeLocations) {
-        return new Visitor(filter(statements, isFixedStatement()), graph, nodeLocations).visitAll();
+    public TypeResult<Void> check(SyntaxNode node, References references, NodeLocations nodeLocations) {
+        return new Visitor(references, nodeLocations).check(node);
     }
     
-    private static Predicate<StatementNode> isFixedStatement() {
-        return not(isReorderableStatement());
-    }
-    
-    private static Predicate<StatementNode> isReorderableStatement() {
-        return new Predicate<StatementNode>() {
-            @Override
-            public boolean apply(StatementNode input) {
-                return input instanceof FunctionDeclarationNode;
-            }
-        };
-    }
-    
-    private static boolean isReorderableStatement(StatementNode statement) {
-        return isReorderableStatement().apply(statement);
-    }
-
     private static class Visitor {
-        private final Set<Identity<StatementNode>> declared = Sets.newHashSet();
-        private final Queue<Identity<DeclarationNode>> dependents = Lists.newLinkedList();
-        private TypeResult<Void> result = TypeResult.success();
-        private final Iterable<? extends StatementNode> fixedStatements;
-        private final DependencyGraph graph;
+        private final DependencyGraphChecker graphChecker = new DependencyGraphChecker();
+        private final References references;
         private final NodeLocations nodeLocations;
         
-        public Visitor(Iterable<? extends StatementNode> fixedStatements, DependencyGraph graph, NodeLocations nodeLocations) {
-            this.fixedStatements = fixedStatements;
-            this.graph = graph;
+        public Visitor(References references, NodeLocations nodeLocations) {
+            this.references = references;
             this.nodeLocations = nodeLocations;
         }
         
-        public TypeResult<Void> visitAll() {
-            for (StatementNode statement : fixedStatements) {
-                visitFixedStatement(statement);
+        public TypeResult<Void> check(SyntaxNode node) {
+            TypeResult<Void> result = TypeResult.success();
+            if (node instanceof SourceNode) {
+                result = result.withErrorsFrom(checkSourceNode((SourceNode)node, references, nodeLocations));
             }
+            result = result.withErrorsFrom(checkBlocksInNode(node));
             return result;
         }
-        
-        private void visitFixedStatement(StatementNode statement) {
-            for (DeclarationNode dependency : graph.dependenciesOf(statement)) {
-                visitDependency(dependency);
-            }
+
+        private TypeResult<?> checkBlocksInNode(SyntaxNode node) {
+            return TypeResult.combine(transform(findAllBlocks(node), checkBlock()));
         }
 
-        private void visitDependency(DeclarationNode declaration) {
-            if (isAlreadyDeclared(declaration) || (isReorderableStatement(declaration) && isBeingDeclared(declaration))) {
-                return;
-            }
-            dependents.add(identity(declaration));
-            if (isFixedStatement().apply(declaration)) {
-                addDependencyError(declaration);
-                return;
-            } else {
-                for (DeclarationNode dependency : graph.dependenciesOf(declaration)) {
-                    visitDependency(dependency);
-                }
-            }
+        private Iterable<BlockNode> findAllBlocks(SyntaxNode node) {
+            return filter(descendents(node), BlockNode.class);
         }
 
-        private boolean isAlreadyDeclared(DeclarationNode statement) {
-            return declared.contains(identity(statement));
-        }
-
-        private boolean isBeingDeclared(DeclarationNode statement) {
-            return dependents.contains(identity(statement));
-        }
-
-        private void addDependencyError(StatementNode statement) {
-            result = result.withErrorsFrom(TypeResult.failure(new CompilerError(
-                nodeLocations.locate(statement),
-                new UndeclaredDependenciesError(transform(dependents, toIdentifier()))
-            )));
-        }
-
-        private Function<Identity<DeclarationNode>, String> toIdentifier() {
-            return new Function<Identity<DeclarationNode>, String>() {
+        private Function<BlockNode, TypeResult<?>> checkBlock() {
+            return new Function<BlockNode, TypeResult<?>>() {
                 @Override
-                public String apply(Identity<DeclarationNode> input) {
-                    return input.get().getIdentifier();
+                public TypeResult<?> apply(BlockNode input) {
+                    return checkStatements(input);
                 }
             };
         }
-    }
 
-    private static Identity<DeclarationNode> identity(DeclarationNode declaration) {
-        return new Identity<DeclarationNode>(declaration);
+        private TypeResult<Void> checkSourceNode(SourceNode node, References references, NodeLocations nodeLocations) {
+            return checkStatements(node.getStatements());
+        }
+        
+        private TypeResult<Void> checkStatements(Iterable<StatementNode> statements) {
+            DependencyGraph graph = new DependencyGraph();
+            for (StatementNode statement : statements) {
+                addStatementDependencies(graph, statement, statements);
+            }
+            return graphChecker.check(statements, graph, nodeLocations);
+        }
+
+        private void addStatementDependencies(DependencyGraph graph, StatementNode statement, Iterable<StatementNode> statements) {
+            Set<Identity<StatementNode>> statementIdentities = Sets.newHashSet(transform(statements, Identity.<StatementNode>toIdentity()));
+            for (DeclarationNode dependency : findDependenciesDeclaredInBlock(statement, statementIdentities)) {
+                graph.addStrictLogicalDependency(dependency, statement);
+            }
+        }
+
+        private Iterable<DeclarationNode> findDependenciesDeclaredInBlock(StatementNode statement, Set<Identity<StatementNode>> statementsInBlock) {
+            return filter(transform(findFreeVariables(statement), toReferredDeclaration()), isDeclaredInBlock(statementsInBlock));
+        }
+
+        private Predicate<DeclarationNode> isDeclaredInBlock(final Set<Identity<StatementNode>> statementsInBlock) {
+            return new Predicate<DeclarationNode>() {
+                @Override
+                public boolean apply(DeclarationNode input) {
+                    return statementsInBlock.contains(new Identity<Node>(input));
+                }
+            };
+        }
+
+        private Iterable<VariableIdentifierNode> findFreeVariables(StatementNode statement) {
+            return filter(descendents(statement), VariableIdentifierNode.class);
+        }
+
+        private Function<VariableIdentifierNode, DeclarationNode> toReferredDeclaration() {
+            return new Function<VariableIdentifierNode, DeclarationNode>() {
+                @Override
+                public DeclarationNode apply(VariableIdentifierNode input) {
+                    return references.findReferent(input);
+                }
+            };
+        }
     }
 }
