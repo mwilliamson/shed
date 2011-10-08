@@ -78,12 +78,12 @@ public class DependencyGraphChecker {
             dependents.add(identity(declaration));
             if (isFixedStatement().apply(declaration)) {
                 addDependencyError(declaration);
-                return;
             } else {
                 for (DeclarationNode dependency : graph.dependenciesOf(declaration)) {
                     visitDependency(dependency);
                 }
             }
+            dependents.remove();
         }
 
         private boolean isAlreadyDeclared(DeclarationNode statement) {

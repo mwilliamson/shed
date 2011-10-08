@@ -62,17 +62,19 @@ public class DependencyGraphCheckerTest {
     
     @Test public void
     listOfVariablesBeingDeclaredIsClearedOfOldVariables() {
-        ExpressionStatementNode first = Nodes.expressionStatement(Nodes.id("y"));
+        FunctionDeclarationNode firstDeclaration = Nodes.func("first", NO_ARGS, Nodes.id("Number"), Nodes.block());
+        ExpressionStatementNode firstReference = Nodes.expressionStatement(Nodes.id("first"));
         VariableDeclarationNode variableDeclaration = Nodes.immutableVar("x", Nodes.call(Nodes.id("go")));
         BlockNode body = Nodes.block(Nodes.returnStatement(Nodes.id("x")));
         FunctionDeclarationNode functionDeclaration = Nodes.func("go", NO_ARGS, Nodes.id("Number"), body);
         
         DependencyGraph graph = new DependencyGraph();
+        graph.addDependency(firstDeclaration, firstReference);
         graph.addDependency(variableDeclaration, functionDeclaration);
         graph.addDependency(functionDeclaration, variableDeclaration);
         
         assertThat(
-            check(asList(first, variableDeclaration, functionDeclaration), graph),
+            check(asList(firstDeclaration, firstReference, variableDeclaration, functionDeclaration), graph),
             isFailureWithErrors(new UndeclaredDependenciesError(asList("go", "x")))
         );
     }
