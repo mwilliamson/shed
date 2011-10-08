@@ -128,14 +128,14 @@ public class DependencyGraphLineariser {
         }
 
         private CompilerErrorDescription describeCircularDependencyError() {
-            return new CircularDependencyError(transform(dependents, toStatement()));
+            return new CircularDependencyError(transform(dependents, toDeclarationIdentifier()));
         }
 
-        private Function<Dependent, StatementNode> toStatement() {
-            return new Function<Dependent, StatementNode>() {
+        private Function<Dependent, String> toDeclarationIdentifier() {
+            return new Function<Dependent, String>() {
                 @Override
-                public StatementNode apply(Dependent input) {
-                    return input.getStatement().get();
+                public String apply(Dependent input) {
+                    return ((DeclarationNode)input.getStatement().get()).getIdentifier();
                 }
             };
         }

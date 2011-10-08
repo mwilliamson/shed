@@ -57,7 +57,7 @@ public class DependencyGraphLineariserTest {
         
         assertThat(
             linearise(asList(variableDeclaration, functionDeclaration), graph),
-            isFailureWithErrors(new CircularDependencyError(asList(variableDeclaration, functionDeclaration)))
+            isFailureWithErrors(new CircularDependencyError(asList("x", "go")))
         );
     }
     
@@ -74,7 +74,7 @@ public class DependencyGraphLineariserTest {
         
         assertThat(
             linearise(asList(first, variableDeclaration, functionDeclaration), graph),
-            isFailureWithErrors(new CircularDependencyError(asList(variableDeclaration, functionDeclaration)))
+            isFailureWithErrors(new CircularDependencyError(asList("x", "go")))
         );
     }
 
