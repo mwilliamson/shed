@@ -21,9 +21,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 
-public class DependencyGraphLineariserTest {
+public class DependencyCheckerTest {
     private static final List<FormalArgumentNode> NO_ARGS = Collections.<FormalArgumentNode>emptyList();
-    private final DependencyGraphLineariser lineariser = new DependencyGraphLineariser();
+    private final DependencyChecker checker = new DependencyChecker();
     
     @Test public void
     validIfThereAreNoDependencies() {
@@ -31,7 +31,7 @@ public class DependencyGraphLineariserTest {
         StatementNode second = Nodes.returnStatement(Nodes.number("42"));
         DependencyGraph graph = new DependencyGraph();
         
-        assertThat(linearise(asList(first, second), graph), isSuccess());
+        assertThat(check(asList(first, second), graph), isSuccess());
     }
     
     @Test public void
@@ -41,7 +41,7 @@ public class DependencyGraphLineariserTest {
         DependencyGraph graph = new DependencyGraph();
         graph.addStrictLogicalDependency(declaration, reference);
         
-        assertThat(linearise(asList(reference, declaration), graph), isSuccess());
+        assertThat(check(asList(reference, declaration), graph), isSuccess());
     }
     
     @Test public void
@@ -55,7 +55,7 @@ public class DependencyGraphLineariserTest {
         graph.addStrictLogicalDependency(functionDeclaration, variableDeclaration);
         
         assertThat(
-            linearise(asList(variableDeclaration, functionDeclaration), graph),
+            check(asList(variableDeclaration, functionDeclaration), graph),
             isFailureWithErrors(new UndeclaredDependenciesError(asList("go", "x")))
         );
     }
@@ -72,7 +72,7 @@ public class DependencyGraphLineariserTest {
         graph.addStrictLogicalDependency(functionDeclaration, variableDeclaration);
         
         assertThat(
-            linearise(asList(first, variableDeclaration, functionDeclaration), graph),
+            check(asList(first, variableDeclaration, functionDeclaration), graph),
             isFailureWithErrors(new UndeclaredDependenciesError(asList("go", "x")))
         );
     }
@@ -86,7 +86,7 @@ public class DependencyGraphLineariserTest {
         graph.addStrictLogicalDependency(variableDeclaration, variableReference);
         
         assertThat(
-            linearise(asList(variableReference, variableDeclaration), graph),
+            check(asList(variableReference, variableDeclaration), graph),
             isFailureWithErrors(new UndeclaredDependenciesError(asList("x")))
         );
     }
@@ -103,12 +103,12 @@ public class DependencyGraphLineariserTest {
         graph.addStrictLogicalDependency(variableDeclaration, functionDeclaration);
         
         assertThat(
-            linearise(asList(call, variableDeclaration), graph),
+            check(asList(call, variableDeclaration), graph),
             isFailureWithErrors(new UndeclaredDependenciesError(asList("go", "x")))
         );
     }
     
-    private TypeResult<Void> linearise(List<? extends StatementNode> statements, DependencyGraph graph) {
-        return lineariser.linearise(statements, graph, new SimpleNodeLocations());
+    private TypeResult<Void> check(List<? extends StatementNode> statements, DependencyGraph graph) {
+        return checker.check(statements, graph, new SimpleNodeLocations());
     }
 }

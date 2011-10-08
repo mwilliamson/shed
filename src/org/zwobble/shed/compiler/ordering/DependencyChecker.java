@@ -21,8 +21,8 @@ import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.filter;
 import static org.zwobble.shed.compiler.Eager.transform;
 
-public class DependencyGraphLineariser {
-    public TypeResult<Void> linearise(Iterable<? extends StatementNode> statements, DependencyGraph graph, NodeLocations nodeLocations) {
+public class DependencyChecker {
+    public TypeResult<Void> check(Iterable<? extends StatementNode> statements, DependencyGraph graph, NodeLocations nodeLocations) {
         return new Visitor(filter(statements, isFixedStatement()), graph, nodeLocations).visitAll();
     }
     
