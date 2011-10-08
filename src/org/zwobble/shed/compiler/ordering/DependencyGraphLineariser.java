@@ -16,6 +16,8 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import static com.google.common.collect.Lists.reverse;
+
 import static org.zwobble.shed.compiler.Eager.transform;
 
 public class DependencyGraphLineariser {
@@ -51,14 +53,15 @@ public class DependencyGraphLineariser {
             if (declaring.contains(identity(statement))) {
                 result = result.withErrorsFrom(TypeResult.failure(new CompilerError(
                     nodeLocations.locate(statement),
-                    new CircularDependencyError(transform(declaring, toStatement()))
+                    new CircularDependencyError(reverse(transform(declaring, toStatement())))
                 )));
                 return;
             }
-            declaring.add(identity(statement));
+            declaring.push(identity(statement));
             for (StatementNode dependency : graph.dependenciesOf(statement)) {
                 visit(dependency);
             }
+            declaring.pop();
             declared.add(identity(statement));
             ordered.add(statement);
         }

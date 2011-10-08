@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.zwobble.shed.compiler.ordering.errors.CircularDependencyError;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
@@ -58,9 +59,28 @@ public class DependencyGraphLineariserTest {
         VariableDeclarationNode variableDeclaration = Nodes.immutableVar("x", Nodes.call(Nodes.id("go")));
         BlockNode body = Nodes.block(Nodes.returnStatement(Nodes.id("x")));
         FunctionDeclarationNode functionDeclaration = Nodes.func("go", NO_ARGS, Nodes.id("Number"), body);
+        
         DependencyGraph graph = new DependencyGraph(asList(variableDeclaration, functionDeclaration));
         graph.addStrictLogicalDependency(variableDeclaration, functionDeclaration);
         graph.addStrictLogicalDependency(functionDeclaration, variableDeclaration);
+        
+        assertThat(
+            linearise(graph),
+            isFailureWithErrors(new CircularDependencyError(asList(variableDeclaration, functionDeclaration)))
+        );
+    }
+    
+    @Test public void
+    listOfVariableBeingDeclaredIsClearedOfOldVariables() {
+        ExpressionStatementNode first = Nodes.expressionStatement(Nodes.id("y"));
+        VariableDeclarationNode variableDeclaration = Nodes.immutableVar("x", Nodes.call(Nodes.id("go")));
+        BlockNode body = Nodes.block(Nodes.returnStatement(Nodes.id("x")));
+        FunctionDeclarationNode functionDeclaration = Nodes.func("go", NO_ARGS, Nodes.id("Number"), body);
+        
+        DependencyGraph graph = new DependencyGraph(asList(first, variableDeclaration, functionDeclaration));
+        graph.addStrictLogicalDependency(variableDeclaration, functionDeclaration);
+        graph.addStrictLogicalDependency(functionDeclaration, variableDeclaration);
+        
         assertThat(
             linearise(graph),
             isFailureWithErrors(new CircularDependencyError(asList(variableDeclaration, functionDeclaration)))
