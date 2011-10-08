@@ -14,7 +14,6 @@ public class UndeclaredDependenciesError implements CompilerErrorDescription {
     
     @Override
     public String describe() {
-        // TODO: fill in
-        return null;
+        return "Unresolved dependencies";
     }
 }

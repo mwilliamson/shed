@@ -66,21 +66,21 @@ public class DependencyGraphChecker {
         
         private void visitFixedStatement(StatementNode statement) {
             for (DeclarationNode dependency : graph.dependenciesOf(statement)) {
-                visitDependency(dependency);
+                visitDependency(dependency, statement);
             }
             declared.add(new Identity<StatementNode>(statement));
         }
 
-        private void visitDependency(DeclarationNode declaration) {
+        private void visitDependency(DeclarationNode declaration, StatementNode referringStatement) {
             if (isAlreadyDeclared(declaration) || (isReorderableStatement(declaration) && isBeingDeclared(declaration))) {
                 return;
             }
             dependents.add(identity(declaration));
             if (isFixedStatement().apply(declaration)) {
-                addDependencyError(declaration);
+                addDependencyError(referringStatement);
             } else {
                 for (DeclarationNode dependency : graph.dependenciesOf(declaration)) {
-                    visitDependency(dependency);
+                    visitDependency(dependency, referringStatement);
                 }
             }
             dependents.remove();
