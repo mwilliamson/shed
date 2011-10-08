@@ -4,9 +4,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.zwobble.shed.compiler.ordering.errors.UnpullableDeclarationError;
@@ -29,12 +26,9 @@ import org.zwobble.shed.compiler.typechecker.TypeResult;
 
 import com.google.common.collect.ImmutableMap;
 
-import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.contains;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
-import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
+import static org.zwobble.shed.compiler.ordering.OrderTesting.isOrdering;
 
 public class StatementOrdererTest {
     private static final List<FormalArgumentNode> NO_ARGS = Collections.<FormalArgumentNode>emptyList();
@@ -116,26 +110,6 @@ public class StatementOrdererTest {
             reorder(Nodes.block(firstFunctionDeclaration, variable, secondFunctionDeclaration)),
             isFailureWithErrors(new UnpullableDeclarationError(secondFunctionDeclaration, variable, firstFunctionDeclaration))
         );
-    }
-    
-    private Matcher<TypeResult<Iterable<StatementNode>>> isOrdering(final StatementNode... statements) {
-        return allOf(isSuccess(), new TypeSafeDiagnosingMatcher<TypeResult<Iterable<StatementNode>>>() {
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("Ordering: " + asList(statements));
-            }
-
-            @Override
-            protected boolean matchesSafely(TypeResult<Iterable<StatementNode>> item, Description mismatchDescription) {
-                Matcher<Iterable<? extends StatementNode>> orderMatcher = contains(statements);
-                if (orderMatcher.matches(item.get())) {
-                    return true;
-                } else {
-                    orderMatcher.describeMismatch(item.get(), mismatchDescription);
-                    return false;
-                }
-            }
-        });
     }
     
     private TypeResult<Iterable<StatementNode>> reorder(BlockNode block) {
