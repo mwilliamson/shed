@@ -13,7 +13,6 @@ import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
-import org.zwobble.shed.compiler.referenceresolution.VariableNotDeclaredYetError;
 import org.zwobble.shed.compiler.typechecker.SimpleNodeLocations;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 

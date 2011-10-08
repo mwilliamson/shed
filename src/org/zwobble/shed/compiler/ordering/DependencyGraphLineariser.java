@@ -4,7 +4,6 @@ import java.util.Queue;
 import java.util.Set;
 
 import org.zwobble.shed.compiler.CompilerError;
-import org.zwobble.shed.compiler.CompilerErrorDescription;
 import org.zwobble.shed.compiler.ordering.errors.UndeclaredDependenciesError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
@@ -77,7 +76,7 @@ public class DependencyGraphLineariser {
             }
             dependents.add(identity(declaration));
             if (isFixedStatement().apply(declaration)) {
-                addCircularDependencyError(declaration);
+                addDependencyError(declaration);
                 return;
             } else {
                 for (DeclarationNode dependency : graph.dependenciesOf(declaration)) {
@@ -94,16 +93,11 @@ public class DependencyGraphLineariser {
             return dependents.contains(identity(statement));
         }
 
-        private void addCircularDependencyError(StatementNode statement) {
-            CompilerErrorDescription description = describeCircularDependencyError();
+        private void addDependencyError(StatementNode statement) {
             result = result.withErrorsFrom(TypeResult.failure(new CompilerError(
                 nodeLocations.locate(statement),
-                description
+                new UndeclaredDependenciesError(transform(dependents, toIdentifier()))
             )));
-        }
-
-        private CompilerErrorDescription describeCircularDependencyError() {
-            return new UndeclaredDependenciesError(transform(dependents, toIdentifier()));
         }
 
         private Function<Identity<DeclarationNode>, String> toIdentifier() {
