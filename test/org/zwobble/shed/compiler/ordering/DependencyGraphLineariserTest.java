@@ -13,6 +13,7 @@ import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
+import org.zwobble.shed.compiler.referenceresolution.VariableNotDeclaredYetError;
 import org.zwobble.shed.compiler.typechecker.SimpleNodeLocations;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 
@@ -35,10 +36,10 @@ public class DependencyGraphLineariserTest {
     }
     
     @Test public void
-    statementsAreReorderedAccordingToLexicalDependencies() {
+    orderIsPreservedIfLexicalDependenciesAgree() {
         StatementNode first = Nodes.expressionStatement(Nodes.id("go"));
         StatementNode second = Nodes.returnStatement(Nodes.number("42"));
-        DependencyGraph graph = new DependencyGraph(asList(second, first));
+        DependencyGraph graph = new DependencyGraph(asList(first, second));
         graph.addLexicalDependency(first, second);
         
         assertThat(linearise(graph), isOrdering(first, second));
@@ -84,6 +85,21 @@ public class DependencyGraphLineariserTest {
         assertThat(
             linearise(graph),
             isFailureWithErrors(new CircularDependencyError(asList(variableDeclaration, functionDeclaration)))
+        );
+    }
+
+    @Test public void
+    errorIfLogicalDependencyConflictsWithLexicalDependency() {
+        StatementNode variableReference = Nodes.expressionStatement(Nodes.id("x"));
+        VariableDeclarationNode variableDeclaration = Nodes.immutableVar("x", Nodes.number("4"));
+
+        DependencyGraph graph = new DependencyGraph(asList(variableReference, variableDeclaration));
+        graph.addLexicalDependency(variableReference, variableDeclaration);
+        graph.addStrictLogicalDependency(variableDeclaration, variableReference);
+        
+        assertThat(
+            linearise(graph),
+            isFailureWithErrors(new VariableNotDeclaredYetError("x"))
         );
     }
     

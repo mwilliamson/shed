@@ -9,4 +9,8 @@ public class ShedIterables {
         }
         return result;
     }
+    
+    public static <T> T first(Iterable<T> iterable) {
+        return iterable.iterator().next();
+    }
 }

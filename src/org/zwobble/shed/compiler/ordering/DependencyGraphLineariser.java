@@ -1,24 +1,34 @@
 package org.zwobble.shed.compiler.ordering;
 
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 
+import lombok.Data;
+
 import org.zwobble.shed.compiler.CompilerError;
+import org.zwobble.shed.compiler.CompilerErrorDescription;
 import org.zwobble.shed.compiler.ordering.errors.CircularDependencyError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
+import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
+import org.zwobble.shed.compiler.referenceresolution.VariableNotDeclaredYetError;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import static com.google.common.collect.Lists.reverse;
+import static com.google.common.collect.Iterables.get;
 
+import static com.google.common.collect.Iterables.all;
+import static com.google.common.collect.Iterables.skip;
 import static org.zwobble.shed.compiler.Eager.transform;
+import static org.zwobble.shed.compiler.ShedIterables.first;
 
 public class DependencyGraphLineariser {
 
@@ -26,10 +36,16 @@ public class DependencyGraphLineariser {
         return new Visitor(graph, nodeLocations).visitAll();
     }
     
+    @Data
+    private static class Dependent {
+        private final Identity<StatementNode> statement;
+        private final DependencyType dependencyType;
+    }
+    
     private static class Visitor {
         private final List<StatementNode> ordered = new ArrayList<StatementNode>();
         private final Set<Identity<StatementNode>> declared = Sets.newHashSet();
-        private final Deque<Identity<StatementNode>> declaring = Lists.newLinkedList();
+        private final Queue<Dependent> dependents = Lists.newLinkedList();
         private final DependencyGraph graph;
         private TypeResult<Void> result = TypeResult.success();
         private final NodeLocations nodeLocations;
@@ -47,30 +63,78 @@ public class DependencyGraphLineariser {
         }
         
         private void visit(StatementNode statement) {
-            if (declared.contains(identity(statement))) {
+            if (isAlreadyDeclared(statement)) {
                 return;
             }
-            if (declaring.contains(identity(statement))) {
-                result = result.withErrorsFrom(TypeResult.failure(new CompilerError(
-                    nodeLocations.locate(statement),
-                    new CircularDependencyError(reverse(transform(declaring, toStatement())))
-                )));
+            if (isBeingDeclared(statement)) {
+                addCircularDependencyError(statement);
                 return;
             }
-            declaring.push(identity(statement));
-            for (StatementNode dependency : graph.dependenciesOf(statement)) {
-                visit(dependency);
+            for (Dependency dependency : graph.dependenciesOf(statement)) {
+                dependents.add(new Dependent(identity(statement), dependency.getType()));
+                visit(dependency.getStatement());
+                dependents.remove();
             }
-            declaring.pop();
             declared.add(identity(statement));
             ordered.add(statement);
         }
 
-        private Function<Identity<StatementNode>, StatementNode> toStatement() {
-            return new Function<Identity<StatementNode>, StatementNode>() {
+        private boolean isAlreadyDeclared(StatementNode statement) {
+            return declared.contains(identity(statement));
+        }
+
+        private boolean isBeingDeclared(StatementNode statement) {
+            return Iterables.any(dependents, isStatement(statement));
+        }
+
+        private Predicate<Dependent> isStatement(final StatementNode statement) {
+            return new Predicate<Dependent>() {
                 @Override
-                public StatementNode apply(Identity<StatementNode> input) {
-                    return input.get();
+                public boolean apply(Dependent input) {
+                    return input.getStatement().equals(new Identity<StatementNode>(statement));
+                }
+            };
+        }
+
+        private void addCircularDependencyError(StatementNode statement) {
+            CompilerErrorDescription description = describeCircularDependencyError();
+            result = result.withErrorsFrom(TypeResult.failure(new CompilerError(
+                nodeLocations.locate(statement),
+                description
+            )));
+        }
+
+        private CompilerErrorDescription describeCircularDependencyError() {
+            if (all(skip(dependents, 1), isLexicalDependency()) && isStrictLogicalDependency(first(dependents))) {
+                DeclarationNode declaration = (DeclarationNode) get(dependents, 1).getStatement().get();
+                return new VariableNotDeclaredYetError(declaration.getIdentifier());
+            } else {
+                return new CircularDependencyError(transform(dependents, toStatement()));
+            }
+        }
+
+        private Predicate<Dependent> isLexicalDependency() {
+            return isDependencyType(DependencyType.LEXICAL);
+        }
+
+        private boolean isStrictLogicalDependency(Dependent dependent) {
+            return isDependencyType(DependencyType.STRICT_LOGICAL).apply(dependent);
+        }
+
+        private Predicate<Dependent> isDependencyType(final DependencyType requiredType) {
+            return new Predicate<Dependent>() {
+                @Override
+                public boolean apply(Dependent input) {
+                    return input.getDependencyType() == requiredType;
+                }
+            };
+        }
+
+        private Function<Dependent, StatementNode> toStatement() {
+            return new Function<Dependent, StatementNode>() {
+                @Override
+                public StatementNode apply(Dependent input) {
+                    return input.getStatement().get();
                 }
             };
         }
