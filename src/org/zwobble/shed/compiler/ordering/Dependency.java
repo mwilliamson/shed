@@ -5,30 +5,26 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
-import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 
 @EqualsAndHashCode
 @ToString
 @AllArgsConstructor
 public class Dependency {
-    public static Dependency lexical(StatementNode statement) {
-        return new Dependency(identity(statement), DependencyType.LEXICAL);
-    }
-
-    public static Dependency strictLogical(StatementNode statement) {
-        return new Dependency(identity(statement), DependencyType.STRICT_LOGICAL);
+    public static Dependency strict(DeclarationNode statement) {
+        return new Dependency(identity(statement), DependencyType.STRICT);
     }
     
-    private static Identity<StatementNode> identity(StatementNode statement) {
-        return new Identity<StatementNode>(statement);
+    private static Identity<DeclarationNode> identity(DeclarationNode statement) {
+        return new Identity<DeclarationNode>(statement);
     }
     
-    private final Identity<StatementNode> statement;
+    private final Identity<DeclarationNode> declaration;
     @Getter
     private final DependencyType type;
 
-    public StatementNode getStatement() {
-        return statement.get();
+    public DeclarationNode getDeclaration() {
+        return declaration.get();
     }
 }

@@ -20,39 +20,29 @@ import org.zwobble.shed.compiler.typechecker.TypeResult;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
-import static org.zwobble.shed.compiler.ordering.OrderTesting.isOrdering;
+import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 
 public class DependencyGraphLineariserTest {
     private static final List<FormalArgumentNode> NO_ARGS = Collections.<FormalArgumentNode>emptyList();
     private final DependencyGraphLineariser lineariser = new DependencyGraphLineariser();
     
     @Test public void
-    orderIsPreservedIfThereAreNoDependencies() {
+    validIfThereAreNoDependencies() {
         StatementNode first = Nodes.expressionStatement(Nodes.id("go"));
         StatementNode second = Nodes.returnStatement(Nodes.number("42"));
-        DependencyGraph graph = new DependencyGraph(asList(first, second));
+        DependencyGraph graph = new DependencyGraph();
         
-        assertThat(linearise(graph), isOrdering(first, second));
+        assertThat(linearise(asList(first, second), graph), isSuccess());
     }
     
     @Test public void
-    orderIsPreservedIfLexicalDependenciesAgree() {
-        StatementNode first = Nodes.expressionStatement(Nodes.id("go"));
-        StatementNode second = Nodes.returnStatement(Nodes.number("42"));
-        DependencyGraph graph = new DependencyGraph(asList(first, second));
-        graph.addLexicalDependency(first, second);
-        
-        assertThat(linearise(graph), isOrdering(first, second));
-    }
-    
-    @Test public void
-    statementsAreReorderedAccordingToStrictLogicalDependencyDependencies() {
+    functionDeclarationIsAllowedAfterUsageIfItHasNoDependencies() {
         DeclarationNode declaration = Nodes.func("go", NO_ARGS, Nodes.id("Number"), Nodes.block());
         StatementNode reference = Nodes.expressionStatement(Nodes.call(Nodes.id("go")));
-        DependencyGraph graph = new DependencyGraph(asList(reference, declaration));
+        DependencyGraph graph = new DependencyGraph();
         graph.addStrictLogicalDependency(declaration, reference);
         
-        assertThat(linearise(graph), isOrdering(declaration, reference));
+        assertThat(linearise(asList(reference, declaration), graph), isSuccess());
     }
     
     @Test public void
@@ -61,49 +51,48 @@ public class DependencyGraphLineariserTest {
         BlockNode body = Nodes.block(Nodes.returnStatement(Nodes.id("x")));
         FunctionDeclarationNode functionDeclaration = Nodes.func("go", NO_ARGS, Nodes.id("Number"), body);
         
-        DependencyGraph graph = new DependencyGraph(asList(variableDeclaration, functionDeclaration));
+        DependencyGraph graph = new DependencyGraph();
         graph.addStrictLogicalDependency(variableDeclaration, functionDeclaration);
         graph.addStrictLogicalDependency(functionDeclaration, variableDeclaration);
         
         assertThat(
-            linearise(graph),
+            linearise(asList(variableDeclaration, functionDeclaration), graph),
             isFailureWithErrors(new CircularDependencyError(asList(variableDeclaration, functionDeclaration)))
         );
     }
     
     @Test public void
-    listOfVariableBeingDeclaredIsClearedOfOldVariables() {
+    listOfVariablesBeingDeclaredIsClearedOfOldVariables() {
         ExpressionStatementNode first = Nodes.expressionStatement(Nodes.id("y"));
         VariableDeclarationNode variableDeclaration = Nodes.immutableVar("x", Nodes.call(Nodes.id("go")));
         BlockNode body = Nodes.block(Nodes.returnStatement(Nodes.id("x")));
         FunctionDeclarationNode functionDeclaration = Nodes.func("go", NO_ARGS, Nodes.id("Number"), body);
         
-        DependencyGraph graph = new DependencyGraph(asList(first, variableDeclaration, functionDeclaration));
+        DependencyGraph graph = new DependencyGraph();
         graph.addStrictLogicalDependency(variableDeclaration, functionDeclaration);
         graph.addStrictLogicalDependency(functionDeclaration, variableDeclaration);
         
         assertThat(
-            linearise(graph),
+            linearise(asList(first, variableDeclaration, functionDeclaration), graph),
             isFailureWithErrors(new CircularDependencyError(asList(variableDeclaration, functionDeclaration)))
         );
     }
 
     @Test public void
-    errorIfLogicalDependencyConflictsWithLexicalDependency() {
+    errorIfVariableIsUsedBeforeItIsDeclaredAndDeclarationCannotBeMoved() {
         StatementNode variableReference = Nodes.expressionStatement(Nodes.id("x"));
         VariableDeclarationNode variableDeclaration = Nodes.immutableVar("x", Nodes.number("4"));
 
-        DependencyGraph graph = new DependencyGraph(asList(variableReference, variableDeclaration));
-        graph.addLexicalDependency(variableReference, variableDeclaration);
+        DependencyGraph graph = new DependencyGraph();
         graph.addStrictLogicalDependency(variableDeclaration, variableReference);
         
         assertThat(
-            linearise(graph),
+            linearise(asList(variableReference, variableDeclaration), graph),
             isFailureWithErrors(new VariableNotDeclaredYetError("x"))
         );
     }
     
-    private TypeResult<Iterable<StatementNode>> linearise(DependencyGraph graph) {
-        return lineariser.linearise(graph, new SimpleNodeLocations());
+    private TypeResult<Void> linearise(List<? extends StatementNode> statements, DependencyGraph graph) {
+        return lineariser.linearise(statements, graph, new SimpleNodeLocations());
     }
 }
