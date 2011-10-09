@@ -7,7 +7,7 @@ import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.dependencies.errors.UndeclaredDependenciesError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
-import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.HoistableStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
@@ -27,20 +27,20 @@ public class DependencyGraphChecker {
     }
     
     private static Predicate<StatementNode> isFixedStatement() {
-        return not(isReorderableStatement());
+        return not(isHoistableStatement());
     }
     
-    private static Predicate<StatementNode> isReorderableStatement() {
+    private static Predicate<StatementNode> isHoistableStatement() {
         return new Predicate<StatementNode>() {
             @Override
             public boolean apply(StatementNode input) {
-                return isReorderableStatement(input);
+                return isHoistableStatement(input);
             }
         };
     }
     
-    private static boolean isReorderableStatement(StatementNode statement) {
-        return statement instanceof FunctionDeclarationNode;
+    private static boolean isHoistableStatement(StatementNode statement) {
+        return statement instanceof HoistableStatementNode;
     }
 
     private static class Visitor {
@@ -72,7 +72,7 @@ public class DependencyGraphChecker {
         }
 
         private void visitDependency(DeclarationNode declaration, StatementNode referringStatement) {
-            if (isAlreadyDeclared(declaration) || (isReorderableStatement(declaration) && isBeingDeclared(declaration))) {
+            if (isAlreadyDeclared(declaration) || (isHoistableStatement(declaration) && isBeingDeclared(declaration))) {
                 return;
             }
             dependents.add(identity(declaration));

@@ -12,7 +12,7 @@ import static org.zwobble.shed.compiler.parsing.nodes.structure.ScopedNodes.same
 import static org.zwobble.shed.compiler.parsing.nodes.structure.ScopedNodes.subScope;
 
 @Data
-public class FunctionDeclarationNode implements DeclarationNode, FunctionWithBodyNode {
+public class FunctionDeclarationNode implements DeclarationNode, FunctionWithBodyNode, HoistableStatementNode {
     private final String identifier;
     private final List<FormalArgumentNode> formalArguments;
     private final ExpressionNode returnType;
