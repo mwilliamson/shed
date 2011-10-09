@@ -3,7 +3,6 @@ package org.zwobble.shed.compiler.codegenerator;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptExpressionNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
@@ -399,14 +398,13 @@ public class JavaScriptGeneratorTest {
         );
     }
     
-    @Ignore
     @Test public void
-    functionDeclarationIsPulledToTopOfFunction() {
-        ReturnNode returnNode = new ReturnNode(Nodes.number("42"));
-        FunctionDeclarationNode function = new FunctionDeclarationNode(
+    functionDeclarationIsHoistedToTopOfFunction() {
+        StatementNode returnNode = Nodes.returnStatement(Nodes.number("42"));
+        FunctionDeclarationNode function = Nodes.func(
             "magic",
             Collections.<FormalArgumentNode>emptyList(),
-            new VariableIdentifierNode("Number"),
+            Nodes.id("Number"),
             Nodes.block(returnNode)
         );
         StatementNode functionCall = Nodes.expressionStatement(Nodes.call(Nodes.id("magic")));

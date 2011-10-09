@@ -22,6 +22,7 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionWithBodyNode;
+import org.zwobble.shed.compiler.parsing.nodes.HoistableStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LiteralNode;
@@ -46,8 +47,13 @@ import org.zwobble.shed.compiler.referenceresolution.References;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 
+import static com.google.common.base.Predicates.not;
+import static com.google.common.collect.Iterables.concat;
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.Eager.transform;
 
@@ -212,7 +218,13 @@ public class JavaScriptGenerator {
     }
 
     public List<JavaScriptStatementNode> generateBlock(BlockNode statements) {
-        return transform(statements, toJavaScriptStatement());
+        Iterable<StatementNode> hoistableStatements = filter(statements, isHoistableStatement());
+        Iterable<StatementNode> fixedStatements = filter(statements, not(isHoistableStatement()));
+        return newArrayList(concat(transform(hoistableStatements, toJavaScriptStatement()), transform(fixedStatements, toJavaScriptStatement())));
+    }
+
+    private Predicate<Object> isHoistableStatement() {
+        return Predicates.instanceOf(HoistableStatementNode.class);
     }
 
     private JavaScriptExpressionNode generateFunctionWithBody(FunctionWithBodyNode function) {
