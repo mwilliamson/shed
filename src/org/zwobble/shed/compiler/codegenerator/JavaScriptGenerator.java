@@ -76,7 +76,7 @@ public class JavaScriptGenerator {
         
         Iterable<JavaScriptStatementNode> sourceStatements = Iterables.concat(
             Iterables.transform(coreValues, coreValueToJavaScript()),
-            Iterables.transform(source.getStatements(), toJavaScriptStatement()),
+            generateBlock(source.getStatements()),
             Iterables.transform(Iterables.filter(source.getStatements(), isPublicDeclaration()), toJavaScriptExport(packageDeclaration))
         );
         
@@ -217,7 +217,7 @@ public class JavaScriptGenerator {
         throw new RuntimeException("Cannot generate JavaScript for " + node);
     }
 
-    public List<JavaScriptStatementNode> generateBlock(BlockNode statements) {
+    public List<JavaScriptStatementNode> generateBlock(Iterable<StatementNode> statements) {
         Iterable<StatementNode> hoistableStatements = filter(statements, isHoistableStatement());
         Iterable<StatementNode> fixedStatements = filter(statements, not(isHoistableStatement()));
         return newArrayList(concat(transform(hoistableStatements, toJavaScriptStatement()), transform(fixedStatements, toJavaScriptStatement())));

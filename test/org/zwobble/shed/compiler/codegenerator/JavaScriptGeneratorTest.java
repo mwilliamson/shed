@@ -420,6 +420,33 @@ public class JavaScriptGeneratorTest {
         );
     }
     
+    @Test public void
+    functionDeclarationIsHoistedToTopOfSource() {
+        StatementNode returnNode = Nodes.returnStatement(Nodes.number("42"));
+        FunctionDeclarationNode function = Nodes.func(
+            "magic",
+            Collections.<FormalArgumentNode>emptyList(),
+            Nodes.id("Number"),
+            Nodes.block(returnNode)
+        );
+        StatementNode functionCall = Nodes.expressionStatement(Nodes.call(Nodes.id("magic")));
+        SourceNode source = Nodes.source(
+            Nodes.packageDeclaration("shed", "example"),
+            Collections.<ImportNode>emptyList(),
+            asList(functionCall, function)
+        );
+        JavaScriptGenerator generator = new JavaScriptGenerator(new IdentityModuleWrapper(), resolveReferences(source));
+        assertThat(
+            generator.generate(source, Collections.<String>emptyList()),
+            is((JavaScriptNode)js.statements(
+                js.var("magic__1", js.func(Collections.<String>emptyList(), asList(
+                    (JavaScriptStatementNode)js.ret(generateLiteral(Nodes.number("42")))
+                ))),
+                js.expressionStatement(js.call(js.id("magic__1")))
+            ))
+        );
+    }
+    
     private void assertGeneratedJavaScript(ExpressionNode source, JavaScriptNode expectedJavaScript) {
         assertGeneratedJavaScript(resolveReferences(source), source, expectedJavaScript);
     }
