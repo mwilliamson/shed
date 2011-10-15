@@ -36,13 +36,26 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
     }
     
     @Override
-    public TypeResult<?> forwardDeclare(ClassDeclarationNode statement, StaticContext context) {
-        FullyQualifiedName name = fullyQualifiedNames.fullyQualifiedNameOf(statement);
-        Set<InterfaceType> interfaces = Collections.<InterfaceType>emptySet();
-        Map<String, ValueInfo> members = buildMembers(statement, context);
-        ClassType type = new ClassType(name, interfaces, members);
-        context.add(statement, ValueInfo.unassignableValue(type));
+    public TypeResult<?> forwardDeclare(ClassDeclarationNode classDeclaration, StaticContext context) {
+        forwardDeclareBody(classDeclaration, context);
+        ClassType type = buildClassType(classDeclaration, context);
+        context.add(classDeclaration, ValueInfo.unassignableValue(type));
         return TypeResult.success();
+    }
+
+    private void forwardDeclareBody(ClassDeclarationNode classDeclaration, StaticContext context) {
+        TypeResult<?> forwardDeclareResult = blockTypeChecker.forwardDeclare(classDeclaration.getBody(), context);
+        if (!forwardDeclareResult.isSuccess()) {
+            throw new RuntimeException("Errors: " + forwardDeclareResult.getErrors());
+        }
+    }
+
+    private ClassType buildClassType(ClassDeclarationNode classDeclaration, StaticContext context) {
+        FullyQualifiedName name = fullyQualifiedNames.fullyQualifiedNameOf(classDeclaration);
+        Set<InterfaceType> interfaces = Collections.<InterfaceType>emptySet();
+        Map<String, ValueInfo> members = buildMembers(classDeclaration, context);
+        ClassType type = new ClassType(name, interfaces, members);
+        return type;
     }
 
     @Override
@@ -54,10 +67,6 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
 
     private Map<String, ValueInfo> buildMembers(ClassDeclarationNode classDeclaration, StaticContext context) {
         ImmutableMap.Builder<String, ValueInfo> members = ImmutableMap.builder();
-        TypeResult<?> forwardDeclareResult = blockTypeChecker.forwardDeclare(classDeclaration.getBody(), context);
-        if (!forwardDeclareResult.isSuccess()) {
-            throw new RuntimeException("Errors: " + forwardDeclareResult.getErrors());
-        }
         
         Iterable<PublicDeclarationNode> publicDeclarations = Iterables.filter(classDeclaration.getBody(), PublicDeclarationNode.class);
         for (PublicDeclarationNode publicDeclaration : publicDeclarations) {
