@@ -1,26 +1,25 @@
 package org.zwobble.shed.compiler.typechecker.statements;
 
-import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
-import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
+import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
-import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
-import org.zwobble.shed.compiler.typechecker.SimpleNodeLocations;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
-import org.zwobble.shed.compiler.typechecker.TypeCheckerInjector;
+import org.zwobble.shed.compiler.typechecker.TypeCheckerTestFixture;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
-import org.zwobble.shed.compiler.typechecker.statements.ClassDeclarationTypeChecker;
 import org.zwobble.shed.compiler.types.ClassType;
-import org.zwobble.shed.compiler.types.InterfaceType;
-import org.zwobble.shed.compiler.types.Type;
+import org.zwobble.shed.compiler.types.CoreTypes;
 
-import com.google.inject.Injector;
+import com.google.common.collect.ImmutableMap;
+
+import static org.zwobble.shed.compiler.typechecker.TypeCheckerTestFixture.UNIT_TYPE_REFERENCE;
+
+import static org.zwobble.shed.compiler.typechecker.TypeCheckerTestFixture.STRING_TYPE_REFERENCE;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -28,26 +27,46 @@ import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 
 public class ClassDeclarationTypeCheckerTest {
-    private static final Map<String, ValueInfo> NO_MEMBERS = Collections.<String, ValueInfo>emptyMap();
-    private static final Set<InterfaceType> NO_INTERFACES = Collections.<InterfaceType>emptySet();
-    private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
-    private final ReferencesBuilder references = new ReferencesBuilder();
-    private final FullyQualifiedNamesBuilder fullNames = new FullyQualifiedNamesBuilder();
-    private final StaticContext context = StaticContext.defaultContext(references.build());
+    private final TypeCheckerTestFixture fixture = TypeCheckerTestFixture.build();
     
     @Test public void
     classTypeIsBuiltInForwardDeclarationWithNameOfClass() {
         ClassDeclarationNode declaration = Nodes.clazz("Browser", Nodes.noFormalArguments(), Nodes.block());
         FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Browser");
-        fullNames.addFullyQualifiedName(declaration, fullyQualifiedName);
-        TypeResult<?> result = forwardDeclare(declaration);
+        fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
+        StaticContext context = fixture.blankContext();
+        
+        TypeResult<?> result = forwardDeclare(declaration, context);
+        
         assertThat(result, isSuccess());
-        assertThat(context.get(declaration).getType(), is((Type)new ClassType(fullyQualifiedName, NO_INTERFACES, NO_MEMBERS)));
+        ClassType type = (ClassType) context.get(declaration).getType();
+        assertThat(type.getFullyQualifiedName(), is(fullyQualifiedName));
     }
     
-    private TypeResult<?> forwardDeclare(ClassDeclarationNode classDeclaration) {
-        Injector injector = TypeCheckerInjector.build(nodeLocations, fullNames.build());
-        ClassDeclarationTypeChecker typeChecker = injector.getInstance(ClassDeclarationTypeChecker.class);
+    @Test public void
+    classTypeIsBuiltInForwardDeclarationWithMembersThatCanBeTypedWithoutTypingEntireBody() {
+        BlockNode body = Nodes.block(
+            Nodes.publik(Nodes.immutableVar("firstName", STRING_TYPE_REFERENCE, Nodes.string("Bob"))),
+            Nodes.publik(Nodes.func("close", Nodes.noFormalArguments(), UNIT_TYPE_REFERENCE, Nodes.block(Nodes.returnStatement(Nodes.unit())))),
+            Nodes.immutableVar("lastName", STRING_TYPE_REFERENCE, Nodes.string("Bobertson"))
+        );
+        ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.noFormalArguments(), body);
+        FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Browser");
+        fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
+        StaticContext context = fixture.context();
+        
+        TypeResult<?> result = forwardDeclare(declaration, context);
+        
+        assertThat(result, isSuccess());
+        ClassType type = (ClassType) context.get(declaration).getType();
+        assertThat(type.getMembers(), Matchers.<Map<String, ValueInfo>>is(ImmutableMap.of(
+            "firstName", ValueInfo.unassignableValue(CoreTypes.STRING),
+            "close", ValueInfo.unassignableValue(CoreTypes.functionTypeOf(CoreTypes.UNIT))
+        )));
+    }
+    
+    private TypeResult<?> forwardDeclare(ClassDeclarationNode classDeclaration, StaticContext context) {
+        ClassDeclarationTypeChecker typeChecker = fixture.get(ClassDeclarationTypeChecker.class);
         return typeChecker.forwardDeclare(classDeclaration, context);
     }
 }
