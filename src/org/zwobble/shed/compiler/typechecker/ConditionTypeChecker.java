@@ -1,5 +1,7 @@
 package org.zwobble.shed.compiler.typechecker;
 
+import javax.inject.Inject;
+
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.SourceRange;
@@ -11,10 +13,19 @@ import org.zwobble.shed.compiler.types.Type;
 import com.google.common.base.Function;
 
 public class ConditionTypeChecker {
+    private final NodeLocations nodeLocations;
+    private final TypeInferer typeInferer;
+
+    @Inject
+    public ConditionTypeChecker(TypeInferer typeInferer, NodeLocations nodeLocations) {
+        this.typeInferer = typeInferer;
+        this.nodeLocations = nodeLocations;
+    }
+    
     public TypeResult<Void> typeAndCheckCondition(
-        ExpressionNode condition, NodeLocations nodeLocations, StaticContext context
+        ExpressionNode condition, StaticContext context
     ) {
-        TypeResult<Type> conditionType = TypeInferer.inferType(condition, nodeLocations, context);
+        TypeResult<Type> conditionType = typeInferer.inferType(condition, context);
         return conditionType.ifValueThen(checkIsBoolean(nodeLocations.locate(condition)));
     }
 

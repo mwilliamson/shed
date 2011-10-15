@@ -3,7 +3,6 @@ package org.zwobble.shed.compiler.typechecker;
 import java.util.Collections;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
@@ -26,14 +25,13 @@ import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 public class ImportStatementTypeCheckerTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
     private final ReferencesBuilder references = new ReferencesBuilder();
-    private final FullyQualifiedNamesBuilder fullNames = new FullyQualifiedNamesBuilder();
     
     @Test public void
     importingValuesAssignsTypeToImportStatement() {
         ImportNode importStatement = new ImportNode(asList("shed", "time", "DateTime"));
         VariableIdentifierNode reference = new VariableIdentifierNode("DateTime");
         references.addReference(reference, importStatement);
-        StaticContext staticContext = new StaticContext(references.build(), fullNames.build());
+        StaticContext staticContext = new StaticContext(references.build());
         
         Type dateTime = new ClassType(fullyQualifiedName("shed", "time", "DateTime"), Collections.<InterfaceType>emptySet(), ImmutableMap.<String, ValueInfo>of());
         staticContext.addGlobal(asList("shed", "time", "DateTime"), CoreTypes.classOf(dateTime));
@@ -49,7 +47,7 @@ public class ImportStatementTypeCheckerTest {
     errorIfTryingToImportNonExistentGlobal() {
         ImportNode importStatement = new ImportNode(asList("shed", "time", "DateTime"));
         assertThat(
-            typeCheckImportStatement(importStatement, nodeLocations, new StaticContext(references.build(), fullNames.build())),
+            typeCheckImportStatement(importStatement, nodeLocations, new StaticContext(references.build())),
             isFailureWithErrors(new UnresolvedImportError(asList("shed", "time", "DateTime")))
         );
     }

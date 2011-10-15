@@ -3,7 +3,7 @@ package org.zwobble.shed.compiler.typechecker;
 import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.parsing.NodeLocations;
+import org.zwobble.shed.compiler.naming.FullyQualifiedNames;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
@@ -18,20 +18,22 @@ import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 public class ObjectDeclarationTypeChecker implements StatementTypeChecker<ObjectDeclarationNode> {
     private final BlockTypeChecker blockTypeChecker;
+    private final FullyQualifiedNames fullyQualifiedNames;
 
     @Inject
-    public ObjectDeclarationTypeChecker(BlockTypeChecker blockTypeChecker) {
+    public ObjectDeclarationTypeChecker(BlockTypeChecker blockTypeChecker, FullyQualifiedNames fullyQualifiedNames) {
         this.blockTypeChecker = blockTypeChecker;
+        this.fullyQualifiedNames = fullyQualifiedNames;
     }
     
     @Override
     public TypeResult<StatementTypeCheckResult> typeCheck(
-        ObjectDeclarationNode objectDeclaration, NodeLocations nodeLocations, StaticContext context, Option<Type> returnType
+        ObjectDeclarationNode objectDeclaration, StaticContext context, Option<Type> returnType
     ) {
         TypeResult<StatementTypeCheckResult> result = TypeResult.success(StatementTypeCheckResult.noReturn());
 
         TypeResult<StatementTypeCheckResult> blockResult = 
-            blockTypeChecker.typeCheckBlock(objectDeclaration.getStatements(), nodeLocations, context, Option.<Type>none());
+            blockTypeChecker.typeCheckBlock(objectDeclaration.getStatements(), context, Option.<Type>none());
         result = result.withErrorsFrom(blockResult);
         
         if (result.isSuccess()) {
@@ -44,7 +46,7 @@ public class ObjectDeclarationTypeChecker implements StatementTypeChecker<Object
                 }
             }
             
-            InterfaceType type = new InterfaceType(context.fullyQualifiedNameOf(objectDeclaration), typeBuilder.build());
+            InterfaceType type = new InterfaceType(fullyQualifiedNames.fullyQualifiedNameOf(objectDeclaration), typeBuilder.build());
 
             context.add(objectDeclaration, unassignableValue(type));
         }

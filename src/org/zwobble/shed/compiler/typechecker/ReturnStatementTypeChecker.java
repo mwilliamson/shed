@@ -1,5 +1,7 @@
 package org.zwobble.shed.compiler.typechecker;
 
+import javax.inject.Inject;
+
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
@@ -10,14 +12,22 @@ import org.zwobble.shed.compiler.typechecker.errors.WrongReturnTypeError;
 import org.zwobble.shed.compiler.types.Type;
 
 import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
-import static org.zwobble.shed.compiler.typechecker.TypeInferer.inferType;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 public class ReturnStatementTypeChecker implements StatementTypeChecker<ReturnNode> {
+    private final TypeInferer typeInferer;
+    private final NodeLocations nodeLocations;
+
+    @Inject
+    public ReturnStatementTypeChecker(TypeInferer typeInferer, NodeLocations nodeLocations) {
+        this.typeInferer = typeInferer;
+        this.nodeLocations = nodeLocations;
+    }
+    
     @Override
     public TypeResult<StatementTypeCheckResult> typeCheck(
-        ReturnNode returnStatement, NodeLocations nodeLocations, StaticContext context, Option<Type> returnType
+        ReturnNode returnStatement, StaticContext context, Option<Type> returnType
     ) {
         if (!returnType.hasValue()) {
             return failure(
@@ -29,7 +39,7 @@ public class ReturnStatementTypeChecker implements StatementTypeChecker<ReturnNo
             );
         }
         ExpressionNode expression = returnStatement.getExpression();
-        TypeResult<Type> expressionType = inferType(expression, nodeLocations, context);
+        TypeResult<Type> expressionType = typeInferer.inferType(expression, context);
         if (!expressionType.isSuccess()) {
             return failure(expressionType.getErrors());
         }

@@ -1,7 +1,8 @@
 package org.zwobble.shed.compiler.typechecker;
 
+import javax.inject.Inject;
+
 import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult.Status;
@@ -11,23 +12,30 @@ import com.google.common.base.Function;
 
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
-public class FunctionDeclarationTypeChecker implements StatementTypeChecker<FunctionDeclarationNode>, StatementForwardDeclarer<FunctionDeclarationNode> {
+public class FunctionDeclarationTypeChecker implements HoistableStatementTypeChecker<FunctionDeclarationNode> {
+    private final TypeInferer typeInferer;
+
+    @Inject
+    public FunctionDeclarationTypeChecker(TypeInferer typeInferer) {
+        this.typeInferer = typeInferer;
+    }
+    
     @Override
-    public TypeResult<?> forwardDeclare(FunctionDeclarationNode functionDeclaration, NodeLocations nodeLocations, StaticContext context) {
-        TypeResult<ValueInfo> typeResult = TypeInferer.inferFunctionType(functionDeclaration, nodeLocations, context);
+    public TypeResult<?> forwardDeclare(FunctionDeclarationNode functionDeclaration, StaticContext context) {
+        TypeResult<ValueInfo> typeResult = typeInferer.inferFunctionType(functionDeclaration, context);
         typeResult.ifValueThen(addToContext(functionDeclaration, context));
         return typeResult;
     }
     
     @Override
     public TypeResult<StatementTypeCheckResult> typeCheck(
-        FunctionDeclarationNode functionDeclaration, NodeLocations nodeLocations, StaticContext context, Option<Type> returnType
+        FunctionDeclarationNode functionDeclaration, StaticContext context, Option<Type> returnType
     ) {
         VariableLookupResult functionLookupResult = context.get(functionDeclaration);
         TypeResult<StatementTypeCheckResult> result = TypeResult.success(StatementTypeCheckResult.noReturn());
         if (functionLookupResult.getStatus() == Status.SUCCESS) {
             TypeResult<ValueInfo> bodyResult = 
-                TypeInferer.typeCheckBody(functionDeclaration, nodeLocations, context).apply(functionLookupResult.getValueInfo());
+                typeInferer.typeCheckBody(functionDeclaration, context).apply(functionLookupResult.getValueInfo());
             result = result.withErrorsFrom(bodyResult);
         }
         return result;

@@ -1,16 +1,24 @@
 package org.zwobble.shed.compiler.typechecker;
 
+import javax.inject.Inject;
+
 import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.types.Type;
 
 public class ExpressionStatementTypeChecker implements StatementTypeChecker<ExpressionStatementNode> {
+    private final TypeInferer typeInferer;
+
+    @Inject
+    public ExpressionStatementTypeChecker(TypeInferer typeInferer) {
+        this.typeInferer = typeInferer;
+    }
+    
     @Override
     public TypeResult<StatementTypeCheckResult> typeCheck(
-        ExpressionStatementNode statement, NodeLocations nodeLocations, StaticContext context, Option<Type> returnType
+        ExpressionStatementNode statement, StaticContext context, Option<Type> returnType
     ) {
-        TypeResult<Type> result = TypeInferer.inferType(((ExpressionStatementNode) statement).getExpression(), nodeLocations, context);
+        TypeResult<Type> result = typeInferer.inferType(((ExpressionStatementNode) statement).getExpression(), context);
         return TypeResult.success(StatementTypeCheckResult.noReturn()).withErrorsFrom(result);
     }
     

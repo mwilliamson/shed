@@ -20,11 +20,13 @@ import org.zwobble.shed.compiler.referenceresolution.ReferenceResolverResult;
 import org.zwobble.shed.compiler.referenceresolution.References;
 import org.zwobble.shed.compiler.tokeniser.TokenPosition;
 import org.zwobble.shed.compiler.tokeniser.Tokeniser;
-import org.zwobble.shed.compiler.typechecker.AllStatementsTypeChecker;
-import org.zwobble.shed.compiler.typechecker.BlockTypeChecker;
 import org.zwobble.shed.compiler.typechecker.CoreModule;
 import org.zwobble.shed.compiler.typechecker.SourceTypeChecker;
+import org.zwobble.shed.compiler.typechecker.StaticContext;
+import org.zwobble.shed.compiler.typechecker.TypeCheckerInjector;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
+
+import com.google.inject.Injector;
 
 import static org.zwobble.shed.compiler.typechecker.DefaultBrowserContext.defaultBrowserContext;
 
@@ -70,7 +72,10 @@ public class ShedCompiler {
             if (referencesResult.isSuccess()) {
                 FullyQualifiedNames fullNames = new TypeNamer().generateFullyQualifiedNames(sourceNode);
                 References references = referencesResult.getReferences();
-                TypeResult<Void> typeCheckResult = new SourceTypeChecker(new BlockTypeChecker(AllStatementsTypeChecker.build())).typeCheck(sourceNode, parseResult, defaultBrowserContext(references, fullNames));
+                Injector typeCheckerInjector = TypeCheckerInjector.build(parseResult, fullNames);
+                SourceTypeChecker sourceTypeChecker = typeCheckerInjector.getInstance(SourceTypeChecker.class);
+                StaticContext browserContext = defaultBrowserContext(references);
+                TypeResult<Void> typeCheckResult = sourceTypeChecker.typeCheck(sourceNode, browserContext);
                 errors.addAll(typeCheckResult.getErrors());
                 
                 TypeResult<Void> dependencyCheckResult = new DependencyChecker().check(sourceNode, references, parseResult);

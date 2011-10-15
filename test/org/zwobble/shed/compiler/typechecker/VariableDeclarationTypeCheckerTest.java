@@ -17,6 +17,7 @@ import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.inject.Injector;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
@@ -31,7 +32,6 @@ import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 public class VariableDeclarationTypeCheckerTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
     private final ReferencesBuilder references = new ReferencesBuilder();
-    private final FullyQualifiedNamesBuilder fullNames = new FullyQualifiedNamesBuilder();
 
     private final GlobalDeclarationNode stringDeclaration = new GlobalDeclarationNode("String");
     private final VariableIdentifierNode stringReference = new VariableIdentifierNode("String");
@@ -103,13 +103,15 @@ public class VariableDeclarationTypeCheckerTest {
     private TypeResult<StatementTypeCheckResult> typeCheckVariableDeclaration(
         VariableDeclarationNode node, NodeLocations nodeLocations, StaticContext context
     ) {
-        return new VariableDeclarationTypeChecker().typeCheck(node, nodeLocations, context, Option.<Type>none());
+        Injector injector = TypeCheckerInjector.build(nodeLocations, new FullyQualifiedNamesBuilder().build());
+        VariableDeclarationTypeChecker typeChecker = injector.getInstance(VariableDeclarationTypeChecker.class);
+        return typeChecker.typeCheck(node, context, Option.<Type>none());
     }
     
     private StaticContext standardContext() {
         references.addReference(stringReference, stringDeclaration);
         
-        StaticContext context = new StaticContext(references.build(), fullNames.build());
+        StaticContext context = new StaticContext(references.build());
         context.add(stringDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.STRING)));
         
         return context;

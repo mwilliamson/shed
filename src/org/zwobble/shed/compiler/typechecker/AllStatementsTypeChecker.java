@@ -7,6 +7,7 @@ import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
+import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
@@ -18,14 +19,9 @@ import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.WhileStatementNode;
 import org.zwobble.shed.compiler.types.Type;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 public class AllStatementsTypeChecker {
-    public static AllStatementsTypeChecker build() {
-        return new AllStatementsTypeChecker(Guice.createInjector());
-    }
-    
     private final Map<Class<?>, Class<? extends StatementTypeChecker<?>>> typeCheckers = 
         new HashMap<Class<?>, Class<? extends StatementTypeChecker<?>>>();
     private final Map<Class<?>, Class<? extends StatementForwardDeclarer<?>>> forwardDeclarers =
@@ -43,8 +39,8 @@ public class AllStatementsTypeChecker {
         addTypeChecker(IfThenElseStatementNode.class, IfThenElseTypeChecker.class);
         addTypeChecker(WhileStatementNode.class, WhileStatementTypeChecker.class);
         
-        addForwardDeclarer(FunctionDeclarationNode.class, FunctionDeclarationTypeChecker.class);
-        addTypeChecker(FunctionDeclarationNode.class, FunctionDeclarationTypeChecker.class);
+        addHoistableTypeChecker(FunctionDeclarationNode.class, FunctionDeclarationTypeChecker.class);
+        addHoistableTypeChecker(ClassDeclarationNode.class, ClassDeclarationTypeChecker.class);
     }
     
     private <T extends StatementNode> void addTypeChecker(Class<T> statementType, Class<? extends StatementTypeChecker<T>> typeChecker) {
@@ -54,17 +50,24 @@ public class AllStatementsTypeChecker {
     private <T extends StatementNode> void addForwardDeclarer(Class<T> statementType, Class<? extends StatementForwardDeclarer<T>> declarer) {
         forwardDeclarers.put(statementType, declarer);
     }
+    
+    private <T extends StatementNode> void addHoistableTypeChecker(
+        Class<T> statementType, Class<? extends HoistableStatementTypeChecker<T>> typeChecker
+    ) {
+        addTypeChecker(statementType, typeChecker);
+        addForwardDeclarer(statementType, typeChecker);
+    }
 
     public <T extends StatementNode> TypeResult<StatementTypeCheckResult> typeCheck(
         T statement, NodeLocations nodeLocations, StaticContext context, Option<Type> returnType
     ) {
-        return getTypeChecker(statement).typeCheck(statement, nodeLocations, context, returnType);
+        return getTypeChecker(statement).typeCheck(statement, context, returnType);
     }
 
     public TypeResult<?> forwardDeclare(
         StatementNode statement, NodeLocations nodeLocations, StaticContext context
     ) {
-        return getForwardDeclarer(statement).forwardDeclare(statement, nodeLocations, context);
+        return getForwardDeclarer(statement).forwardDeclare(statement, context);
     }
 
     @SuppressWarnings("unchecked")

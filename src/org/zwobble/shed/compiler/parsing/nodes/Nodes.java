@@ -58,7 +58,7 @@ public class Nodes {
         return new ObjectDeclarationNode(name, body);
     }
 
-    public static SyntaxNode clazz(String identifier, List<FormalArgumentNode> formalArguments, BlockNode body) {
+    public static ClassDeclarationNode clazz(String identifier, List<FormalArgumentNode> formalArguments, BlockNode body) {
         return new ClassDeclarationNode(identifier, formalArguments, body);
     }
 

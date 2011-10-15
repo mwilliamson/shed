@@ -6,11 +6,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.naming.FullyQualifiedName;
-import org.zwobble.shed.compiler.naming.FullyQualifiedNames;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
-import org.zwobble.shed.compiler.parsing.nodes.TypeDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.References;
 import org.zwobble.shed.compiler.types.Type;
@@ -21,8 +18,8 @@ import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 public class StaticContext {
-    public static StaticContext defaultContext(References references, FullyQualifiedNames fullNames) {
-        StaticContext staticContext = new StaticContext(references, fullNames);
+    public static StaticContext defaultContext(References references) {
+        StaticContext staticContext = new StaticContext(references);
         for (Entry<String, Type> value : CoreModule.VALUES.entrySet()) {
             addCore(staticContext, value.getKey(), value.getValue());
         }
@@ -37,11 +34,9 @@ public class StaticContext {
     private final Map<List<String>, Type> global = new HashMap<List<String>, Type>();
     private final Map<Identity<DeclarationNode>, ValueInfo> types = new HashMap<Identity<DeclarationNode>, ValueInfo>();
     private final References references;
-    private final FullyQualifiedNames fullNames;
     
-    public StaticContext(References references, FullyQualifiedNames fullNames) {
+    public StaticContext(References references) {
         this.references = references;
-        this.fullNames = fullNames;
     }
     
     public void add(DeclarationNode declaration, ValueInfo type) {
@@ -71,9 +66,5 @@ public class StaticContext {
         } else {
             return none();
         }
-    }
-
-    public FullyQualifiedName fullyQualifiedNameOf(TypeDeclarationNode declaration) {
-        return fullNames.fullyQualifiedNameOf(declaration);
     }
 }

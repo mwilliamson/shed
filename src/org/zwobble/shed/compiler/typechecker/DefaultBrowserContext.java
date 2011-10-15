@@ -2,7 +2,6 @@ package org.zwobble.shed.compiler.typechecker;
 
 import java.util.Collections;
 
-import org.zwobble.shed.compiler.naming.FullyQualifiedNames;
 import org.zwobble.shed.compiler.referenceresolution.References;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -18,8 +17,8 @@ import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualified
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 public class DefaultBrowserContext {
-    public static StaticContext defaultBrowserContext(References references, FullyQualifiedNames names) {
-        StaticContext context = StaticContext.defaultContext(references, names);
+    public static StaticContext defaultBrowserContext(References references) {
+        StaticContext context = StaticContext.defaultContext(references);
         
         FormalTypeParameter formalTypeParameter = new FormalTypeParameter("T");
         Type importValueType = new ParameterisedFunctionType(

@@ -11,7 +11,7 @@ import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
 
-import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+import com.google.inject.Injector;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -20,11 +20,11 @@ import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
 import static org.zwobble.shed.compiler.parsing.SourceRange.range;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 public class TypeLookupTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
     private final ReferencesBuilder references = new ReferencesBuilder();
-    private final FullyQualifiedNamesBuilder fullNames = new FullyQualifiedNamesBuilder();
 
     private final GlobalDeclarationNode stringDeclaration = new GlobalDeclarationNode("String");
     private final VariableIdentifierNode stringReference = new VariableIdentifierNode("String");
@@ -66,13 +66,15 @@ public class TypeLookupTest {
     }
     
     private TypeResult<Type> lookupTypeReference(ExpressionNode typeReference, StaticContext context) {
-        return TypeLookup.lookupTypeReference(typeReference, nodeLocations, context);
+        Injector injector = TypeCheckerInjector.build(nodeLocations, new FullyQualifiedNamesBuilder().build());
+        TypeLookup typeLookup = injector.getInstance(TypeLookup.class);
+        return typeLookup.lookupTypeReference(typeReference, context);
     }
     
     private StaticContext standardContext() {
         references.addReference(stringReference, stringDeclaration);
         
-        StaticContext context = new StaticContext(references.build(), fullNames.build());
+        StaticContext context = new StaticContext(references.build());
         context.add(stringDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.STRING)));
         
         return context;

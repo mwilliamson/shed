@@ -3,7 +3,6 @@ package org.zwobble.shed.compiler.typechecker;
 import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.WhileStatementNode;
 import org.zwobble.shed.compiler.types.Type;
 
@@ -21,10 +20,10 @@ public class WhileStatementTypeChecker implements StatementTypeChecker<WhileStat
     
     @Override
     public TypeResult<StatementTypeCheckResult> typeCheck(
-        WhileStatementNode statement, NodeLocations nodeLocations, StaticContext context, Option<Type> returnType
+        WhileStatementNode statement, StaticContext context, Option<Type> returnType
     ) {
-        TypeResult<?> conditionResult = conditionTypeChecker.typeAndCheckCondition(statement.getCondition(), nodeLocations, context);
-        TypeResult<?> bodyResult = blockTypeChecker.typeCheckBlock(statement.getBody(), nodeLocations, context, returnType);
+        TypeResult<?> conditionResult = conditionTypeChecker.typeAndCheckCondition(statement.getCondition(), context);
+        TypeResult<?> bodyResult = blockTypeChecker.typeCheckBlock(statement.getBody(), context, returnType);
         return success(StatementTypeCheckResult.noReturn())
             .withErrorsFrom(conditionResult, bodyResult);
     }

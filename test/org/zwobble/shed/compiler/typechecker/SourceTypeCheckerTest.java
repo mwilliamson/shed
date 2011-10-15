@@ -5,14 +5,12 @@ import java.util.Collections;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.HasErrors;
-import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
-import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -20,9 +18,7 @@ import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 
 public class SourceTypeCheckerTest {
-    private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
-    private final ReferencesBuilder references = new ReferencesBuilder();
-    private final FullyQualifiedNamesBuilder fullNames = new FullyQualifiedNamesBuilder();
+    private final TypeCheckerTestFixture fixture = TypeCheckerTestFixture.build();
     
     @Test public void
     noErrorsIfEverythingTypeChecks() {
@@ -61,10 +57,6 @@ public class SourceTypeCheckerTest {
     }
 
     private HasErrors typeCheck(SourceNode source) {
-        return new SourceTypeChecker(new BlockTypeChecker(AllStatementsTypeChecker.build())).typeCheck(source, nodeLocations, staticContext());
-    }
-    
-    private StaticContext staticContext() {
-        return StaticContext.defaultContext(references.build(), fullNames.build());
+        return fixture.get(SourceTypeChecker.class).typeCheck(source, fixture.blankContext());
     }
 }

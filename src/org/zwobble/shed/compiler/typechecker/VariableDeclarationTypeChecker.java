@@ -3,6 +3,8 @@ package org.zwobble.shed.compiler.typechecker;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
@@ -11,25 +13,34 @@ import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.types.Type;
 
 import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
-import static org.zwobble.shed.compiler.typechecker.TypeInferer.inferType;
-import static org.zwobble.shed.compiler.typechecker.TypeLookup.lookupTypeReference;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 public class VariableDeclarationTypeChecker implements StatementTypeChecker<VariableDeclarationNode> {
+    private final TypeInferer typeInferer;
+    private final TypeLookup typeLookup;
+    private final NodeLocations nodeLocations;
+
+    @Inject
+    public VariableDeclarationTypeChecker(TypeInferer typeInferer, TypeLookup typeLookup, NodeLocations nodeLocations) {
+        this.typeInferer = typeInferer;
+        this.typeLookup = typeLookup;
+        this.nodeLocations = nodeLocations;
+    }
+    
     @Override
     public TypeResult<StatementTypeCheckResult> typeCheck(
-        VariableDeclarationNode variableDeclaration, NodeLocations nodeLocations, StaticContext staticContext, Option<Type> returnType
+        VariableDeclarationNode variableDeclaration, StaticContext staticContext, Option<Type> returnType
     ) {
         List<CompilerError> errors = new ArrayList<CompilerError>();
         
-        TypeResult<Type> valueTypeResult = inferType(variableDeclaration.getValue(), nodeLocations, staticContext);
+        TypeResult<Type> valueTypeResult = typeInferer.inferType(variableDeclaration.getValue(), staticContext);
         errors.addAll(valueTypeResult.getErrors());
         
         if (variableDeclaration.getTypeReference().hasValue()) {
             ExpressionNode typeReference = variableDeclaration.getTypeReference().get();
-            TypeResult<Type> typeResult = lookupTypeReference(typeReference, nodeLocations, staticContext);
+            TypeResult<Type> typeResult = typeLookup.lookupTypeReference(typeReference, staticContext);
             errors.addAll(typeResult.getErrors());
             if (errors.isEmpty() && !isSubType(valueTypeResult.get(), typeResult.get())) {
                 errors.add(CompilerError.error(

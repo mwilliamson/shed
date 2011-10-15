@@ -3,6 +3,8 @@ package org.zwobble.shed.compiler.typechecker;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
@@ -18,12 +20,15 @@ import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 public class SourceTypeChecker {
     private final BlockTypeChecker blockTypeChecker;
+    private final NodeLocations nodeLocations;
 
-    public SourceTypeChecker(BlockTypeChecker blockTypeChecker) {
+    @Inject
+    public SourceTypeChecker(BlockTypeChecker blockTypeChecker, NodeLocations nodeLocations) {
         this.blockTypeChecker = blockTypeChecker;
+        this.nodeLocations = nodeLocations;
     }
     
-    public TypeResult<Void> typeCheck(SourceNode source, NodeLocations nodeLocations, StaticContext staticContext) {
+    public TypeResult<Void> typeCheck(SourceNode source, StaticContext staticContext) {
         List<CompilerError> errors = new ArrayList<CompilerError>();
         
         for (ImportNode importNode : source.getImports()) {
@@ -31,7 +36,7 @@ public class SourceTypeChecker {
             errors.addAll(importTypeCheckResult.getErrors());
         }
 
-        TypeResult<?> blockResult = blockTypeChecker.typeCheckBlock(source.getStatements(), nodeLocations, staticContext, Option.<Type>none());
+        TypeResult<?> blockResult = blockTypeChecker.typeCheckBlock(source.getStatements(), staticContext, Option.<Type>none());
         errors.addAll(blockResult.getErrors());
         
         boolean seenPublicStatement = false;

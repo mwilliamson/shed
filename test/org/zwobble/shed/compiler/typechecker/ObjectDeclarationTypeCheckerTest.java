@@ -14,6 +14,7 @@ import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.inject.Injector;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -26,7 +27,7 @@ public class ObjectDeclarationTypeCheckerTest {
     private final FullyQualifiedNamesBuilder fullNames = new FullyQualifiedNamesBuilder();
     
     private StaticContext staticContext() {
-        return StaticContext.defaultContext(references.build(), fullNames.build());
+        return StaticContext.defaultContext(references.build());
     }
     
     @Test public void
@@ -81,7 +82,8 @@ public class ObjectDeclarationTypeCheckerTest {
     private TypeResult<StatementTypeCheckResult> typeCheckObjectDeclaration(
         ObjectDeclarationNode objectDeclaration, StaticContext staticContext
     ) {
-        ObjectDeclarationTypeChecker typeChecker = TypeCheckerInjector.build(nodeLocations).getInstance(ObjectDeclarationTypeChecker.class);
-        return typeChecker.typeCheck(objectDeclaration, nodeLocations, staticContext, Option.<Type>none());
+        Injector injector = TypeCheckerInjector.build(nodeLocations, fullNames.build());
+        ObjectDeclarationTypeChecker typeChecker = injector.getInstance(ObjectDeclarationTypeChecker.class);
+        return typeChecker.typeCheck(objectDeclaration, staticContext, Option.<Type>none());
     }
 }

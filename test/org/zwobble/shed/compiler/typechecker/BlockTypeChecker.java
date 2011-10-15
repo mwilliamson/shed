@@ -11,15 +11,16 @@ import org.zwobble.shed.compiler.types.Type;
 
 public class BlockTypeChecker {
     private final AllStatementsTypeChecker statementsTypeChecker;
+    private final NodeLocations nodeLocations;
 
     @Inject
-    public BlockTypeChecker(AllStatementsTypeChecker statementsTypeChecker) {
+    public BlockTypeChecker(AllStatementsTypeChecker statementsTypeChecker, NodeLocations nodeLocations) {
         this.statementsTypeChecker = statementsTypeChecker;
+        this.nodeLocations = nodeLocations;
     }
     
     public TypeResult<StatementTypeCheckResult> typeCheckBlock(
         Iterable<StatementNode> statements,
-        NodeLocations nodeLocations,
         StaticContext context,
         Option<Type> returnType
     ) {

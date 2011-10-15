@@ -34,6 +34,7 @@ import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.inject.Injector;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -53,7 +54,6 @@ import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 public class TypeInfererTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
     private final ReferencesBuilder references = new ReferencesBuilder();
-    private final FullyQualifiedNamesBuilder fullNames = new FullyQualifiedNamesBuilder();
 
     private final GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Number");
     private final VariableIdentifierNode numberReference = new VariableIdentifierNode("Number");
@@ -605,15 +605,20 @@ public class TypeInfererTest {
     }
     
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
-        return TypeInferer.inferType(expression, nodeLocations, context);
+        return typeInferer().inferType(expression, context);
     }
     
     private TypeResult<ValueInfo> inferValueInfo(ExpressionNode expression, StaticContext context) {
-        return TypeInferer.inferValueInfo(expression, nodeLocations, context);
+        return typeInferer().inferValueInfo(expression, context);
+    }
+
+    private TypeInferer typeInferer() {
+        Injector injector = TypeCheckerInjector.build(nodeLocations, new FullyQualifiedNamesBuilder().build());
+        return injector.getInstance(TypeInferer.class);
     }
     
     private StaticContext blankContext() {
-        return new StaticContext(references.build(), fullNames.build());
+        return new StaticContext(references.build());
     }
     
     private StaticContext standardContext() {

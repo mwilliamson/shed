@@ -21,6 +21,8 @@ import org.zwobble.shed.compiler.typechecker.errors.WrongReturnTypeError;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
 
+import com.google.inject.Injector;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -34,10 +36,9 @@ import static org.zwobble.shed.compiler.typechecker.VariableLookupResult.success
 public class TypeCheckerTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
     private final ReferencesBuilder references = new ReferencesBuilder();
-    private final FullyQualifiedNamesBuilder fullNames = new FullyQualifiedNamesBuilder();
     
     private StaticContext staticContext() {
-        return StaticContext.defaultContext(references.build(), fullNames.build());
+        return StaticContext.defaultContext(references.build());
     }
     
     @Test public void
@@ -236,7 +237,9 @@ public class TypeCheckerTest {
     private TypeResult<StatementTypeCheckResult> typeCheckBlock(
         BlockNode block, StaticContext context, Option<Type> returnType
     ) {
-        return new BlockTypeChecker(AllStatementsTypeChecker.build()).typeCheckBlock(block, nodeLocations, context, returnType);
+        Injector injector = TypeCheckerInjector.build(nodeLocations, new FullyQualifiedNamesBuilder().build());
+        BlockTypeChecker typeChecker = injector.getInstance(BlockTypeChecker.class);
+        return typeChecker.typeCheckBlock(block, context, returnType);
     }
 
     private TypeResult<StatementTypeCheckResult> typeCheckStatement(StatementNode statement, StaticContext context, Option<Type> returnType) {

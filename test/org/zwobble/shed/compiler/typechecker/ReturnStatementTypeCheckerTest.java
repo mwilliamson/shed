@@ -15,6 +15,7 @@ import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.inject.Injector;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
@@ -66,10 +67,12 @@ public class ReturnStatementTypeCheckerTest {
     }
     
     private TypeResult<StatementTypeCheckResult> typeCheck(ReturnNode returnNode, StaticContext context, Option<Type> returnType) {
-        return new ReturnStatementTypeChecker().typeCheck(returnNode, nodeLocations, context, returnType);
+        Injector injector = TypeCheckerInjector.build(nodeLocations, new FullyQualifiedNamesBuilder().build());
+        ReturnStatementTypeChecker typeChecker = injector.getInstance(ReturnStatementTypeChecker.class);
+        return typeChecker.typeCheck(returnNode, context, returnType);
     }
     
     private StaticContext staticContext() {
-        return StaticContext.defaultContext(references.build(), new FullyQualifiedNamesBuilder().build());
+        return StaticContext.defaultContext(references.build());
     }
 }
