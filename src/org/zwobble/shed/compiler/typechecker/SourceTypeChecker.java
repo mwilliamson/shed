@@ -36,7 +36,7 @@ public class SourceTypeChecker {
             errors.addAll(importTypeCheckResult.getErrors());
         }
 
-        TypeResult<?> blockResult = blockTypeChecker.typeCheckBlock(source.getStatements(), staticContext, Option.<Type>none());
+        TypeResult<?> blockResult = blockTypeChecker.forwardDeclareAndTypeCheck(source.getStatements(), staticContext, Option.<Type>none());
         errors.addAll(blockResult.getErrors());
         
         boolean seenPublicStatement = false;

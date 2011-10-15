@@ -27,7 +27,7 @@ public class WhileStatementTypeChecker implements StatementTypeChecker<WhileStat
         WhileStatementNode statement, StaticContext context, Option<Type> returnType
     ) {
         TypeResult<?> conditionResult = conditionTypeChecker.typeAndCheckCondition(statement.getCondition(), context);
-        TypeResult<?> bodyResult = blockTypeChecker.typeCheckBlock(statement.getBody(), context, returnType);
+        TypeResult<?> bodyResult = blockTypeChecker.forwardDeclareAndTypeCheck(statement.getBody(), context, returnType);
         return success(StatementTypeCheckResult.noReturn())
             .withErrorsFrom(conditionResult, bodyResult);
     }

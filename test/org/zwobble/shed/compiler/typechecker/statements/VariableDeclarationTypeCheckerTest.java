@@ -17,7 +17,6 @@ import org.zwobble.shed.compiler.typechecker.TypeCheckerInjector;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult;
-import org.zwobble.shed.compiler.typechecker.statements.VariableDeclarationTypeChecker;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
@@ -30,6 +29,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
 import static org.zwobble.shed.compiler.parsing.SourceRange.range;
@@ -44,7 +44,25 @@ public class VariableDeclarationTypeCheckerTest {
     private final VariableIdentifierNode stringReference = new VariableIdentifierNode("String");
 
     @Test public void
-    declaringVariableAddsItToScope() {
+    declaringVariableWithoutTypeSpecifierDoesntAddItToScopeDuringForwardDeclaration() {
+        StaticContext staticContext = standardContext();
+        VariableDeclarationNode variableNode = Nodes.immutableVar("dontFeelLike", Nodes.string("dancing"));
+        
+        assertThat(forwardDeclare(variableNode, nodeLocations, staticContext), isSuccess());
+        assertThat(staticContext.get(variableNode), is(VariableLookupResult.notDeclared()));
+    }
+    
+    @Test public void
+    declaringVariableWithTypeSpecifierAddsItToScopeDuringForwardDeclaration() {
+        StaticContext staticContext = standardContext();
+        VariableDeclarationNode variableNode = Nodes.immutableVar("dontFeelLike", stringReference, Nodes.string("dancing"));
+        
+        assertThat(forwardDeclare(variableNode, nodeLocations, staticContext), isSuccess());
+        assertThat(staticContext.get(variableNode), is(VariableLookupResult.success(ValueInfo.unassignableValue(CoreTypes.STRING))));
+    }
+    
+    @Test public void
+    declaringVariableWithoutTypeSpecifierAddsItToScopeDuringTypeCheck() {
         StaticContext staticContext = standardContext();
         VariableDeclarationNode variableNode = Nodes.immutableVar("x", Nodes.bool(true));
         
@@ -53,6 +71,18 @@ public class VariableDeclarationTypeCheckerTest {
             is(TypeResult.success(StatementTypeCheckResult.noReturn()))
         );
         assertThat(staticContext.get(variableNode), is(VariableLookupResult.success(unassignableValue(CoreTypes.BOOLEAN))));
+    }
+    
+    @Test public void
+    declaringVariableWithTypeSpecifierDoesntAddItToScopeDuringTypeCheck() {
+        StaticContext staticContext = standardContext();
+        VariableDeclarationNode variableNode = Nodes.immutableVar("dontFeelLike", stringReference, Nodes.string("dancing"));
+        
+        assertThat(
+            typeCheckVariableDeclaration(variableNode, nodeLocations, staticContext),
+            is(TypeResult.success(StatementTypeCheckResult.noReturn()))
+        );
+        assertThat(staticContext.get(variableNode), is(VariableLookupResult.notDeclared()));
     }
     
     @Test public void
@@ -74,6 +104,7 @@ public class VariableDeclarationTypeCheckerTest {
         VariableDeclarationNode variableNode = Nodes.immutableVar("x", stringReference, booleanNode);
         nodeLocations.put(booleanNode, range(position(4, 12), position(6, 6)));
         
+        forwardDeclare(variableNode, nodeLocations, staticContext);
         assertThat(
             typeCheckVariableDeclaration(variableNode, nodeLocations, staticContext),
             is(TypeResult.<StatementTypeCheckResult>failure(asList(CompilerError.error(
@@ -107,12 +138,24 @@ public class VariableDeclarationTypeCheckerTest {
         );
     }
     
+    private TypeResult<?> forwardDeclare(
+        VariableDeclarationNode node, NodeLocations nodeLocations, StaticContext context
+    ) {
+        VariableDeclarationTypeChecker typeChecker = typeChecker(nodeLocations);
+        return typeChecker.forwardDeclare(node, context);
+    }
+    
     private TypeResult<StatementTypeCheckResult> typeCheckVariableDeclaration(
         VariableDeclarationNode node, NodeLocations nodeLocations, StaticContext context
     ) {
+        VariableDeclarationTypeChecker typeChecker = typeChecker(nodeLocations);
+        return typeChecker.typeCheck(node, context, Option.<Type>none());
+    }
+
+    private VariableDeclarationTypeChecker typeChecker(NodeLocations nodeLocations) {
         Injector injector = TypeCheckerInjector.build(nodeLocations, new FullyQualifiedNamesBuilder().build());
         VariableDeclarationTypeChecker typeChecker = injector.getInstance(VariableDeclarationTypeChecker.class);
-        return typeChecker.typeCheck(node, context, Option.<Type>none());
+        return typeChecker;
     }
     
     private StaticContext standardContext() {

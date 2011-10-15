@@ -37,7 +37,7 @@ public class ObjectDeclarationTypeChecker implements StatementTypeChecker<Object
         TypeResult<StatementTypeCheckResult> result = TypeResult.success(StatementTypeCheckResult.noReturn());
 
         TypeResult<StatementTypeCheckResult> blockResult = 
-            blockTypeChecker.typeCheckBlock(objectDeclaration.getStatements(), context, Option.<Type>none());
+            blockTypeChecker.forwardDeclareAndTypeCheck(objectDeclaration.getStatements(), context, Option.<Type>none());
         result = result.withErrorsFrom(blockResult);
         
         if (result.isSuccess()) {

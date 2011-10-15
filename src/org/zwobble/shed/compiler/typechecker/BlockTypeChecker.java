@@ -18,18 +18,26 @@ public class BlockTypeChecker {
         this.statementsTypeChecker = statementsTypeChecker;
     }
     
-    public TypeResult<StatementTypeCheckResult> typeCheckBlock(
+    public TypeResult<StatementTypeCheckResult> forwardDeclareAndTypeCheck(
         Iterable<StatementNode> statements,
         StaticContext context,
         Option<Type> returnType
     ) {
-        TypeResult<Void> result = TypeResult.success(null);
-        
+        TypeResult<?> result = forwardDeclare(statements, context);
+        return typeCheck(statements, context, returnType).withErrorsFrom(result);
+    }
+
+    public TypeResult<?> forwardDeclare(Iterable<StatementNode> statements, StaticContext context) {
+        TypeResult<Void> result = TypeResult.success();
         for (StatementNode statement : statements) {
             TypeResult<?> statementResult = statementsTypeChecker.forwardDeclare(statement, context);
             result = result.withErrorsFrom(statementResult);
         }
-        
+        return result;
+    }
+
+    public TypeResult<StatementTypeCheckResult> typeCheck(Iterable<StatementNode> statements, StaticContext context, Option<Type> returnType) {
+        TypeResult<Void> result = TypeResult.success();
         boolean hasReturnedYet = false;
         for (StatementNode statement : statements) {
             TypeResult<StatementTypeCheckResult> statementResult = statementsTypeChecker.typeCheck(statement, context, returnType);

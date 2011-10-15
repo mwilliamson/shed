@@ -32,16 +32,16 @@ public class AllStatementsTypeChecker {
     @Inject
     public AllStatementsTypeChecker(Injector injector) {
         this.injector = injector;
-        addTypeChecker(VariableDeclarationNode.class, VariableDeclarationTypeChecker.class);
-        addTypeChecker(PublicDeclarationNode.class, PublicDeclarationTypeChecker.class);
         addTypeChecker(ReturnNode.class, ReturnStatementTypeChecker.class);
         addTypeChecker(ExpressionStatementNode.class, ExpressionStatementTypeChecker.class);
         addTypeChecker(ObjectDeclarationNode.class, ObjectDeclarationTypeChecker.class);
         addTypeChecker(IfThenElseStatementNode.class, IfThenElseTypeChecker.class);
         addTypeChecker(WhileStatementNode.class, WhileStatementTypeChecker.class);
         
-        addHoistableTypeChecker(FunctionDeclarationNode.class, FunctionDeclarationTypeChecker.class);
-        addHoistableTypeChecker(ClassDeclarationNode.class, ClassDeclarationTypeChecker.class);
+        addDeclarationTypeChecker(PublicDeclarationNode.class, PublicDeclarationTypeChecker.class);
+        addDeclarationTypeChecker(VariableDeclarationNode.class, VariableDeclarationTypeChecker.class);
+        addDeclarationTypeChecker(FunctionDeclarationNode.class, FunctionDeclarationTypeChecker.class);
+        addDeclarationTypeChecker(ClassDeclarationNode.class, ClassDeclarationTypeChecker.class);
     }
     
     private <T extends StatementNode> void addTypeChecker(Class<T> statementType, Class<? extends StatementTypeChecker<T>> typeChecker) {
@@ -52,8 +52,8 @@ public class AllStatementsTypeChecker {
         forwardDeclarers.put(statementType, declarer);
     }
     
-    private <T extends StatementNode> void addHoistableTypeChecker(
-        Class<T> statementType, Class<? extends HoistableStatementTypeChecker<T>> typeChecker
+    private <T extends StatementNode> void addDeclarationTypeChecker(
+        Class<T> statementType, Class<? extends DeclarationTypeChecker<T>> typeChecker
     ) {
         addTypeChecker(statementType, typeChecker);
         addForwardDeclarer(statementType, typeChecker);

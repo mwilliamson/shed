@@ -43,6 +43,6 @@ public class IfThenElseTypeChecker implements StatementTypeChecker<IfThenElseSta
     private TypeResult<StatementTypeCheckResult> typeCheckBlock(
         BlockNode statements, StaticContext context, Option<Type> returnType
     ) {
-        return blockTypeChecker.typeCheckBlock(statements, context, returnType);
+        return blockTypeChecker.forwardDeclareAndTypeCheck(statements, context, returnType);
     }
 }

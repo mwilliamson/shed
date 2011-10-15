@@ -8,7 +8,7 @@ import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.types.Type;
 
-public class PublicDeclarationTypeChecker implements StatementTypeChecker<PublicDeclarationNode> {
+public class PublicDeclarationTypeChecker implements DeclarationTypeChecker<PublicDeclarationNode> {
     private final AllStatementsTypeChecker statementsTypeChecker;
 
     @Inject
@@ -21,5 +21,10 @@ public class PublicDeclarationTypeChecker implements StatementTypeChecker<Public
         PublicDeclarationNode statement, StaticContext context, Option<Type> returnType
     ) {
         return statementsTypeChecker.typeCheck(statement.getDeclaration(), context, returnType);
+    }
+
+    @Override
+    public TypeResult<?> forwardDeclare(PublicDeclarationNode statement, StaticContext context) {
+        return statementsTypeChecker.forwardDeclare(statement.getDeclaration(), context);
     }
 }

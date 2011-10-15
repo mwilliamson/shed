@@ -11,31 +11,29 @@ import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.naming.FullyQualifiedNames;
 import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
-import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
-import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
-import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
+import org.zwobble.shed.compiler.typechecker.BlockTypeChecker;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
-import org.zwobble.shed.compiler.typechecker.TypeInferer;
 import org.zwobble.shed.compiler.typechecker.TypeLookup;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
+import org.zwobble.shed.compiler.typechecker.VariableLookupResult;
+import org.zwobble.shed.compiler.typechecker.VariableLookupResult.Status;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Type;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
-public class ClassDeclarationTypeChecker implements HoistableStatementTypeChecker<ClassDeclarationNode> {
-    private final TypeInferer typeInferer;
+public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<ClassDeclarationNode> {
+    private final BlockTypeChecker blockTypeChecker;
     private final TypeLookup typeLookup;
     private final FullyQualifiedNames fullyQualifiedNames;
 
     @Inject
-    public ClassDeclarationTypeChecker(TypeInferer typeInferer, TypeLookup typeLookup, FullyQualifiedNames fullyQualifiedNames) {
-        this.typeInferer = typeInferer;
+    public ClassDeclarationTypeChecker(BlockTypeChecker blockTypeChecker, TypeLookup typeLookup, FullyQualifiedNames fullyQualifiedNames) {
+        this.blockTypeChecker = blockTypeChecker;
         this.typeLookup = typeLookup;
         this.fullyQualifiedNames = fullyQualifiedNames;
     }
@@ -59,6 +57,11 @@ public class ClassDeclarationTypeChecker implements HoistableStatementTypeChecke
 
     private Map<String, ValueInfo> buildMembers(ClassDeclarationNode classDeclaration, StaticContext context) {
         ImmutableMap.Builder<String, ValueInfo> members = ImmutableMap.builder();
+        TypeResult<?> forwardDeclareResult = blockTypeChecker.forwardDeclare(classDeclaration.getBody(), context);
+        if (!forwardDeclareResult.isSuccess()) {
+            throw new RuntimeException("Errors: " + forwardDeclareResult.getErrors());
+        }
+        
         Iterable<PublicDeclarationNode> publicDeclarations = Iterables.filter(classDeclaration.getBody(), PublicDeclarationNode.class);
         for (PublicDeclarationNode publicDeclaration : publicDeclarations) {
             DeclarationNode memberDeclaration = publicDeclaration.getDeclaration();
@@ -73,25 +76,11 @@ public class ClassDeclarationTypeChecker implements HoistableStatementTypeChecke
     }
 
     private TypeResult<ValueInfo> findMemberType(DeclarationNode memberDeclaration, StaticContext context) {
-        // TODO: should delegate to existing type checkers
-        if (memberDeclaration instanceof FunctionDeclarationNode) {
-            return typeInferer.inferFunctionType((FunctionDeclarationNode)memberDeclaration, context);
-        } else if (memberDeclaration instanceof VariableDeclarationNode) {
-            VariableDeclarationNode variableDeclaration = (VariableDeclarationNode)memberDeclaration;
-            Option<? extends ExpressionNode> typeReference = variableDeclaration.getTypeReference();
-            if (typeReference.hasValue()) {
-                return typeLookup.lookupTypeReference(typeReference.get(), context).ifValueThen(toUnassignableValue());
-            }
+        VariableLookupResult result = context.get(memberDeclaration);
+        if (result.getStatus() == Status.SUCCESS) {
+            return TypeResult.success(result.getValueInfo());
+        } else {
+            throw new RuntimeException("Could not find type of member: " + memberDeclaration);
         }
-        throw new RuntimeException("Cannot find type of member: " + memberDeclaration);
-    }
-
-    private Function<Type, TypeResult<ValueInfo>> toUnassignableValue() {
-        return new Function<Type, TypeResult<ValueInfo>>() {
-            @Override
-            public TypeResult<ValueInfo> apply(Type input) {
-                return TypeResult.success(ValueInfo.unassignableValue(input));
-            }
-        };
     }
 }

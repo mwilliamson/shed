@@ -17,7 +17,7 @@ import com.google.common.base.Function;
 
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
-public class FunctionDeclarationTypeChecker implements HoistableStatementTypeChecker<FunctionDeclarationNode> {
+public class FunctionDeclarationTypeChecker implements DeclarationTypeChecker<FunctionDeclarationNode> {
     private final TypeInferer typeInferer;
 
     @Inject

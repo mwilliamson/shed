@@ -335,7 +335,7 @@ public class TypeInfererImpl implements TypeInferer {
     private TypeResult<StatementTypeCheckResult> typeCheckBlock(
         BlockNode block, NodeLocations nodeLocations, StaticContext context, Option<Type> returnType
     ) {
-        return blockTypeChecker.typeCheckBlock(block, context, returnType);
+        return blockTypeChecker.forwardDeclareAndTypeCheck(block, context, returnType);
     }
 
 }
