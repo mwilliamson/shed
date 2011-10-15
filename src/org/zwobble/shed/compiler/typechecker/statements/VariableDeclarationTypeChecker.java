@@ -1,4 +1,4 @@
-package org.zwobble.shed.compiler.typechecker;
+package org.zwobble.shed.compiler.typechecker.statements;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +10,12 @@ import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
+import org.zwobble.shed.compiler.typechecker.StatementTypeCheckResult;
+import org.zwobble.shed.compiler.typechecker.StaticContext;
+import org.zwobble.shed.compiler.typechecker.TypeInferer;
+import org.zwobble.shed.compiler.typechecker.TypeLookup;
+import org.zwobble.shed.compiler.typechecker.TypeResult;
+import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.types.Type;
 
 import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;

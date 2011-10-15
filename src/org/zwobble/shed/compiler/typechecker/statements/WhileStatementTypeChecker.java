@@ -1,9 +1,14 @@
-package org.zwobble.shed.compiler.typechecker;
+package org.zwobble.shed.compiler.typechecker.statements;
 
 import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.WhileStatementNode;
+import org.zwobble.shed.compiler.typechecker.BlockTypeChecker;
+import org.zwobble.shed.compiler.typechecker.ConditionTypeChecker;
+import org.zwobble.shed.compiler.typechecker.StatementTypeCheckResult;
+import org.zwobble.shed.compiler.typechecker.StaticContext;
+import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.types.Type;
 
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;

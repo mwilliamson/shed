@@ -1,9 +1,13 @@
-package org.zwobble.shed.compiler.typechecker;
+package org.zwobble.shed.compiler.typechecker.statements;
 
 import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
+import org.zwobble.shed.compiler.typechecker.StatementTypeCheckResult;
+import org.zwobble.shed.compiler.typechecker.StaticContext;
+import org.zwobble.shed.compiler.typechecker.TypeInferer;
+import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.types.Type;
 
 public class ExpressionStatementTypeChecker implements StatementTypeChecker<ExpressionStatementNode> {

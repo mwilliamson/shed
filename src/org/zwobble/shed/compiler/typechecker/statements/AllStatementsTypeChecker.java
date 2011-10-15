@@ -1,4 +1,4 @@
-package org.zwobble.shed.compiler.typechecker;
+package org.zwobble.shed.compiler.typechecker.statements;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,7 +6,6 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
@@ -17,6 +16,10 @@ import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.WhileStatementNode;
+import org.zwobble.shed.compiler.typechecker.IfThenElseTypeChecker;
+import org.zwobble.shed.compiler.typechecker.StatementTypeCheckResult;
+import org.zwobble.shed.compiler.typechecker.StaticContext;
+import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.types.Type;
 
 import com.google.inject.Injector;
@@ -59,13 +62,13 @@ public class AllStatementsTypeChecker {
     }
 
     public <T extends StatementNode> TypeResult<StatementTypeCheckResult> typeCheck(
-        T statement, NodeLocations nodeLocations, StaticContext context, Option<Type> returnType
+        T statement, StaticContext context, Option<Type> returnType
     ) {
         return getTypeChecker(statement).typeCheck(statement, context, returnType);
     }
 
     public TypeResult<?> forwardDeclare(
-        StatementNode statement, NodeLocations nodeLocations, StaticContext context
+        StatementNode statement, StaticContext context
     ) {
         return getForwardDeclarer(statement).forwardDeclare(statement, context);
     }

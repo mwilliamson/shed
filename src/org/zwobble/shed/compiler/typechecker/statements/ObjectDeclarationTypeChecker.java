@@ -1,4 +1,4 @@
-package org.zwobble.shed.compiler.typechecker;
+package org.zwobble.shed.compiler.typechecker.statements;
 
 import javax.inject.Inject;
 
@@ -8,6 +8,11 @@ import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
+import org.zwobble.shed.compiler.typechecker.BlockTypeChecker;
+import org.zwobble.shed.compiler.typechecker.StatementTypeCheckResult;
+import org.zwobble.shed.compiler.typechecker.StaticContext;
+import org.zwobble.shed.compiler.typechecker.TypeResult;
+import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Type;
 

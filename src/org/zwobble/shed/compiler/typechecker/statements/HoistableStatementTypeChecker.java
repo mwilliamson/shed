@@ -1,4 +1,4 @@
-package org.zwobble.shed.compiler.typechecker;
+package org.zwobble.shed.compiler.typechecker.statements;
 
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 

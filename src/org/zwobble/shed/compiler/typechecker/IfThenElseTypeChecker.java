@@ -5,6 +5,7 @@ import javax.inject.Inject;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
+import org.zwobble.shed.compiler.typechecker.statements.StatementTypeChecker;
 import org.zwobble.shed.compiler.types.Type;
 
 public class IfThenElseTypeChecker implements StatementTypeChecker<IfThenElseStatementNode> {

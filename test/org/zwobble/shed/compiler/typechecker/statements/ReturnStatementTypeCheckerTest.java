@@ -1,4 +1,4 @@
-package org.zwobble.shed.compiler.typechecker;
+package org.zwobble.shed.compiler.typechecker.statements;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.Option;
@@ -8,7 +8,14 @@ import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
+import org.zwobble.shed.compiler.typechecker.SimpleNodeLocations;
+import org.zwobble.shed.compiler.typechecker.StatementTypeCheckResult;
+import org.zwobble.shed.compiler.typechecker.StaticContext;
+import org.zwobble.shed.compiler.typechecker.TypeCheckerInjector;
+import org.zwobble.shed.compiler.typechecker.TypeResult;
+import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typechecker.errors.CannotReturnHereError;
+import org.zwobble.shed.compiler.typechecker.statements.ReturnStatementTypeChecker;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;

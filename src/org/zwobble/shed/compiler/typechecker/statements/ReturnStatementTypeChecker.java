@@ -1,4 +1,4 @@
-package org.zwobble.shed.compiler.typechecker;
+package org.zwobble.shed.compiler.typechecker.statements;
 
 import javax.inject.Inject;
 
@@ -7,6 +7,10 @@ import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
+import org.zwobble.shed.compiler.typechecker.StatementTypeCheckResult;
+import org.zwobble.shed.compiler.typechecker.StaticContext;
+import org.zwobble.shed.compiler.typechecker.TypeInferer;
+import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.errors.CannotReturnHereError;
 import org.zwobble.shed.compiler.typechecker.errors.WrongReturnTypeError;
 import org.zwobble.shed.compiler.types.Type;
