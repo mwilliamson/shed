@@ -1,11 +1,15 @@
-package org.zwobble.shed.compiler.typechecker;
+package org.zwobble.shed.compiler.typechecker.statements;
 
 import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
-import org.zwobble.shed.compiler.typechecker.statements.StatementTypeChecker;
+import org.zwobble.shed.compiler.typechecker.BlockTypeChecker;
+import org.zwobble.shed.compiler.typechecker.ConditionTypeChecker;
+import org.zwobble.shed.compiler.typechecker.StatementTypeCheckResult;
+import org.zwobble.shed.compiler.typechecker.StaticContext;
+import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.types.Type;
 
 public class IfThenElseTypeChecker implements StatementTypeChecker<IfThenElseStatementNode> {

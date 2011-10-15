@@ -16,7 +16,6 @@ import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.WhileStatementNode;
-import org.zwobble.shed.compiler.typechecker.IfThenElseTypeChecker;
 import org.zwobble.shed.compiler.typechecker.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
