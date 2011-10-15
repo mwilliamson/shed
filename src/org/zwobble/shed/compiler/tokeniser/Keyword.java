@@ -10,6 +10,7 @@ public enum Keyword {
     TRUE,
     FALSE,
     OBJECT,
+    CLASS,
     IF,
     ELSE,
     WHILE,

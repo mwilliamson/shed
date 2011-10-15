@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
+import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
@@ -73,6 +74,7 @@ public class Statements {
             immutableVariable(),
             mutableVariable(),
             objectDeclaration(),
+            classDeclaration(),
             functionDeclaration()
         );
     }
@@ -180,6 +182,26 @@ public class Statements {
                     String objectName = result.get(identifier);
                     BlockNode statements = result.get(body);
                     return new ObjectDeclarationNode(objectName, statements);
+                }
+            }
+        );
+    }
+    
+    public static Rule<ClassDeclarationNode> classDeclaration() {
+        final Rule<String> identifier = tokenOfType(IDENTIFIER);
+        final Rule<List<FormalArgumentNode>> formalArguments = Arguments.formalArgumentList();
+        final Rule<BlockNode> body = Blocks.block();
+        return then(
+            sequence(OnError.FINISH,
+                guard(keyword(Keyword.CLASS)),
+                identifier,
+                formalArguments,
+                body
+            ),
+            new SimpleParseAction<RuleValues, ClassDeclarationNode>() {
+                @Override
+                public ClassDeclarationNode apply(RuleValues result) {
+                    return new ClassDeclarationNode(result.get(identifier), result.get(formalArguments), result.get(body));
                 }
             }
         );

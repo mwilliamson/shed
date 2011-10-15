@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.zwobble.shed.compiler.Option;
@@ -57,6 +58,10 @@ public class Nodes {
         return new ObjectDeclarationNode(name, body);
     }
 
+    public static SyntaxNode clazz(String identifier, List<FormalArgumentNode> formalArguments, BlockNode body) {
+        return new ClassDeclarationNode(identifier, formalArguments, body);
+    }
+
     public static PublicDeclarationNode publik(DeclarationNode declaration) {
         return new PublicDeclarationNode(declaration);
     }
@@ -91,6 +96,10 @@ public class Nodes {
 
     public static FormalArgumentNode formalArgument(String identifier, ExpressionNode type) {
         return new FormalArgumentNode(identifier, type);
+    }
+
+    public static List<FormalArgumentNode> noFormalArguments() {
+        return Collections.emptyList();
     }
 
     public static ImportNode importNode(String... names) {

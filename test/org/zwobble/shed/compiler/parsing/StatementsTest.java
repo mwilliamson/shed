@@ -68,6 +68,30 @@ public class StatementsTest {
     }
     
     @Test public void
+    canDeclareAnEmptyClass() {
+        assertThat(
+            Statements.statement().parse(tokens("class Browser() { }")),
+            isSuccessWithNode(Nodes.clazz("Browser", Nodes.noFormalArguments(), Nodes.block()))
+        );
+    }
+    
+    @Test public void
+    canDeclareClassWithArguments() {
+        assertThat(
+            Statements.statement().parse(tokens("class Browser(version: Number) { }")),
+            isSuccessWithNode(Nodes.clazz("Browser", asList(Nodes.formalArgument("version", Nodes.id("Number"))), Nodes.block()))
+        );
+    }
+    
+    @Test public void
+    canDeclareClassWithBody() {
+        assertThat(
+            Statements.statement().parse(tokens("class Browser() { val version = 42; }")),
+            isSuccessWithNode(Nodes.clazz("Browser", Nodes.noFormalArguments(), Nodes.block(Nodes.immutableVar("version", Nodes.number("42")))))
+        );
+    }
+    
+    @Test public void
     canDeclarePublicObjects() {
         assertThat(
             Statements.statement().parse(tokens("public object browser { }")),
