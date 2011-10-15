@@ -44,12 +44,12 @@ public class VariableDeclarationTypeCheckerTest {
     private final VariableIdentifierNode stringReference = new VariableIdentifierNode("String");
 
     @Test public void
-    declaringVariableWithoutTypeSpecifierDoesntAddItToScopeDuringForwardDeclaration() {
+    declaringVariableWithoutTypeSpecifierAddsVariableAsUnknownValue() {
         StaticContext staticContext = standardContext();
         VariableDeclarationNode variableNode = Nodes.immutableVar("dontFeelLike", Nodes.string("dancing"));
         
         assertThat(forwardDeclare(variableNode, nodeLocations, staticContext), isSuccess());
-        assertThat(staticContext.get(variableNode), is(VariableLookupResult.notDeclared()));
+        assertThat(staticContext.get(variableNode), is(VariableLookupResult.success(ValueInfo.unknown())));
     }
     
     @Test public void

@@ -65,6 +65,25 @@ public class ClassDeclarationTypeCheckerTest {
         )));
     }
     
+    @Test public void
+    membersThatCannotBeForwardDeclaredHaveUnknownType() {
+        BlockNode body = Nodes.block(
+            Nodes.publik(Nodes.immutableVar("firstName", Nodes.string("Bob")))
+        );
+        ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.noFormalArguments(), body);
+        FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Browser");
+        fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
+        StaticContext context = fixture.context();
+        
+        TypeResult<?> result = forwardDeclare(declaration, context);
+        
+        assertThat(result, isSuccess());
+        ClassType type = (ClassType) context.get(declaration).getType();
+        assertThat(type.getMembers(), Matchers.<Map<String, ValueInfo>>is(ImmutableMap.of(
+            "firstName", ValueInfo.unknown()
+        )));
+    }
+    
     private TypeResult<?> forwardDeclare(ClassDeclarationNode classDeclaration, StaticContext context) {
         ClassDeclarationTypeChecker typeChecker = fixture.get(ClassDeclarationTypeChecker.class);
         return typeChecker.forwardDeclare(classDeclaration, context);

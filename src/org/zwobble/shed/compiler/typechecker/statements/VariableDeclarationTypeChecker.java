@@ -37,17 +37,18 @@ public class VariableDeclarationTypeChecker implements DeclarationTypeChecker<Va
 
     @Override
     public TypeResult<?> forwardDeclare(VariableDeclarationNode variableDeclaration, StaticContext context) {
-        if (!isForwardDeclarable(variableDeclaration)) {
+        if (isForwardDeclarable(variableDeclaration)) {
+            TypeResult<Type> typeResult = typeLookup.lookupTypeReference(variableDeclaration.getTypeReference().get(), context);
+            if (typeResult.hasValue()) {
+                Type type = typeResult.get();
+                ValueInfo valueInfo = toValueInfo(variableDeclaration, type);
+                context.add(variableDeclaration, valueInfo);
+            }
+            return typeResult;
+        } else {
+            context.add(variableDeclaration, ValueInfo.unknown());
             return TypeResult.success();
         }
-        TypeResult<Type> typeResult = typeLookup.lookupTypeReference(variableDeclaration.getTypeReference().get(), context);
-        if (typeResult.hasValue()) {
-            Type type = typeResult.get();
-            ValueInfo valueInfo = toValueInfo(variableDeclaration, type);
-            
-            context.add(variableDeclaration, valueInfo);
-        }
-        return typeResult;
     }
     
     @Override
