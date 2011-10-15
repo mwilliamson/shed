@@ -10,7 +10,6 @@ import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 import org.zwobble.shed.compiler.typechecker.CoreModule;
 import org.zwobble.shed.compiler.typechecker.SimpleNodeLocations;
-import org.zwobble.shed.compiler.typechecker.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeCheckerInjector;
 import org.zwobble.shed.compiler.typechecker.TypeResult;

@@ -6,6 +6,7 @@ import org.zwobble.shed.compiler.Function0;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.typechecker.statements.AllStatementsTypeChecker;
+import org.zwobble.shed.compiler.typechecker.statements.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.types.Type;
 
 
