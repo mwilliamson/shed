@@ -14,7 +14,6 @@ import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.typechecker.BlockTypeChecker;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
-import org.zwobble.shed.compiler.typechecker.TypeLookup;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult;
@@ -28,13 +27,11 @@ import com.google.common.collect.Iterables;
 
 public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<ClassDeclarationNode> {
     private final BlockTypeChecker blockTypeChecker;
-    private final TypeLookup typeLookup;
     private final FullyQualifiedNames fullyQualifiedNames;
 
     @Inject
-    public ClassDeclarationTypeChecker(BlockTypeChecker blockTypeChecker, TypeLookup typeLookup, FullyQualifiedNames fullyQualifiedNames) {
+    public ClassDeclarationTypeChecker(BlockTypeChecker blockTypeChecker, FullyQualifiedNames fullyQualifiedNames) {
         this.blockTypeChecker = blockTypeChecker;
-        this.typeLookup = typeLookup;
         this.fullyQualifiedNames = fullyQualifiedNames;
     }
     
