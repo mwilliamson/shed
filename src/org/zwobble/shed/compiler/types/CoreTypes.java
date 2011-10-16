@@ -1,16 +1,12 @@
 package org.zwobble.shed.compiler.types;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.zwobble.shed.compiler.typechecker.ValueInfo;
-
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableMap;
 
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
@@ -19,27 +15,22 @@ import static org.zwobble.shed.compiler.IntRange.range;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 
 public class CoreTypes {
-    public static final InterfaceType OBJECT = new InterfaceType(fullyQualifiedName("Object"), ImmutableMap.<String, ValueInfo>of());
-    public static final Type BOOLEAN = coreType("Boolean");
-    public static final Type NUMBER = coreType("Number");
-    public static final Type STRING = coreType("String");
-    public static final Type UNIT = coreType("Unit");
+    public static final ScalarType BOOLEAN = coreType("Boolean");
+    public static final ScalarType NUMBER = coreType("Number");
+    public static final ScalarType STRING = coreType("String");
+    public static final ScalarType UNIT = coreType("Unit");
     
     private static ScalarType coreType(String name) {
-        return new ClassType(
-            fullyQualifiedName(name),
-            Collections.singleton(OBJECT),
-            Collections.<String, ValueInfo>emptyMap()
-        );
+        return new ClassType(fullyQualifiedName(name));
     }
     
     public static final ParameterisedType CLASS = new ParameterisedType(
-        coreType("Class"),
+        new InterfaceType(fullyQualifiedName("Class")),
         asList(new FormalTypeParameter("C"))
     );
     
-    public static Type classOf(Type type) {
-        return TypeApplication.applyTypes(CLASS, asList(type));
+    public static InterfaceType classOf(Type type) {
+        return (InterfaceType) TypeApplication.applyTypes(CLASS, asList(type));
     }
     
     private static Map<Integer, ParameterisedType> functionTypes = new HashMap<Integer, ParameterisedType>();
@@ -51,7 +42,7 @@ public class CoreTypes {
     
     public static ParameterisedType functionType(int arguments) {
         if (!functionTypes.containsKey(arguments)) {
-            ScalarType baseType = coreType("Function" + arguments);
+            ScalarType baseType = new InterfaceType(fullyQualifiedName("Function" + arguments));
             baseFunctionTypes.add(baseType);
             
             List<FormalTypeParameter> formalTypeParameters = newArrayList(transform(range(arguments), toFormalTypeParameter()));
@@ -65,8 +56,9 @@ public class CoreTypes {
         return functionTypes.get(arguments);
     }
     
-    public static Type functionTypeOf(Type... types) {
-        return TypeApplication.applyTypes(functionType(types.length - 1), asList(types));
+    public static InterfaceType functionTypeOf(Type... types) {
+        // TODO: put type parameter in ParameterisedType so we know if it's parameterised over a class or interface
+        return (InterfaceType) TypeApplication.applyTypes(functionType(types.length - 1), asList(types));
     }
 
     private static Function<Integer, FormalTypeParameter> toFormalTypeParameter() {

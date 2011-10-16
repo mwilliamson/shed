@@ -1,13 +1,10 @@
 package org.zwobble.shed.compiler.types;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.zwobble.shed.compiler.naming.FullyQualifiedName;
-import org.zwobble.shed.compiler.typechecker.ValueInfo;
 
 import lombok.Data;
+
+import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -18,7 +15,7 @@ import static com.google.common.collect.Lists.transform;
 
 @Data
 public class TypeApplication implements ScalarType {
-    public static Type applyTypes(TypeFunction typeFunction, List<Type> typeParameters) {
+    public static Type applyTypes(TypeFunction typeFunction, List<? extends Type> typeParameters) {
         TypeReplacer typeReplacer = new TypeReplacer();
         Builder<FormalTypeParameter, Type> replacementsBuilder = ImmutableMap.builder();
         
@@ -30,16 +27,14 @@ public class TypeApplication implements ScalarType {
         } else {
             ScalarType baseType = ((ParameterisedType)typeFunction).getBaseType();
             return new TypeApplication(
-                (ScalarType)typeReplacer.replaceTypes(baseType, replacementsBuilder.build()),
                 baseType,
                 typeParameters
             );
         }
     }
 
-    private final ScalarType replacedType;
     private final ScalarType baseType;
-    private final List<Type> typeParameters;
+    private final List<? extends Type> typeParameters;
     
     @Override
     public String shortName() {
@@ -59,14 +54,5 @@ public class TypeApplication implements ScalarType {
                 return input.shortName();
             }
         };
-    }
-    @Override
-    public Set<InterfaceType> superTypes() {
-        return replacedType.superTypes();
-    }
-    
-    @Override
-    public Map<String, ValueInfo> getMembers() {
-        return replacedType.getMembers();
     }
 }

@@ -20,12 +20,11 @@ import org.zwobble.shed.compiler.typechecker.VariableLookupResult;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
+import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.inject.Injector;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -35,6 +34,8 @@ import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
 import static org.zwobble.shed.compiler.parsing.SourceRange.range;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
+import static org.zwobble.shed.compiler.types.Members.members;
 
 public class VariableDeclarationTypeCheckerTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
@@ -125,10 +126,12 @@ public class VariableDeclarationTypeCheckerTest {
         references.addReference(listReference, listDeclaration);
         
         StaticContext staticContext = standardContext();
-        InterfaceType iterableType = new InterfaceType(fullyQualifiedName("shed", "util", "Iterable"), ImmutableMap.<String, ValueInfo>of());
-        ClassType listType = new ClassType(fullyQualifiedName("shed", "util", "List"), newHashSet(iterableType), ImmutableMap.<String, ValueInfo>of());
+        InterfaceType iterableType = new InterfaceType(fullyQualifiedName("shed", "util", "Iterable"));
+        ClassType listType = new ClassType(fullyQualifiedName("shed", "util", "List"));
+        ScalarTypeInfo listTypeInfo = new ScalarTypeInfo(interfaces(iterableType), members());
         staticContext.add(listDeclaration, unassignableValue(listType));
         staticContext.add(iterableTypeDeclaration, unassignableValue(CoreTypes.classOf(iterableType)));
+        staticContext.addInfo(listType, listTypeInfo);
         
         VariableDeclarationNode variableNode = Nodes.immutableVar("x", iterableTypeReference, listReference);
         

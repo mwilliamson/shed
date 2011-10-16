@@ -20,6 +20,7 @@ import org.zwobble.shed.compiler.typechecker.VariableLookupResult;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult.Status;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.InterfaceType;
+import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.ImmutableMap;
@@ -38,8 +39,7 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
     @Override
     public TypeResult<?> forwardDeclare(ClassDeclarationNode classDeclaration, StaticContext context) {
         forwardDeclareBody(classDeclaration, context);
-        ClassType type = buildClassType(classDeclaration, context);
-        context.add(classDeclaration, ValueInfo.unassignableValue(type));
+        buildClassType(classDeclaration, context);
         return TypeResult.success();
     }
 
@@ -50,12 +50,13 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
         }
     }
 
-    private ClassType buildClassType(ClassDeclarationNode classDeclaration, StaticContext context) {
+    private void buildClassType(ClassDeclarationNode classDeclaration, StaticContext context) {
         FullyQualifiedName name = fullyQualifiedNames.fullyQualifiedNameOf(classDeclaration);
         Set<InterfaceType> interfaces = Collections.<InterfaceType>emptySet();
         Map<String, ValueInfo> members = buildMembers(classDeclaration, context);
-        ClassType type = new ClassType(name, interfaces, members);
-        return type;
+        ClassType type = new ClassType(name);
+        context.add(classDeclaration, ValueInfo.unassignableValue(type));
+        context.addInfo(type, new ScalarTypeInfo(interfaces, members));
     }
 
     @Override

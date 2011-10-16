@@ -32,6 +32,7 @@ import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ParameterisedFunctionType;
 import org.zwobble.shed.compiler.types.ParameterisedType;
 import org.zwobble.shed.compiler.types.ScalarType;
+import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
 import org.zwobble.shed.compiler.types.TypeFunction;
@@ -166,7 +167,7 @@ public class TypeInfererImpl implements TypeInferer {
         return new Function<ValueInfo, TypeResult<ValueInfo>>() {
             @Override
             public TypeResult<ValueInfo> apply(ValueInfo returnTypeInfo) {
-                List<Type> functionTypeParameters = ((TypeApplication)returnTypeInfo.getType()).getTypeParameters();
+                List<? extends Type> functionTypeParameters = ((TypeApplication)returnTypeInfo.getType()).getTypeParameters();
                 Type returnType = functionTypeParameters.get(functionTypeParameters.size() - 1);
                 TypeResult<ValueInfo> result = success(returnTypeInfo);
 
@@ -196,7 +197,7 @@ public class TypeInfererImpl implements TypeInferer {
                     return TypeResult.failure(asList(error));
                 }
                 TypeApplication functionType = (TypeApplication)calledType;
-                final List<Type> typeParameters = functionType.getTypeParameters();
+                final List<? extends Type> typeParameters = functionType.getTypeParameters();
                 
                 int numberOfFormalAguments = typeParameters.size() - 1;
                 int numberOfActualArguments = expression.getArguments().size();
@@ -205,15 +206,15 @@ public class TypeInfererImpl implements TypeInferer {
                     CompilerError error = CompilerError.error(nodeLocations.locate(expression), errorMessage);
                     return TypeResult.failure(asList(error));
                 }
-                
-                TypeResult<Type> result = success(typeParameters.get(numberOfFormalAguments));
+                Type returnType = typeParameters.get(numberOfFormalAguments);
+                TypeResult<Type> result = success(returnType);
                 for (int i = 0; i < numberOfFormalAguments; i++) {
                     final int index = i;
                     final ExpressionNode argument = expression.getArguments().get(i);
                     result = result.withErrorsFrom(inferType(argument, context).ifValueThen(new Function<Type, TypeResult<Void>>() {
                         @Override
                         public TypeResult<Void> apply(Type actualArgumentType) {
-                            if (isSubType(actualArgumentType, typeParameters.get(index))) {
+                            if (isSubType(actualArgumentType, typeParameters.get(index), context)) {
                                 return success();
                             } else {
                                 return failure(asList(CompilerError.error(
@@ -232,13 +233,14 @@ public class TypeInfererImpl implements TypeInferer {
 
     private TypeResult<ValueInfo> inferMemberAccessType(
         final MemberAccessNode memberAccess,
-        StaticContext context
+        final StaticContext context
     ) {
         return inferType(memberAccess.getExpression(), context).ifValueThen(new Function<Type, TypeResult<ValueInfo>>() {
             @Override
             public TypeResult<ValueInfo> apply(Type leftType) {
                 String name = memberAccess.getMemberName();
-                Map<String, ValueInfo> members = ((ScalarType)leftType).getMembers();
+                ScalarTypeInfo leftTypeInfo = context.getInfo((ScalarType)leftType);
+                Map<String, ValueInfo> members = leftTypeInfo.getMembers();
                 
                 if (members.containsKey(name)) {
                     return TypeResult.success(members.get(name));
@@ -279,7 +281,7 @@ public class TypeInfererImpl implements TypeInferer {
         if (valueTypeResult.hasValue() && targetInfo.hasValue()) {
             Type valueType = valueTypeResult.get();
             Type targetType = targetInfo.get().getType();
-            if (!isSubType(valueType, targetType)) {
+            if (!isSubType(valueType, targetType, context)) {
                 result = result.withErrorsFrom(failure(new CompilerError(location, new TypeMismatchError(targetType, valueType))));
             }
         }

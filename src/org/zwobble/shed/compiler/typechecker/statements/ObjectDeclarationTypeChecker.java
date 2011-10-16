@@ -13,12 +13,14 @@ import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.types.InterfaceType;
+import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 
 public class ObjectDeclarationTypeChecker implements StatementTypeChecker<ObjectDeclarationNode> {
     private final BlockTypeChecker blockTypeChecker;
@@ -41,18 +43,18 @@ public class ObjectDeclarationTypeChecker implements StatementTypeChecker<Object
         result = result.withErrorsFrom(blockResult);
         
         if (result.isSuccess()) {
-            Builder<String, ValueInfo> typeBuilder = ImmutableMap.builder();
+            Builder<String, ValueInfo> memberBuilder = ImmutableMap.builder();
 
             for (StatementNode statement : objectDeclaration.getStatements()) {
                 if (statement instanceof PublicDeclarationNode) {
                     DeclarationNode declaration = ((PublicDeclarationNode) statement).getDeclaration();
-                    typeBuilder.put(declaration.getIdentifier(), context.get(declaration).getValueInfo());
+                    memberBuilder.put(declaration.getIdentifier(), context.get(declaration).getValueInfo());
                 }
             }
             
-            InterfaceType type = new InterfaceType(fullyQualifiedNames.fullyQualifiedNameOf(objectDeclaration), typeBuilder.build());
-
+            InterfaceType type = new InterfaceType(fullyQualifiedNames.fullyQualifiedNameOf(objectDeclaration));
             context.add(objectDeclaration, unassignableValue(type));
+            context.addInfo(type, new ScalarTypeInfo(interfaces(), memberBuilder.build()));
         }
         
         return result;

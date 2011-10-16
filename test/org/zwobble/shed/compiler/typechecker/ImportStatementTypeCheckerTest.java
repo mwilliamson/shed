@@ -1,7 +1,5 @@
 package org.zwobble.shed.compiler.typechecker;
 
-import java.util.Collections;
-
 import org.junit.Test;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
@@ -9,10 +7,7 @@ import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 import org.zwobble.shed.compiler.typechecker.errors.UnresolvedImportError;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
-import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Type;
-
-import com.google.common.collect.ImmutableMap;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -33,7 +28,7 @@ public class ImportStatementTypeCheckerTest {
         references.addReference(reference, importStatement);
         StaticContext staticContext = new StaticContext(references.build());
         
-        Type dateTime = new ClassType(fullyQualifiedName("shed", "time", "DateTime"), Collections.<InterfaceType>emptySet(), ImmutableMap.<String, ValueInfo>of());
+        Type dateTime = new ClassType(fullyQualifiedName("shed", "time", "DateTime"));
         staticContext.addGlobal(asList("shed", "time", "DateTime"), CoreTypes.classOf(dateTime));
         
         assertThat(

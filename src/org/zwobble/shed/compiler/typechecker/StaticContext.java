@@ -10,12 +10,17 @@ import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.References;
+import org.zwobble.shed.compiler.types.CoreTypes;
+import org.zwobble.shed.compiler.types.ScalarType;
+import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
+import static org.zwobble.shed.compiler.types.Members.members;
 
 public class StaticContext {
     public static StaticContext defaultContext(References references) {
@@ -33,10 +38,15 @@ public class StaticContext {
     
     private final Map<List<String>, Type> global = new HashMap<List<String>, Type>();
     private final Map<Identity<DeclarationNode>, ValueInfo> types = new HashMap<Identity<DeclarationNode>, ValueInfo>();
+    private final Map<ScalarType, ScalarTypeInfo> scalarTypeInfo = new HashMap<ScalarType, ScalarTypeInfo>();
     private final References references;
     
     public StaticContext(References references) {
         this.references = references;
+        addInfo(CoreTypes.STRING, new ScalarTypeInfo(interfaces(), members()));
+        addInfo(CoreTypes.BOOLEAN, new ScalarTypeInfo(interfaces(), members()));
+        addInfo(CoreTypes.NUMBER, new ScalarTypeInfo(interfaces(), members()));
+        addInfo(CoreTypes.UNIT, new ScalarTypeInfo(interfaces(), members()));
     }
     
     public void add(DeclarationNode declaration, ValueInfo type) {
@@ -66,5 +76,13 @@ public class StaticContext {
         } else {
             return none();
         }
+    }
+    
+    public void addInfo(ScalarType type, ScalarTypeInfo typeInfo) {
+        scalarTypeInfo.put(type, typeInfo);
+    }
+    
+    public ScalarTypeInfo getInfo(ScalarType scalarType) {
+        return scalarTypeInfo.get(scalarType);
     }
 }

@@ -1,8 +1,9 @@
 package org.zwobble.shed.compiler.typechecker;
 
-import java.util.Arrays;
 import java.util.Collections;
 
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
@@ -28,12 +29,13 @@ import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
 import org.zwobble.shed.compiler.types.InterfaceType;
+import org.zwobble.shed.compiler.types.Interfaces;
 import org.zwobble.shed.compiler.types.ParameterisedFunctionType;
 import org.zwobble.shed.compiler.types.ParameterisedType;
+import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.inject.Injector;
 
 import static java.util.Arrays.asList;
@@ -50,6 +52,8 @@ import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
+import static org.zwobble.shed.compiler.types.Members.members;
 
 public class TypeInfererTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
@@ -66,23 +70,23 @@ public class TypeInfererTest {
     
     @Test public void
     canInferTypeOfBooleanLiteralsAsBoolean() {
-        assertThat(inferType(new BooleanLiteralNode(true), null), is(success(CoreTypes.BOOLEAN)));
-        assertThat(inferType(new BooleanLiteralNode(false), null), is(success(CoreTypes.BOOLEAN)));
+        assertThat(inferType(new BooleanLiteralNode(true), null), isType(CoreTypes.BOOLEAN));
+        assertThat(inferType(new BooleanLiteralNode(false), null), isType(CoreTypes.BOOLEAN));
     }
     
     @Test public void
     canInferTypeOfNumberLiteralsAsNumber() {
-        assertThat(inferType(new NumberLiteralNode("2.2"), null), is(success(CoreTypes.NUMBER)));
+        assertThat(inferType(new NumberLiteralNode("2.2"), null), isType(CoreTypes.NUMBER));
     }
     
     @Test public void
     canInferTypeOfStringLiteralsAsString() {
-        assertThat(inferType(new StringLiteralNode("Everything's as if we never said"), null), is(success(CoreTypes.STRING)));
+        assertThat(inferType(new StringLiteralNode("Everything's as if we never said"), null), isType(CoreTypes.STRING));
     }
     
     @Test public void
     canInferTypeOfUnitLiteralsAsUnit() {
-        assertThat(inferType(Nodes.unit(), null), is(success(CoreTypes.UNIT)));
+        assertThat(inferType(Nodes.unit(), null), isType(CoreTypes.UNIT));
     }
     
     @Test public void
@@ -92,7 +96,7 @@ public class TypeInfererTest {
         references.addReference(reference, declaration);
         StaticContext context = blankContext();
         context.add(declaration, unassignableValue(CoreTypes.STRING));
-        assertThat(inferType(reference, context), is(success(CoreTypes.STRING)));
+        assertThat(inferType(reference, context), isType(CoreTypes.STRING));
     }
     
     @Test public void
@@ -351,7 +355,7 @@ public class TypeInfererTest {
         
         CallNode call = Nodes.call(reference);
         TypeResult<Type> result = inferType(call, context);
-        assertThat(result, is(success(CoreTypes.NUMBER)));
+        assertThat(result, isType(CoreTypes.NUMBER));
     }
     
     @Test public void
@@ -365,7 +369,7 @@ public class TypeInfererTest {
         context.add(declaration, unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
         CallNode call = Nodes.call(reference, Nodes.string("Blah"), Nodes.number("4"));
         TypeResult<Type> result = inferType(call, context);
-        assertThat(result, is(success(CoreTypes.BOOLEAN)));
+        assertThat(result, isType(CoreTypes.BOOLEAN));
     }
     
     @Test public void
@@ -394,7 +398,7 @@ public class TypeInfererTest {
         GlobalDeclarationNode declaration = new GlobalDeclarationNode("isLength");
         references.addReference(reference, declaration);
         
-        ClassType classType = new ClassType(fullyQualifiedName("example", "List"), Collections.<InterfaceType>emptySet(), ImmutableMap.<String, ValueInfo>of());
+        ClassType classType = new ClassType(fullyQualifiedName("example", "List"));
         ParameterisedType typeFunction = new ParameterisedType(classType, asList(new FormalTypeParameter("T")));
         StaticContext context = standardContext();
         context.add(declaration, unassignableValue(TypeApplication.applyTypes(typeFunction, asList(CoreTypes.STRING))));
@@ -452,11 +456,9 @@ public class TypeInfererTest {
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
-        InterfaceType interfaceType = new InterfaceType(
-            fullyQualifiedName("shed", "example", "Brother"),
-            ImmutableMap.of("age", unassignableValue(CoreTypes.NUMBER))
-        );
+        InterfaceType interfaceType = new InterfaceType(fullyQualifiedName("shed", "example", "Brother"));
         context.add(declaration, unassignableValue(interfaceType));
+        context.addInfo(interfaceType, new ScalarTypeInfo(interfaces(), members("age", unassignableValue(CoreTypes.NUMBER))));
         
         MemberAccessNode memberAccess = Nodes.member(reference, "age");
         TypeResult<ValueInfo> result = inferValueInfo(memberAccess, context);
@@ -470,11 +472,9 @@ public class TypeInfererTest {
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
-        InterfaceType interfaceType = new InterfaceType(
-            fullyQualifiedName("shed", "example", "Brother"),
-            ImmutableMap.of("age", assignableValue(CoreTypes.NUMBER))
-        );
+        InterfaceType interfaceType = new InterfaceType(fullyQualifiedName("shed", "example", "Brother"));
         context.add(declaration, unassignableValue(interfaceType));
+        context.addInfo(interfaceType, new ScalarTypeInfo(interfaces(), members("age", assignableValue(CoreTypes.NUMBER))));
         
         MemberAccessNode memberAccess = Nodes.member(reference, "age");
         TypeResult<ValueInfo> result = inferValueInfo(memberAccess, context);
@@ -488,11 +488,9 @@ public class TypeInfererTest {
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
-        InterfaceType interfaceType = new InterfaceType(
-            fullyQualifiedName("shed", "example", "Brother"),
-            ImmutableMap.of("age", unassignableValue(CoreTypes.NUMBER))
-        );
+        InterfaceType interfaceType = new InterfaceType(fullyQualifiedName("shed", "example", "Brother"));
         context.add(declaration, unassignableValue(interfaceType));
+        context.addInfo(interfaceType, new ScalarTypeInfo(interfaces(), members("age", unassignableValue(CoreTypes.NUMBER))));
         MemberAccessNode memberAccess = Nodes.member(reference, "height");
         TypeResult<Type> result = inferType(memberAccess, context);
         assertThat(
@@ -510,7 +508,7 @@ public class TypeInfererTest {
         StaticContext context = standardContext();
         FormalTypeParameter typeParameter = new FormalTypeParameter("T");
         ParameterisedType listTypeFunction = new ParameterisedType(
-            new InterfaceType(fullyQualifiedName("shed", "List"), ImmutableMap.<String, ValueInfo>of()),
+            new InterfaceType(fullyQualifiedName("shed", "List")),
             asList(typeParameter)
         );
         context.add(listDeclaration, unassignableValue(listTypeFunction));
@@ -537,15 +535,12 @@ public class TypeInfererTest {
         
         FormalTypeParameter typeParameter = new FormalTypeParameter("T");
         context.add(identityDeclaration, unassignableValue(new ParameterisedFunctionType(
-            TypeApplication.applyTypes(
-                CoreTypes.functionType(1),
-                Arrays.<Type>asList(typeParameter, typeParameter)
-            ),
+            CoreTypes.functionTypeOf(typeParameter, typeParameter),
             asList(typeParameter)
         )));
         CallNode call = Nodes.call(Nodes.typeApply(identityReference, numberReference), Nodes.number("2"));
         TypeResult<Type> result = inferType(call, context);
-        assertThat(result, is(success(CoreTypes.NUMBER)));
+        assertThat(result, isType(CoreTypes.NUMBER));
     }
     
     @Test public void
@@ -559,7 +554,7 @@ public class TypeInfererTest {
         context.add(declaration, assignableValue(CoreTypes.NUMBER));
         
         TypeResult<Type> result = inferType(Nodes.assign(reference, Nodes.number("4")), context);
-        assertThat(result, is(success(CoreTypes.NUMBER)));
+        assertThat(result, isType(CoreTypes.NUMBER));
     }
     
     @Test public void
@@ -592,16 +587,24 @@ public class TypeInfererTest {
     
     @Test public void
     canAssignValueIfSubTypeOfVariableType() {
-        VariableIdentifierNode reference = Nodes.id("x");
-        GlobalDeclarationNode declaration = new GlobalDeclarationNode("x");
-        references.addReference(reference, declaration);
+        VariableIdentifierNode interfaceReference = Nodes.id("iterable");
+        GlobalDeclarationNode interfaceDeclaration = new GlobalDeclarationNode("iterable");
+        references.addReference(interfaceReference, interfaceDeclaration);
+
+        VariableIdentifierNode classReference = Nodes.id("iterable");
+        GlobalDeclarationNode classDeclaration = new GlobalDeclarationNode("iterable");
+        references.addReference(classReference, classDeclaration);
         
         StaticContext context = standardContext();
         
-        context.add(declaration, assignableValue(CoreTypes.OBJECT));
+        InterfaceType interfaceType = new InterfaceType(fullyQualifiedName("shed", "Iterable"));
+        ClassType classType = new ClassType(fullyQualifiedName("shed", "List"));
+        context.add(interfaceDeclaration, assignableValue(interfaceType));
+        context.add(classDeclaration, assignableValue(classType));
+        context.addInfo(classType, new ScalarTypeInfo(Interfaces.interfaces(interfaceType), members()));
         
-        TypeResult<Type> result = inferType(Nodes.assign(reference, Nodes.bool(true)), context);
-        assertThat(result, is(success(CoreTypes.BOOLEAN)));
+        TypeResult<Type> result = inferType(Nodes.assign(interfaceReference, classReference), context);
+        assertThat(result, is(success((Type)classType)));
     }
     
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
@@ -632,5 +635,9 @@ public class TypeInfererTest {
         context.add(booleanDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.BOOLEAN)));
         
         return context;
+    }
+    
+    private Matcher<TypeResult<Type>> isType(Type type) {
+        return Matchers.is(TypeResult.success(type));
     }
 }

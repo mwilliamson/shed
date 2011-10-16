@@ -32,7 +32,7 @@ public class TypeLookupTest {
     @Test public void
     canLookupTypesFromContext() {
         TypeResult<Type> result = lookupTypeReference(stringReference, standardContext());
-        assertThat(result, is(success(CoreTypes.STRING)));
+        assertThat(result, is(success((Type)CoreTypes.STRING)));
     }
     
     @Test public void

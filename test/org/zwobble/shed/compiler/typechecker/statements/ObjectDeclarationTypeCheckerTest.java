@@ -18,6 +18,7 @@ import org.zwobble.shed.compiler.typechecker.errors.CannotReturnHereError;
 import org.zwobble.shed.compiler.typechecker.statements.ObjectDeclarationTypeChecker;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ScalarType;
+import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.ImmutableMap;
@@ -82,8 +83,9 @@ public class ObjectDeclarationTypeCheckerTest {
             typeCheckObjectDeclaration(objectDeclarationNode, staticContext);
         assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
         ScalarType browserType = (ScalarType)staticContext.get(objectDeclarationNode).getType();
-        assertThat(browserType.getMembers(), is((Object)ImmutableMap.of("name", ValueInfo.unassignableValue(CoreTypes.STRING))));
         assertThat(browserType.getFullyQualifiedName(), is(fullyQualifiedName("shed", "browser")));
+        ScalarTypeInfo browserTypeInfo = staticContext.getInfo(browserType);
+        assertThat(browserTypeInfo.getMembers(), is((Object)ImmutableMap.of("name", ValueInfo.unassignableValue(CoreTypes.STRING))));
     }
     
     private TypeResult<StatementTypeCheckResult> typeCheckObjectDeclaration(

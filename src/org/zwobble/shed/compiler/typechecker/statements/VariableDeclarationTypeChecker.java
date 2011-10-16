@@ -64,7 +64,7 @@ public class VariableDeclarationTypeChecker implements DeclarationTypeChecker<Va
             VariableLookupResult variableLookupResult = staticContext.get(variableDeclaration);
             if (variableLookupResult.getStatus() == Status.SUCCESS) {
                 Type specifiedType = variableLookupResult.getType();
-                if (valueTypeResult.hasValue() && !isSubType(valueTypeResult.get(), specifiedType)) {
+                if (valueTypeResult.hasValue() && !isSubType(valueTypeResult.get(), specifiedType, staticContext)) {
                     errors.add(CompilerError.error(
                         nodeLocations.locate(variableDeclaration.getValue()),
                         "Cannot initialise variable of type \"" + specifiedType.shortName() +

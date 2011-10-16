@@ -43,7 +43,8 @@ public class TypeLookupImpl implements TypeLookup {
                     )));
                 }
                 
-                return success(((TypeApplication)variableType).getTypeParameters().get(0));
+                Type type = ((TypeApplication)variableType).getTypeParameters().get(0);
+                return success(type);
             }
         };
     }

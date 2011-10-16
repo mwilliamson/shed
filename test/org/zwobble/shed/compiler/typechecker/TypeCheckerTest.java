@@ -87,7 +87,7 @@ public class TypeCheckerTest {
                 Nodes.block(Nodes.expressionStatement(Nodes.string("eatPudding")))
             );
         TypeResult<StatementTypeCheckResult> result = 
-            typeCheckStatement(ifThenElseNode, staticContext(), some(CoreTypes.STRING));
+            typeCheckStatement(ifThenElseNode, staticContext(), some((Type)CoreTypes.STRING));
         assertThat(result, is(success(StatementTypeCheckResult.noReturn())));
     }
     
@@ -100,7 +100,7 @@ public class TypeCheckerTest {
                 Nodes.block(Nodes.expressionStatement(Nodes.string("eatPudding")))
             );
         TypeResult<StatementTypeCheckResult> result = 
-            typeCheckStatement(ifThenElseNode, staticContext(), some(CoreTypes.STRING));
+            typeCheckStatement(ifThenElseNode, staticContext(), some((Type)CoreTypes.STRING));
         assertThat(result, is(success(StatementTypeCheckResult.noReturn())));
     }
     
@@ -113,7 +113,7 @@ public class TypeCheckerTest {
                 Nodes.block(Nodes.returnStatement(Nodes.string("eatPudding")))
             );
         TypeResult<StatementTypeCheckResult> result = 
-            typeCheckStatement(ifThenElseNode, staticContext(), some(CoreTypes.STRING));
+            typeCheckStatement(ifThenElseNode, staticContext(), some((Type)CoreTypes.STRING));
         assertThat(result, is(success(StatementTypeCheckResult.alwaysReturns())));
     }
     
@@ -121,7 +121,7 @@ public class TypeCheckerTest {
     whileLoopNeverReturnsFromFunction() {
         WhileStatementNode loop = Nodes.whileLoop(Nodes.bool(true), Nodes.block());
         TypeResult<StatementTypeCheckResult> result = 
-            typeCheckStatement(loop, staticContext(), some(CoreTypes.STRING));
+            typeCheckStatement(loop, staticContext(), some((Type)CoreTypes.STRING));
         assertThat(result, is(success(StatementTypeCheckResult.noReturn())));
     }
     
@@ -129,7 +129,7 @@ public class TypeCheckerTest {
     conditionOfWhileLoopMustBeBoolean() {
         WhileStatementNode loop = Nodes.whileLoop(Nodes.number("42"), Nodes.block());
         TypeResult<StatementTypeCheckResult> result = 
-            typeCheckStatement(loop, staticContext(), some(CoreTypes.STRING));
+            typeCheckStatement(loop, staticContext(), some((Type)CoreTypes.STRING));
         assertThat(result, isFailureWithErrors(new ConditionNotBooleanError(CoreTypes.NUMBER)));
     }
     
@@ -137,7 +137,7 @@ public class TypeCheckerTest {
     bodyOfWhileLoopIsTypeChecked() {
         WhileStatementNode loop = Nodes.whileLoop(Nodes.bool(true), Nodes.block(Nodes.returnStatement(Nodes.number("42"))));
         TypeResult<StatementTypeCheckResult> result = 
-            typeCheckStatement(loop, staticContext(), some(CoreTypes.STRING));
+            typeCheckStatement(loop, staticContext(), some((Type)CoreTypes.STRING));
         assertThat(result, isFailureWithErrors(new WrongReturnTypeError(CoreTypes.STRING, CoreTypes.NUMBER)));
     }
     

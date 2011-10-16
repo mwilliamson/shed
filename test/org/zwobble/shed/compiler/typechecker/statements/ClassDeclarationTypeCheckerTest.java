@@ -14,6 +14,7 @@ import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
+import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -59,7 +60,8 @@ public class ClassDeclarationTypeCheckerTest {
         
         assertThat(result, isSuccess());
         ClassType type = (ClassType) context.get(declaration).getType();
-        assertThat(type.getMembers(), Matchers.<Map<String, ValueInfo>>is(ImmutableMap.of(
+        ScalarTypeInfo typeInfo = context.getInfo(type);
+        assertThat(typeInfo.getMembers(), Matchers.<Map<String, ValueInfo>>is(ImmutableMap.of(
             "firstName", ValueInfo.unassignableValue(CoreTypes.STRING),
             "close", ValueInfo.unassignableValue(CoreTypes.functionTypeOf(CoreTypes.UNIT))
         )));
@@ -79,7 +81,8 @@ public class ClassDeclarationTypeCheckerTest {
         
         assertThat(result, isSuccess());
         ClassType type = (ClassType) context.get(declaration).getType();
-        assertThat(type.getMembers(), Matchers.<Map<String, ValueInfo>>is(ImmutableMap.of(
+        ScalarTypeInfo typeInfo = context.getInfo(type);
+        assertThat(typeInfo.getMembers(), Matchers.<Map<String, ValueInfo>>is(ImmutableMap.of(
             "firstName", ValueInfo.unknown()
         )));
     }

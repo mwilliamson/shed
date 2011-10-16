@@ -46,7 +46,7 @@ public class ReturnStatementTypeChecker implements StatementTypeChecker<ReturnNo
         if (!expressionType.isSuccess()) {
             return failure(expressionType.getErrors());
         }
-        if (isSubType(expressionType.get(), returnType.get())) {
+        if (isSubType(expressionType.get(), returnType.get(), context)) {
             return success(StatementTypeCheckResult.alwaysReturns());
         } else {
             return failure(
