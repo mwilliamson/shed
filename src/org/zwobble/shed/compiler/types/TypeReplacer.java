@@ -7,33 +7,21 @@ import org.zwobble.shed.compiler.typechecker.ValueInfo;
 
 import com.google.common.base.Function;
 
-import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
-
 import static com.google.common.collect.Lists.transform;
-import static com.google.common.collect.Maps.transformValues;
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
 
 public class TypeReplacer {
     public Type replaceTypes(Type type, Map<FormalTypeParameter, Type> replacements) {
-        // TODO: update super-classes
         if (type instanceof FormalTypeParameter) {
             return replaceFormalTypeParameter(type, replacements);
-        }
-        
-        if (type instanceof ClassType) {
-            return type;
-        }
-        
-        if (type instanceof InterfaceType) {
-            return type;
         }
         
         if (type instanceof TypeApplication) {
             TypeApplication typeApplication = (TypeApplication) type;
             List<Type> transformedTypeParameters = transform(typeApplication.getTypeParameters(), toReplacement(replacements));
-            return new TypeApplication((ScalarType)replaceTypes(typeApplication.getReplacedType(), replacements), typeApplication.getBaseType(), transformedTypeParameters);
+            return new TypeApplication((ParameterisedType)replaceTypes(typeApplication.getBaseType(), replacements), transformedTypeParameters);
         }
-        
-        throw new RuntimeException("Don't know how to replace types for " + type);
+        return type;
     }
 
     private Type replaceFormalTypeParameter(Type type, Map<FormalTypeParameter, Type> replacements) {

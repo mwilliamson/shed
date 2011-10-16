@@ -391,9 +391,9 @@ public class TypeInfererTest {
         references.addReference(reference, declaration);
         
         ClassType classType = new ClassType(fullyQualifiedName("example", "List"));
-        ParameterisedType<InterfaceType> typeFunction = parameterisedType(classType, asList(new FormalTypeParameter("T")));
+        ParameterisedType<ClassType> typeFunction = parameterisedType(classType, asList(new FormalTypeParameter("T")));
         StaticContext context = standardContext();
-        context.add(declaration, unassignableValue(TypeApplication.applyTypes(typeFunction, asList(CoreTypes.STRING))));
+        context.add(declaration, unassignableValue(new TypeApplication(typeFunction, asList((Type)CoreTypes.STRING))));
         
         CallNode call = Nodes.call(reference);
         TypeResult<Type> result = inferType(call, context);
@@ -513,7 +513,7 @@ public class TypeInfererTest {
         );
         TypeResult<Type> result = inferType(functionExpression, context);
         assertThat(result, is((Object)success(
-            CoreTypes.functionTypeOf(TypeApplication.applyTypes(listTypeFunction, asList(CoreTypes.NUMBER)), CoreTypes.NUMBER)
+            CoreTypes.functionTypeOf(new TypeApplication(listTypeFunction, asList((Type)CoreTypes.NUMBER)), CoreTypes.NUMBER)
         )));
     }
     

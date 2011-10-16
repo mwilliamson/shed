@@ -268,7 +268,7 @@ public class TypeInfererImpl implements TypeInferer {
                     for (int i = 0; i < functionType.getTypeParameters().size(); i += 1) {
                         replacements.put(functionType.getTypeParameters().get(i), parameterTypes.get(i));
                     }
-                    return TypeResult.success(new TypeReplacer().replaceTypes(functionType, replacements.build()));
+                    return TypeResult.success(new TypeReplacer().replaceTypes(functionType.getBaseFunctionType(), replacements.build()));
                 } else if (baseType instanceof ParameterisedType) {
                     return TypeResult.success((Type)CoreTypes.classOf(new TypeApplication((ParameterisedType)baseType, parameterTypes)));   
                 } else {
