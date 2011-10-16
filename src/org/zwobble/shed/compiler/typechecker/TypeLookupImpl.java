@@ -50,7 +50,7 @@ public class TypeLookupImpl implements TypeLookup {
     }
     
     private static boolean isType(Type type) {
-        return type instanceof TypeApplication && ((TypeApplication)type).getBaseType().equals(CoreTypes.CLASS.getBaseType());
+        return type instanceof TypeApplication && ((TypeApplication)type).getBaseType().equals(CoreTypes.CLASS);
     }
 
 }

@@ -9,6 +9,6 @@ import org.zwobble.shed.compiler.typechecker.ValueInfo;
 
 @Data
 public class ScalarTypeInfo {
-    private final Set<InterfaceType> superTypes;
+    private final Set<Type> superTypes;
     private final Map<String, ValueInfo> members;
 }

@@ -1,8 +1,6 @@
 package org.zwobble.shed.compiler.typechecker.statements;
 
-import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -19,12 +17,13 @@ import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult.Status;
 import org.zwobble.shed.compiler.types.ClassType;
-import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+
+import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 
 public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<ClassDeclarationNode> {
     private final BlockTypeChecker blockTypeChecker;
@@ -52,11 +51,10 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
 
     private void buildClassType(ClassDeclarationNode classDeclaration, StaticContext context) {
         FullyQualifiedName name = fullyQualifiedNames.fullyQualifiedNameOf(classDeclaration);
-        Set<InterfaceType> interfaces = Collections.<InterfaceType>emptySet();
         Map<String, ValueInfo> members = buildMembers(classDeclaration, context);
         ClassType type = new ClassType(name);
         context.add(classDeclaration, ValueInfo.unassignableValue(type));
-        context.addInfo(type, new ScalarTypeInfo(interfaces, members));
+        context.addInfo(type, new ScalarTypeInfo(interfaces(), members));
     }
 
     @Override

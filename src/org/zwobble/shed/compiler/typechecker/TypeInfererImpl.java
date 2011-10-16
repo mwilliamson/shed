@@ -29,15 +29,17 @@ import org.zwobble.shed.compiler.typechecker.errors.MissingReturnStatementError;
 import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.typechecker.statements.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.types.CoreTypes;
+import org.zwobble.shed.compiler.types.FormalTypeParameter;
 import org.zwobble.shed.compiler.types.ParameterisedFunctionType;
 import org.zwobble.shed.compiler.types.ParameterisedType;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
-import org.zwobble.shed.compiler.types.TypeFunction;
+import org.zwobble.shed.compiler.types.TypeReplacer;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 import static java.util.Arrays.asList;
@@ -261,9 +263,14 @@ public class TypeInfererImpl implements TypeInferer {
                 List<Type> parameterTypes = Lists.transform(typeApplication.getParameters(), toParameterType(context));
                 
                 if (baseType instanceof ParameterisedFunctionType) {
-                    return TypeResult.success(TypeApplication.applyTypes((TypeFunction)baseType, parameterTypes));
+                    ParameterisedFunctionType functionType = (ParameterisedFunctionType)baseType;
+                    ImmutableMap.Builder<FormalTypeParameter, Type> replacements = ImmutableMap.builder();
+                    for (int i = 0; i < functionType.getTypeParameters().size(); i += 1) {
+                        replacements.put(functionType.getTypeParameters().get(i), parameterTypes.get(i));
+                    }
+                    return TypeResult.success(new TypeReplacer().replaceTypes(functionType, replacements.build()));
                 } else if (baseType instanceof ParameterisedType) {
-                    return TypeResult.success((Type)CoreTypes.classOf(TypeApplication.applyTypes((ParameterisedType)baseType, parameterTypes)));   
+                    return TypeResult.success((Type)CoreTypes.classOf(new TypeApplication((ParameterisedType)baseType, parameterTypes)));   
                 } else {
                     throw new RuntimeException("Don't know how to apply types " + parameterTypes + " to " + baseType);
                 }
@@ -320,7 +327,7 @@ public class TypeInfererImpl implements TypeInferer {
             public TypeResult<Type> apply(List<Type> argumentTypes) {
                 List<Type> typeParameters = new ArrayList<Type>(argumentTypes);
                 typeParameters.add(returnType);
-                return success(TypeApplication.applyTypes(CoreTypes.functionType(argumentTypes.size()), typeParameters));
+                return success(CoreTypes.functionTypeOf(typeParameters));
             }
         };
     }

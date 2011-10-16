@@ -20,20 +20,11 @@ public class TypeReplacer {
         }
         
         if (type instanceof ClassType) {
-            ClassType classType = (ClassType) type;
-            return new ClassType(
-                classType.getFullyQualifiedName(),
-                classType.getSuperTypes(),
-                transformValues(classType.getMembers(), replaceType(replacements))
-            );
+            return type;
         }
         
         if (type instanceof InterfaceType) {
-            InterfaceType interfaceType = (InterfaceType) type;
-            return new InterfaceType(
-                interfaceType.getFullyQualifiedName(),
-                transformValues(interfaceType.getMembers(), replaceType(replacements))
-            );
+            return type;
         }
         
         if (type instanceof TypeApplication) {

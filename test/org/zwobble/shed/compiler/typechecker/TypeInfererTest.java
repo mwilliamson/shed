@@ -38,6 +38,8 @@ import org.zwobble.shed.compiler.types.TypeApplication;
 
 import com.google.inject.Injector;
 
+import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedType;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -120,9 +122,7 @@ public class TypeInfererTest {
             new NumberLiteralNode("42")
         );
         TypeResult<Type> result = inferType(functionExpression, blankContext());
-        assertThat(result, is(success(
-            TypeApplication.applyTypes(CoreTypes.functionType(0), asList(CoreTypes.NUMBER))
-        )));
+        assertThat(result, is(success(CoreTypes.functionTypeOf(CoreTypes.NUMBER))));
     }
     
     @Test public void
@@ -205,9 +205,7 @@ public class TypeInfererTest {
             new BooleanLiteralNode(true)
         );
         TypeResult<Type> result = inferType(functionExpression, context);
-        assertThat(result, is(success(
-            (Type) TypeApplication.applyTypes(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN))
-        )));
+        assertThat(result, is(success(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN))));
     }
     
     @Test public void
@@ -221,9 +219,7 @@ public class TypeInfererTest {
             Nodes.block(new ReturnNode(new BooleanLiteralNode(true)))
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, is(success(
-            (Type) TypeApplication.applyTypes(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN))
-        )));
+        assertThat(result, is(success(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN))));
     }
     
     @Test public void
@@ -268,9 +264,7 @@ public class TypeInfererTest {
             Nodes.block(new ReturnNode(ageReference))
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, is(success(
-            (Type) TypeApplication.applyTypes(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.NUMBER))
-        )));
+        assertThat(result, is(success(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.NUMBER))));
     }
     
     @Test public void
@@ -301,9 +295,7 @@ public class TypeInfererTest {
             ageReference
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, is(success(
-            (Type) TypeApplication.applyTypes(CoreTypes.functionType(2), asList(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.NUMBER))
-        )));
+        assertThat(result, is(success(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.NUMBER))));
     }
     
     @Test public void
@@ -399,7 +391,7 @@ public class TypeInfererTest {
         references.addReference(reference, declaration);
         
         ClassType classType = new ClassType(fullyQualifiedName("example", "List"));
-        ParameterisedType typeFunction = new ParameterisedType(classType, asList(new FormalTypeParameter("T")));
+        ParameterisedType<InterfaceType> typeFunction = parameterisedType(classType, asList(new FormalTypeParameter("T")));
         StaticContext context = standardContext();
         context.add(declaration, unassignableValue(TypeApplication.applyTypes(typeFunction, asList(CoreTypes.STRING))));
         
@@ -507,7 +499,7 @@ public class TypeInfererTest {
         
         StaticContext context = standardContext();
         FormalTypeParameter typeParameter = new FormalTypeParameter("T");
-        ParameterisedType listTypeFunction = new ParameterisedType(
+        ParameterisedType<InterfaceType> listTypeFunction = parameterisedType(
             new InterfaceType(fullyQualifiedName("shed", "List")),
             asList(typeParameter)
         );

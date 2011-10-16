@@ -9,9 +9,9 @@ import com.google.common.base.Joiner;
 
 import static com.google.common.collect.Iterables.transform;
 
-@Data
-public class ParameterisedType implements TypeFunction {
-    private final ScalarType baseType;
+@Data(staticConstructor="parameterisedType")
+public class ParameterisedType<T extends ScalarType> implements TypeFunction {
+    private final T baseType;
     private final List<FormalTypeParameter> typeParameters;
     
     @Override
