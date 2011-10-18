@@ -25,7 +25,7 @@ public class CoreTypes {
         return new ClassType(fullyQualifiedName(name));
     }
     
-    public static final ParameterisedType<InterfaceType> CLASS = parameterisedType(
+    public static final ParameterisedType CLASS = parameterisedType(
         new InterfaceType(fullyQualifiedName("Class")),
         asList(new FormalTypeParameter("C"))
     );
@@ -34,21 +34,21 @@ public class CoreTypes {
         return new TypeApplication(CLASS, asList(type));
     }
     
-    private static Map<Integer, ParameterisedType<InterfaceType>> functionTypes = new HashMap<Integer, ParameterisedType<InterfaceType>>();
+    private static Map<Integer, ParameterisedType> functionTypes = new HashMap<Integer, ParameterisedType>();
     private static Set<Type> baseFunctionTypes = new HashSet<Type>();
     
     public static boolean isFunction(Type type) {
         return type instanceof TypeApplication && baseFunctionTypes.contains((((TypeApplication)type).getBaseType().getBaseType()));
     }
     
-    public static ParameterisedType<InterfaceType> functionType(int arguments) {
+    public static ParameterisedType functionType(int arguments) {
         if (!functionTypes.containsKey(arguments)) {
             InterfaceType baseType = new InterfaceType(fullyQualifiedName("Function" + arguments));
             baseFunctionTypes.add(baseType);
             
             List<FormalTypeParameter> formalTypeParameters = newArrayList(transform(range(arguments), toFormalTypeParameter()));
             formalTypeParameters.add(new FormalTypeParameter("TResult"));
-            ParameterisedType<InterfaceType> functionType = parameterisedType(baseType, formalTypeParameters);
+            ParameterisedType functionType = parameterisedType(baseType, formalTypeParameters);
             functionTypes.put(arguments, functionType);
         }
         return functionTypes.get(arguments);

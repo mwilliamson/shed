@@ -12,7 +12,7 @@ import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualified
 public class ParameterisedTypeTest {
     @Test public void
     shortNameIncludesParameters() {
-        ParameterisedType<InterfaceType> typeFunction = parameterisedType(
+        ParameterisedType typeFunction = parameterisedType(
             new InterfaceType(fullyQualifiedName("shed", "Map")),
             asList(new FormalTypeParameter("K"), new FormalTypeParameter("V"))
         );

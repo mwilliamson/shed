@@ -391,7 +391,7 @@ public class TypeInfererTest {
         references.addReference(reference, declaration);
         
         ClassType classType = new ClassType(fullyQualifiedName("example", "List"));
-        ParameterisedType<ClassType> typeFunction = parameterisedType(classType, asList(new FormalTypeParameter("T")));
+        ParameterisedType typeFunction = parameterisedType(classType, asList(new FormalTypeParameter("T")));
         StaticContext context = standardContext();
         context.add(declaration, unassignableValue(new TypeApplication(typeFunction, asList((Type)CoreTypes.STRING))));
         
@@ -499,7 +499,7 @@ public class TypeInfererTest {
         
         StaticContext context = standardContext();
         FormalTypeParameter typeParameter = new FormalTypeParameter("T");
-        ParameterisedType<InterfaceType> listTypeFunction = parameterisedType(
+        ParameterisedType listTypeFunction = parameterisedType(
             new InterfaceType(fullyQualifiedName("shed", "List")),
             asList(typeParameter)
         );

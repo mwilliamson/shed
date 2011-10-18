@@ -13,7 +13,8 @@ import static com.google.common.collect.Lists.transform;
 
 @Data
 public class TypeApplication implements ScalarType {
-    private final ParameterisedType<?> baseType;
+    // TODO: store ScalarType directly, and store a map from formal type parameters to actual type parameters
+    private final ParameterisedType baseType;
     private final List<Type> typeParameters;
   
     @Override

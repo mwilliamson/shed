@@ -4,7 +4,6 @@ import java.util.Map;
 
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.types.CoreTypes;
-import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.ParameterisedType;
 import org.zwobble.shed.compiler.types.Type;
 
@@ -23,7 +22,7 @@ public class CoreModule {
         valuesBuilder.put("Unit", CoreTypes.classOf(CoreTypes.UNIT));
         
         for (int i = 0; i < 20; i += 1) {
-            ParameterisedType<InterfaceType> functionType = CoreTypes.functionType(i);
+            ParameterisedType functionType = CoreTypes.functionType(i);
             valuesBuilder.put((functionType.getBaseType()).getFullyQualifiedName().last(), functionType);
         }
         VALUES = valuesBuilder.build();
