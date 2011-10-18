@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.CompilerError;
+import org.zwobble.shed.compiler.Eager;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.SourceRange;
@@ -265,10 +266,10 @@ public class TypeInfererImpl implements TypeInferer {
                 if (baseType instanceof ParameterisedFunctionType) {
                     ParameterisedFunctionType functionType = (ParameterisedFunctionType)baseType;
                     ImmutableMap.Builder<FormalTypeParameter, Type> replacements = ImmutableMap.builder();
-                    for (int i = 0; i < functionType.getTypeParameters().size(); i += 1) {
-                        replacements.put(functionType.getTypeParameters().get(i), parameterTypes.get(i));
+                    for (int i = 0; i < functionType.getFormalTypeParameters().size(); i += 1) {
+                        replacements.put(functionType.getFormalTypeParameters().get(i), parameterTypes.get(i));
                     }
-                    return TypeResult.success(new TypeReplacer().replaceTypes(functionType.getBaseFunctionType(), replacements.build()));
+                    return TypeResult.success(CoreTypes.functionTypeOf(Eager.transform(functionType.getFunctionTypeParameters(), toReplacement(replacements.build()))));
                 } else if (baseType instanceof ParameterisedType) {
                     return TypeResult.success((Type)CoreTypes.classOf(new TypeApplication((ParameterisedType)baseType, parameterTypes)));   
                 } else {
@@ -276,6 +277,15 @@ public class TypeInfererImpl implements TypeInferer {
                 }
             }
         }).ifValueThen(toValueInfo());
+    }
+
+    private Function<Type, Type> toReplacement(final ImmutableMap<FormalTypeParameter, Type> replacements) {
+        return new Function<Type, Type>() {
+            @Override
+            public Type apply(Type input) {
+                return new TypeReplacer().replaceTypes(input, replacements);
+            }
+        };
     }
 
     private TypeResult<ValueInfo> inferAssignmentType(AssignmentExpressionNode expression, StaticContext context) {

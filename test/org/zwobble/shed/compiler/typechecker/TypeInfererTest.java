@@ -38,8 +38,6 @@ import org.zwobble.shed.compiler.types.TypeApplication;
 
 import com.google.inject.Injector;
 
-import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedType;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -56,6 +54,8 @@ import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
+import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedType;
+import static org.zwobble.shed.compiler.types.Types.typeParameters;
 
 public class TypeInfererTest {
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
@@ -527,7 +527,7 @@ public class TypeInfererTest {
         
         FormalTypeParameter typeParameter = new FormalTypeParameter("T");
         context.add(identityDeclaration, unassignableValue(new ParameterisedFunctionType(
-            CoreTypes.functionTypeOf(typeParameter, typeParameter),
+            typeParameters(typeParameter, typeParameter),
             asList(typeParameter)
         )));
         CallNode call = Nodes.call(Nodes.typeApply(identityReference, numberReference), Nodes.number("2"));

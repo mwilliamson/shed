@@ -12,11 +12,11 @@ import static com.google.common.collect.Iterables.transform;
 @Data(staticConstructor="parameterisedType")
 public class ParameterisedType implements TypeFunction {
     private final ScalarType baseType;
-    private final List<FormalTypeParameter> typeParameters;
+    private final List<FormalTypeParameter> formalTypeParameters;
     
     @Override
     public String shortName() {
-        String parameterString = "[" + Joiner.on(", ").join(transform(typeParameters, toName())) + "]"; 
+        String parameterString = "[" + Joiner.on(", ").join(transform(formalTypeParameters, toName())) + "]"; 
         return parameterString + " -> Class[" + baseType.shortName() + parameterString + "]";
     }
     

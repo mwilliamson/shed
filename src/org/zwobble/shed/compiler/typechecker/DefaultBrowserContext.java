@@ -20,7 +20,7 @@ public class DefaultBrowserContext {
         
         FormalTypeParameter formalTypeParameter = new FormalTypeParameter("T");
         Type importValueType = new ParameterisedFunctionType(
-            CoreTypes.functionTypeOf(CoreTypes.STRING, formalTypeParameter),
+            asList(CoreTypes.STRING, formalTypeParameter),
             asList(formalTypeParameter)
         );
         // TODO: replace with metaclass that implements both Class and Function1

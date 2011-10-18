@@ -11,20 +11,23 @@ import lombok.Data;
 
 @Data
 public class ParameterisedFunctionType implements TypeFunction {
-    private final Type baseFunctionType;
-    private final List<FormalTypeParameter> typeParameters;
+    private final List<Type> functionTypeParameters;
+    private final List<FormalTypeParameter> formalTypeParameters;
     
     @Override
     public String shortName() {
-        String parameterString = "[" + Joiner.on(", ").join(transform(typeParameters, toName())) + "]";
-        return parameterString + " -> " + baseFunctionType.shortName();
+        return buildTypeList(formalTypeParameters) + " -> Function" + buildTypeList(functionTypeParameters);
     }
     
-    private Function<FormalTypeParameter, String> toName() {
-        return new Function<FormalTypeParameter, String>() {
+    private String buildTypeList(List<? extends Type> types) {
+        return "[" + Joiner.on(", ").join(transform(types, toName())) + "]";
+    }
+    
+    private Function<Type, String> toName() {
+        return new Function<Type, String>() {
             @Override
-            public String apply(FormalTypeParameter input) {
-                return input.getName();
+            public String apply(Type input) {
+                return input.shortName();
             }
         };
     }
