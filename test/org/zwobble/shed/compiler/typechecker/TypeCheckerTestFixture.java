@@ -22,30 +22,23 @@ public class TypeCheckerTestFixture {
     }
     
     private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
-    private final ReferencesBuilder references = new ReferencesBuilder();
     private final FullyQualifiedNamesBuilder fullNames = new FullyQualifiedNamesBuilder();
+    private final StaticContext context;
     
     private TypeCheckerTestFixture() {
+        ReferencesBuilder references = new ReferencesBuilder();
+        references.addReference(STRING_TYPE_REFERENCE, STRING_TYPE_DECLARATION);
+        references.addReference(UNIT_TYPE_REFERENCE, UNIT_TYPE_DECLARATION);
+        context = new StaticContext(references.build());
+        context.add(STRING_TYPE_DECLARATION, ValueInfo.unassignableValue(CoreTypes.classOf(CoreTypes.STRING)));
+        context.add(UNIT_TYPE_DECLARATION, ValueInfo.unassignableValue(CoreTypes.classOf(CoreTypes.UNIT)));
     }
 
     public <T> T get(Class<T> clazz) {
-        return TypeCheckerInjector.build(nodeLocations, fullNames.build()).getInstance(clazz);
-    }
-    
-    public StaticContext defaultContext() {
-        return StaticContext.defaultContext(references.build());
-    }
-    
-    public StaticContext blankContext() {
-        return new StaticContext(references.build());
+        return TypeCheckerInjector.build(nodeLocations, fullNames.build(), context).getInstance(clazz);
     }
     
     public StaticContext context() {
-        references.addReference(STRING_TYPE_REFERENCE, STRING_TYPE_DECLARATION);
-        references.addReference(UNIT_TYPE_REFERENCE, UNIT_TYPE_DECLARATION);
-        StaticContext context = new StaticContext(references.build());
-        context.add(STRING_TYPE_DECLARATION, ValueInfo.unassignableValue(CoreTypes.classOf(CoreTypes.STRING)));
-        context.add(UNIT_TYPE_DECLARATION, ValueInfo.unassignableValue(CoreTypes.classOf(CoreTypes.UNIT)));
         return context;
     }
     

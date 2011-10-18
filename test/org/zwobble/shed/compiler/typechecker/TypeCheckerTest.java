@@ -238,9 +238,9 @@ public class TypeCheckerTest {
     private TypeResult<StatementTypeCheckResult> typeCheckBlock(
         BlockNode block, StaticContext context, Option<Type> returnType
     ) {
-        Injector injector = TypeCheckerInjector.build(nodeLocations, new FullyQualifiedNamesBuilder().build());
+        Injector injector = TypeCheckerInjector.build(nodeLocations, new FullyQualifiedNamesBuilder().build(), context);
         BlockTypeChecker typeChecker = injector.getInstance(BlockTypeChecker.class);
-        return typeChecker.forwardDeclareAndTypeCheck(block, context, returnType);
+        return typeChecker.forwardDeclareAndTypeCheck(block, returnType);
     }
 
     private TypeResult<StatementTypeCheckResult> typeCheckStatement(StatementNode statement, StaticContext context, Option<Type> returnType) {

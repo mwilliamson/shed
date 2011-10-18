@@ -28,49 +28,50 @@ import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<ClassDeclarationNode> {
     private final BlockTypeChecker blockTypeChecker;
     private final FullyQualifiedNames fullyQualifiedNames;
+    private final StaticContext context;
 
     @Inject
-    public ClassDeclarationTypeChecker(BlockTypeChecker blockTypeChecker, FullyQualifiedNames fullyQualifiedNames) {
+    public ClassDeclarationTypeChecker(BlockTypeChecker blockTypeChecker, FullyQualifiedNames fullyQualifiedNames, StaticContext context) {
         this.blockTypeChecker = blockTypeChecker;
         this.fullyQualifiedNames = fullyQualifiedNames;
+        this.context = context;
     }
     
     @Override
-    public TypeResult<?> forwardDeclare(ClassDeclarationNode classDeclaration, StaticContext context) {
-        forwardDeclareBody(classDeclaration, context);
-        buildClassType(classDeclaration, context);
+    public TypeResult<?> forwardDeclare(ClassDeclarationNode classDeclaration) {
+        forwardDeclareBody(classDeclaration);
+        buildClassType(classDeclaration);
         return TypeResult.success();
     }
 
-    private void forwardDeclareBody(ClassDeclarationNode classDeclaration, StaticContext context) {
-        TypeResult<?> forwardDeclareResult = blockTypeChecker.forwardDeclare(classDeclaration.getBody(), context);
+    private void forwardDeclareBody(ClassDeclarationNode classDeclaration) {
+        TypeResult<?> forwardDeclareResult = blockTypeChecker.forwardDeclare(classDeclaration.getBody());
         if (!forwardDeclareResult.isSuccess()) {
             throw new RuntimeException("Errors: " + forwardDeclareResult.getErrors());
         }
     }
 
-    private void buildClassType(ClassDeclarationNode classDeclaration, StaticContext context) {
+    private void buildClassType(ClassDeclarationNode classDeclaration) {
         FullyQualifiedName name = fullyQualifiedNames.fullyQualifiedNameOf(classDeclaration);
-        Map<String, ValueInfo> members = buildMembers(classDeclaration, context);
+        Map<String, ValueInfo> members = buildMembers(classDeclaration);
         ClassType type = new ClassType(name);
         context.add(classDeclaration, ValueInfo.unassignableValue(type));
         context.addInfo(type, new ScalarTypeInfo(interfaces(), members));
     }
 
     @Override
-    public TypeResult<StatementTypeCheckResult> typeCheck(
-        ClassDeclarationNode statement, StaticContext context, Option<Type> returnType
-    ) {
+    public TypeResult<StatementTypeCheckResult> typeCheck(ClassDeclarationNode statement, Option<Type> returnType) {
+        // TODO:
         return null;
     }
 
-    private Map<String, ValueInfo> buildMembers(ClassDeclarationNode classDeclaration, StaticContext context) {
+    private Map<String, ValueInfo> buildMembers(ClassDeclarationNode classDeclaration) {
         ImmutableMap.Builder<String, ValueInfo> members = ImmutableMap.builder();
         
         Iterable<PublicDeclarationNode> publicDeclarations = Iterables.filter(classDeclaration.getBody(), PublicDeclarationNode.class);
         for (PublicDeclarationNode publicDeclaration : publicDeclarations) {
             DeclarationNode memberDeclaration = publicDeclaration.getDeclaration();
-            TypeResult<ValueInfo> memberType = findMemberType(memberDeclaration, context);
+            TypeResult<ValueInfo> memberType = findMemberType(memberDeclaration);
             if (memberType.hasValue()) {
                 members.put(memberDeclaration.getIdentifier(), memberType.get());
             } else {
@@ -80,7 +81,7 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
         return members.build();
     }
 
-    private TypeResult<ValueInfo> findMemberType(DeclarationNode memberDeclaration, StaticContext context) {
+    private TypeResult<ValueInfo> findMemberType(DeclarationNode memberDeclaration) {
         VariableLookupResult result = context.get(memberDeclaration);
         if (result.getStatus() == Status.SUCCESS) {
             return TypeResult.success(result.getValueInfo());

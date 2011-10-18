@@ -43,6 +43,8 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
+import static org.zwobble.shed.compiler.Option.some;
+
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
@@ -55,16 +57,24 @@ public class TypeInfererImpl implements TypeInferer {
     private final BlockTypeChecker blockTypeChecker;
     private final TypeLookup typeLookup;
     private final NodeLocations nodeLocations;
+    private final StaticContext context;
 
     @Inject
-    public TypeInfererImpl(ArgumentTypeInferer argumentTypeInferer, BlockTypeChecker blockTypeChecker, TypeLookup typeLookup, NodeLocations nodeLocations) {
+    public TypeInfererImpl(
+        ArgumentTypeInferer argumentTypeInferer,
+        BlockTypeChecker blockTypeChecker, 
+        TypeLookup typeLookup, 
+        NodeLocations nodeLocations,
+        StaticContext context
+    ) {
         this.argumentTypeInferer = argumentTypeInferer;
         this.blockTypeChecker = blockTypeChecker;
         this.typeLookup = typeLookup;
         this.nodeLocations = nodeLocations;
+        this.context = context;
     }
     
-    public TypeResult<ValueInfo> inferValueInfo(ExpressionNode expression, StaticContext context) {
+    public TypeResult<ValueInfo> inferValueInfo(ExpressionNode expression) {
         if (expression instanceof BooleanLiteralNode) {
             return success(ValueInfo.unassignableValue(CoreTypes.BOOLEAN));            
         }
@@ -81,28 +91,28 @@ public class TypeInfererImpl implements TypeInferer {
             return lookupVariableReference((VariableIdentifierNode)expression, nodeLocations.locate(expression), context);
         }
         if (expression instanceof ShortLambdaExpressionNode) {
-            return inferType((ShortLambdaExpressionNode)expression, context);
+            return inferType((ShortLambdaExpressionNode)expression);
         }
         if (expression instanceof LongLambdaExpressionNode) {
-            return inferFunctionTypeAndTypeCheckBody((LongLambdaExpressionNode)expression, context);
+            return inferFunctionTypeAndTypeCheckBody((LongLambdaExpressionNode)expression);
         }
         if (expression instanceof CallNode) {
-            return inferCallType((CallNode)expression, context);
+            return inferCallType((CallNode)expression);
         }
         if (expression instanceof MemberAccessNode) {
-            return inferMemberAccessType((MemberAccessNode)expression, context);
+            return inferMemberAccessType((MemberAccessNode)expression);
         }
         if (expression instanceof TypeApplicationNode) {
-            return inferTypeApplicationType((TypeApplicationNode)expression, context);
+            return inferTypeApplicationType((TypeApplicationNode)expression);
         }
         if (expression instanceof AssignmentExpressionNode) {
-            return inferAssignmentType((AssignmentExpressionNode)expression, context);
+            return inferAssignmentType((AssignmentExpressionNode)expression);
         }
         throw new RuntimeException("Cannot infer type of expression: " + expression);
     }
     
-    public TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
-        return inferValueInfo(expression, context).ifValueThen(new Function<ValueInfo, TypeResult<Type>>() {
+    public TypeResult<Type> inferType(ExpressionNode expression) {
+        return inferValueInfo(expression).ifValueThen(new Function<ValueInfo, TypeResult<Type>>() {
             @Override
             public TypeResult<Type> apply(ValueInfo input) {
                 return success(input.getType());
@@ -110,15 +120,15 @@ public class TypeInfererImpl implements TypeInferer {
         });
     }
 
-    private TypeResult<ValueInfo> inferType(final ShortLambdaExpressionNode lambdaExpression, StaticContext context) {
-        TypeResult<List<Type>> result = argumentTypeInferer.inferArgumentTypesAndAddToContext(lambdaExpression.getFormalArguments(), context);
-        final TypeResult<Type> expressionTypeResult = inferType(lambdaExpression.getBody(), context);
+    private TypeResult<ValueInfo> inferType(final ShortLambdaExpressionNode lambdaExpression) {
+        TypeResult<List<Type>> result = argumentTypeInferer.inferArgumentTypesAndAddToContext(lambdaExpression.getFormalArguments());
+        final TypeResult<Type> expressionTypeResult = inferType(lambdaExpression.getBody());
         
         result = result.withErrorsFrom(expressionTypeResult);
         
         Option<? extends ExpressionNode> returnTypeReference = lambdaExpression.getReturnType();
         if (returnTypeReference.hasValue()) {
-            TypeResult<Type> returnTypeResult = typeLookup.lookupTypeReference(returnTypeReference.get(), context);
+            TypeResult<Type> returnTypeResult = typeLookup.lookupTypeReference(returnTypeReference.get());
             result = result.withErrorsFrom(returnTypeResult.ifValueThen(new Function<Type, TypeResult<Void>>() {
                 @Override
                 public TypeResult<Void> apply(final Type returnType) {
@@ -146,15 +156,14 @@ public class TypeInfererImpl implements TypeInferer {
         }
     }
 
-    public TypeResult<ValueInfo>
-    inferFunctionTypeAndTypeCheckBody(final FunctionWithBodyNode function, final StaticContext context) {
-        TypeResult<ValueInfo> typeResult = inferFunctionType(function, context);
-        return typeResult.ifValueThen(typeCheckBody(function, context));
+    public TypeResult<ValueInfo> inferFunctionTypeAndTypeCheckBody(final FunctionWithBodyNode function) {
+        TypeResult<ValueInfo> typeResult = inferFunctionType(function);
+        return typeResult.ifValueThen(typeCheckBody(function));
     }
     
-    public TypeResult<ValueInfo> inferFunctionType(final FunctionWithBodyNode function, final StaticContext context) {
-        final TypeResult<List<Type>> argumentTypeResults = argumentTypeInferer.inferArgumentTypesAndAddToContext(function.getFormalArguments(), context);
-        TypeResult<Type> returnTypeResult = typeLookup.lookupTypeReference(function.getReturnType(), context);
+    public TypeResult<ValueInfo> inferFunctionType(final FunctionWithBodyNode function) {
+        final TypeResult<List<Type>> argumentTypeResults = argumentTypeInferer.inferArgumentTypesAndAddToContext(function.getFormalArguments());
+        TypeResult<Type> returnTypeResult = typeLookup.lookupTypeReference(function.getReturnType());
         
         return returnTypeResult.ifValueThen(new Function<Type, TypeResult<Type>>() {
             @Override
@@ -164,9 +173,7 @@ public class TypeInfererImpl implements TypeInferer {
         }).ifValueThen(toValueInfo());
     }
 
-    public Function<ValueInfo, TypeResult<ValueInfo>> typeCheckBody(
-        final FunctionWithBodyNode function, final StaticContext context
-    ) {
+    public Function<ValueInfo, TypeResult<ValueInfo>> typeCheckBody(final FunctionWithBodyNode function) {
         return new Function<ValueInfo, TypeResult<ValueInfo>>() {
             @Override
             public TypeResult<ValueInfo> apply(ValueInfo returnTypeInfo) {
@@ -174,9 +181,7 @@ public class TypeInfererImpl implements TypeInferer {
                 Type returnType = functionTypeParameters.get(functionTypeParameters.size() - 1);
                 TypeResult<ValueInfo> result = success(returnTypeInfo);
 
-                TypeResult<StatementTypeCheckResult> blockResult = 
-                    typeCheckBlock(function.getBody(), nodeLocations, context, Option.some(returnType));
-                
+                TypeResult<StatementTypeCheckResult> blockResult = typeCheckBlock(function.getBody(), some(returnType));
                 result = result.withErrorsFrom(blockResult);
                 
                 if (!blockResult.get().hasReturned()) {
@@ -190,8 +195,8 @@ public class TypeInfererImpl implements TypeInferer {
         };
     }
 
-    private TypeResult<ValueInfo> inferCallType(final CallNode expression, final StaticContext context) {
-        TypeResult<Type> calledTypeResult = inferType(expression.getFunction(), context);
+    private TypeResult<ValueInfo> inferCallType(final CallNode expression) {
+        TypeResult<Type> calledTypeResult = inferType(expression.getFunction());
         return calledTypeResult.ifValueThen(new Function<Type, TypeResult<Type>>() {
             @Override
             public TypeResult<Type> apply(Type calledType) {
@@ -214,7 +219,7 @@ public class TypeInfererImpl implements TypeInferer {
                 for (int i = 0; i < numberOfFormalAguments; i++) {
                     final int index = i;
                     final ExpressionNode argument = expression.getArguments().get(i);
-                    result = result.withErrorsFrom(inferType(argument, context).ifValueThen(new Function<Type, TypeResult<Void>>() {
+                    result = result.withErrorsFrom(inferType(argument).ifValueThen(new Function<Type, TypeResult<Void>>() {
                         @Override
                         public TypeResult<Void> apply(Type actualArgumentType) {
                             if (isSubType(actualArgumentType, typeParameters.get(index), context)) {
@@ -234,11 +239,8 @@ public class TypeInfererImpl implements TypeInferer {
         }).ifValueThen(toValueInfo());
     }
 
-    private TypeResult<ValueInfo> inferMemberAccessType(
-        final MemberAccessNode memberAccess,
-        final StaticContext context
-    ) {
-        return inferType(memberAccess.getExpression(), context).ifValueThen(new Function<Type, TypeResult<ValueInfo>>() {
+    private TypeResult<ValueInfo> inferMemberAccessType(final MemberAccessNode memberAccess) {
+        return inferType(memberAccess.getExpression()).ifValueThen(new Function<Type, TypeResult<ValueInfo>>() {
             @Override
             public TypeResult<ValueInfo> apply(Type leftType) {
                 String name = memberAccess.getMemberName();
@@ -254,14 +256,11 @@ public class TypeInfererImpl implements TypeInferer {
         });
     }
 
-    private TypeResult<ValueInfo> inferTypeApplicationType(
-        final TypeApplicationNode typeApplication,
-        final StaticContext context
-    ) {
-        return inferType(typeApplication.getBaseValue(), context).ifValueThen(new Function<Type, TypeResult<Type>>() {
+    private TypeResult<ValueInfo> inferTypeApplicationType(final TypeApplicationNode typeApplication) {
+        return inferType(typeApplication.getBaseValue()).ifValueThen(new Function<Type, TypeResult<Type>>() {
             @Override
             public TypeResult<Type> apply(Type baseType) {
-                List<Type> parameterTypes = Lists.transform(typeApplication.getParameters(), toParameterType(context));
+                List<Type> parameterTypes = Lists.transform(typeApplication.getParameters(), toParameterType());
                 
                 if (baseType instanceof ParameterisedFunctionType) {
                     ParameterisedFunctionType functionType = (ParameterisedFunctionType)baseType;
@@ -288,10 +287,10 @@ public class TypeInfererImpl implements TypeInferer {
         };
     }
 
-    private TypeResult<ValueInfo> inferAssignmentType(AssignmentExpressionNode expression, StaticContext context) {
+    private TypeResult<ValueInfo> inferAssignmentType(AssignmentExpressionNode expression) {
         SourceRange location = nodeLocations.locate(expression);
-        TypeResult<Type> valueTypeResult = inferType(expression.getValue(), context);
-        TypeResult<ValueInfo> targetInfo = inferValueInfo(expression.getTarget(), context)
+        TypeResult<Type> valueTypeResult = inferType(expression.getValue());
+        TypeResult<ValueInfo> targetInfo = inferValueInfo(expression.getTarget())
             .ifValueThen(checkIsAssignable(location));
         
         TypeResult<ValueInfo> result = valueTypeResult.withErrorsFrom(targetInfo).ifValueThen(toValueInfo());
@@ -318,11 +317,11 @@ public class TypeInfererImpl implements TypeInferer {
         };
     }
 
-    private Function<ExpressionNode, Type> toParameterType(final StaticContext context) {
+    private Function<ExpressionNode, Type> toParameterType() {
         return new Function<ExpressionNode, Type>() {
             @Override
             public Type apply(ExpressionNode expression) {
-                TypeResult<Type> result = typeLookup.lookupTypeReference(expression, context);
+                TypeResult<Type> result = typeLookup.lookupTypeReference(expression);
                 if (!result.isSuccess()) {
                     throw new RuntimeException(result.getErrors().toString());
                 }
@@ -351,10 +350,8 @@ public class TypeInfererImpl implements TypeInferer {
         };
     }
 
-    private TypeResult<StatementTypeCheckResult> typeCheckBlock(
-        BlockNode block, NodeLocations nodeLocations, StaticContext context, Option<Type> returnType
-    ) {
-        return blockTypeChecker.forwardDeclareAndTypeCheck(block, context, returnType);
+    private TypeResult<StatementTypeCheckResult> typeCheckBlock(BlockNode block, Option<Type> returnType) {
+        return blockTypeChecker.forwardDeclareAndTypeCheck(block, returnType);
     }
 
 }

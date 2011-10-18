@@ -14,7 +14,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
-import static org.zwobble.shed.compiler.typechecker.ImportStatementTypeChecker.typeCheckImportStatement;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 public class ImportStatementTypeCheckerTest {
@@ -32,18 +31,22 @@ public class ImportStatementTypeCheckerTest {
         staticContext.addGlobal(asList("shed", "time", "DateTime"), CoreTypes.classOf(dateTime));
         
         assertThat(
-            typeCheckImportStatement(importStatement, nodeLocations, staticContext),
+            typeCheckImportStatement(importStatement, staticContext),
             is(TypeResult.<Void>success(null))
         );
         assertThat(staticContext.get(reference), is(VariableLookupResult.success(unassignableValue(CoreTypes.classOf(dateTime)))));
     }
-    
+
     @Test public void
     errorIfTryingToImportNonExistentGlobal() {
         ImportNode importStatement = new ImportNode(asList("shed", "time", "DateTime"));
         assertThat(
-            typeCheckImportStatement(importStatement, nodeLocations, new StaticContext(references.build())),
+            typeCheckImportStatement(importStatement, new StaticContext(references.build())),
             isFailureWithErrors(new UnresolvedImportError(asList("shed", "time", "DateTime")))
         );
+    }
+    
+    private TypeResult<Void> typeCheckImportStatement(ImportNode importStatement, StaticContext staticContext) {
+        return new ImportStatementTypeChecker(nodeLocations, staticContext).typeCheck(importStatement);
     }
 }

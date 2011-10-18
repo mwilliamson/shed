@@ -15,21 +15,21 @@ import com.google.common.base.Function;
 public class ConditionTypeChecker {
     private final NodeLocations nodeLocations;
     private final TypeInferer typeInferer;
+    private final StaticContext context;
 
     @Inject
-    public ConditionTypeChecker(TypeInferer typeInferer, NodeLocations nodeLocations) {
+    public ConditionTypeChecker(TypeInferer typeInferer, NodeLocations nodeLocations, StaticContext context) {
         this.typeInferer = typeInferer;
         this.nodeLocations = nodeLocations;
+        this.context = context;
     }
     
-    public TypeResult<Void> typeAndCheckCondition(
-        ExpressionNode condition, StaticContext context
-    ) {
-        TypeResult<Type> conditionType = typeInferer.inferType(condition, context);
-        return conditionType.ifValueThen(checkIsBoolean(nodeLocations.locate(condition), context));
+    public TypeResult<Void> typeAndCheckCondition(ExpressionNode condition) {
+        TypeResult<Type> conditionType = typeInferer.inferType(condition);
+        return conditionType.ifValueThen(checkIsBoolean(nodeLocations.locate(condition)));
     }
 
-    private static Function<Type, TypeResult<Void>> checkIsBoolean(final SourceRange conditionLocation, final StaticContext context) {
+    private Function<Type, TypeResult<Void>> checkIsBoolean(final SourceRange conditionLocation) {
         return new Function<Type, TypeResult<Void>>() {
             @Override
             public TypeResult<Void> apply(Type input) {

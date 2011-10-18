@@ -27,18 +27,20 @@ public class VariableDeclarationTypeChecker implements DeclarationTypeChecker<Va
     private final TypeInferer typeInferer;
     private final TypeLookup typeLookup;
     private final NodeLocations nodeLocations;
+    private final StaticContext context;
 
     @Inject
-    public VariableDeclarationTypeChecker(TypeInferer typeInferer, TypeLookup typeLookup, NodeLocations nodeLocations) {
+    public VariableDeclarationTypeChecker(TypeInferer typeInferer, TypeLookup typeLookup, NodeLocations nodeLocations, StaticContext context) {
         this.typeInferer = typeInferer;
         this.typeLookup = typeLookup;
         this.nodeLocations = nodeLocations;
+        this.context = context;
     }
 
     @Override
-    public TypeResult<?> forwardDeclare(VariableDeclarationNode variableDeclaration, StaticContext context) {
+    public TypeResult<?> forwardDeclare(VariableDeclarationNode variableDeclaration) {
         if (isForwardDeclarable(variableDeclaration)) {
-            TypeResult<Type> typeResult = typeLookup.lookupTypeReference(variableDeclaration.getTypeReference().get(), context);
+            TypeResult<Type> typeResult = typeLookup.lookupTypeReference(variableDeclaration.getTypeReference().get());
             if (typeResult.hasValue()) {
                 Type type = typeResult.get();
                 ValueInfo valueInfo = toValueInfo(variableDeclaration, type);
@@ -52,19 +54,17 @@ public class VariableDeclarationTypeChecker implements DeclarationTypeChecker<Va
     }
     
     @Override
-    public TypeResult<StatementTypeCheckResult> typeCheck(
-        VariableDeclarationNode variableDeclaration, StaticContext staticContext, Option<Type> returnType
-    ) {
+    public TypeResult<StatementTypeCheckResult> typeCheck(VariableDeclarationNode variableDeclaration, Option<Type> returnType) {
         List<CompilerError> errors = new ArrayList<CompilerError>();
         
-        TypeResult<Type> valueTypeResult = typeInferer.inferType(variableDeclaration.getValue(), staticContext);
+        TypeResult<Type> valueTypeResult = typeInferer.inferType(variableDeclaration.getValue());
         errors.addAll(valueTypeResult.getErrors());
         
         if (isForwardDeclarable(variableDeclaration)) {
-            VariableLookupResult variableLookupResult = staticContext.get(variableDeclaration);
+            VariableLookupResult variableLookupResult = context.get(variableDeclaration);
             if (variableLookupResult.getStatus() == Status.SUCCESS) {
                 Type specifiedType = variableLookupResult.getType();
-                if (valueTypeResult.hasValue() && !isSubType(valueTypeResult.get(), specifiedType, staticContext)) {
+                if (valueTypeResult.hasValue() && !isSubType(valueTypeResult.get(), specifiedType, context)) {
                     errors.add(CompilerError.error(
                         nodeLocations.locate(variableDeclaration.getValue()),
                         "Cannot initialise variable of type \"" + specifiedType.shortName() +
@@ -75,7 +75,7 @@ public class VariableDeclarationTypeChecker implements DeclarationTypeChecker<Va
         } else {
             Type type = valueTypeResult.get();
             ValueInfo valueInfo = toValueInfo(variableDeclaration, type);
-            staticContext.add(variableDeclaration, valueInfo);
+            context.add(variableDeclaration, valueInfo);
         }
         
         if (errors.isEmpty()) {

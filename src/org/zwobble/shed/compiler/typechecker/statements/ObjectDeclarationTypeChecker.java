@@ -25,21 +25,21 @@ import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 public class ObjectDeclarationTypeChecker implements StatementTypeChecker<ObjectDeclarationNode> {
     private final BlockTypeChecker blockTypeChecker;
     private final FullyQualifiedNames fullyQualifiedNames;
+    private final StaticContext context;
 
     @Inject
-    public ObjectDeclarationTypeChecker(BlockTypeChecker blockTypeChecker, FullyQualifiedNames fullyQualifiedNames) {
+    public ObjectDeclarationTypeChecker(BlockTypeChecker blockTypeChecker, FullyQualifiedNames fullyQualifiedNames, StaticContext context) {
         this.blockTypeChecker = blockTypeChecker;
         this.fullyQualifiedNames = fullyQualifiedNames;
+        this.context = context;
     }
     
     @Override
-    public TypeResult<StatementTypeCheckResult> typeCheck(
-        ObjectDeclarationNode objectDeclaration, StaticContext context, Option<Type> returnType
-    ) {
+    public TypeResult<StatementTypeCheckResult> typeCheck(ObjectDeclarationNode objectDeclaration, Option<Type> returnType) {
         TypeResult<StatementTypeCheckResult> result = TypeResult.success(StatementTypeCheckResult.noReturn());
 
         TypeResult<StatementTypeCheckResult> blockResult = 
-            blockTypeChecker.forwardDeclareAndTypeCheck(objectDeclaration.getStatements(), context, Option.<Type>none());
+            blockTypeChecker.forwardDeclareAndTypeCheck(objectDeclaration.getStatements(), Option.<Type>none());
         result = result.withErrorsFrom(blockResult);
         
         if (result.isSuccess()) {

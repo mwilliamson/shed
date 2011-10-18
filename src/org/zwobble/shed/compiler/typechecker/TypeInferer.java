@@ -7,8 +7,8 @@ import org.zwobble.shed.compiler.types.Type;
 import com.google.common.base.Function;
 
 public interface TypeInferer {
-    TypeResult<Type> inferType(ExpressionNode condition, StaticContext context);
-    TypeResult<ValueInfo> inferValueInfo(ExpressionNode expression, StaticContext context);
-    TypeResult<ValueInfo> inferFunctionType(FunctionWithBodyNode functionDeclaration, StaticContext context);
-    Function<ValueInfo, TypeResult<ValueInfo>> typeCheckBody(FunctionWithBodyNode functionDeclaration, StaticContext context);
+    TypeResult<Type> inferType(ExpressionNode condition);
+    TypeResult<ValueInfo> inferValueInfo(ExpressionNode expression);
+    TypeResult<ValueInfo> inferFunctionType(FunctionWithBodyNode functionDeclaration);
+    Function<ValueInfo, TypeResult<ValueInfo>> typeCheckBody(FunctionWithBodyNode functionDeclaration);
 }

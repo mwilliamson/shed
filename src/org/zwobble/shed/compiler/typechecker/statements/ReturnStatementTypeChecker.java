@@ -21,17 +21,17 @@ import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 public class ReturnStatementTypeChecker implements StatementTypeChecker<ReturnNode> {
     private final TypeInferer typeInferer;
     private final NodeLocations nodeLocations;
+    private final StaticContext context;
 
     @Inject
-    public ReturnStatementTypeChecker(TypeInferer typeInferer, NodeLocations nodeLocations) {
+    public ReturnStatementTypeChecker(TypeInferer typeInferer, NodeLocations nodeLocations, StaticContext context) {
         this.typeInferer = typeInferer;
         this.nodeLocations = nodeLocations;
+        this.context = context;
     }
     
     @Override
-    public TypeResult<StatementTypeCheckResult> typeCheck(
-        ReturnNode returnStatement, StaticContext context, Option<Type> returnType
-    ) {
+    public TypeResult<StatementTypeCheckResult> typeCheck(ReturnNode returnStatement, Option<Type> returnType) {
         if (!returnType.hasValue()) {
             return failure(
                 StatementTypeCheckResult.alwaysReturns(),
@@ -42,7 +42,7 @@ public class ReturnStatementTypeChecker implements StatementTypeChecker<ReturnNo
             );
         }
         ExpressionNode expression = returnStatement.getExpression();
-        TypeResult<Type> expressionType = typeInferer.inferType(expression, context);
+        TypeResult<Type> expressionType = typeInferer.inferType(expression);
         if (!expressionType.isSuccess()) {
             return failure(expressionType.getErrors());
         }

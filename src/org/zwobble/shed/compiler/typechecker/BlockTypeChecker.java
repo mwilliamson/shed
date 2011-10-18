@@ -20,27 +20,26 @@ public class BlockTypeChecker {
     
     public TypeResult<StatementTypeCheckResult> forwardDeclareAndTypeCheck(
         Iterable<StatementNode> statements,
-        StaticContext context,
         Option<Type> returnType
     ) {
-        TypeResult<?> result = forwardDeclare(statements, context);
-        return typeCheck(statements, context, returnType).withErrorsFrom(result);
+        TypeResult<?> result = forwardDeclare(statements);
+        return typeCheck(statements, returnType).withErrorsFrom(result);
     }
 
-    public TypeResult<?> forwardDeclare(Iterable<StatementNode> statements, StaticContext context) {
+    public TypeResult<?> forwardDeclare(Iterable<StatementNode> statements) {
         TypeResult<Void> result = TypeResult.success();
         for (StatementNode statement : statements) {
-            TypeResult<?> statementResult = statementsTypeChecker.forwardDeclare(statement, context);
+            TypeResult<?> statementResult = statementsTypeChecker.forwardDeclare(statement);
             result = result.withErrorsFrom(statementResult);
         }
         return result;
     }
 
-    public TypeResult<StatementTypeCheckResult> typeCheck(Iterable<StatementNode> statements, StaticContext context, Option<Type> returnType) {
+    public TypeResult<StatementTypeCheckResult> typeCheck(Iterable<StatementNode> statements, Option<Type> returnType) {
         TypeResult<Void> result = TypeResult.success();
         boolean hasReturnedYet = false;
         for (StatementNode statement : statements) {
-            TypeResult<StatementTypeCheckResult> statementResult = statementsTypeChecker.typeCheck(statement, context, returnType);
+            TypeResult<StatementTypeCheckResult> statementResult = statementsTypeChecker.typeCheck(statement, returnType);
             result = result.withErrorsFrom(statementResult);
             if (statementResult.hasValue()) {
                 hasReturnedYet |= statementResult.get().hasReturned();   

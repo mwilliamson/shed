@@ -19,36 +19,34 @@ import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 public class FunctionDeclarationTypeChecker implements DeclarationTypeChecker<FunctionDeclarationNode> {
     private final TypeInferer typeInferer;
+    private final StaticContext context;
 
     @Inject
-    public FunctionDeclarationTypeChecker(TypeInferer typeInferer) {
+    public FunctionDeclarationTypeChecker(TypeInferer typeInferer, StaticContext context) {
         this.typeInferer = typeInferer;
+        this.context = context;
     }
     
     @Override
-    public TypeResult<?> forwardDeclare(FunctionDeclarationNode functionDeclaration, StaticContext context) {
-        TypeResult<ValueInfo> typeResult = typeInferer.inferFunctionType(functionDeclaration, context);
-        typeResult.ifValueThen(addToContext(functionDeclaration, context));
+    public TypeResult<?> forwardDeclare(FunctionDeclarationNode functionDeclaration) {
+        TypeResult<ValueInfo> typeResult = typeInferer.inferFunctionType(functionDeclaration);
+        typeResult.ifValueThen(addToContext(functionDeclaration));
         return typeResult;
     }
     
     @Override
-    public TypeResult<StatementTypeCheckResult> typeCheck(
-        FunctionDeclarationNode functionDeclaration, StaticContext context, Option<Type> returnType
-    ) {
+    public TypeResult<StatementTypeCheckResult> typeCheck(FunctionDeclarationNode functionDeclaration, Option<Type> returnType) {
         VariableLookupResult functionLookupResult = context.get(functionDeclaration);
         TypeResult<StatementTypeCheckResult> result = TypeResult.success(StatementTypeCheckResult.noReturn());
         if (functionLookupResult.getStatus() == Status.SUCCESS) {
             TypeResult<ValueInfo> bodyResult = 
-                typeInferer.typeCheckBody(functionDeclaration, context).apply(functionLookupResult.getValueInfo());
+                typeInferer.typeCheckBody(functionDeclaration).apply(functionLookupResult.getValueInfo());
             result = result.withErrorsFrom(bodyResult);
         }
         return result;
     }
     
-    private static Function<ValueInfo, TypeResult<Void>> addToContext(
-        final DeclarationNode declaration, final StaticContext context
-    ) {
+    private Function<ValueInfo, TypeResult<Void>> addToContext(final DeclarationNode declaration) {
         return new Function<ValueInfo, TypeResult<Void>>() {
             @Override
             public TypeResult<Void> apply(ValueInfo input) {

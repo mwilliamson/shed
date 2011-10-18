@@ -2,6 +2,8 @@ package org.zwobble.shed.compiler.typechecker;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
@@ -16,8 +18,17 @@ import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 
 public class ImportStatementTypeChecker {
-    public static TypeResult<Void>
-    typeCheckImportStatement(ImportNode importStatement, NodeLocations nodeLocations, StaticContext context) {
+    private final NodeLocations nodeLocations;
+    private final StaticContext context;
+
+    @Inject
+    public ImportStatementTypeChecker(NodeLocations nodeLocations, StaticContext context) {
+        this.nodeLocations = nodeLocations;
+        this.context = context;
+    }
+    
+    public TypeResult<Void>
+    typeCheck(ImportNode importStatement) {
         List<String> identifiers = importStatement.getNames();
         Option<Type> importedValueType = context.lookupGlobal(identifiers);
         if (importedValueType.hasValue()) {

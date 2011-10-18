@@ -35,9 +35,9 @@ public class ClassDeclarationTypeCheckerTest {
         ClassDeclarationNode declaration = Nodes.clazz("Browser", Nodes.noFormalArguments(), Nodes.block());
         FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Browser");
         fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
-        StaticContext context = fixture.blankContext();
+        StaticContext context = fixture.context();
         
-        TypeResult<?> result = forwardDeclare(declaration, context);
+        TypeResult<?> result = forwardDeclare(declaration);
         
         assertThat(result, isSuccess());
         ClassType type = (ClassType) context.get(declaration).getType();
@@ -56,7 +56,7 @@ public class ClassDeclarationTypeCheckerTest {
         fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
         StaticContext context = fixture.context();
         
-        TypeResult<?> result = forwardDeclare(declaration, context);
+        TypeResult<?> result = forwardDeclare(declaration);
         
         assertThat(result, isSuccess());
         ClassType type = (ClassType) context.get(declaration).getType();
@@ -77,7 +77,7 @@ public class ClassDeclarationTypeCheckerTest {
         fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
         StaticContext context = fixture.context();
         
-        TypeResult<?> result = forwardDeclare(declaration, context);
+        TypeResult<?> result = forwardDeclare(declaration);
         
         assertThat(result, isSuccess());
         ClassType type = (ClassType) context.get(declaration).getType();
@@ -87,8 +87,8 @@ public class ClassDeclarationTypeCheckerTest {
         )));
     }
     
-    private TypeResult<?> forwardDeclare(ClassDeclarationNode classDeclaration, StaticContext context) {
+    private TypeResult<?> forwardDeclare(ClassDeclarationNode classDeclaration) {
         ClassDeclarationTypeChecker typeChecker = fixture.get(ClassDeclarationTypeChecker.class);
-        return typeChecker.forwardDeclare(classDeclaration, context);
+        return typeChecker.forwardDeclare(classDeclaration);
     }
 }

@@ -27,9 +27,9 @@ public class TypeLookupImpl implements TypeLookup {
     }
     
     public TypeResult<Type>
-    lookupTypeReference(ExpressionNode typeReference, StaticContext context) {
+    lookupTypeReference(ExpressionNode typeReference) {
         SourceRange nodeLocation = nodeLocations.locate(typeReference);
-        return typeInferer.inferType(typeReference, context).ifValueThen(extractType(nodeLocation));
+        return typeInferer.inferType(typeReference).ifValueThen(extractType(nodeLocation));
     }
 
     private static Function<Type, TypeResult<Type>> extractType(final SourceRange nodeLocation) {

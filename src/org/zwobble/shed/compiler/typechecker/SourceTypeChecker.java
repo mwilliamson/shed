@@ -14,29 +14,30 @@ import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.types.Type;
 
-import static org.zwobble.shed.compiler.typechecker.ImportStatementTypeChecker.typeCheckImportStatement;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 public class SourceTypeChecker {
     private final BlockTypeChecker blockTypeChecker;
     private final NodeLocations nodeLocations;
+    private final ImportStatementTypeChecker importStatementTypeChecker;
 
     @Inject
-    public SourceTypeChecker(BlockTypeChecker blockTypeChecker, NodeLocations nodeLocations) {
+    public SourceTypeChecker(BlockTypeChecker blockTypeChecker, NodeLocations nodeLocations, ImportStatementTypeChecker importStatementTypeChecker) {
         this.blockTypeChecker = blockTypeChecker;
         this.nodeLocations = nodeLocations;
+        this.importStatementTypeChecker = importStatementTypeChecker;
     }
     
-    public TypeResult<Void> typeCheck(SourceNode source, StaticContext staticContext) {
+    public TypeResult<Void> typeCheck(SourceNode source) {
         List<CompilerError> errors = new ArrayList<CompilerError>();
         
         for (ImportNode importNode : source.getImports()) {
-            TypeResult<Void> importTypeCheckResult = typeCheckImportStatement(importNode, nodeLocations, staticContext);
+            TypeResult<Void> importTypeCheckResult = importStatementTypeChecker.typeCheck(importNode);
             errors.addAll(importTypeCheckResult.getErrors());
         }
 
-        TypeResult<?> blockResult = blockTypeChecker.forwardDeclareAndTypeCheck(source.getStatements(), staticContext, Option.<Type>none());
+        TypeResult<?> blockResult = blockTypeChecker.forwardDeclareAndTypeCheck(source.getStatements(), Option.<Type>none());
         errors.addAll(blockResult.getErrors());
         
         boolean seenPublicStatement = false;

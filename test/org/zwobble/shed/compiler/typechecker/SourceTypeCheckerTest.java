@@ -57,6 +57,6 @@ public class SourceTypeCheckerTest {
     }
 
     private HasErrors typeCheck(SourceNode source) {
-        return fixture.get(SourceTypeChecker.class).typeCheck(source, fixture.blankContext());
+        return fixture.get(SourceTypeChecker.class).typeCheck(source);
     }
 }

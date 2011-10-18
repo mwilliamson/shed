@@ -7,7 +7,6 @@ import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.typechecker.BlockTypeChecker;
 import org.zwobble.shed.compiler.typechecker.ConditionTypeChecker;
-import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.types.Type;
 
@@ -22,13 +21,11 @@ public class IfThenElseTypeChecker implements StatementTypeChecker<IfThenElseSta
     }
     
     @Override
-    public TypeResult<StatementTypeCheckResult> typeCheck(
-        IfThenElseStatementNode statement, StaticContext context, Option<Type> returnType
-    ) {
-        TypeResult<Void> conditionResult = conditionTypeChecker.typeAndCheckCondition(statement.getCondition(), context);
+    public TypeResult<StatementTypeCheckResult> typeCheck(IfThenElseStatementNode statement, Option<Type> returnType) {
+        TypeResult<Void> conditionResult = conditionTypeChecker.typeAndCheckCondition(statement.getCondition());
         
-        TypeResult<StatementTypeCheckResult> ifTrueResult = typeCheckBlock(statement.getIfTrue(), context, returnType);
-        TypeResult<StatementTypeCheckResult> ifFalseResult = typeCheckBlock(statement.getIfFalse(), context, returnType);
+        TypeResult<StatementTypeCheckResult> ifTrueResult = typeCheckBlock(statement.getIfTrue(), returnType);
+        TypeResult<StatementTypeCheckResult> ifFalseResult = typeCheckBlock(statement.getIfFalse(), returnType);
         
         boolean returns = 
             ifTrueResult.hasValue() && ifTrueResult.get().hasReturned() && 
@@ -40,9 +37,7 @@ public class IfThenElseTypeChecker implements StatementTypeChecker<IfThenElseSta
             .withErrorsFrom(ifFalseResult);
     }
 
-    private TypeResult<StatementTypeCheckResult> typeCheckBlock(
-        BlockNode statements, StaticContext context, Option<Type> returnType
-    ) {
-        return blockTypeChecker.forwardDeclareAndTypeCheck(statements, context, returnType);
+    private TypeResult<StatementTypeCheckResult> typeCheckBlock(BlockNode statements, Option<Type> returnType) {
+        return blockTypeChecker.forwardDeclareAndTypeCheck(statements, returnType);
     }
 }

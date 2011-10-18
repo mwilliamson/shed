@@ -4,7 +4,6 @@ import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
-import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeInferer;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.types.Type;
@@ -18,10 +17,8 @@ public class ExpressionStatementTypeChecker implements StatementTypeChecker<Expr
     }
     
     @Override
-    public TypeResult<StatementTypeCheckResult> typeCheck(
-        ExpressionStatementNode statement, StaticContext context, Option<Type> returnType
-    ) {
-        TypeResult<Type> result = typeInferer.inferType(((ExpressionStatementNode) statement).getExpression(), context);
+    public TypeResult<StatementTypeCheckResult> typeCheck(ExpressionStatementNode statement, Option<Type> returnType) {
+        TypeResult<Type> result = typeInferer.inferType(((ExpressionStatementNode) statement).getExpression());
         return TypeResult.success(StatementTypeCheckResult.noReturn()).withErrorsFrom(result);
     }
     

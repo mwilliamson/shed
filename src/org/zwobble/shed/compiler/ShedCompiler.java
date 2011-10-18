@@ -72,10 +72,10 @@ public class ShedCompiler {
             if (referencesResult.isSuccess()) {
                 FullyQualifiedNames fullNames = new TypeNamer().generateFullyQualifiedNames(sourceNode);
                 References references = referencesResult.getReferences();
-                Injector typeCheckerInjector = TypeCheckerInjector.build(parseResult, fullNames);
-                SourceTypeChecker sourceTypeChecker = typeCheckerInjector.getInstance(SourceTypeChecker.class);
                 StaticContext browserContext = defaultBrowserContext(references);
-                TypeResult<Void> typeCheckResult = sourceTypeChecker.typeCheck(sourceNode, browserContext);
+                Injector typeCheckerInjector = TypeCheckerInjector.build(parseResult, fullNames, browserContext);
+                SourceTypeChecker sourceTypeChecker = typeCheckerInjector.getInstance(SourceTypeChecker.class);
+                TypeResult<Void> typeCheckResult = sourceTypeChecker.typeCheck(sourceNode);
                 errors.addAll(typeCheckResult.getErrors());
                 
                 TypeResult<Void> dependencyCheckResult = new DependencyChecker().check(sourceNode, references, parseResult);

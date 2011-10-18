@@ -73,23 +73,23 @@ public class TypeInfererTest {
     
     @Test public void
     canInferTypeOfBooleanLiteralsAsBoolean() {
-        assertThat(inferType(new BooleanLiteralNode(true), null), isType(CoreTypes.BOOLEAN));
-        assertThat(inferType(new BooleanLiteralNode(false), null), isType(CoreTypes.BOOLEAN));
+        assertThat(inferType(new BooleanLiteralNode(true), blankContext()), isType(CoreTypes.BOOLEAN));
+        assertThat(inferType(new BooleanLiteralNode(false), blankContext()), isType(CoreTypes.BOOLEAN));
     }
     
     @Test public void
     canInferTypeOfNumberLiteralsAsNumber() {
-        assertThat(inferType(new NumberLiteralNode("2.2"), null), isType(CoreTypes.NUMBER));
+        assertThat(inferType(new NumberLiteralNode("2.2"), blankContext()), isType(CoreTypes.NUMBER));
     }
     
     @Test public void
     canInferTypeOfStringLiteralsAsString() {
-        assertThat(inferType(new StringLiteralNode("Everything's as if we never said"), null), isType(CoreTypes.STRING));
+        assertThat(inferType(new StringLiteralNode("Everything's as if we never said"), blankContext()), isType(CoreTypes.STRING));
     }
     
     @Test public void
     canInferTypeOfUnitLiteralsAsUnit() {
-        assertThat(inferType(Nodes.unit(), null), isType(CoreTypes.UNIT));
+        assertThat(inferType(Nodes.unit(), blankContext()), isType(CoreTypes.UNIT));
     }
     
     @Test public void
@@ -605,15 +605,15 @@ public class TypeInfererTest {
     }
     
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
-        return typeInferer().inferType(expression, context);
+        return typeInferer(context).inferType(expression);
     }
     
     private TypeResult<ValueInfo> inferValueInfo(ExpressionNode expression, StaticContext context) {
-        return typeInferer().inferValueInfo(expression, context);
+        return typeInferer(context).inferValueInfo(expression);
     }
 
-    private TypeInferer typeInferer() {
-        Injector injector = TypeCheckerInjector.build(nodeLocations, new FullyQualifiedNamesBuilder().build());
+    private TypeInferer typeInferer(StaticContext context) {
+        Injector injector = TypeCheckerInjector.build(nodeLocations, new FullyQualifiedNamesBuilder().build(), context);
         return injector.getInstance(TypeInferer.class);
     }
     

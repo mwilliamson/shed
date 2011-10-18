@@ -16,7 +16,6 @@ import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.WhileStatementNode;
-import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.types.Type;
 
@@ -59,16 +58,12 @@ public class AllStatementsTypeChecker {
         addForwardDeclarer(statementType, typeChecker);
     }
 
-    public <T extends StatementNode> TypeResult<StatementTypeCheckResult> typeCheck(
-        T statement, StaticContext context, Option<Type> returnType
-    ) {
-        return getTypeChecker(statement).typeCheck(statement, context, returnType);
+    public <T extends StatementNode> TypeResult<StatementTypeCheckResult> typeCheck(T statement, Option<Type> returnType) {
+        return getTypeChecker(statement).typeCheck(statement, returnType);
     }
 
-    public TypeResult<?> forwardDeclare(
-        StatementNode statement, StaticContext context
-    ) {
-        return getForwardDeclarer(statement).forwardDeclare(statement, context);
+    public TypeResult<?> forwardDeclare(StatementNode statement) {
+        return getForwardDeclarer(statement).forwardDeclare(statement);
     }
 
     @SuppressWarnings("unchecked")
