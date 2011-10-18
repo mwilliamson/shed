@@ -86,7 +86,6 @@ public class TopLevelNodes {
         return oneOrMoreWithSeparator(tokenOfType(IDENTIFIER), hardSeparator(symbol(".")));
     }
     
-    // TODO: implicit whitespace in sequence
     // TODO: pass to Rule.parse a value indicating whether the rule is required to finish
     //       (so that it can decide whether to return NO_MATCH if failure on a guard rule)
 }

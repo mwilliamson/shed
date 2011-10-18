@@ -6,6 +6,7 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerError;
+import org.zwobble.shed.compiler.CompilerErrorDescription;
 import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
@@ -42,12 +43,12 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
+import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
 import static org.zwobble.shed.compiler.parsing.SourceRange.range;
-import static org.zwobble.shed.compiler.typechecker.TypeCheckerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
@@ -167,10 +168,8 @@ public class TypeInfererTest {
             new BooleanLiteralNode(true)
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, isFailureWithErrors(
-            new UntypedReferenceError("Name"),
-            new UntypedReferenceError("Address")
-        ));
+        CompilerErrorDescription[] errorsArray = { new UntypedReferenceError("Name"), new UntypedReferenceError("Address") };
+        assertThat(result, isFailureWithErrors(errorsArray));
     }
     
     @Test public void
@@ -182,7 +181,8 @@ public class TypeInfererTest {
             new NumberLiteralNode("42")
         );
         TypeResult<Type> result = inferType(functionExpression, context);
-        assertThat(result, isFailureWithErrors(new UntypedReferenceError("String")));
+        CompilerErrorDescription[] errorsArray = { new UntypedReferenceError("String") };
+        assertThat(result, isFailureWithErrors(errorsArray));
     }
     
     @Test public void
@@ -277,7 +277,8 @@ public class TypeInfererTest {
             Nodes.block(new ReturnNode(new NumberLiteralNode("4")))
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, isFailureWithErrors(new UntypedReferenceError("Strink")));
+        CompilerErrorDescription[] errorsArray = { new UntypedReferenceError("Strink") };
+        assertThat(result, isFailureWithErrors(errorsArray));
     }
     
     @Test public void
@@ -309,7 +310,8 @@ public class TypeInfererTest {
             new NumberLiteralNode("4")
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, isFailureWithErrors(new UntypedReferenceError("Strink"), new UntypedReferenceError("Numer")));
+        CompilerErrorDescription[] errorsArray = { new UntypedReferenceError("Strink"), new UntypedReferenceError("Numer") };
+        assertThat(result, isFailureWithErrors(errorsArray));
     }
     
     @Test public void
@@ -322,7 +324,8 @@ public class TypeInfererTest {
             new VariableIdentifierNode("blah")
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, isFailureWithErrors(new UntypedReferenceError("blah")));
+        CompilerErrorDescription[] errorsArray = { new UntypedReferenceError("blah") };
+        assertThat(result, isFailureWithErrors(errorsArray));
     }
     
     @Test public void
@@ -560,7 +563,8 @@ public class TypeInfererTest {
         context.add(declaration, unassignableValue(CoreTypes.NUMBER));
         
         TypeResult<Type> result = inferType(Nodes.assign(reference, Nodes.number("4")), context);
-        assertThat(result, isFailureWithErrors(new InvalidAssignmentError()));
+        CompilerErrorDescription[] errorsArray = { new InvalidAssignmentError() };
+        assertThat(result, isFailureWithErrors(errorsArray));
     }
     
     @Test public void
@@ -574,7 +578,8 @@ public class TypeInfererTest {
         context.add(declaration, assignableValue(CoreTypes.NUMBER));
         
         TypeResult<Type> result = inferType(Nodes.assign(reference, Nodes.bool(true)), context);
-        assertThat(result, isFailureWithErrors(new TypeMismatchError(CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
+        CompilerErrorDescription[] errorsArray = { new TypeMismatchError(CoreTypes.NUMBER, CoreTypes.BOOLEAN) };
+        assertThat(result, isFailureWithErrors(errorsArray));
     }
     
     @Test public void
