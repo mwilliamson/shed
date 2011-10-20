@@ -16,6 +16,7 @@ import org.zwobble.shed.compiler.parsing.nodes.AssignmentExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
+import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
@@ -166,25 +167,17 @@ public class JavaScriptGenerator {
         if (node instanceof ObjectDeclarationNode) {
             ObjectDeclarationNode objectDeclaration = (ObjectDeclarationNode) node;
             BlockNode statements = objectDeclaration.getStatements();
-            List<JavaScriptStatementNode> javaScriptBody = generateBlock(statements);
-
-            List<DeclarationNode> publicMembers = new ArrayList<DeclarationNode>();
-            for (StatementNode statement : statements) {
-                if (statement instanceof PublicDeclarationNode) {
-                    publicMembers.add(((PublicDeclarationNode) statement).getDeclaration());
-                }
-            }
-            
-            Map<String, JavaScriptExpressionNode> javaScriptProperties = new HashMap<String, JavaScriptExpressionNode>();
-            for (DeclarationNode publicMember : publicMembers) {
-                javaScriptProperties.put(publicMember.getIdentifier(), js.id(namer.javaScriptIdentifierFor(publicMember)));
-            }
-            
-            javaScriptBody.add(js.ret(js.object(javaScriptProperties)));
             return js.var(namer.javaScriptIdentifierFor(objectDeclaration), js.call(js.func(
                 Collections.<String>emptyList(),
-                javaScriptBody
+                generateObjectBody(statements)
             )));
+        }
+        if (node instanceof ClassDeclarationNode) {
+            ClassDeclarationNode classDeclaration = (ClassDeclarationNode) node;
+            return js.var(namer.javaScriptIdentifierFor(classDeclaration), js.func(
+                transform(classDeclaration.getFormalArguments(), toFormalArgumentName()),
+                generateObjectBody(classDeclaration.getBody())
+            ));
         }
         if (node instanceof IfThenElseStatementNode) {
             IfThenElseStatementNode ifThenElse = (IfThenElseStatementNode) node;
@@ -231,6 +224,25 @@ public class JavaScriptGenerator {
         List<JavaScriptStatementNode> javaScriptBody = generateBlock(function.getBody());
         List<String> argumentNames = transform(function.getFormalArguments(), toFormalArgumentName());
         return js.func(argumentNames, javaScriptBody);
+    }
+    
+    private List<JavaScriptStatementNode> generateObjectBody(Iterable<StatementNode> statements) {
+        List<JavaScriptStatementNode> javaScriptBody = generateBlock(statements);
+
+        List<DeclarationNode> publicMembers = new ArrayList<DeclarationNode>();
+        for (StatementNode statement : statements) {
+            if (statement instanceof PublicDeclarationNode) {
+                publicMembers.add(((PublicDeclarationNode) statement).getDeclaration());
+            }
+        }
+        
+        Map<String, JavaScriptExpressionNode> javaScriptProperties = new HashMap<String, JavaScriptExpressionNode>();
+        for (DeclarationNode publicMember : publicMembers) {
+            javaScriptProperties.put(publicMember.getIdentifier(), js.id(namer.javaScriptIdentifierFor(publicMember)));
+        }
+        
+        javaScriptBody.add(js.ret(js.object(javaScriptProperties)));
+        return javaScriptBody;
     }
 
     private Function<FormalArgumentNode, String> toFormalArgumentName() {

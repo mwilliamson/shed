@@ -14,6 +14,7 @@ import org.zwobble.shed.compiler.parsing.nodes.AssignmentExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
+import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
@@ -290,6 +291,33 @@ public class JavaScriptGeneratorTest {
                     )
                 )
             ))
+        );
+    }
+    
+    @Test public void
+    classIsExpressedAsObjectLiteralReturnedFromFunction() {
+        VariableDeclarationNode nameDeclaration = Nodes.mutableVar("name", Nodes.id("initialName"));
+        VariableDeclarationNode ageDeclaration = Nodes.immutableVar("age", Nodes.number("22"));
+        ClassDeclarationNode source = Nodes.clazz(
+            "person",
+            asList(Nodes.formalArgument("initialName", Nodes.id("String"))),
+            Nodes.block(
+                Nodes.publik(nameDeclaration),
+                ageDeclaration
+            )
+        );
+        assertGeneratedJavaScript(
+            source,
+            js.var("person__1",
+                js.func(
+                    asList("initialName__1"),
+                    asList(
+                        js.var("name__1", js.id("initialName__1")),
+                        js.var("age__1", generateLiteral(Nodes.number("22"))),
+                        js.ret(js.object(ImmutableMap.<String, JavaScriptExpressionNode>of("name", js.id("name__1"))))
+                    )
+                )
+            )
         );
     }
     

@@ -6,6 +6,9 @@ import lombok.Data;
 
 import org.zwobble.shed.compiler.parsing.nodes.structure.SyntaxNodeStructure;
 
+import static com.google.common.collect.Iterables.concat;
+import static java.util.Arrays.asList;
+
 import static org.zwobble.shed.compiler.parsing.nodes.structure.ScopedNodes.subScope;
 
 @Data
@@ -16,6 +19,6 @@ public class ClassDeclarationNode implements TypeDeclarationNode, HoistableState
     
     @Override
     public SyntaxNodeStructure describeStructure() {
-        return SyntaxNodeStructure.build(subScope(body));
+        return SyntaxNodeStructure.build(subScope(concat(formalArguments, asList(body))));
     }
 }
