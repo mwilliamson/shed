@@ -1,8 +1,5 @@
 package org.zwobble.shed.compiler.typechecker.statements;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.CompilerError;
@@ -13,6 +10,7 @@ import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeInferer;
 import org.zwobble.shed.compiler.typechecker.TypeLookup;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
+import org.zwobble.shed.compiler.typechecker.TypeResultBuilder;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult.Status;
@@ -20,8 +18,7 @@ import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.types.Type;
 
 import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 public class VariableDeclarationTypeChecker implements DeclarationTypeChecker<VariableDeclarationNode> {
@@ -56,17 +53,17 @@ public class VariableDeclarationTypeChecker implements DeclarationTypeChecker<Va
     
     @Override
     public TypeResult<StatementTypeCheckResult> typeCheck(VariableDeclarationNode variableDeclaration, Option<Type> returnType) {
-        List<CompilerError> errors = new ArrayList<CompilerError>();
+        TypeResultBuilder<StatementTypeCheckResult> typeResult = typeResultBuilder(StatementTypeCheckResult.noReturn());
         
         TypeResult<Type> valueTypeResult = typeInferer.inferType(variableDeclaration.getValue());
-        errors.addAll(valueTypeResult.getErrors());
+        typeResult.addErrors(valueTypeResult);
         
         if (isForwardDeclarable(variableDeclaration)) {
             VariableLookupResult variableLookupResult = context.get(variableDeclaration);
             if (variableLookupResult.getStatus() == Status.SUCCESS) {
                 Type specifiedType = variableLookupResult.getType();
                 if (valueTypeResult.hasValue() && !isSubType(valueTypeResult.get(), specifiedType, context)) {
-                    errors.add(new CompilerError(
+                    typeResult.addError(new CompilerError(
                         nodeLocations.locate(variableDeclaration.getValue()),
                         new TypeMismatchError(specifiedType, valueTypeResult.get())
                     ));
@@ -78,11 +75,7 @@ public class VariableDeclarationTypeChecker implements DeclarationTypeChecker<Va
             context.add(variableDeclaration, valueInfo);
         }
         
-        if (errors.isEmpty()) {
-            return success(StatementTypeCheckResult.noReturn());
-        } else {
-            return failure(errors);
-        }
+        return typeResult.build();
     }
 
     private ValueInfo toValueInfo(VariableDeclarationNode variableDeclaration, Type type) {

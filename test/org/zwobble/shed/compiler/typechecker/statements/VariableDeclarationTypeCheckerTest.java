@@ -1,7 +1,6 @@
 package org.zwobble.shed.compiler.typechecker.statements;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
@@ -25,9 +24,9 @@ import org.zwobble.shed.compiler.types.Type;
 
 import com.google.inject.Injector;
 
-import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
@@ -108,10 +107,7 @@ public class VariableDeclarationTypeCheckerTest {
         forwardDeclare(variableNode, staticContext);
         assertThat(
             typeCheckVariableDeclaration(variableNode, staticContext),
-            is(TypeResult.<StatementTypeCheckResult>failure(asList(new CompilerError(
-                range(position(4, 12), position(6, 6)),
-                new TypeMismatchError(CoreTypes.STRING, CoreTypes.BOOLEAN)
-            ))))
+            isFailureWithErrors(new TypeMismatchError(CoreTypes.STRING, CoreTypes.BOOLEAN))
         );
     }
 
