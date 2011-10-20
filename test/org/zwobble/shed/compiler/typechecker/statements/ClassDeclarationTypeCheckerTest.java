@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
+import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
@@ -12,20 +13,22 @@ import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeCheckerTestFixture;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
+import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
+import org.zwobble.shed.compiler.typechecker.errors.UntypedReferenceError;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
+import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.ImmutableMap;
 
-import static org.zwobble.shed.compiler.typechecker.TypeCheckerTestFixture.UNIT_TYPE_REFERENCE;
-
-import static org.zwobble.shed.compiler.typechecker.TypeCheckerTestFixture.STRING_TYPE_REFERENCE;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
+import static org.zwobble.shed.compiler.typechecker.TypeCheckerTestFixture.STRING_TYPE_REFERENCE;
+import static org.zwobble.shed.compiler.typechecker.TypeCheckerTestFixture.UNIT_TYPE_REFERENCE;
 
 public class ClassDeclarationTypeCheckerTest {
     private final TypeCheckerTestFixture fixture = TypeCheckerTestFixture.build();
@@ -52,7 +55,7 @@ public class ClassDeclarationTypeCheckerTest {
             Nodes.immutableVar("lastName", STRING_TYPE_REFERENCE, Nodes.string("Bobertson"))
         );
         ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.noFormalArguments(), body);
-        FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Browser");
+        FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Person");
         fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
         StaticContext context = fixture.context();
         
@@ -73,7 +76,7 @@ public class ClassDeclarationTypeCheckerTest {
             Nodes.publik(Nodes.immutableVar("firstName", Nodes.string("Bob")))
         );
         ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.noFormalArguments(), body);
-        FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Browser");
+        FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Person");
         fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
         StaticContext context = fixture.context();
         
@@ -87,8 +90,43 @@ public class ClassDeclarationTypeCheckerTest {
         )));
     }
     
+    @Test public void
+    errorsArePassedAlongFromForwardDeclaringMembers() {
+        BlockNode body = Nodes.block(
+            Nodes.publik(Nodes.immutableVar("firstName", Nodes.id("Blah"), Nodes.string("Bob")))
+        );
+        ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.noFormalArguments(), body);
+        FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Person");
+        fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
+        
+        TypeResult<?> result = forwardDeclare(declaration);
+        
+        assertThat(result, isFailureWithErrors(new UntypedReferenceError("Blah")));
+    }
+    
+    @Test public void
+    bodyOfClassIsTypeChecked() {
+        BlockNode body = Nodes.block(
+            Nodes.immutableVar("firstName", UNIT_TYPE_REFERENCE, Nodes.string("Bob"))
+        );
+        ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.noFormalArguments(), body);
+        FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Person");
+        fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
+        forwardDeclare(declaration);
+        TypeResult<?> result = typeCheck(declaration);
+        
+        assertThat(result, isFailureWithErrors(new TypeMismatchError(CoreTypes.UNIT, CoreTypes.STRING)));
+    }
+    
     private TypeResult<?> forwardDeclare(ClassDeclarationNode classDeclaration) {
-        ClassDeclarationTypeChecker typeChecker = fixture.get(ClassDeclarationTypeChecker.class);
-        return typeChecker.forwardDeclare(classDeclaration);
+        return typeChecker().forwardDeclare(classDeclaration);
+    }
+    
+    private TypeResult<?> typeCheck(ClassDeclarationNode classDeclaration) {
+        return typeChecker().typeCheck(classDeclaration, Option.<Type>none());
+    }
+
+    private ClassDeclarationTypeChecker typeChecker() {
+        return fixture.get(ClassDeclarationTypeChecker.class);
     }
 }

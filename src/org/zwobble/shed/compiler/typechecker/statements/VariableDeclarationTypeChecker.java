@@ -16,6 +16,7 @@ import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult.Status;
+import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.types.Type;
 
 import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
@@ -65,10 +66,9 @@ public class VariableDeclarationTypeChecker implements DeclarationTypeChecker<Va
             if (variableLookupResult.getStatus() == Status.SUCCESS) {
                 Type specifiedType = variableLookupResult.getType();
                 if (valueTypeResult.hasValue() && !isSubType(valueTypeResult.get(), specifiedType, context)) {
-                    errors.add(CompilerError.error(
+                    errors.add(new CompilerError(
                         nodeLocations.locate(variableDeclaration.getValue()),
-                        "Cannot initialise variable of type \"" + specifiedType.shortName() +
-                        "\" with expression of type \"" + valueTypeResult.get().shortName() + "\""
+                        new TypeMismatchError(specifiedType, valueTypeResult.get())
                     ));
                 }
             }

@@ -233,7 +233,7 @@ public class TypeInfererTest {
             )
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(errorStrings(result), is(asList("Cannot initialise variable of type \"String\" with expression of type \"Boolean\"")));
+        assertThat(result, isFailureWithErrors(new TypeMismatchError(CoreTypes.STRING, CoreTypes.BOOLEAN)));
     }
     
     @Test public void

@@ -16,6 +16,7 @@ import org.zwobble.shed.compiler.typechecker.TypeCheckerInjector;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult;
+import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
@@ -107,9 +108,9 @@ public class VariableDeclarationTypeCheckerTest {
         forwardDeclare(variableNode, staticContext);
         assertThat(
             typeCheckVariableDeclaration(variableNode, staticContext),
-            is(TypeResult.<StatementTypeCheckResult>failure(asList(CompilerError.error(
+            is(TypeResult.<StatementTypeCheckResult>failure(asList(new CompilerError(
                 range(position(4, 12), position(6, 6)),
-                "Cannot initialise variable of type \"String\" with expression of type \"Boolean\""
+                new TypeMismatchError(CoreTypes.STRING, CoreTypes.BOOLEAN)
             ))))
         );
     }

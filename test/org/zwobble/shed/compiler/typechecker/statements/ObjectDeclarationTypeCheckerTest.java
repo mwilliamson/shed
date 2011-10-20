@@ -2,7 +2,6 @@ package org.zwobble.shed.compiler.typechecker.statements;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.SimpleErrorDescription;
 import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
@@ -15,7 +14,7 @@ import org.zwobble.shed.compiler.typechecker.TypeCheckerInjector;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typechecker.errors.CannotReturnHereError;
-import org.zwobble.shed.compiler.typechecker.statements.ObjectDeclarationTypeChecker;
+import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
@@ -47,9 +46,7 @@ public class ObjectDeclarationTypeCheckerTest {
             Nodes.block(Nodes.immutableVar("version", stringReference, Nodes.number("1.2")))
         );
         TypeResult<?> result = typeCheckObjectDeclaration(objectDeclarationNode, staticContext());
-        assertThat(result, isFailureWithErrors(
-            new SimpleErrorDescription("Cannot initialise variable of type \"String\" with expression of type \"Number\"")
-        ));
+        assertThat(result, isFailureWithErrors(new TypeMismatchError(CoreTypes.STRING, CoreTypes.NUMBER)));
     }
     
     @Test public void

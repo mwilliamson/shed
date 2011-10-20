@@ -23,6 +23,10 @@ import org.zwobble.shed.compiler.types.Type;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
+import static org.zwobble.shed.compiler.Option.none;
+
+import static org.zwobble.shed.compiler.Option.some;
+
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 
 public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<ClassDeclarationNode> {
@@ -39,16 +43,13 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
     
     @Override
     public TypeResult<?> forwardDeclare(ClassDeclarationNode classDeclaration) {
-        forwardDeclareBody(classDeclaration);
+        TypeResult<?> result = forwardDeclareBody(classDeclaration);
         buildClassType(classDeclaration);
-        return TypeResult.success();
+        return result;
     }
 
-    private void forwardDeclareBody(ClassDeclarationNode classDeclaration) {
-        TypeResult<?> forwardDeclareResult = blockTypeChecker.forwardDeclare(classDeclaration.getBody());
-        if (!forwardDeclareResult.isSuccess()) {
-            throw new RuntimeException("Errors: " + forwardDeclareResult.getErrors());
-        }
+    private TypeResult<?> forwardDeclareBody(ClassDeclarationNode classDeclaration) {
+        return blockTypeChecker.forwardDeclare(classDeclaration.getBody());
     }
 
     private void buildClassType(ClassDeclarationNode classDeclaration) {
@@ -61,8 +62,7 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
 
     @Override
     public TypeResult<StatementTypeCheckResult> typeCheck(ClassDeclarationNode statement, Option<Type> returnType) {
-        // TODO:
-        return null;
+        return blockTypeChecker.typeCheck(statement.getBody(), returnType);
     }
 
     private Map<String, ValueInfo> buildMembers(ClassDeclarationNode classDeclaration) {
@@ -71,22 +71,20 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
         Iterable<PublicDeclarationNode> publicDeclarations = Iterables.filter(classDeclaration.getBody(), PublicDeclarationNode.class);
         for (PublicDeclarationNode publicDeclaration : publicDeclarations) {
             DeclarationNode memberDeclaration = publicDeclaration.getDeclaration();
-            TypeResult<ValueInfo> memberType = findMemberType(memberDeclaration);
+            Option<ValueInfo> memberType = findMemberType(memberDeclaration);
             if (memberType.hasValue()) {
                 members.put(memberDeclaration.getIdentifier(), memberType.get());
-            } else {
-                throw new RuntimeException(memberType.getErrors().toString());
             }
         }
         return members.build();
     }
 
-    private TypeResult<ValueInfo> findMemberType(DeclarationNode memberDeclaration) {
+    private Option<ValueInfo> findMemberType(DeclarationNode memberDeclaration) {
         VariableLookupResult result = context.get(memberDeclaration);
         if (result.getStatus() == Status.SUCCESS) {
-            return TypeResult.success(result.getValueInfo());
+            return some(result.getValueInfo());
         } else {
-            throw new RuntimeException("Could not find type of member: " + memberDeclaration);
+            return none();
         }
     }
 }
