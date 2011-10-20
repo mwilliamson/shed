@@ -10,13 +10,13 @@ import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeInferer;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
+import org.zwobble.shed.compiler.typechecker.TypeResultBuilder;
 import org.zwobble.shed.compiler.typechecker.errors.CannotReturnHereError;
 import org.zwobble.shed.compiler.typechecker.errors.WrongReturnTypeError;
 import org.zwobble.shed.compiler.types.Type;
 
 import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
 
 public class ReturnStatementTypeChecker implements StatementTypeChecker<ReturnNode> {
     private final TypeInferer typeInferer;
@@ -32,30 +32,21 @@ public class ReturnStatementTypeChecker implements StatementTypeChecker<ReturnNo
     
     @Override
     public TypeResult<StatementTypeCheckResult> typeCheck(ReturnNode returnStatement, Option<Type> returnType) {
-        if (!returnType.hasValue()) {
-            return failure(
-                StatementTypeCheckResult.alwaysReturns(),
-                new CompilerError(
-                    nodeLocations.locate(returnStatement),
-                    new CannotReturnHereError()
-                )
-            );
-        }
+        TypeResultBuilder<StatementTypeCheckResult> typeResult = typeResultBuilder(StatementTypeCheckResult.alwaysReturns());
         ExpressionNode expression = returnStatement.getExpression();
-        TypeResult<Type> expressionType = typeInferer.inferType(expression);
-        if (!expressionType.isSuccess()) {
-            return failure(expressionType.getErrors());
+        TypeResult<Type> expressionTypeResult = typeInferer.inferType(expression);
+        typeResult.addErrors(expressionTypeResult);
+        if (!returnType.hasValue()) {
+            typeResult.addError(new CompilerError(
+                nodeLocations.locate(returnStatement),
+                new CannotReturnHereError()
+            ));
+        } else if (expressionTypeResult.hasValue() && !isSubType(expressionTypeResult.get(), returnType.get(), context)) {
+            typeResult.addError(new CompilerError(
+                nodeLocations.locate(expression),
+                new WrongReturnTypeError(returnType.get(), expressionTypeResult.get())
+            ));
         }
-        if (isSubType(expressionType.get(), returnType.get(), context)) {
-            return success(StatementTypeCheckResult.alwaysReturns());
-        } else {
-            return failure(
-                StatementTypeCheckResult.alwaysReturns(),
-                new CompilerError(
-                    nodeLocations.locate(expression),
-                    new WrongReturnTypeError(returnType.get(), expressionType.get())
-                )
-            );
-        }
+        return typeResult.build();
     }
 }

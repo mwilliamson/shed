@@ -8,12 +8,15 @@ import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeInferer;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
+import org.zwobble.shed.compiler.typechecker.TypeResultBuilder;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult.Status;
 import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.base.Function;
+
+import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
 
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
@@ -37,13 +40,13 @@ public class FunctionDeclarationTypeChecker implements DeclarationTypeChecker<Fu
     @Override
     public TypeResult<StatementTypeCheckResult> typeCheck(FunctionDeclarationNode functionDeclaration, Option<Type> returnType) {
         VariableLookupResult functionLookupResult = context.get(functionDeclaration);
-        TypeResult<StatementTypeCheckResult> result = TypeResult.success(StatementTypeCheckResult.noReturn());
+        TypeResultBuilder<StatementTypeCheckResult> result = typeResultBuilder(StatementTypeCheckResult.noReturn());
         if (functionLookupResult.getStatus() == Status.SUCCESS) {
             TypeResult<ValueInfo> bodyResult = 
                 typeInferer.typeCheckBody(functionDeclaration).apply(functionLookupResult.getValueInfo());
-            result = result.withErrorsFrom(bodyResult);
+            result.addErrors(bodyResult);
         }
-        return result;
+        return result.build();
     }
     
     private Function<ValueInfo, TypeResult<Void>> addToContext(final DeclarationNode declaration) {
