@@ -118,6 +118,30 @@ public class ClassDeclarationTypeCheckerTest {
         assertThat(result, isFailureWithErrors(new TypeMismatchError(CoreTypes.UNIT, CoreTypes.STRING)));
     }
     
+    @Test public void
+    classTypeIsBuiltInTypeCheckingWithAllMembers() {
+        BlockNode body = Nodes.block(
+            Nodes.publik(Nodes.immutableVar("firstName", STRING_TYPE_REFERENCE, Nodes.string("Bob"))),
+            Nodes.publik(Nodes.func("close", Nodes.noFormalArguments(), UNIT_TYPE_REFERENCE, Nodes.block(Nodes.returnStatement(Nodes.unit())))),
+            Nodes.publik(Nodes.immutableVar("lastName", Nodes.string("Bobertson")))
+        );
+        ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.noFormalArguments(), body);
+        FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Person");
+        fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
+        StaticContext context = fixture.context();
+        
+        forwardDeclare(declaration);
+        typeCheck(declaration);
+        
+        ClassType type = (ClassType) context.get(declaration).getType();
+        ScalarTypeInfo typeInfo = context.getInfo(type);
+        assertThat(typeInfo.getMembers(), Matchers.<Map<String, ValueInfo>>is(ImmutableMap.of(
+            "firstName", ValueInfo.unassignableValue(CoreTypes.STRING),
+            "close", ValueInfo.unassignableValue(CoreTypes.functionTypeOf(CoreTypes.UNIT)),
+            "lastName", ValueInfo.unassignableValue(CoreTypes.STRING)
+        )));
+    }
+    
     private TypeResult<?> forwardDeclare(ClassDeclarationNode classDeclaration) {
         return typeChecker().forwardDeclare(classDeclaration);
     }

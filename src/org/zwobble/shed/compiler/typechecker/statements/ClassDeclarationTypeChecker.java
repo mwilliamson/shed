@@ -61,8 +61,10 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
     }
 
     @Override
-    public TypeResult<StatementTypeCheckResult> typeCheck(ClassDeclarationNode statement, Option<Type> returnType) {
-        return blockTypeChecker.typeCheck(statement.getBody(), returnType);
+    public TypeResult<StatementTypeCheckResult> typeCheck(ClassDeclarationNode classDeclaration, Option<Type> returnType) {
+        TypeResult<StatementTypeCheckResult> result = blockTypeChecker.typeCheck(classDeclaration.getBody(), returnType);
+        buildClassType(classDeclaration);
+        return result;
     }
 
     private Map<String, ValueInfo> buildMembers(ClassDeclarationNode classDeclaration) {
