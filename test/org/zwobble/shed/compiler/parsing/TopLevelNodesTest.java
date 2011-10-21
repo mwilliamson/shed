@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
@@ -16,6 +15,7 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
+import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.parsing.ParserTesting.isSuccessWithNode;
 import static org.zwobble.shed.compiler.parsing.ParserTesting.tokens;
@@ -71,9 +71,9 @@ public class TopLevelNodesTest {
         assertThat(
             TopLevelNodes.source().parse(tokens("packag shed.util.collections; import shed import shed.collections;\nblah")).getErrors(),
             is((Object)asList(
-                CompilerError.error(range(position(1, 1), position(1, 7)), "Expected keyword \"package\" but got identifier \"packag\""),
-                CompilerError.error(range(position(1, 43), position(1, 49)), "Expected symbol \";\" but got keyword \"import\""),
-                CompilerError.error(range(position(2, 5), position(2, 5)), "Expected symbol \";\" but got end of source")
+                error(range(position(1, 1), position(1, 7)), "Expected keyword \"package\" but got identifier \"packag\""),
+                error(range(position(1, 43), position(1, 49)), "Expected symbol \";\" but got keyword \"import\""),
+                error(range(position(2, 5), position(2, 5)), "Expected symbol \";\" but got end of source")
                 
             ))
         );

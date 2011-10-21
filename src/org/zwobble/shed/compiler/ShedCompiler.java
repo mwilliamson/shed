@@ -67,18 +67,18 @@ public class ShedCompiler {
         
         if (parseResult.isSuccess()) {
             SourceNode sourceNode = parseResult.get();
-            ReferenceResolverResult referencesResult = referenceResolver.resolveReferences(sourceNode, parseResult, CoreModule.GLOBAL_DECLARATIONS);
+            ReferenceResolverResult referencesResult = referenceResolver.resolveReferences(sourceNode, CoreModule.GLOBAL_DECLARATIONS);
             errors.addAll(referencesResult.getErrors());
             if (referencesResult.isSuccess()) {
                 FullyQualifiedNames fullNames = new TypeNamer().generateFullyQualifiedNames(sourceNode);
                 References references = referencesResult.getReferences();
                 StaticContext browserContext = defaultBrowserContext(references);
-                Injector typeCheckerInjector = TypeCheckerInjector.build(parseResult, fullNames, browserContext);
+                Injector typeCheckerInjector = TypeCheckerInjector.build(fullNames, browserContext);
                 SourceTypeChecker sourceTypeChecker = typeCheckerInjector.getInstance(SourceTypeChecker.class);
                 TypeResult<Void> typeCheckResult = sourceTypeChecker.typeCheck(sourceNode);
                 errors.addAll(typeCheckResult.getErrors());
                 
-                TypeResult<Void> dependencyCheckResult = new DependencyChecker().check(sourceNode, references, parseResult);
+                TypeResult<Void> dependencyCheckResult = new DependencyChecker().check(sourceNode, references);
                 errors.addAll(dependencyCheckResult.getErrors());
                 
                 if (typeCheckResult.isSuccess()) {
@@ -87,7 +87,7 @@ public class ShedCompiler {
                 }   
             }
         }
-        return new CompilationResult(tokens, errors, javaScriptOutput);
+        return new CompilationResult(tokens, parseResult, errors, javaScriptOutput);
     }
 
     private JavaScriptGenerator javaScriptGenerator(References references) {

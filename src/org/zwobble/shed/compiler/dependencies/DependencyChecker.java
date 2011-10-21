@@ -2,7 +2,6 @@ package org.zwobble.shed.compiler.dependencies;
 
 import java.util.Set;
 
-import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
@@ -23,24 +22,22 @@ import static com.google.common.collect.Iterables.transform;
 import static org.zwobble.shed.compiler.parsing.nodes.NodeNavigator.descendents;
 
 public class DependencyChecker {
-    public TypeResult<Void> check(SyntaxNode node, References references, NodeLocations nodeLocations) {
-        return new Visitor(references, nodeLocations).check(node);
+    public TypeResult<Void> check(SyntaxNode node, References references) {
+        return new Visitor(references).check(node);
     }
     
     private static class Visitor {
         private final DependencyGraphChecker graphChecker = new DependencyGraphChecker();
         private final References references;
-        private final NodeLocations nodeLocations;
         
-        public Visitor(References references, NodeLocations nodeLocations) {
+        public Visitor(References references) {
             this.references = references;
-            this.nodeLocations = nodeLocations;
         }
         
         public TypeResult<Void> check(SyntaxNode node) {
             TypeResult<Void> result = TypeResult.success();
             if (node instanceof SourceNode) {
-                result = result.withErrorsFrom(checkSourceNode((SourceNode)node, references, nodeLocations));
+                result = result.withErrorsFrom(checkSourceNode((SourceNode)node));
             }
             result = result.withErrorsFrom(checkBlocksInNode(node));
             return result;
@@ -63,7 +60,7 @@ public class DependencyChecker {
             };
         }
 
-        private TypeResult<Void> checkSourceNode(SourceNode node, References references, NodeLocations nodeLocations) {
+        private TypeResult<Void> checkSourceNode(SourceNode node) {
             return checkStatements(node.getStatements());
         }
         
@@ -72,7 +69,7 @@ public class DependencyChecker {
             for (StatementNode statement : statements) {
                 addStatementDependencies(graph, statement, statements);
             }
-            return graphChecker.check(statements, graph, nodeLocations);
+            return graphChecker.check(statements, graph);
         }
 
         private void addStatementDependencies(DependencyGraph graph, StatementNode statement, Iterable<StatementNode> statements) {

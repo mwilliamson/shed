@@ -3,9 +3,7 @@ package org.zwobble.shed.compiler.dependencies;
 import java.util.Queue;
 import java.util.Set;
 
-import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.dependencies.errors.UndeclaredDependenciesError;
-import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.HoistableStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
@@ -19,11 +17,12 @@ import com.google.common.collect.Sets;
 
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.filter;
+import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.Eager.transform;
 
 public class DependencyGraphChecker {
-    public TypeResult<Void> check(Iterable<? extends StatementNode> statements, DependencyGraph graph, NodeLocations nodeLocations) {
-        return new Visitor(filter(statements, isFixedStatement()), graph, nodeLocations).visitAll();
+    public TypeResult<Void> check(Iterable<? extends StatementNode> statements, DependencyGraph graph) {
+        return new Visitor(filter(statements, isFixedStatement()), graph).visitAll();
     }
     
     private static Predicate<StatementNode> isFixedStatement() {
@@ -49,12 +48,10 @@ public class DependencyGraphChecker {
         private TypeResult<Void> result = TypeResult.success();
         private final Iterable<? extends StatementNode> fixedStatements;
         private final DependencyGraph graph;
-        private final NodeLocations nodeLocations;
         
-        public Visitor(Iterable<? extends StatementNode> fixedStatements, DependencyGraph graph, NodeLocations nodeLocations) {
+        public Visitor(Iterable<? extends StatementNode> fixedStatements, DependencyGraph graph) {
             this.fixedStatements = fixedStatements;
             this.graph = graph;
-            this.nodeLocations = nodeLocations;
         }
         
         public TypeResult<Void> visitAll() {
@@ -95,8 +92,8 @@ public class DependencyGraphChecker {
         }
 
         private void addDependencyError(StatementNode statement) {
-            result = result.withErrorsFrom(TypeResult.failure(new CompilerError(
-                nodeLocations.locate(statement),
+            result = result.withErrorsFrom(TypeResult.failure(error(
+                statement,
                 new UndeclaredDependenciesError(transform(dependents, toIdentifier()))
             )));
         }

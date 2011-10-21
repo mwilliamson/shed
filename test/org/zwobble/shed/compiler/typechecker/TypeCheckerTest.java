@@ -35,7 +35,6 @@ import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.typechecker.VariableLookupResult.success;
 
 public class TypeCheckerTest {
-    private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
     private final ReferencesBuilder references = new ReferencesBuilder();
     
     private StaticContext staticContext() {
@@ -238,7 +237,7 @@ public class TypeCheckerTest {
     private TypeResult<StatementTypeCheckResult> typeCheckBlock(
         BlockNode block, StaticContext context, Option<Type> returnType
     ) {
-        Injector injector = TypeCheckerInjector.build(nodeLocations, new FullyQualifiedNamesBuilder().build(), context);
+        Injector injector = TypeCheckerInjector.build(new FullyQualifiedNamesBuilder().build(), context);
         BlockTypeChecker typeChecker = injector.getInstance(BlockTypeChecker.class);
         return typeChecker.forwardDeclareAndTypeCheck(block, returnType);
     }

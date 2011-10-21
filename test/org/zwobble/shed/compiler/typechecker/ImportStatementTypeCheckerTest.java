@@ -17,7 +17,6 @@ import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualified
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 public class ImportStatementTypeCheckerTest {
-    private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
     private final ReferencesBuilder references = new ReferencesBuilder();
     
     @Test public void
@@ -47,6 +46,6 @@ public class ImportStatementTypeCheckerTest {
     }
     
     private TypeResult<Void> typeCheckImportStatement(ImportNode importStatement, StaticContext staticContext) {
-        return new ImportStatementTypeChecker(nodeLocations, staticContext).typeCheck(importStatement);
+        return new ImportStatementTypeChecker(staticContext).typeCheck(importStatement);
     }
 }

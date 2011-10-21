@@ -21,7 +21,6 @@ public class TypeCheckerTestFixture {
         return new TypeCheckerTestFixture();
     }
     
-    private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
     private final FullyQualifiedNamesBuilder fullNames = new FullyQualifiedNamesBuilder();
     private final StaticContext context;
     
@@ -35,7 +34,7 @@ public class TypeCheckerTestFixture {
     }
 
     public <T> T get(Class<T> clazz) {
-        return TypeCheckerInjector.build(nodeLocations, fullNames.build(), context).getInstance(clazz);
+        return TypeCheckerInjector.build(fullNames.build(), context).getInstance(clazz);
     }
     
     public StaticContext context() {

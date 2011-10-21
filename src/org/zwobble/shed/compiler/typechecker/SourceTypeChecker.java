@@ -7,25 +7,23 @@ import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.types.Type;
 
+import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 public class SourceTypeChecker {
     private final BlockTypeChecker blockTypeChecker;
-    private final NodeLocations nodeLocations;
     private final ImportStatementTypeChecker importStatementTypeChecker;
 
     @Inject
-    public SourceTypeChecker(BlockTypeChecker blockTypeChecker, NodeLocations nodeLocations, ImportStatementTypeChecker importStatementTypeChecker) {
+    public SourceTypeChecker(BlockTypeChecker blockTypeChecker, ImportStatementTypeChecker importStatementTypeChecker) {
         this.blockTypeChecker = blockTypeChecker;
-        this.nodeLocations = nodeLocations;
         this.importStatementTypeChecker = importStatementTypeChecker;
     }
     
@@ -44,7 +42,7 @@ public class SourceTypeChecker {
         for (StatementNode statement : source.getStatements()) {
             if (statement instanceof PublicDeclarationNode) {
                 if (seenPublicStatement) {
-                    errors.add(CompilerError.error(nodeLocations.locate(statement), "A module may have no more than one public value"));
+                    errors.add(error(statement, "A module may have no more than one public value"));
                 }
                 seenPublicStatement = true;
             }

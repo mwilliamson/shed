@@ -8,7 +8,6 @@ import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 import org.zwobble.shed.compiler.typechecker.CoreModule;
-import org.zwobble.shed.compiler.typechecker.SimpleNodeLocations;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeCheckerInjector;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
@@ -29,7 +28,6 @@ import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 
 public class ObjectDeclarationTypeCheckerTest {
-    private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
     private final ReferencesBuilder references = new ReferencesBuilder();
     private final FullyQualifiedNamesBuilder fullNames = new FullyQualifiedNamesBuilder();
     
@@ -88,7 +86,7 @@ public class ObjectDeclarationTypeCheckerTest {
     private TypeResult<StatementTypeCheckResult> typeCheckObjectDeclaration(
         ObjectDeclarationNode objectDeclaration, StaticContext staticContext
     ) {
-        Injector injector = TypeCheckerInjector.build(nodeLocations, fullNames.build(), staticContext);
+        Injector injector = TypeCheckerInjector.build(fullNames.build(), staticContext);
         ObjectDeclarationTypeChecker typeChecker = injector.getInstance(ObjectDeclarationTypeChecker.class);
         return typeChecker.typeCheck(objectDeclaration, Option.<Type>none());
     }

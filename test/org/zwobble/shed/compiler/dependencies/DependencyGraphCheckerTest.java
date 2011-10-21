@@ -4,8 +4,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.dependencies.DependencyGraph;
-import org.zwobble.shed.compiler.dependencies.DependencyGraphChecker;
 import org.zwobble.shed.compiler.dependencies.errors.UndeclaredDependenciesError;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
@@ -15,7 +13,6 @@ import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
-import org.zwobble.shed.compiler.typechecker.SimpleNodeLocations;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 
 import static java.util.Arrays.asList;
@@ -136,6 +133,6 @@ public class DependencyGraphCheckerTest {
     }
     
     private TypeResult<Void> check(List<? extends StatementNode> statements, DependencyGraph graph) {
-        return checker.check(statements, graph, new SimpleNodeLocations());
+        return checker.check(statements, graph);
     }
 }

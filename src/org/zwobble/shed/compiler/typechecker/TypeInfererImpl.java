@@ -7,10 +7,9 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.CompilerError;
+import org.zwobble.shed.compiler.CompilerErrors;
 import org.zwobble.shed.compiler.Eager;
 import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.parsing.NodeLocations;
-import org.zwobble.shed.compiler.parsing.SourceRange;
 import org.zwobble.shed.compiler.parsing.nodes.AssignmentExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
@@ -43,9 +42,9 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
-import static org.zwobble.shed.compiler.Option.some;
-
 import static java.util.Arrays.asList;
+import static org.zwobble.shed.compiler.CompilerErrors.error;
+import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
@@ -56,7 +55,6 @@ public class TypeInfererImpl implements TypeInferer {
     private final ArgumentTypeInferer argumentTypeInferer;
     private final BlockTypeChecker blockTypeChecker;
     private final TypeLookup typeLookup;
-    private final NodeLocations nodeLocations;
     private final StaticContext context;
 
     @Inject
@@ -64,13 +62,11 @@ public class TypeInfererImpl implements TypeInferer {
         ArgumentTypeInferer argumentTypeInferer,
         BlockTypeChecker blockTypeChecker, 
         TypeLookup typeLookup, 
-        NodeLocations nodeLocations,
         StaticContext context
     ) {
         this.argumentTypeInferer = argumentTypeInferer;
         this.blockTypeChecker = blockTypeChecker;
         this.typeLookup = typeLookup;
-        this.nodeLocations = nodeLocations;
         this.context = context;
     }
     
@@ -88,7 +84,7 @@ public class TypeInfererImpl implements TypeInferer {
             return success(ValueInfo.unassignableValue(CoreTypes.UNIT));
         }
         if (expression instanceof VariableIdentifierNode) {
-            return lookupVariableReference((VariableIdentifierNode)expression, nodeLocations.locate(expression), context);
+            return lookupVariableReference((VariableIdentifierNode)expression, context);
         }
         if (expression instanceof ShortLambdaExpressionNode) {
             return inferType((ShortLambdaExpressionNode)expression);
@@ -138,8 +134,8 @@ public class TypeInfererImpl implements TypeInferer {
                             if (expressionType.equals(returnType)) {
                                 return success();
                             } else {
-                                return failure(new CompilerError(
-                                    nodeLocations.locate(lambdaExpression.getBody()),
+                                return failure(error(
+                                    lambdaExpression.getBody(),
                                     new TypeMismatchError(returnType, expressionType)
                                 ));
                             }
@@ -185,8 +181,8 @@ public class TypeInfererImpl implements TypeInferer {
                 result = result.withErrorsFrom(blockResult);
                 
                 if (!blockResult.get().hasReturned()) {
-                    result = result.withErrorsFrom(TypeResult.<Type>failure(new CompilerError(
-                        nodeLocations.locate(function),
+                    result = result.withErrorsFrom(TypeResult.<Type>failure(error(
+                        function,
                         new MissingReturnStatementError()
                     )));
                 }
@@ -201,8 +197,7 @@ public class TypeInfererImpl implements TypeInferer {
             @Override
             public TypeResult<Type> apply(Type calledType) {
                 if (!CoreTypes.isFunction(calledType)) {
-                    CompilerError error = CompilerError.error(nodeLocations.locate(expression), "Cannot call objects that aren't functions");
-                    return TypeResult.failure(asList(error));
+                    return TypeResult.failure(error(expression, "Cannot call objects that aren't functions"));
                 }
                 TypeApplication functionType = (TypeApplication)calledType;
                 final List<? extends Type> typeParameters = functionType.getTypeParameters();
@@ -211,7 +206,7 @@ public class TypeInfererImpl implements TypeInferer {
                 int numberOfActualArguments = expression.getArguments().size();
                 if (numberOfFormalAguments != numberOfActualArguments) {
                     String errorMessage = "Function requires " + numberOfFormalAguments + " argument(s), but is called with " + numberOfActualArguments;
-                    CompilerError error = CompilerError.error(nodeLocations.locate(expression), errorMessage);
+                    CompilerError error = CompilerErrors.error(expression, errorMessage);
                     return TypeResult.failure(asList(error));
                 }
                 Type returnType = typeParameters.get(numberOfFormalAguments);
@@ -225,11 +220,8 @@ public class TypeInfererImpl implements TypeInferer {
                             if (isSubType(actualArgumentType, typeParameters.get(index), context)) {
                                 return success();
                             } else {
-                                return failure(asList(CompilerError.error(
-                                    nodeLocations.locate(argument),
-                                    "Expected expression of type " + typeParameters.get(index).shortName() +
-                                        " as argument " + (index + 1) + ", but got expression of type " + actualArgumentType.shortName()
-                                )));
+                                return failure(error(argument, ("Expected expression of type " + typeParameters.get(index).shortName() +
+                                " as argument " + (index + 1) + ", but got expression of type " + actualArgumentType.shortName())));
                             }
                         }
                     }));
@@ -250,7 +242,7 @@ public class TypeInfererImpl implements TypeInferer {
                 if (members.containsKey(name)) {
                     return TypeResult.success(members.get(name));
                 } else {
-                    return TypeResult.failure(asList(CompilerError.error(nodeLocations.locate(memberAccess), "No such member: " + name)));
+                    return TypeResult.failure(error(memberAccess, ("No such member: " + name)));
                 }
             }
         });
@@ -288,30 +280,29 @@ public class TypeInfererImpl implements TypeInferer {
     }
 
     private TypeResult<ValueInfo> inferAssignmentType(AssignmentExpressionNode expression) {
-        SourceRange location = nodeLocations.locate(expression);
         TypeResult<Type> valueTypeResult = inferType(expression.getValue());
         TypeResult<ValueInfo> targetInfo = inferValueInfo(expression.getTarget())
-            .ifValueThen(checkIsAssignable(location));
+            .ifValueThen(checkIsAssignable(expression));
         
         TypeResult<ValueInfo> result = valueTypeResult.withErrorsFrom(targetInfo).ifValueThen(toValueInfo());
         if (valueTypeResult.hasValue() && targetInfo.hasValue()) {
             Type valueType = valueTypeResult.get();
             Type targetType = targetInfo.get().getType();
             if (!isSubType(valueType, targetType, context)) {
-                result = result.withErrorsFrom(failure(new CompilerError(location, new TypeMismatchError(targetType, valueType))));
+                result = result.withErrorsFrom(failure(error(expression, new TypeMismatchError(targetType, valueType))));
             }
         }
         return result;
     }
     
-    private static Function<ValueInfo, TypeResult<ValueInfo>> checkIsAssignable(final SourceRange location) {
+    private static Function<ValueInfo, TypeResult<ValueInfo>> checkIsAssignable(final AssignmentExpressionNode expression) {
         return new Function<ValueInfo, TypeResult<ValueInfo>>() {
             @Override
             public TypeResult<ValueInfo> apply(ValueInfo input) {
                 if (input.isAssignable()) {
                     return TypeResult.success(input);
                 } else {
-                    return TypeResult.failure(input, new CompilerError(location, new InvalidAssignmentError()));
+                    return TypeResult.failure(input, error(expression, new InvalidAssignmentError()));
                 }
             }
         };

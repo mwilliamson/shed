@@ -2,9 +2,7 @@ package org.zwobble.shed.compiler.typechecker.statements;
 
 import javax.inject.Inject;
 
-import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeInferer;
@@ -17,6 +15,7 @@ import org.zwobble.shed.compiler.typechecker.VariableLookupResult.Status;
 import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.types.Type;
 
+import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
 import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
@@ -24,14 +23,12 @@ import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 public class VariableDeclarationTypeChecker implements DeclarationTypeChecker<VariableDeclarationNode> {
     private final TypeInferer typeInferer;
     private final TypeLookup typeLookup;
-    private final NodeLocations nodeLocations;
     private final StaticContext context;
 
     @Inject
-    public VariableDeclarationTypeChecker(TypeInferer typeInferer, TypeLookup typeLookup, NodeLocations nodeLocations, StaticContext context) {
+    public VariableDeclarationTypeChecker(TypeInferer typeInferer, TypeLookup typeLookup, StaticContext context) {
         this.typeInferer = typeInferer;
         this.typeLookup = typeLookup;
-        this.nodeLocations = nodeLocations;
         this.context = context;
     }
 
@@ -63,8 +60,8 @@ public class VariableDeclarationTypeChecker implements DeclarationTypeChecker<Va
             if (variableLookupResult.getStatus() == Status.SUCCESS) {
                 Type specifiedType = variableLookupResult.getType();
                 if (valueTypeResult.hasValue() && !isSubType(valueTypeResult.get(), specifiedType, context)) {
-                    typeResult.addError(new CompilerError(
-                        nodeLocations.locate(variableDeclaration.getValue()),
+                    typeResult.addError(error(
+                        variableDeclaration.getValue(),
                         new TypeMismatchError(specifiedType, valueTypeResult.get())
                     ));
                 }

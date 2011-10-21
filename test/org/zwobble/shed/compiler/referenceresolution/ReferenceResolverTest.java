@@ -10,7 +10,6 @@ import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.CompilerTesting;
 import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
@@ -29,7 +28,6 @@ import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.typechecker.CoreModule;
-import org.zwobble.shed.compiler.typechecker.SimpleNodeLocations;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -43,7 +41,6 @@ public class ReferenceResolverTest {
     private static final References EMPTY_REFERENCES = new References(ImmutableMap.<Identity<VariableIdentifierNode>, Identity<DeclarationNode>>of());
     private static final ReferenceResolverResult EMPTY_RESULT = ReferenceResolverResult.build(EMPTY_REFERENCES, Collections.<CompilerError>emptyList());
     private final ReferenceResolver resolver = new ReferenceResolver();
-    private final NodeLocations nodeLocations = new SimpleNodeLocations();
     
     @Test public void
     booleanLiteralNodeAddsNothingToScope() {
@@ -405,7 +402,7 @@ public class ReferenceResolverTest {
     }
 
     private ReferenceResolverResult resolveReferences(SyntaxNode node) {
-        return resolver.resolveReferences(node, nodeLocations, CoreModule.GLOBAL_DECLARATIONS);
+        return resolver.resolveReferences(node, CoreModule.GLOBAL_DECLARATIONS);
     }
     
     private Matcher<ReferenceResolverResult> hasReference(final VariableIdentifierNode reference, final DeclarationNode declaration) {

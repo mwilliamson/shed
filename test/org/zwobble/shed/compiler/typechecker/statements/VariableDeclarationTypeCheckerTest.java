@@ -9,7 +9,6 @@ import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
-import org.zwobble.shed.compiler.typechecker.SimpleNodeLocations;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeCheckerInjector;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
@@ -29,15 +28,12 @@ import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
-import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
-import static org.zwobble.shed.compiler.parsing.SourceRange.range;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 
 public class VariableDeclarationTypeCheckerTest {
-    private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
     private final ReferencesBuilder references = new ReferencesBuilder();
 
     private final GlobalDeclarationNode stringDeclaration = new GlobalDeclarationNode("String");
@@ -102,7 +98,6 @@ public class VariableDeclarationTypeCheckerTest {
         StaticContext staticContext = standardContext();
         BooleanLiteralNode booleanNode = new BooleanLiteralNode(true);
         VariableDeclarationNode variableNode = Nodes.immutableVar("x", stringReference, booleanNode);
-        nodeLocations.put(booleanNode, range(position(4, 12), position(6, 6)));
         
         forwardDeclare(variableNode, staticContext);
         assertThat(
@@ -148,7 +143,7 @@ public class VariableDeclarationTypeCheckerTest {
     }
 
     private VariableDeclarationTypeChecker typeChecker(StaticContext context) {
-        Injector injector = TypeCheckerInjector.build(nodeLocations, new FullyQualifiedNamesBuilder().build(), context);
+        Injector injector = TypeCheckerInjector.build(new FullyQualifiedNamesBuilder().build(), context);
         VariableDeclarationTypeChecker typeChecker = injector.getInstance(VariableDeclarationTypeChecker.class);
         return typeChecker;
     }

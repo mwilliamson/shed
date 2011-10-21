@@ -5,7 +5,6 @@ import java.util.Collections;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Test;
-import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.CompilerErrorDescription;
 import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
@@ -42,13 +41,12 @@ import com.google.inject.Injector;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
-import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
-import static org.zwobble.shed.compiler.parsing.SourceRange.range;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
@@ -59,7 +57,6 @@ import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedTyp
 import static org.zwobble.shed.compiler.types.Types.typeParameters;
 
 public class TypeInfererTest {
-    private final SimpleNodeLocations nodeLocations = new SimpleNodeLocations();
     private final ReferencesBuilder references = new ReferencesBuilder();
 
     private final GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Number");
@@ -105,14 +102,8 @@ public class TypeInfererTest {
     @Test public void
     cannotReferToVariableNotInContext() {
         VariableIdentifierNode node = new VariableIdentifierNode("value");
-        nodeLocations.put(node, range(position(3, 5), position(7, 4)));
         TypeResult<Type> result = inferType(node, blankContext());
-        assertThat(result, is(
-            (Object)failure(asList(new CompilerError(
-                range(position(3, 5), position(7, 4)),
-                new UntypedReferenceError("value")
-            )))
-        ));
+        assertThat(result, is((Object)failure(error(node, new UntypedReferenceError("value")))));
     }
     
     @Test public void
@@ -145,14 +136,10 @@ public class TypeInfererTest {
             some(stringReference),
             body
         );
-        nodeLocations.put(body, range(position(3, 5), position(7, 4)));
         TypeResult<Type> result = inferType(functionExpression, standardContext());
         assertThat(
             result.getErrors(),
-            is(asList(new CompilerError(
-                range(position(3, 5), position(7, 4)),
-                new TypeMismatchError(CoreTypes.STRING, CoreTypes.NUMBER)
-            )))
+            is(asList(error(body, new TypeMismatchError(CoreTypes.STRING, CoreTypes.NUMBER))))
         );
     }
     
@@ -613,7 +600,7 @@ public class TypeInfererTest {
     }
 
     private TypeInferer typeInferer(StaticContext context) {
-        Injector injector = TypeCheckerInjector.build(nodeLocations, new FullyQualifiedNamesBuilder().build(), context);
+        Injector injector = TypeCheckerInjector.build(new FullyQualifiedNamesBuilder().build(), context);
         return injector.getInstance(TypeInferer.class);
     }
     

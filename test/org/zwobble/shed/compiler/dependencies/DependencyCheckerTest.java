@@ -6,9 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.dependencies.DependencyChecker;
 import org.zwobble.shed.compiler.dependencies.errors.UndeclaredDependenciesError;
-import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
@@ -19,7 +17,6 @@ import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferenceResolver;
 import org.zwobble.shed.compiler.referenceresolution.ReferenceResolverResult;
 import org.zwobble.shed.compiler.referenceresolution.References;
-import org.zwobble.shed.compiler.typechecker.SimpleNodeLocations;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 
 import com.google.common.collect.ImmutableMap;
@@ -31,7 +28,6 @@ import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 
 public class DependencyCheckerTest {
     private static final List<ImportNode> NO_IMPORTS = Collections.emptyList();
-    private final NodeLocations nodeLocations = new SimpleNodeLocations();
     private final DependencyChecker checker = new DependencyChecker();
     
     @Test public void
@@ -93,13 +89,13 @@ public class DependencyCheckerTest {
     }
 
     private TypeResult<?> check(SyntaxNode node) {
-        return checker.check(node, resolveReferences(node), nodeLocations);
+        return checker.check(node, resolveReferences(node));
     }
 
     private References resolveReferences(SyntaxNode node) {
         ReferenceResolver resolver = new ReferenceResolver();
         Map<String, GlobalDeclarationNode> globalDeclarations = ImmutableMap.of();
-        ReferenceResolverResult result = resolver.resolveReferences(node, nodeLocations, globalDeclarations);
+        ReferenceResolverResult result = resolver.resolveReferences(node, globalDeclarations);
         if (!result.isSuccess()) {
             throw new RuntimeException("Unsuccessful reference resolution: " + result.getErrors());
         }

@@ -9,7 +9,6 @@ import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatements;
-import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.AssignmentExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
@@ -43,7 +42,6 @@ import org.zwobble.shed.compiler.parsing.nodes.WhileStatementNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferenceResolver;
 import org.zwobble.shed.compiler.referenceresolution.References;
 import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
-import org.zwobble.shed.compiler.typechecker.SimpleNodeLocations;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -56,7 +54,6 @@ import static org.zwobble.shed.compiler.codegenerator.JavaScriptGenerator.CORE_V
 public class JavaScriptGeneratorTest {
     private final JavaScriptNodes js = new JavaScriptNodes();
     private final ReferenceResolver referenceResolver = new ReferenceResolver();
-    private final NodeLocations nodeLocations = new SimpleNodeLocations();
     
     @Test public void
     booleanLiteralsAreConvertedToBoxedBooleans() {
@@ -501,7 +498,7 @@ public class JavaScriptGeneratorTest {
     
     private References resolveReferences(SyntaxNode source) {
         return referenceResolver
-            .resolveReferences(source, nodeLocations, Collections.<String, GlobalDeclarationNode>emptyMap())
+            .resolveReferences(source, Collections.<String, GlobalDeclarationNode>emptyMap())
             .getReferences();
     }
     
