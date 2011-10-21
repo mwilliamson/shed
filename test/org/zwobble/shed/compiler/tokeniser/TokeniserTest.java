@@ -81,6 +81,11 @@ public class TokeniserTest {
     }
     
     @Test public void
+    integersCanBeNegative() {
+        assertThat(tokens("-42"), is(asList(number("-42"), Token.end())));
+    }
+    
+    @Test public void
     numbersCannotContainsLetters() {
         assertThat(tokens("42ab"), is(asList(number("42"), error("ab"), Token.end())));
     }

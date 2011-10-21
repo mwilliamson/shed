@@ -75,14 +75,16 @@ public class Tokeniser {
             return Token.multiLineComment(comment.toString());
         } else if (isWhitespace().apply(firstCharacter)) {
             return token(TokenType.WHITESPACE, takeWhile(characters, isWhitespace()));
+        } else if (firstCharacter == '-' && isDigit().apply(characters.peek(1))) {
+            return token(TokenType.NUMBER, characters.next() + takeWhile(characters, isDigit()));
+        } else if (isDigit().apply(firstCharacter)) {
+            return token(TokenType.NUMBER, takeWhile(characters, isDigit()));
         } else if (symbols.contains(firstCharacter.toString())) {
             characters.next();
             if (characters.hasNext() && symbols.contains(firstCharacter.toString() + characters.peek().toString())) {
                 return token(TokenType.SYMBOL, firstCharacter.toString() + characters.next().toString());
             }
             return token(TokenType.SYMBOL, firstCharacter.toString());
-        } else if (isDigit().apply(firstCharacter)) {
-            return token(TokenType.NUMBER, takeWhile(characters, isDigit()));
         } else if (previousTokenType == TokenType.NUMBER) {
             return token(TokenType.ERROR, takeWhile(characters, isIdentifierCharacter()));
         } else if (firstCharacter == stringDelimiter) {
