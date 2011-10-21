@@ -1,0 +1,17 @@
+package fib;
+
+import shed.sys;
+
+fun fib(x: Number) {
+    if x.equals(0) {
+        return 0;
+    }
+    if x.equals(1) {
+        return 1;
+    }
+    return fib(x.subtract(1)).add(fib(x.subtract(2)));
+}
+
+sys.print(fib(10).toString());
+
+
