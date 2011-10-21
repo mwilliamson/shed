@@ -4,9 +4,28 @@
     var identityFunction = function(value) {
         return value;
     };
-    exports.String = identityFunction;
-    exports.Boolean = identityFunction;
-    exports.Number = identityFunction;
+    var String = exports.String = identityFunction;
+    var Boolean = exports.Boolean = identityFunction;
+    var Number = exports.Number = function(value) {
+        return {
+            __value: value,
+            add: function(other) {
+                return Number(value + other.__value);
+            },
+            subtract: function(other) {
+                return Number(value - other.__value);
+            },
+            multiply: function(other) {
+                return Number(value * other.__value);
+            },
+            toString: function() {
+                return String(value.toString());
+            },
+            equals: function(other) {
+                return Boolean(value == other.__value);
+            }
+        };
+    };
     exports.Unit = function() {
         return unit;
     };

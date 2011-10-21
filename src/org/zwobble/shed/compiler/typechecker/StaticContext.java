@@ -11,6 +11,8 @@ import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.References;
 import org.zwobble.shed.compiler.types.CoreTypes;
+import org.zwobble.shed.compiler.types.Members;
+import org.zwobble.shed.compiler.types.MembersBuilder;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
@@ -45,7 +47,7 @@ public class StaticContext {
         this.references = references;
         addInfo(CoreTypes.STRING, new ScalarTypeInfo(interfaces(), members()));
         addInfo(CoreTypes.BOOLEAN, new ScalarTypeInfo(interfaces(), members()));
-        addInfo(CoreTypes.NUMBER, new ScalarTypeInfo(interfaces(), members()));
+        addInfo(CoreTypes.NUMBER, numberTypeInfo(CoreTypes.NUMBER));
         addInfo(CoreTypes.UNIT, new ScalarTypeInfo(interfaces(), members()));
     }
     
@@ -84,5 +86,15 @@ public class StaticContext {
     
     public ScalarTypeInfo getInfo(ScalarType scalarType) {
         return scalarTypeInfo.get(scalarType);
+    }
+    
+    private ScalarTypeInfo numberTypeInfo(Type numberType) {
+        MembersBuilder members = Members.builder();
+        members.add("equals", unassignableValue(CoreTypes.functionTypeOf(numberType, CoreTypes.BOOLEAN)));
+        members.add("add", unassignableValue(CoreTypes.functionTypeOf(numberType, numberType)));
+        members.add("subtract", unassignableValue(CoreTypes.functionTypeOf(numberType, numberType)));
+        members.add("multiply", unassignableValue(CoreTypes.functionTypeOf(numberType, numberType)));
+        members.add("toString", unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING)));
+        return new ScalarTypeInfo(interfaces(), members.build());
     }
 }

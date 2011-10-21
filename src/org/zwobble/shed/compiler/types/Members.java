@@ -7,6 +7,10 @@ import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import com.google.common.collect.ImmutableMap;
 
 public class Members {
+    public static MembersBuilder builder() {
+        return new MembersBuilder();
+    }
+    
     public static Map<String, ValueInfo> members() {
         return ImmutableMap.of();
     }
