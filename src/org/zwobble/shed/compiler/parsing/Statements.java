@@ -12,6 +12,7 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
@@ -116,19 +117,36 @@ public class Statements {
     public static Rule<IfThenElseStatementNode> ifThenElseStatement() {
         final Rule<ExpressionNode> condition = expression();
         final Rule<BlockNode> ifTrue = Blocks.block();
-        final Rule<BlockNode> ifFalse = Blocks.block();
+        final Rule<Option<BlockNode>> elseClause = Rules.optional(elseClause());
         return then( 
             sequence(OnError.FINISH,
                 guard(keyword(Keyword.IF)),
                 condition,
                 ifTrue,
-                keyword(Keyword.ELSE),
-                ifFalse
+                elseClause
             ),
             new SimpleParseAction<RuleValues, IfThenElseStatementNode>() {
                 @Override
                 public IfThenElseStatementNode apply(RuleValues result) {
-                    return new IfThenElseStatementNode(result.get(condition), result.get(ifTrue), result.get(ifFalse));
+                    Option<BlockNode> elseBody = result.get(elseClause);
+                    BlockNode ifFalse = elseBody.orElse(Nodes.block()); 
+                    return new IfThenElseStatementNode(result.get(condition), result.get(ifTrue), ifFalse);
+                }
+            }
+        );
+    }
+    
+    private static Rule<BlockNode> elseClause() {
+        final Rule<BlockNode> ifFalse = Blocks.block();
+        return then(
+            sequence(OnError.FINISH,
+                guard(keyword(Keyword.ELSE)),
+                ifFalse
+            ),
+            new SimpleParseAction<RuleValues, BlockNode>() {
+                @Override
+                public BlockNode apply(RuleValues result) {
+                    return result.get(ifFalse);
                 }
             }
         );

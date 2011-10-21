@@ -120,6 +120,17 @@ public class StatementsTest {
     }
     
     @Test public void
+    canParseIfStatementWithoutElse() {
+        assertThat(
+            Statements.statement().parse(tokens("if isMorning { eatCereal(); }")),
+            isSuccessWithNode(Nodes.ifThen(
+                Nodes.id("isMorning"),
+                Nodes.block(Nodes.expressionStatement(Nodes.call(Nodes.id("eatCereal"))))
+            ))
+        );
+    }
+    
+    @Test public void
     canParseWhileStatement() {
         assertThat(
             Statements.statement().parse(tokens("while true { go(); }")),

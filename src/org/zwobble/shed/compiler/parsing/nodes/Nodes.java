@@ -78,6 +78,10 @@ public class Nodes {
         return new IfThenElseStatementNode(condition, ifTrue, ifFalse);
     }
 
+    public static IfThenElseStatementNode ifThen(ExpressionNode condition, BlockNode ifTrue) {
+        return new IfThenElseStatementNode(condition, ifTrue, block());
+    }
+
     public static StatementNode returnStatement(ExpressionNode expression) {
         return new ReturnNode(expression);
     }

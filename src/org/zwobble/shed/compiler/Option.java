@@ -25,6 +25,10 @@ public class Option<T> {
         return hasValue;
     }
     
+    public T orElse(T alternative) {
+        return hasValue ? value : alternative;
+    }
+    
     public T get() {
         if (!hasValue) {
             throw new RuntimeException("Option has no value");
