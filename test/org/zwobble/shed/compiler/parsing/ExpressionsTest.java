@@ -178,6 +178,14 @@ public class ExpressionsTest {
     }
     
     @Test public void
+    canParseMemberAccessInParentheses() {
+        assertThat(
+            Expressions.expression().parse(tokens("(person.name)")),
+            isSuccessWithNode(Nodes.member(Nodes.id("person"), "name"))
+        );
+    }
+    
+    @Test public void
     canLocateSubMemberAccesses() {
         ParseResult<ExpressionNode> parsedExpression = Expressions.expression().parse(tokens("dancing.tears.eyes"));
         ExpressionNode subAccess = ((MemberAccessNode)parsedExpression.get()).getExpression();

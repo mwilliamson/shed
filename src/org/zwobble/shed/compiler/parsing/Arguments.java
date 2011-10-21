@@ -36,7 +36,7 @@ public class Arguments {
 
     private static Rule<FormalArgumentNode> formalArgument() {
         final Rule<String> name;
-        final Rule<ExpressionNode> type = typeSpecifier();
+        final Rule<ExpressionNode> type = guard(typeSpecifier());
         return then(
             sequence(OnError.FINISH,
                 name = guard(tokenOfType(IDENTIFIER)),
