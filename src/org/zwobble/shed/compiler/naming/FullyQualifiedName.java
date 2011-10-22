@@ -15,7 +15,11 @@ public class FullyQualifiedName {
     public static final FullyQualifiedName EMPTY = fullyQualifiedName();
 
     public static FullyQualifiedName fullyQualifiedName(String... identifiers) {
-        return new FullyQualifiedName(asList(identifiers));
+        return fullyQualifiedName(asList(identifiers));
+    }
+    
+    public static FullyQualifiedName fullyQualifiedName(List<String> identifiers) {
+        return new FullyQualifiedName(identifiers);
     }
     
     private final List<String> identifiers;

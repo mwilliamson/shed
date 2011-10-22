@@ -1,11 +1,11 @@
 package org.zwobble.shed.compiler.typechecker;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -15,9 +15,9 @@ import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
-import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
+import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
@@ -32,11 +32,11 @@ public class StaticContext {
     }
 
     private static void addCore(StaticContext staticContext, String identifier, Type type) {
-        staticContext.addGlobal(asList("shed", "core", identifier), type);
+        staticContext.addGlobal(fullyQualifiedName("shed", "core", identifier), type);
         staticContext.add(CoreModule.GLOBAL_DECLARATIONS.get(identifier), unassignableValue(type));
     }
     
-    private final Map<List<String>, Type> global = new HashMap<List<String>, Type>();
+    private final Map<FullyQualifiedName, Type> global = new HashMap<FullyQualifiedName, Type>();
     private final Map<Identity<DeclarationNode>, ValueInfo> types = new HashMap<Identity<DeclarationNode>, ValueInfo>();
     private final Map<ScalarType, ScalarTypeInfo> scalarTypeInfo = new HashMap<ScalarType, ScalarTypeInfo>();
     
@@ -60,13 +60,13 @@ public class StaticContext {
         }
     }
 
-    public void addGlobal(List<String> identifiers, Type type) {
-        global.put(identifiers, type);
+    public void addGlobal(FullyQualifiedName name, Type type) {
+        global.put(name, type);
     }
     
-    public Option<Type> lookupGlobal(List<String> identifiers) {
-        if (global.containsKey(identifiers)) {
-            return some(global.get(identifiers));
+    public Option<Type> lookupGlobal(FullyQualifiedName name) {
+        if (global.containsKey(name)) {
+            return some(global.get(name));
         } else {
             return none();
         }

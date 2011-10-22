@@ -29,7 +29,7 @@ public class DefaultBrowserContext {
             members("importValue", unassignableValue(importValueType))
         );
         
-        context.addGlobal(asList("shed", "javascript", "JavaScriptImporter"), CoreTypes.functionTypeOf(javaScriptImporterType));
+        context.addGlobal(fullyQualifiedName("shed", "javascript", "JavaScriptImporter"), CoreTypes.functionTypeOf(javaScriptImporterType));
         context.addInfo(javaScriptImporterType, javaScriptImporterTypeInfo);
         
         ClassType browserType = new ClassType(fullyQualifiedName("shed", "browser"));
@@ -38,7 +38,7 @@ public class DefaultBrowserContext {
             members("alert", unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.UNIT)))
         );
         
-        context.addGlobal(asList("shed", "browser"), browserType);
+        context.addGlobal(fullyQualifiedName("shed", "browser"), browserType);
         context.addInfo(browserType, browserTypeInfo);
         
         return context;

@@ -16,7 +16,6 @@ import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 
 import com.google.common.io.CharStreams;
 
-import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
@@ -80,7 +79,7 @@ public class ShedToNodeJsCompiler {
             members("print", unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.UNIT)))
         );
         
-        context.addGlobal(asList("shed", "sys"), sysType);
+        context.addGlobal(fullyQualifiedName("shed", "sys"), sysType);
         context.addInfo(sysType, sysTypeInfo);
         return context;
     }

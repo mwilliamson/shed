@@ -1,6 +1,7 @@
 package org.zwobble.shed.compiler.typechecker;
 
 import org.junit.Test;
+import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.typechecker.errors.UnresolvedImportError;
 import org.zwobble.shed.compiler.types.ClassType;
@@ -20,8 +21,9 @@ public class ImportStatementTypeCheckerTest {
         ImportNode importStatement = new ImportNode(asList("shed", "time", "DateTime"));
         StaticContext staticContext = new StaticContext();
         
-        Type dateTime = new ClassType(fullyQualifiedName("shed", "time", "DateTime"));
-        staticContext.addGlobal(asList("shed", "time", "DateTime"), CoreTypes.classOf(dateTime));
+        FullyQualifiedName dateTimeName = fullyQualifiedName("shed", "time", "DateTime");
+        Type dateTime = new ClassType(dateTimeName);
+        staticContext.addGlobal(dateTimeName, CoreTypes.classOf(dateTime));
         
         assertThat(
             typeCheckImportStatement(importStatement, staticContext),
