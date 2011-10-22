@@ -1,5 +1,6 @@
 package org.zwobble.shed.compiler.typechecker.statements;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -9,34 +10,42 @@ import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.naming.FullyQualifiedNames;
 import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.typechecker.BlockTypeChecker;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
+import org.zwobble.shed.compiler.typechecker.TypeLookup;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult.Status;
 import org.zwobble.shed.compiler.types.ClassType;
+import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
+import static com.google.common.collect.Iterables.transform;
+import static com.google.common.collect.Lists.newArrayList;
 import static org.zwobble.shed.compiler.Option.none;
-
 import static org.zwobble.shed.compiler.Option.some;
-
+import static org.zwobble.shed.compiler.typechecker.ShedTypeValue.shedTypeValue;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
+import static org.zwobble.shed.compiler.types.Members.members;
 
 public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<ClassDeclarationNode> {
     private final BlockTypeChecker blockTypeChecker;
+    private final TypeLookup typeLookup;
     private final FullyQualifiedNames fullyQualifiedNames;
     private final StaticContext context;
 
     @Inject
-    public ClassDeclarationTypeChecker(BlockTypeChecker blockTypeChecker, FullyQualifiedNames fullyQualifiedNames, StaticContext context) {
+    public ClassDeclarationTypeChecker(BlockTypeChecker blockTypeChecker, TypeLookup typeLookup, FullyQualifiedNames fullyQualifiedNames, StaticContext context) {
         this.blockTypeChecker = blockTypeChecker;
+        this.typeLookup = typeLookup;
         this.fullyQualifiedNames = fullyQualifiedNames;
         this.context = context;
     }
@@ -56,8 +65,16 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
         FullyQualifiedName name = fullyQualifiedNames.fullyQualifiedNameOf(classDeclaration);
         Map<String, ValueInfo> members = buildMembers(classDeclaration);
         ClassType type = new ClassType(name);
-        context.add(classDeclaration, ValueInfo.unassignableValue(type));
+        List<Type> functionTypeParameters = newArrayList(transform(classDeclaration.getFormalArguments(), toType()));
+        functionTypeParameters.add(type);
+        // TODO: forbid user-declared members called Meta 
+        FullyQualifiedName metaClassName = name.extend("Meta");
+        ClassType metaClass = new ClassType(metaClassName);
+        ScalarTypeInfo metaClassTypeInfo = new ScalarTypeInfo(interfaces(CoreTypes.functionTypeOf(functionTypeParameters)), members());
+        
+        context.add(classDeclaration, ValueInfo.unassignableValue(metaClass, shedTypeValue(type)));
         context.addInfo(type, new ScalarTypeInfo(interfaces(), members));
+        context.addInfo(metaClass, metaClassTypeInfo);
     }
 
     @Override
@@ -88,5 +105,19 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
         } else {
             return none();
         }
+    }
+
+    private Function<FormalArgumentNode, Type> toType() {
+        return new Function<FormalArgumentNode, Type>() {
+            @Override
+            public Type apply(FormalArgumentNode input) {
+                TypeResult<Type> lookupResult = typeLookup.lookupTypeReference(input.getType());
+                if (!lookupResult.isSuccess()) {
+                    // TODO:
+                    throw new RuntimeException("Failed type lookup");
+                }
+                return lookupResult.get();
+            }
+        };
     }
 }

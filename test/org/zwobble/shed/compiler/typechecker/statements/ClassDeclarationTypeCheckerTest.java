@@ -9,6 +9,7 @@ import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
+import org.zwobble.shed.compiler.typechecker.ShedTypeValue;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeCheckerTestFixture;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
@@ -17,12 +18,15 @@ import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.typechecker.errors.UntypedReferenceError;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
+import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.ImmutableMap;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
@@ -43,8 +47,26 @@ public class ClassDeclarationTypeCheckerTest {
         TypeResult<?> result = forwardDeclare(declaration);
         
         assertThat(result, isSuccess());
-        ClassType type = (ClassType) context.get(declaration).getType();
+        ShedTypeValue value = (ShedTypeValue) context.get(declaration).getValue().get();
+        ClassType type = (ClassType)value.getType();
         assertThat(type.getFullyQualifiedName(), is(fullyQualifiedName));
+    }
+    
+    @Test public void
+    classTypeIsAlsoConstructor() {
+        ClassDeclarationNode declaration = Nodes.clazz("Browser", asList(Nodes.formalArgument("name", STRING_TYPE_REFERENCE)), Nodes.block());
+        FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Browser");
+        fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
+        StaticContext context = fixture.context();
+        
+        TypeResult<?> result = forwardDeclare(declaration);
+        
+        assertThat(result, isSuccess());
+        ShedTypeValue value = (ShedTypeValue) context.get(declaration).getValue().get();
+        ClassType type = (ClassType)value.getType();
+        ScalarType metaClass = (ScalarType) context.get(declaration).getType();
+        ScalarTypeInfo metaClassInfo = context.getInfo(metaClass);
+        assertThat(metaClassInfo.getSuperTypes(), hasItem(CoreTypes.functionTypeOf(CoreTypes.STRING, type)));
     }
     
     @Test public void
@@ -62,7 +84,8 @@ public class ClassDeclarationTypeCheckerTest {
         TypeResult<?> result = forwardDeclare(declaration);
         
         assertThat(result, isSuccess());
-        ClassType type = (ClassType) context.get(declaration).getType();
+        ShedTypeValue value = (ShedTypeValue) context.get(declaration).getValue().get();
+        ClassType type = (ClassType)value.getType();
         ScalarTypeInfo typeInfo = context.getInfo(type);
         assertThat(typeInfo.getMembers(), Matchers.<Map<String, ValueInfo>>is(ImmutableMap.of(
             "firstName", ValueInfo.unassignableValue(CoreTypes.STRING),
@@ -83,7 +106,8 @@ public class ClassDeclarationTypeCheckerTest {
         TypeResult<?> result = forwardDeclare(declaration);
         
         assertThat(result, isSuccess());
-        ClassType type = (ClassType) context.get(declaration).getType();
+        ShedTypeValue value = (ShedTypeValue) context.get(declaration).getValue().get();
+        ClassType type = (ClassType)value.getType();
         ScalarTypeInfo typeInfo = context.getInfo(type);
         assertThat(typeInfo.getMembers(), Matchers.<Map<String, ValueInfo>>is(ImmutableMap.of(
             "firstName", ValueInfo.unknown()
@@ -132,8 +156,9 @@ public class ClassDeclarationTypeCheckerTest {
         
         forwardDeclare(declaration);
         typeCheck(declaration);
-        
-        ClassType type = (ClassType) context.get(declaration).getType();
+
+        ShedTypeValue value = (ShedTypeValue) context.get(declaration).getValue().get();
+        ClassType type = (ClassType)value.getType();
         ScalarTypeInfo typeInfo = context.getInfo(type);
         assertThat(typeInfo.getMembers(), Matchers.<Map<String, ValueInfo>>is(ImmutableMap.of(
             "firstName", ValueInfo.unassignableValue(CoreTypes.STRING),

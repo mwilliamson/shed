@@ -1,5 +1,6 @@
 package org.zwobble.shed.compiler.typechecker;
 
+import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.types.Type;
 
 import lombok.Data;
@@ -19,6 +20,10 @@ public class VariableLookupResult {
     
     public Type getType() {
         return valueInfo.getType();
+    }
+    
+    public Option<ShedValue> getValue() {
+        return valueInfo.getValue();
     }
     
     public enum Status {
