@@ -70,7 +70,7 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
         // TODO: forbid user-declared members called Meta 
         FullyQualifiedName metaClassName = name.extend("Meta");
         ClassType metaClass = new ClassType(metaClassName);
-        ScalarTypeInfo metaClassTypeInfo = new ScalarTypeInfo(interfaces(CoreTypes.functionTypeOf(functionTypeParameters)), members());
+        ScalarTypeInfo metaClassTypeInfo = new ScalarTypeInfo(interfaces(CoreTypes.functionTypeOf(functionTypeParameters), CoreTypes.classOf(type)), members());
         
         context.add(classDeclaration, ValueInfo.unassignableValue(metaClass, shedTypeValue(type)));
         context.addInfo(type, new ScalarTypeInfo(interfaces(), members));

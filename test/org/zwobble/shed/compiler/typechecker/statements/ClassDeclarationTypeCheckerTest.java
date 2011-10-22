@@ -70,6 +70,23 @@ public class ClassDeclarationTypeCheckerTest {
     }
     
     @Test public void
+    classTypeIsAnInstanceOfClass() {
+        ClassDeclarationNode declaration = Nodes.clazz("Browser", asList(Nodes.formalArgument("name", STRING_TYPE_REFERENCE)), Nodes.block());
+        FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Browser");
+        fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
+        StaticContext context = fixture.context();
+        
+        TypeResult<?> result = forwardDeclare(declaration);
+        
+        assertThat(result, isSuccess());
+        ShedTypeValue value = (ShedTypeValue) context.get(declaration).getValue().get();
+        ClassType type = (ClassType)value.getType();
+        ScalarType metaClass = (ScalarType) context.get(declaration).getType();
+        ScalarTypeInfo metaClassInfo = context.getInfo(metaClass);
+        assertThat(metaClassInfo.getSuperTypes(), hasItem(CoreTypes.classOf(type)));
+    }
+    
+    @Test public void
     classTypeIsBuiltInForwardDeclarationWithMembersThatCanBeTypedWithoutTypingEntireBody() {
         BlockNode body = Nodes.block(
             Nodes.publik(Nodes.immutableVar("firstName", STRING_TYPE_REFERENCE, Nodes.string("Bob"))),
