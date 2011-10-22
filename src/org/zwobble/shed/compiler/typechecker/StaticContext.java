@@ -1,13 +1,16 @@
 package org.zwobble.shed.compiler.typechecker;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
+import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
+import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Members;
 import org.zwobble.shed.compiler.types.MembersBuilder;
@@ -15,6 +18,9 @@ import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
+import static org.zwobble.shed.compiler.typechecker.ShedTypeValue.shedTypeValue;
+
+import static com.google.common.collect.Lists.newArrayList;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
@@ -88,5 +94,18 @@ public class StaticContext {
         members.add("multiply", unassignableValue(CoreTypes.functionTypeOf(numberType, numberType)));
         members.add("toString", unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING)));
         return new ScalarTypeInfo(interfaces(), members.build());
+    }
+
+    public void addClass(ClassDeclarationNode classDeclaration, ClassType type, Iterable<Type> classParameters, ScalarTypeInfo classTypeInfo) {
+        // TODO: forbid user-declared members called Meta 
+        FullyQualifiedName metaClassName = type.getFullyQualifiedName().extend("Meta");
+        ClassType metaClass = new ClassType(metaClassName);
+        List<Type> functionTypeParameters = newArrayList(classParameters);
+        functionTypeParameters.add(type);
+        ScalarTypeInfo metaClassTypeInfo = new ScalarTypeInfo(interfaces(CoreTypes.functionTypeOf(functionTypeParameters), CoreTypes.classOf(type)), members());
+        
+        add(classDeclaration, ValueInfo.unassignableValue(metaClass, shedTypeValue(type)));
+        addInfo(type, classTypeInfo);
+        addInfo(metaClass, metaClassTypeInfo);        
     }
 }

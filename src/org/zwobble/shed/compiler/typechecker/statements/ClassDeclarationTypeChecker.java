@@ -1,6 +1,5 @@
 package org.zwobble.shed.compiler.typechecker.statements;
 
-import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -20,7 +19,6 @@ import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult.Status;
 import org.zwobble.shed.compiler.types.ClassType;
-import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
@@ -29,12 +27,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
 import static com.google.common.collect.Iterables.transform;
-import static com.google.common.collect.Lists.newArrayList;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
-import static org.zwobble.shed.compiler.typechecker.ShedTypeValue.shedTypeValue;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
-import static org.zwobble.shed.compiler.types.Members.members;
 
 public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<ClassDeclarationNode> {
     private final BlockTypeChecker blockTypeChecker;
@@ -65,16 +60,9 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
         FullyQualifiedName name = fullyQualifiedNames.fullyQualifiedNameOf(classDeclaration);
         Map<String, ValueInfo> members = buildMembers(classDeclaration);
         ClassType type = new ClassType(name);
-        List<Type> functionTypeParameters = newArrayList(transform(classDeclaration.getFormalArguments(), toType()));
-        functionTypeParameters.add(type);
-        // TODO: forbid user-declared members called Meta 
-        FullyQualifiedName metaClassName = name.extend("Meta");
-        ClassType metaClass = new ClassType(metaClassName);
-        ScalarTypeInfo metaClassTypeInfo = new ScalarTypeInfo(interfaces(CoreTypes.functionTypeOf(functionTypeParameters), CoreTypes.classOf(type)), members());
-        
-        context.add(classDeclaration, ValueInfo.unassignableValue(metaClass, shedTypeValue(type)));
-        context.addInfo(type, new ScalarTypeInfo(interfaces(), members));
-        context.addInfo(metaClass, metaClassTypeInfo);
+        Iterable<Type> classParameters = transform(classDeclaration.getFormalArguments(), toType());
+        ScalarTypeInfo classTypeInfo = new ScalarTypeInfo(interfaces(), members);
+        context.addClass(classDeclaration, type, classParameters, classTypeInfo);
     }
 
     @Override
