@@ -6,4 +6,5 @@ import lombok.Data;
 public class NodeExecutionResult {
     private final int returnCode;
     private final String output;
+    private final String errorOutput;
 }

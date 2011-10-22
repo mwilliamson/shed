@@ -2,8 +2,6 @@ package org.zwobble.shed.compiler.typechecker;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
-import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
-import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 import org.zwobble.shed.compiler.typechecker.errors.UnresolvedImportError;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -17,14 +15,10 @@ import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualified
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 public class ImportStatementTypeCheckerTest {
-    private final ReferencesBuilder references = new ReferencesBuilder();
-    
     @Test public void
     importingValuesAssignsTypeToImportStatement() {
         ImportNode importStatement = new ImportNode(asList("shed", "time", "DateTime"));
-        VariableIdentifierNode reference = new VariableIdentifierNode("DateTime");
-        references.addReference(reference, importStatement);
-        StaticContext staticContext = new StaticContext(references.build());
+        StaticContext staticContext = new StaticContext();
         
         Type dateTime = new ClassType(fullyQualifiedName("shed", "time", "DateTime"));
         staticContext.addGlobal(asList("shed", "time", "DateTime"), CoreTypes.classOf(dateTime));
@@ -33,14 +27,14 @@ public class ImportStatementTypeCheckerTest {
             typeCheckImportStatement(importStatement, staticContext),
             is(TypeResult.<Void>success(null))
         );
-        assertThat(staticContext.get(reference), is(VariableLookupResult.success(unassignableValue(CoreTypes.classOf(dateTime)))));
+        assertThat(staticContext.get(importStatement), is(VariableLookupResult.success(unassignableValue(CoreTypes.classOf(dateTime)))));
     }
 
     @Test public void
     errorIfTryingToImportNonExistentGlobal() {
         ImportNode importStatement = new ImportNode(asList("shed", "time", "DateTime"));
         assertThat(
-            typeCheckImportStatement(importStatement, new StaticContext(references.build())),
+            typeCheckImportStatement(importStatement, new StaticContext()),
             isFailureWithErrors(new UnresolvedImportError(asList("shed", "time", "DateTime")))
         );
     }

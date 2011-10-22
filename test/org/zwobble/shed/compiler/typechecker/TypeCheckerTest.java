@@ -38,7 +38,7 @@ public class TypeCheckerTest {
     private final ReferencesBuilder references = new ReferencesBuilder();
     
     private StaticContext staticContext() {
-        return StaticContext.defaultContext(references.build());
+        return StaticContext.defaultContext();
     }
     
     @Test public void
@@ -237,7 +237,7 @@ public class TypeCheckerTest {
     private TypeResult<StatementTypeCheckResult> typeCheckBlock(
         BlockNode block, StaticContext context, Option<Type> returnType
     ) {
-        Injector injector = TypeCheckerInjector.build(new FullyQualifiedNamesBuilder().build(), context);
+        Injector injector = TypeCheckerInjector.build(new FullyQualifiedNamesBuilder().build(), context, references.build());
         BlockTypeChecker typeChecker = injector.getInstance(BlockTypeChecker.class);
         return typeChecker.forwardDeclareAndTypeCheck(block, returnType);
     }

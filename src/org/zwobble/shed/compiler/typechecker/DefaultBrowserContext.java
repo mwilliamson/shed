@@ -1,6 +1,5 @@
 package org.zwobble.shed.compiler.typechecker;
 
-import org.zwobble.shed.compiler.referenceresolution.References;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
@@ -15,8 +14,8 @@ import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 
 public class DefaultBrowserContext {
-    public static StaticContext defaultBrowserContext(References references) {
-        StaticContext context = StaticContext.defaultContext(references);
+    public static StaticContext defaultBrowserContext() {
+        StaticContext context = StaticContext.defaultContext();
         
         FormalTypeParameter formalTypeParameter = new FormalTypeParameter("T");
         Type importValueType = new ParameterisedFunctionType(

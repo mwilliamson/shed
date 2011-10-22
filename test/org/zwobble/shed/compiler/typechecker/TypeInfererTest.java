@@ -600,12 +600,12 @@ public class TypeInfererTest {
     }
 
     private TypeInferer typeInferer(StaticContext context) {
-        Injector injector = TypeCheckerInjector.build(new FullyQualifiedNamesBuilder().build(), context);
+        Injector injector = TypeCheckerInjector.build(new FullyQualifiedNamesBuilder().build(), context, references.build());
         return injector.getInstance(TypeInferer.class);
     }
     
     private StaticContext blankContext() {
-        return new StaticContext(references.build());
+        return new StaticContext();
     }
     
     private StaticContext standardContext() {

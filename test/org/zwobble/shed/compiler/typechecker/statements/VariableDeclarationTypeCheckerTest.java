@@ -143,7 +143,7 @@ public class VariableDeclarationTypeCheckerTest {
     }
 
     private VariableDeclarationTypeChecker typeChecker(StaticContext context) {
-        Injector injector = TypeCheckerInjector.build(new FullyQualifiedNamesBuilder().build(), context);
+        Injector injector = TypeCheckerInjector.build(new FullyQualifiedNamesBuilder().build(), context, references.build());
         VariableDeclarationTypeChecker typeChecker = injector.getInstance(VariableDeclarationTypeChecker.class);
         return typeChecker;
     }
@@ -151,7 +151,7 @@ public class VariableDeclarationTypeCheckerTest {
     private StaticContext standardContext() {
         references.addReference(stringReference, stringDeclaration);
         
-        StaticContext context = new StaticContext(references.build());
+        StaticContext context = new StaticContext();
         context.add(stringDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.STRING)));
         
         return context;

@@ -32,7 +32,7 @@ public class ObjectDeclarationTypeCheckerTest {
     private final FullyQualifiedNamesBuilder fullNames = new FullyQualifiedNamesBuilder();
     
     private StaticContext staticContext() {
-        return StaticContext.defaultContext(references.build());
+        return StaticContext.defaultContext();
     }
     
     @Test public void
@@ -86,7 +86,7 @@ public class ObjectDeclarationTypeCheckerTest {
     private TypeResult<StatementTypeCheckResult> typeCheckObjectDeclaration(
         ObjectDeclarationNode objectDeclaration, StaticContext staticContext
     ) {
-        Injector injector = TypeCheckerInjector.build(fullNames.build(), staticContext);
+        Injector injector = TypeCheckerInjector.build(fullNames.build(), staticContext, references.build());
         ObjectDeclarationTypeChecker typeChecker = injector.getInstance(ObjectDeclarationTypeChecker.class);
         return typeChecker.typeCheck(objectDeclaration, Option.<Type>none());
     }

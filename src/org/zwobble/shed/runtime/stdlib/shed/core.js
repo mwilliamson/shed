@@ -1,4 +1,4 @@
-SHED.exportValue("shed.core", (function() {
+(function() {
     var exports = {};
     var unit = {};
     var identityFunction = function(value) {
@@ -34,4 +34,5 @@ SHED.exportValue("shed.core", (function() {
             return {};
         };
     }
-})());
+    SHED.exportValue("shed.core", exports);
+})();

@@ -8,8 +8,6 @@ import java.util.Map.Entry;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
-import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
-import org.zwobble.shed.compiler.referenceresolution.References;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Members;
 import org.zwobble.shed.compiler.types.MembersBuilder;
@@ -25,8 +23,8 @@ import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 
 public class StaticContext {
-    public static StaticContext defaultContext(References references) {
-        StaticContext staticContext = new StaticContext(references);
+    public static StaticContext defaultContext() {
+        StaticContext staticContext = new StaticContext();
         for (Entry<String, Type> value : CoreModule.VALUES.entrySet()) {
             addCore(staticContext, value.getKey(), value.getValue());
         }
@@ -41,10 +39,8 @@ public class StaticContext {
     private final Map<List<String>, Type> global = new HashMap<List<String>, Type>();
     private final Map<Identity<DeclarationNode>, ValueInfo> types = new HashMap<Identity<DeclarationNode>, ValueInfo>();
     private final Map<ScalarType, ScalarTypeInfo> scalarTypeInfo = new HashMap<ScalarType, ScalarTypeInfo>();
-    private final References references;
     
-    public StaticContext(References references) {
-        this.references = references;
+    public StaticContext() {
         addInfo(CoreTypes.STRING, new ScalarTypeInfo(interfaces(), members()));
         addInfo(CoreTypes.BOOLEAN, new ScalarTypeInfo(interfaces(), members()));
         addInfo(CoreTypes.NUMBER, numberTypeInfo(CoreTypes.NUMBER));
@@ -53,10 +49,6 @@ public class StaticContext {
     
     public void add(DeclarationNode declaration, ValueInfo type) {
         types.put(new Identity<DeclarationNode>(declaration), type);
-    }
-
-    public VariableLookupResult get(VariableIdentifierNode reference) {
-        return get(references.findReferent(reference));
     }
 
     public VariableLookupResult get(DeclarationNode declaration) {

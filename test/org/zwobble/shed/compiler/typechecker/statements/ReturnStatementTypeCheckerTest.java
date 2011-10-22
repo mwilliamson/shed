@@ -72,12 +72,12 @@ public class ReturnStatementTypeCheckerTest {
     }
     
     private TypeResult<StatementTypeCheckResult> typeCheck(ReturnNode returnNode, StaticContext context, Option<Type> returnType) {
-        Injector injector = TypeCheckerInjector.build(new FullyQualifiedNamesBuilder().build(), context);
+        Injector injector = TypeCheckerInjector.build(new FullyQualifiedNamesBuilder().build(), context, references.build());
         ReturnStatementTypeChecker typeChecker = injector.getInstance(ReturnStatementTypeChecker.class);
         return typeChecker.typeCheck(returnNode, returnType);
     }
     
     private StaticContext staticContext() {
-        return StaticContext.defaultContext(references.build());
+        return StaticContext.defaultContext();
     }
 }

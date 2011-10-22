@@ -62,7 +62,7 @@ public class TypeLookupTest {
     }
     
     private TypeResult<Type> lookupTypeReference(ExpressionNode typeReference, StaticContext context) {
-        Injector injector = TypeCheckerInjector.build(new FullyQualifiedNamesBuilder().build(), context);
+        Injector injector = TypeCheckerInjector.build(new FullyQualifiedNamesBuilder().build(), context, references.build());
         TypeLookup typeLookup = injector.getInstance(TypeLookup.class);
         return typeLookup.lookupTypeReference(typeReference);
     }
@@ -70,7 +70,7 @@ public class TypeLookupTest {
     private StaticContext standardContext() {
         references.addReference(stringReference, stringDeclaration);
         
-        StaticContext context = new StaticContext(references.build());
+        StaticContext context = new StaticContext();
         context.add(stringDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.STRING)));
         
         return context;

@@ -15,7 +15,7 @@ public class NodeTesting {
             @Override
             protected boolean matchesSafely(NodeExecutionResult item, Description mismatchDescription) {
                 if (item.getReturnCode() != 0) {
-                    mismatchDescription.appendText("had return code " + item.getReturnCode());
+                    mismatchDescription.appendText("had return code " + item.getReturnCode() + " (err: " + item.getErrorOutput() + ")");
                     return false;
                 }
                 if (!item.getOutput().equals(expectedOutput)) {

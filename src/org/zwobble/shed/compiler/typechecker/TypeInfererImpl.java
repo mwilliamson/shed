@@ -49,12 +49,12 @@ import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
-import static org.zwobble.shed.compiler.typechecker.VariableLookup.lookupVariableReference;
 
 public class TypeInfererImpl implements TypeInferer {
     private final ArgumentTypeInferer argumentTypeInferer;
     private final BlockTypeChecker blockTypeChecker;
     private final TypeLookup typeLookup;
+    private final VariableLookup variableLookup;
     private final StaticContext context;
 
     @Inject
@@ -62,11 +62,13 @@ public class TypeInfererImpl implements TypeInferer {
         ArgumentTypeInferer argumentTypeInferer,
         BlockTypeChecker blockTypeChecker, 
         TypeLookup typeLookup, 
+        VariableLookup variableLookup,
         StaticContext context
     ) {
         this.argumentTypeInferer = argumentTypeInferer;
         this.blockTypeChecker = blockTypeChecker;
         this.typeLookup = typeLookup;
+        this.variableLookup = variableLookup;
         this.context = context;
     }
     
@@ -84,7 +86,7 @@ public class TypeInfererImpl implements TypeInferer {
             return success(ValueInfo.unassignableValue(CoreTypes.UNIT));
         }
         if (expression instanceof VariableIdentifierNode) {
-            return lookupVariableReference((VariableIdentifierNode)expression, context);
+            return variableLookup.lookupVariableReference((VariableIdentifierNode)expression);
         }
         if (expression instanceof ShortLambdaExpressionNode) {
             return inferType((ShortLambdaExpressionNode)expression);

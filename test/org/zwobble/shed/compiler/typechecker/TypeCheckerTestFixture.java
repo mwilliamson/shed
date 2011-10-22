@@ -23,18 +23,18 @@ public class TypeCheckerTestFixture {
     
     private final FullyQualifiedNamesBuilder fullNames = new FullyQualifiedNamesBuilder();
     private final StaticContext context;
+    private final ReferencesBuilder references = new ReferencesBuilder();
     
     private TypeCheckerTestFixture() {
-        ReferencesBuilder references = new ReferencesBuilder();
         references.addReference(STRING_TYPE_REFERENCE, STRING_TYPE_DECLARATION);
         references.addReference(UNIT_TYPE_REFERENCE, UNIT_TYPE_DECLARATION);
-        context = new StaticContext(references.build());
+        context = new StaticContext();
         context.add(STRING_TYPE_DECLARATION, ValueInfo.unassignableValue(CoreTypes.classOf(CoreTypes.STRING)));
         context.add(UNIT_TYPE_DECLARATION, ValueInfo.unassignableValue(CoreTypes.classOf(CoreTypes.UNIT)));
     }
 
     public <T> T get(Class<T> clazz) {
-        return TypeCheckerInjector.build(fullNames.build(), context).getInstance(clazz);
+        return TypeCheckerInjector.build(fullNames.build(), context, references.build()).getInstance(clazz);
     }
     
     public StaticContext context() {

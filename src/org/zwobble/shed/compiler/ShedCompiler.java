@@ -28,8 +28,6 @@ import org.zwobble.shed.compiler.typechecker.TypeResult;
 
 import com.google.inject.Injector;
 
-import static org.zwobble.shed.compiler.typechecker.DefaultBrowserContext.defaultBrowserContext;
-
 public class ShedCompiler {
     public static ShedCompiler forBrowser(OptimisationLevel optimisationLevel) {
         return new ShedCompiler(new BrowserModuleWrapper(), optimiserFor(optimisationLevel));
@@ -62,7 +60,7 @@ public class ShedCompiler {
         this.javaScriptOptimiser = javaScriptOptimiser;
     }
     
-    public CompilationResult compile(String source) {
+    public CompilationResult compile(String source, StaticContext context) {
         List<TokenPosition> tokens = tokeniser.tokenise(source);
         ParseResult<SourceNode> parseResult = parser.parse(new TokenNavigator(tokens));
         List<CompilerError> errors = new ArrayList<CompilerError>();
@@ -76,8 +74,7 @@ public class ShedCompiler {
             if (referencesResult.isSuccess()) {
                 FullyQualifiedNames fullNames = new TypeNamer().generateFullyQualifiedNames(sourceNode);
                 References references = referencesResult.getReferences();
-                StaticContext browserContext = defaultBrowserContext(references);
-                Injector typeCheckerInjector = TypeCheckerInjector.build(fullNames, browserContext);
+                Injector typeCheckerInjector = TypeCheckerInjector.build(fullNames, context, references);
                 SourceTypeChecker sourceTypeChecker = typeCheckerInjector.getInstance(SourceTypeChecker.class);
                 TypeResult<Void> typeCheckResult = sourceTypeChecker.typeCheck(sourceNode);
                 errors.addAll(typeCheckResult.getErrors());
