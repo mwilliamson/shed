@@ -59,8 +59,8 @@ import static org.zwobble.shed.compiler.types.Types.typeParameters;
 public class TypeInfererTest {
     private final ReferencesBuilder references = new ReferencesBuilder();
 
-    private final GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Number");
-    private final VariableIdentifierNode numberReference = new VariableIdentifierNode("Number");
+    private final GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Double");
+    private final VariableIdentifierNode numberReference = new VariableIdentifierNode("Double");
     
     private final GlobalDeclarationNode stringDeclaration = new GlobalDeclarationNode("String");
     private final VariableIdentifierNode stringReference = new VariableIdentifierNode("String");
@@ -76,7 +76,7 @@ public class TypeInfererTest {
     
     @Test public void
     canInferTypeOfNumberLiteralsAsNumber() {
-        assertThat(inferType(new NumberLiteralNode("2.2"), blankContext()), isType(CoreTypes.NUMBER));
+        assertThat(inferType(new NumberLiteralNode("2.2"), blankContext()), isType(CoreTypes.DOUBLE));
     }
     
     @Test public void
@@ -114,7 +114,7 @@ public class TypeInfererTest {
             new NumberLiteralNode("42")
         );
         TypeResult<Type> result = inferType(functionExpression, blankContext());
-        assertThat(result, is(success(CoreTypes.functionTypeOf(CoreTypes.NUMBER))));
+        assertThat(result, is(success(CoreTypes.functionTypeOf(CoreTypes.DOUBLE))));
     }
     
     @Test public void
@@ -139,7 +139,7 @@ public class TypeInfererTest {
         TypeResult<Type> result = inferType(functionExpression, standardContext());
         assertThat(
             result.getErrors(),
-            is(asList(error(body, new TypeMismatchError(CoreTypes.STRING, CoreTypes.NUMBER))))
+            is(asList(error(body, new TypeMismatchError(CoreTypes.STRING, CoreTypes.DOUBLE))))
         );
     }
     
@@ -174,8 +174,8 @@ public class TypeInfererTest {
     
     @Test public void
     canInferTypesOfArgumentsOfShortLambdaExpression() {
-        GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Number");
-        VariableIdentifierNode numberReference = new VariableIdentifierNode("Number");
+        GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Double");
+        VariableIdentifierNode numberReference = new VariableIdentifierNode("Double");
         references.addReference(numberReference, numberDeclaration);
         
         GlobalDeclarationNode stringDeclaration = new GlobalDeclarationNode("String");
@@ -183,7 +183,7 @@ public class TypeInfererTest {
         references.addReference(stringReference, stringDeclaration);
         
         StaticContext context = blankContext();
-        context.add(numberDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.NUMBER)));
+        context.add(numberDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.DOUBLE)));
         context.add(stringDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.STRING)));
         
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
@@ -192,7 +192,7 @@ public class TypeInfererTest {
             new BooleanLiteralNode(true)
         );
         TypeResult<Type> result = inferType(functionExpression, context);
-        assertThat(result, is(success(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN))));
+        assertThat(result, is(success(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.BOOLEAN))));
     }
     
     @Test public void
@@ -206,7 +206,7 @@ public class TypeInfererTest {
             Nodes.block(new ReturnNode(new BooleanLiteralNode(true)))
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, is(success(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN))));
+        assertThat(result, is(success(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.BOOLEAN))));
     }
     
     @Test public void
@@ -233,7 +233,7 @@ public class TypeInfererTest {
             )
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(errorStrings(result), is(asList("Expected return expression of type \"Boolean\" but was of type \"Number\"")));
+        assertThat(errorStrings(result), is(asList("Expected return expression of type \"Boolean\" but was of type \"Double\"")));
     }
     
     @Test public void
@@ -251,7 +251,7 @@ public class TypeInfererTest {
             Nodes.block(new ReturnNode(ageReference))
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, is(success(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.NUMBER))));
+        assertThat(result, is(success(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.DOUBLE))));
     }
     
     @Test public void
@@ -283,7 +283,7 @@ public class TypeInfererTest {
             ageReference
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, is(success(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.NUMBER))));
+        assertThat(result, is(success(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.DOUBLE))));
     }
     
     @Test public void
@@ -333,11 +333,11 @@ public class TypeInfererTest {
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
-        context.add(declaration, unassignableValue(CoreTypes.functionTypeOf(CoreTypes.NUMBER)));
+        context.add(declaration, unassignableValue(CoreTypes.functionTypeOf(CoreTypes.DOUBLE)));
         
         CallNode call = Nodes.call(reference);
         TypeResult<Type> result = inferType(call, context);
-        assertThat(result, isType(CoreTypes.NUMBER));
+        assertThat(result, isType(CoreTypes.DOUBLE));
     }
     
     @Test public void
@@ -347,8 +347,8 @@ public class TypeInfererTest {
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
-        // isLength: (String, Number) -> Boolean 
-        context.add(declaration, unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
+        // isLength: (String, Double) -> Boolean 
+        context.add(declaration, unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.BOOLEAN)));
         CallNode call = Nodes.call(reference, Nodes.string("Blah"), Nodes.number("4"));
         TypeResult<Type> result = inferType(call, context);
         assertThat(result, isType(CoreTypes.BOOLEAN));
@@ -361,15 +361,15 @@ public class TypeInfererTest {
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
-        // isLength: (String, Number) -> Boolean 
-        context.add(declaration, unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
+        // isLength: (String, Double) -> Boolean 
+        context.add(declaration, unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.BOOLEAN)));
         CallNode call = Nodes.call(reference, Nodes.number("4"), Nodes.string("Blah"));
         TypeResult<Type> result = inferType(call, context);
         assertThat(
             errorStrings(result),
             is(asList(
-                "Expected expression of type String as argument 1, but got expression of type Number",
-                "Expected expression of type Number as argument 2, but got expression of type String"
+                "Expected expression of type String as argument 1, but got expression of type Double",
+                "Expected expression of type Double as argument 2, but got expression of type String"
             ))
         );
     }
@@ -420,8 +420,8 @@ public class TypeInfererTest {
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
-        // isLength: (String, Number) -> Boolean 
-        context.add(declaration, unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
+        // isLength: (String, Double) -> Boolean 
+        context.add(declaration, unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.BOOLEAN)));
         
         CallNode call = Nodes.call(reference, Nodes.number("4"));
         TypeResult<Type> result = inferType(call, context);
@@ -440,11 +440,11 @@ public class TypeInfererTest {
         StaticContext context = standardContext();
         InterfaceType interfaceType = new InterfaceType(fullyQualifiedName("shed", "example", "Brother"));
         context.add(declaration, unassignableValue(interfaceType));
-        context.addInfo(interfaceType, new ScalarTypeInfo(interfaces(), members("age", unassignableValue(CoreTypes.NUMBER))));
+        context.addInfo(interfaceType, new ScalarTypeInfo(interfaces(), members("age", unassignableValue(CoreTypes.DOUBLE))));
         
         MemberAccessNode memberAccess = Nodes.member(reference, "age");
         TypeResult<ValueInfo> result = inferValueInfo(memberAccess, context);
-        assertThat(result, is(success(unassignableValue(CoreTypes.NUMBER))));
+        assertThat(result, is(success(unassignableValue(CoreTypes.DOUBLE))));
     }
     
     @Test public void
@@ -456,11 +456,11 @@ public class TypeInfererTest {
         StaticContext context = standardContext();
         InterfaceType interfaceType = new InterfaceType(fullyQualifiedName("shed", "example", "Brother"));
         context.add(declaration, unassignableValue(interfaceType));
-        context.addInfo(interfaceType, new ScalarTypeInfo(interfaces(), members("age", assignableValue(CoreTypes.NUMBER))));
+        context.addInfo(interfaceType, new ScalarTypeInfo(interfaces(), members("age", assignableValue(CoreTypes.DOUBLE))));
         
         MemberAccessNode memberAccess = Nodes.member(reference, "age");
         TypeResult<ValueInfo> result = inferValueInfo(memberAccess, context);
-        assertThat(result, is(success(assignableValue(CoreTypes.NUMBER))));
+        assertThat(result, is(success(assignableValue(CoreTypes.DOUBLE))));
     }
     
     @Test public void
@@ -472,7 +472,7 @@ public class TypeInfererTest {
         StaticContext context = standardContext();
         InterfaceType interfaceType = new InterfaceType(fullyQualifiedName("shed", "example", "Brother"));
         context.add(declaration, unassignableValue(interfaceType));
-        context.addInfo(interfaceType, new ScalarTypeInfo(interfaces(), members("age", unassignableValue(CoreTypes.NUMBER))));
+        context.addInfo(interfaceType, new ScalarTypeInfo(interfaces(), members("age", unassignableValue(CoreTypes.DOUBLE))));
         MemberAccessNode memberAccess = Nodes.member(reference, "height");
         TypeResult<Type> result = inferType(memberAccess, context);
         assertThat(
@@ -503,7 +503,7 @@ public class TypeInfererTest {
         );
         TypeResult<Type> result = inferType(functionExpression, context);
         assertThat(result, is((Object)success(
-            CoreTypes.functionTypeOf(new TypeApplication(listTypeFunction, asList((Type)CoreTypes.NUMBER)), CoreTypes.NUMBER)
+            CoreTypes.functionTypeOf(new TypeApplication(listTypeFunction, asList((Type)CoreTypes.DOUBLE)), CoreTypes.DOUBLE)
         )));
     }
     
@@ -522,7 +522,7 @@ public class TypeInfererTest {
         )));
         CallNode call = Nodes.call(Nodes.typeApply(identityReference, numberReference), Nodes.number("2"));
         TypeResult<Type> result = inferType(call, context);
-        assertThat(result, isType(CoreTypes.NUMBER));
+        assertThat(result, isType(CoreTypes.DOUBLE));
     }
     
     @Test public void
@@ -533,10 +533,10 @@ public class TypeInfererTest {
         
         StaticContext context = standardContext();
         
-        context.add(declaration, assignableValue(CoreTypes.NUMBER));
+        context.add(declaration, assignableValue(CoreTypes.DOUBLE));
         
         TypeResult<Type> result = inferType(Nodes.assign(reference, Nodes.number("4")), context);
-        assertThat(result, isType(CoreTypes.NUMBER));
+        assertThat(result, isType(CoreTypes.DOUBLE));
     }
     
     @Test public void
@@ -547,7 +547,7 @@ public class TypeInfererTest {
         
         StaticContext context = standardContext();
         
-        context.add(declaration, unassignableValue(CoreTypes.NUMBER));
+        context.add(declaration, unassignableValue(CoreTypes.DOUBLE));
         
         TypeResult<Type> result = inferType(Nodes.assign(reference, Nodes.number("4")), context);
         CompilerErrorDescription[] errorsArray = { new InvalidAssignmentError() };
@@ -562,10 +562,10 @@ public class TypeInfererTest {
         
         StaticContext context = standardContext();
         
-        context.add(declaration, assignableValue(CoreTypes.NUMBER));
+        context.add(declaration, assignableValue(CoreTypes.DOUBLE));
         
         TypeResult<Type> result = inferType(Nodes.assign(reference, Nodes.bool(true)), context);
-        CompilerErrorDescription[] errorsArray = { new TypeMismatchError(CoreTypes.NUMBER, CoreTypes.BOOLEAN) };
+        CompilerErrorDescription[] errorsArray = { new TypeMismatchError(CoreTypes.DOUBLE, CoreTypes.BOOLEAN) };
         assertThat(result, isFailureWithErrors(errorsArray));
     }
     
@@ -614,7 +614,7 @@ public class TypeInfererTest {
         references.addReference(booleanReference, booleanDeclaration);
         
         StaticContext context = blankContext();
-        context.add(numberDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.NUMBER)));
+        context.add(numberDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.DOUBLE)));
         context.add(stringDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.STRING)));
         context.add(booleanDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.BOOLEAN)));
         

@@ -39,10 +39,10 @@ public class TypeLookupTest {
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
-        context.add(declaration, unassignableValue(CoreTypes.NUMBER));
+        context.add(declaration, unassignableValue(CoreTypes.DOUBLE));
         
         TypeResult<Type> result = lookupTypeReference(reference, context);
-        assertThat(errorStrings(result), is(asList("Not a type but an instance of \"Number\"")));
+        assertThat(errorStrings(result), is(asList("Not a type but an instance of \"Double\"")));
     }
     
     @Test public void
@@ -52,12 +52,12 @@ public class TypeLookupTest {
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
-        context.add(declaration, unassignableValue(CoreTypes.NUMBER));
+        context.add(declaration, unassignableValue(CoreTypes.DOUBLE));
         
         TypeResult<Type> result = lookupTypeReference(reference, context);
         assertThat(
             result.getErrors(),
-            is((Object)asList(error(reference, "Not a type but an instance of \"Number\"")))
+            is((Object)asList(error(reference, "Not a type but an instance of \"Double\"")))
         );
     }
     

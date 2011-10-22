@@ -78,8 +78,8 @@ public class StatementsTest {
     @Test public void
     canDeclareClassWithArguments() {
         assertThat(
-            Statements.statement().parse(tokens("class Browser(version: Number) { }")),
-            isSuccessWithNode(Nodes.clazz("Browser", asList(Nodes.formalArgument("version", Nodes.id("Number"))), Nodes.block()))
+            Statements.statement().parse(tokens("class Browser(version: Double) { }")),
+            isSuccessWithNode(Nodes.clazz("Browser", asList(Nodes.formalArgument("version", Nodes.id("Double"))), Nodes.block()))
         );
     }
     
@@ -144,10 +144,10 @@ public class StatementsTest {
     @Test public void
     canParseFunctionDeclarations() {
         assertThat(
-            Statements.statement().parse(tokens("fun repeat(str: String, times: Number): String { return \"\"; }")),
+            Statements.statement().parse(tokens("fun repeat(str: String, times: Double): String { return \"\"; }")),
             isSuccessWithNode(Nodes.func(
                 "repeat",
-                asList(Nodes.formalArgument("str", Nodes.id("String")), Nodes.formalArgument("times", Nodes.id("Number"))),
+                asList(Nodes.formalArgument("str", Nodes.id("String")), Nodes.formalArgument("times", Nodes.id("Double"))),
                 Nodes.id("String"),
                 Nodes.block(Nodes.returnStatement(Nodes.string("")))
             ))

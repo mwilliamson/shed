@@ -17,7 +17,7 @@ public class CoreModule {
     static {
         Builder<String, Type> valuesBuilder = ImmutableMap.builder();
         valuesBuilder.put("String", CoreTypes.classOf(CoreTypes.STRING));
-        valuesBuilder.put("Number", CoreTypes.classOf(CoreTypes.NUMBER));
+        valuesBuilder.put("Double", CoreTypes.classOf(CoreTypes.DOUBLE));
         valuesBuilder.put("Boolean", CoreTypes.classOf(CoreTypes.BOOLEAN));
         valuesBuilder.put("Unit", CoreTypes.classOf(CoreTypes.UNIT));
         

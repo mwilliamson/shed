@@ -17,7 +17,7 @@ import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedTyp
 
 public class CoreTypes {
     public static final ScalarType BOOLEAN = coreType("Boolean");
-    public static final ScalarType NUMBER = coreType("Number");
+    public static final ScalarType DOUBLE = coreType("Double");
     public static final ScalarType STRING = coreType("String");
     public static final ScalarType UNIT = coreType("Unit");
     

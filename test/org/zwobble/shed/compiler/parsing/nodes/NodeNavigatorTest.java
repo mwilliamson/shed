@@ -49,7 +49,7 @@ public class NodeNavigatorTest {
     
     @Test public void
     formalArgumentChildrenIsTypeExpression() {
-        ExpressionNode expression = Nodes.id("Number");
+        ExpressionNode expression = Nodes.id("Double");
         assertThat(children(Nodes.formalArgument("age", expression)), isNodes(expression));
     }
     
@@ -118,14 +118,14 @@ public class NodeNavigatorTest {
     
     @Test public void
     shortLambdaChildrenAreArgumentsAndBody() {
-        FormalArgumentNode formalArgument = Nodes.formalArgument("x", Nodes.id("Number"));
+        FormalArgumentNode formalArgument = Nodes.formalArgument("x", Nodes.id("Double"));
         BooleanLiteralNode body = Nodes.bool(true);
         assertThat(children(Nodes.shortLambda(asList(formalArgument), body)), isNodes(formalArgument, body));
     }
     
     @Test public void
     shortLambdaChildrenAreArgumentsAndTypeSpecifierWhenPresentAndBody() {
-        FormalArgumentNode formalArgument = Nodes.formalArgument("x", Nodes.id("Number"));
+        FormalArgumentNode formalArgument = Nodes.formalArgument("x", Nodes.id("Double"));
         VariableIdentifierNode typeSpecifier = Nodes.id("Boolean");
         BooleanLiteralNode body = Nodes.bool(true);
         assertThat(children(Nodes.shortLambda(asList(formalArgument), typeSpecifier, body)), isNodes(formalArgument, typeSpecifier, body));
@@ -143,7 +143,7 @@ public class NodeNavigatorTest {
     @Test public void
     typeApplicationChildrenAreBaseTypeAndTypeParameters() {
         VariableIdentifierNode baseType = Nodes.id("List");
-        VariableIdentifierNode parameter = Nodes.id("Number");
+        VariableIdentifierNode parameter = Nodes.id("Double");
         assertThat(children(Nodes.typeApply(baseType, parameter)), isNodes(baseType, parameter));
     }
     

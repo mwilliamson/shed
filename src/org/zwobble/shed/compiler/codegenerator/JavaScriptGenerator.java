@@ -138,7 +138,7 @@ public class JavaScriptGenerator {
             return js.call(js.id(CORE_VALUES_OBJECT_NAME + ".Boolean"), js.bool(((BooleanLiteralNode)node).getValue()));
         }
         if (node instanceof NumberLiteralNode) {
-            return js.call(js.id(CORE_VALUES_OBJECT_NAME + ".Number"), js.number(((NumberLiteralNode)node).getValue()));
+            return js.call(js.id(CORE_VALUES_OBJECT_NAME + ".Double"), js.number(((NumberLiteralNode)node).getValue()));
         }
         if (node instanceof StringLiteralNode) {
             return js.call(js.id(CORE_VALUES_OBJECT_NAME + ".String"), js.string(((StringLiteralNode)node).getValue()));

@@ -130,7 +130,7 @@ public class ReferenceResolverTest {
         FormalArgumentNode firstArgument = new FormalArgumentNode("first", Nodes.id("String"));
         VariableIdentifierNode reference = Nodes.id("first");
         SyntaxNode source = new ShortLambdaExpressionNode(
-            asList(firstArgument, new FormalArgumentNode("second", Nodes.id("Number"))),
+            asList(firstArgument, new FormalArgumentNode("second", Nodes.id("Double"))),
             Option.<ExpressionNode>none(),
             reference
         );
@@ -142,7 +142,7 @@ public class ReferenceResolverTest {
         FormalArgumentNode firstArgument = new FormalArgumentNode("first", Nodes.id("String"));
         VariableIdentifierNode reference = Nodes.id("first");
         SyntaxNode source = new LongLambdaExpressionNode(
-            asList(firstArgument, new FormalArgumentNode("second", Nodes.id("Number"))),
+            asList(firstArgument, new FormalArgumentNode("second", Nodes.id("Double"))),
             Nodes.id("String"),
             Nodes.block(Nodes.returnStatement(reference))
         );
@@ -156,7 +156,7 @@ public class ReferenceResolverTest {
         SyntaxNode source = Nodes.block(
             declaration,
             Nodes.expressionStatement(new ShortLambdaExpressionNode(
-                asList(new FormalArgumentNode("first", Nodes.id("String")), new FormalArgumentNode("second", Nodes.id("Number"))),
+                asList(new FormalArgumentNode("first", Nodes.id("String")), new FormalArgumentNode("second", Nodes.id("Double"))),
                 Option.<ExpressionNode>none(),
                 reference
             ))
@@ -201,7 +201,7 @@ public class ReferenceResolverTest {
     typeExpressionsOfFormalArgumentsAreLookedUp() {
         VariableIdentifierNode typeReference = Nodes.id("String");
         SyntaxNode source = new ShortLambdaExpressionNode(
-            asList(new FormalArgumentNode("first", typeReference), new FormalArgumentNode("second", Nodes.id("Number"))),
+            asList(new FormalArgumentNode("first", typeReference), new FormalArgumentNode("second", Nodes.id("Double"))),
             Option.<ExpressionNode>none(),
             Nodes.id("first")
         );
@@ -318,10 +318,10 @@ public class ReferenceResolverTest {
     referencesInTypeAplicationAreResolved() {
         DeclarationNode listDeclaration = Nodes.object("List", Nodes.block());
         VariableIdentifierNode listReference = Nodes.id("List");
-        VariableIdentifierNode numberReference = Nodes.id("Number");
+        VariableIdentifierNode numberReference = Nodes.id("Double");
         SyntaxNode source = Nodes.block(listDeclaration, Nodes.expressionStatement(Nodes.typeApply(listReference, numberReference)));
         assertThat(resolveReferences(source), hasReference(listReference, listDeclaration));
-        assertThat(resolveReferences(source), hasReference(numberReference, CoreModule.GLOBAL_DECLARATIONS.get("Number")));
+        assertThat(resolveReferences(source), hasReference(numberReference, CoreModule.GLOBAL_DECLARATIONS.get("Double")));
     }
     
     @Test public void
@@ -367,7 +367,7 @@ public class ReferenceResolverTest {
         VariableIdentifierNode reference = Nodes.id("first");
         SyntaxNode source = new FunctionDeclarationNode(
             "go",
-            asList(firstArgument, new FormalArgumentNode("second", Nodes.id("Number"))),
+            asList(firstArgument, new FormalArgumentNode("second", Nodes.id("Double"))),
             Nodes.id("String"),
             Nodes.block(Nodes.returnStatement(reference))
         );
@@ -380,7 +380,7 @@ public class ReferenceResolverTest {
         FunctionDeclarationNode functionDeclaration = new FunctionDeclarationNode(
             "now",
             Collections.<FormalArgumentNode>emptyList(),
-            Nodes.id("Number"),
+            Nodes.id("Double"),
             Nodes.block(Nodes.returnStatement(functionReference))
         );
         assertThat(resolveReferences(functionDeclaration), hasReference(functionReference, functionDeclaration));
@@ -392,7 +392,7 @@ public class ReferenceResolverTest {
         FunctionDeclarationNode functionDeclaration = new FunctionDeclarationNode(
             "magic",
             Collections.<FormalArgumentNode>emptyList(),
-            new VariableIdentifierNode("Number"),
+            new VariableIdentifierNode("Double"),
             Nodes.block(returnNode)
         );
         VariableIdentifierNode functionReference = Nodes.id("magic");

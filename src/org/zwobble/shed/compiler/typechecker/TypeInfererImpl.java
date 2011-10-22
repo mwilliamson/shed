@@ -77,7 +77,7 @@ public class TypeInfererImpl implements TypeInferer {
             return success(ValueInfo.unassignableValue(CoreTypes.BOOLEAN));            
         }
         if (expression instanceof NumberLiteralNode) {
-            return success(ValueInfo.unassignableValue(CoreTypes.NUMBER));
+            return success(ValueInfo.unassignableValue(CoreTypes.DOUBLE));
         }
         if (expression instanceof StringLiteralNode) {
             return success(ValueInfo.unassignableValue(CoreTypes.STRING));

@@ -26,7 +26,7 @@ public class TypeReplacerTest {
         FormalTypeParameter formalTypeParameter = new FormalTypeParameter("T");
         Type replacement = typeReplacer.replaceTypes(
             formalTypeParameter,
-            ImmutableMap.of(new FormalTypeParameter("T"), (Type)CoreTypes.NUMBER)
+            ImmutableMap.of(new FormalTypeParameter("T"), (Type)CoreTypes.DOUBLE)
         );
         assertThat(replacement, sameInstance((Type)formalTypeParameter));
     }
@@ -37,9 +37,9 @@ public class TypeReplacerTest {
         FormalTypeParameter formalTypeParameter = new FormalTypeParameter("T");
         Type replacement = typeReplacer.replaceTypes(
             formalTypeParameter,
-            ImmutableMap.of(formalTypeParameter, (Type)CoreTypes.NUMBER)
+            ImmutableMap.of(formalTypeParameter, (Type)CoreTypes.DOUBLE)
         );
-        assertThat(replacement, is((Type)CoreTypes.NUMBER));
+        assertThat(replacement, is((Type)CoreTypes.DOUBLE));
     }
     
     @Test public void
@@ -54,8 +54,8 @@ public class TypeReplacerTest {
         
         Type replacement = typeReplacer.replaceTypes(
             typeApplication,
-            ImmutableMap.<FormalTypeParameter, Type>of(functionFormalTypeParameter, CoreTypes.NUMBER)
+            ImmutableMap.<FormalTypeParameter, Type>of(functionFormalTypeParameter, CoreTypes.DOUBLE)
         );
-        assertThat(replacement, is((Type)new TypeApplication(parameterisedType, asList((Type)CoreTypes.NUMBER))));
+        assertThat(replacement, is((Type)new TypeApplication(parameterisedType, asList((Type)CoreTypes.DOUBLE))));
     }
 }

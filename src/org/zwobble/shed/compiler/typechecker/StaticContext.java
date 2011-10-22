@@ -43,7 +43,7 @@ public class StaticContext {
     public StaticContext() {
         addInfo(CoreTypes.STRING, new ScalarTypeInfo(interfaces(), members()));
         addInfo(CoreTypes.BOOLEAN, new ScalarTypeInfo(interfaces(), members()));
-        addInfo(CoreTypes.NUMBER, numberTypeInfo(CoreTypes.NUMBER));
+        addInfo(CoreTypes.DOUBLE, numberTypeInfo(CoreTypes.DOUBLE));
         addInfo(CoreTypes.UNIT, new ScalarTypeInfo(interfaces(), members()));
     }
     

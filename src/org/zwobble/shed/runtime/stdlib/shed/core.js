@@ -6,17 +6,17 @@
     };
     var String = exports.String = identityFunction;
     var Boolean = exports.Boolean = identityFunction;
-    var Number = exports.Number = function(value) {
+    var Double = exports.Double = function(value) {
         return {
             __value: value,
             add: function(other) {
-                return Number(value + other.__value);
+                return Double(value + other.__value);
             },
             subtract: function(other) {
-                return Number(value - other.__value);
+                return Double(value - other.__value);
             },
             multiply: function(other) {
-                return Number(value * other.__value);
+                return Double(value * other.__value);
             },
             toString: function() {
                 return String(value.toString());

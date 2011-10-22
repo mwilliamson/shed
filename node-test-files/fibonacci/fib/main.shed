@@ -2,7 +2,7 @@ package fib;
 
 import shed.sys;
 
-fun fib(x: Number) : Number {
+fun fib(x: Double) : Double {
     if x.equals(0) {
         return 0;
     }

@@ -67,9 +67,9 @@ public class JavaScriptGeneratorTest {
     }
     
     @Test public void
-    numberLiteralsAreConvertedToBoxedNumbers() {
+    numberLiteralsAreConvertedToBoxedDoubles() {
         NumberLiteralNode source = new NumberLiteralNode("4.2");
-        assertGeneratedJavaScript(source, js.call(js.id("__core.Number"), js.number("4.2")));
+        assertGeneratedJavaScript(source, js.call(js.id("__core.Double"), js.number("4.2")));
     }
     
     @Test public void
@@ -150,7 +150,7 @@ public class JavaScriptGeneratorTest {
         ShortLambdaExpressionNode source = new ShortLambdaExpressionNode(
             asList(
                 new FormalArgumentNode("name", new VariableIdentifierNode("String")),
-                new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
+                new FormalArgumentNode("age", new VariableIdentifierNode("Double"))
             ),
             none(ExpressionNode.class),
             new BooleanLiteralNode(true)
@@ -177,9 +177,9 @@ public class JavaScriptGeneratorTest {
         LongLambdaExpressionNode source = new LongLambdaExpressionNode(
             asList(
                 new FormalArgumentNode("name", new VariableIdentifierNode("String")),
-                new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
+                new FormalArgumentNode("age", new VariableIdentifierNode("Double"))
             ),
-            new VariableIdentifierNode("Number"),
+            new VariableIdentifierNode("Double"),
             Nodes.block(variableNode, returnNode)
         );
         assertGeneratedJavaScript(
@@ -201,10 +201,10 @@ public class JavaScriptGeneratorTest {
         JavaScriptGenerator generator = new JavaScriptGenerator(new IdentityModuleWrapper(), resolveReferences(source));
         
         assertThat(
-            generator.generate(source, asList("String", "Number")),
+            generator.generate(source, asList("String", "Double")),
             is((JavaScriptNode)js.statements(
                 js.var("String", js.id(CORE_VALUES_OBJECT_NAME + ".String")),
-                js.var("Number", js.id(CORE_VALUES_OBJECT_NAME + ".Number")),
+                js.var("Double", js.id(CORE_VALUES_OBJECT_NAME + ".Double")),
                 generator.generateStatement(statement)
             ))
         );
@@ -330,15 +330,15 @@ public class JavaScriptGeneratorTest {
     @Test public void
     typeApplicationIsConvertedToFunctionCall() {
         VariableIdentifierNode functionReference = Nodes.id("Function1");
-        VariableIdentifierNode numberReference = Nodes.id("Number");
+        VariableIdentifierNode numberReference = Nodes.id("Double");
         VariableIdentifierNode stringReference = Nodes.id("String");
         ReferencesBuilder references = new ReferencesBuilder();
         references.addReference(functionReference, new GlobalDeclarationNode("Function1"));
-        references.addReference(numberReference, new GlobalDeclarationNode("Number"));
+        references.addReference(numberReference, new GlobalDeclarationNode("Double"));
         references.addReference(stringReference, new GlobalDeclarationNode("String"));
         
         TypeApplicationNode source = Nodes.typeApply(functionReference, numberReference, stringReference);
-        assertGeneratedJavaScript(references.build(), source, js.call(js.id("Function1"), js.id("Number"), js.id("String")));
+        assertGeneratedJavaScript(references.build(), source, js.call(js.id("Function1"), js.id("Double"), js.id("String")));
     }
     
     @Test public void
@@ -410,9 +410,9 @@ public class JavaScriptGeneratorTest {
             "rank",
             asList(
                 new FormalArgumentNode("name", new VariableIdentifierNode("String")),
-                new FormalArgumentNode("age", new VariableIdentifierNode("Number"))
+                new FormalArgumentNode("age", new VariableIdentifierNode("Double"))
             ),
-            new VariableIdentifierNode("Number"),
+            new VariableIdentifierNode("Double"),
             Nodes.block(returnNode)
         );
         assertGeneratedJavaScript(
@@ -429,7 +429,7 @@ public class JavaScriptGeneratorTest {
         FunctionDeclarationNode function = Nodes.func(
             "magic",
             Collections.<FormalArgumentNode>emptyList(),
-            Nodes.id("Number"),
+            Nodes.id("Double"),
             Nodes.block(returnNode)
         );
         StatementNode functionCall = Nodes.expressionStatement(Nodes.call(Nodes.id("magic")));
@@ -451,7 +451,7 @@ public class JavaScriptGeneratorTest {
         FunctionDeclarationNode function = Nodes.func(
             "magic",
             Collections.<FormalArgumentNode>emptyList(),
-            Nodes.id("Number"),
+            Nodes.id("Double"),
             Nodes.block(returnNode)
         );
         StatementNode functionCall = Nodes.expressionStatement(Nodes.call(Nodes.id("magic")));

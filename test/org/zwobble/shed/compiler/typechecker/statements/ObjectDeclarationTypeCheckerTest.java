@@ -44,7 +44,7 @@ public class ObjectDeclarationTypeCheckerTest {
             Nodes.block(Nodes.immutableVar("version", stringReference, Nodes.number("1.2")))
         );
         TypeResult<?> result = typeCheckObjectDeclaration(objectDeclarationNode, staticContext());
-        assertThat(result, isFailureWithErrors(new TypeMismatchError(CoreTypes.STRING, CoreTypes.NUMBER)));
+        assertThat(result, isFailureWithErrors(new TypeMismatchError(CoreTypes.STRING, CoreTypes.DOUBLE)));
     }
     
     @Test public void

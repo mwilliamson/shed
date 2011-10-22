@@ -129,7 +129,7 @@ public class TypeCheckerTest {
         WhileStatementNode loop = Nodes.whileLoop(Nodes.number("42"), Nodes.block());
         TypeResult<StatementTypeCheckResult> result = 
             typeCheckStatement(loop, staticContext(), some((Type)CoreTypes.STRING));
-        assertThat(result, isFailureWithErrors(new ConditionNotBooleanError(CoreTypes.NUMBER)));
+        assertThat(result, isFailureWithErrors(new ConditionNotBooleanError(CoreTypes.DOUBLE)));
     }
     
     @Test public void
@@ -137,13 +137,13 @@ public class TypeCheckerTest {
         WhileStatementNode loop = Nodes.whileLoop(Nodes.bool(true), Nodes.block(Nodes.returnStatement(Nodes.number("42"))));
         TypeResult<StatementTypeCheckResult> result = 
             typeCheckStatement(loop, staticContext(), some((Type)CoreTypes.STRING));
-        assertThat(result, isFailureWithErrors(new WrongReturnTypeError(CoreTypes.STRING, CoreTypes.NUMBER)));
+        assertThat(result, isFailureWithErrors(new WrongReturnTypeError(CoreTypes.STRING, CoreTypes.DOUBLE)));
     }
     
     @Test public void
     functionDeclarationAddsFunctionTypeToScope() {
-        GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Number");
-        VariableIdentifierNode numberReference = Nodes.id("Number");
+        GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Double");
+        VariableIdentifierNode numberReference = Nodes.id("Double");
         FunctionDeclarationNode functionDeclaration = new FunctionDeclarationNode(
             "now",
             Collections.<FormalArgumentNode>emptyList(),
@@ -152,17 +152,17 @@ public class TypeCheckerTest {
         );
         references.addReference(numberReference, numberDeclaration);
         StaticContext staticContext = staticContext();
-        staticContext.add(numberDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.NUMBER)));
+        staticContext.add(numberDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.DOUBLE)));
         TypeResult<StatementTypeCheckResult> result = 
             typeCheckStatement(functionDeclaration, staticContext, Option.<Type>none());
         assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
-        assertThat(staticContext.get(functionDeclaration), is(success(unassignableValue(CoreTypes.functionTypeOf(CoreTypes.NUMBER)))));
+        assertThat(staticContext.get(functionDeclaration), is(success(unassignableValue(CoreTypes.functionTypeOf(CoreTypes.DOUBLE)))));
     }
     
     @Test public void
     functionDeclarationBodyIsTypeChecked() {
-        GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Number");
-        VariableIdentifierNode numberReference = Nodes.id("Number");
+        GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Double");
+        VariableIdentifierNode numberReference = Nodes.id("Double");
         
         FunctionDeclarationNode functionDeclaration = new FunctionDeclarationNode(
             "now",
@@ -172,16 +172,16 @@ public class TypeCheckerTest {
         );
         references.addReference(numberReference, numberDeclaration);
         StaticContext staticContext = staticContext();
-        staticContext.add(numberDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.NUMBER)));
+        staticContext.add(numberDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.DOUBLE)));
         TypeResult<StatementTypeCheckResult> result = 
             typeCheckStatement(functionDeclaration, staticContext, Option.<Type>none());
-        assertThat(result, CompilerTesting.isFailureWithErrors(new WrongReturnTypeError(CoreTypes.NUMBER, CoreTypes.BOOLEAN)));
+        assertThat(result, CompilerTesting.isFailureWithErrors(new WrongReturnTypeError(CoreTypes.DOUBLE, CoreTypes.BOOLEAN)));
     }
     
     @Test public void
     functionDeclarationCanCallItself() {
-        GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Number");
-        VariableIdentifierNode numberReference = Nodes.id("Number");
+        GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Double");
+        VariableIdentifierNode numberReference = Nodes.id("Double");
         
         VariableIdentifierNode functionReference = Nodes.id("now");
         FunctionDeclarationNode functionDeclaration = new FunctionDeclarationNode(
@@ -193,17 +193,17 @@ public class TypeCheckerTest {
         references.addReference(numberReference, numberDeclaration);
         references.addReference(functionReference, functionDeclaration);
         StaticContext staticContext = staticContext();
-        staticContext.add(numberDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.NUMBER)));
+        staticContext.add(numberDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.DOUBLE)));
         TypeResult<StatementTypeCheckResult> result = 
             typeCheckStatement(functionDeclaration, staticContext, Option.<Type>none());
         assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
-        assertThat(staticContext.get(functionDeclaration), is(success(unassignableValue(CoreTypes.functionTypeOf(CoreTypes.NUMBER)))));
+        assertThat(staticContext.get(functionDeclaration), is(success(unassignableValue(CoreTypes.functionTypeOf(CoreTypes.DOUBLE)))));
     }
     
     @Test public void
     functionDeclarationsCanBeMutuallyRecursive() {
-        GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Number");
-        VariableIdentifierNode numberReference = Nodes.id("Number");
+        GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Double");
+        VariableIdentifierNode numberReference = Nodes.id("Double");
         references.addReference(numberReference, numberDeclaration);
         
         VariableIdentifierNode firstFunctionReference = Nodes.id("first");
@@ -227,11 +227,11 @@ public class TypeCheckerTest {
         references.addReference(thirdFunctionReference, thirdFunctionDeclaration);
         
         StaticContext staticContext = staticContext();
-        staticContext.add(numberDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.NUMBER)));
+        staticContext.add(numberDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.DOUBLE)));
         BlockNode block = Nodes.block(firstFunctionDeclaration, secondFunctionDeclaration, thirdFunctionDeclaration);
         TypeResult<StatementTypeCheckResult> result = typeCheckBlock(block, staticContext, Option.<Type>none());
         assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
-        assertThat(staticContext.get(firstFunctionDeclaration), is(success(unassignableValue(CoreTypes.functionTypeOf(CoreTypes.NUMBER)))));
+        assertThat(staticContext.get(firstFunctionDeclaration), is(success(unassignableValue(CoreTypes.functionTypeOf(CoreTypes.DOUBLE)))));
     }
     
     private TypeResult<StatementTypeCheckResult> typeCheckBlock(

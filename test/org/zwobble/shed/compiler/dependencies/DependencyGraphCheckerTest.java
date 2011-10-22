@@ -35,7 +35,7 @@ public class DependencyGraphCheckerTest {
     
     @Test public void
     functionDeclarationIsAllowedAfterUsageIfItHasNoDependencies() {
-        DeclarationNode declaration = Nodes.func("go", NO_ARGS, Nodes.id("Number"), Nodes.block());
+        DeclarationNode declaration = Nodes.func("go", NO_ARGS, Nodes.id("Double"), Nodes.block());
         StatementNode reference = Nodes.expressionStatement(Nodes.call(Nodes.id("go")));
         DependencyGraph graph = new DependencyGraph();
         graph.addDependency(declaration, reference);
@@ -47,7 +47,7 @@ public class DependencyGraphCheckerTest {
     errorIfCycleInLogicalDependencies() {
         VariableDeclarationNode variableDeclaration = Nodes.immutableVar("x", Nodes.call(Nodes.id("go")));
         BlockNode body = Nodes.block(Nodes.returnStatement(Nodes.id("x")));
-        FunctionDeclarationNode functionDeclaration = Nodes.func("go", NO_ARGS, Nodes.id("Number"), body);
+        FunctionDeclarationNode functionDeclaration = Nodes.func("go", NO_ARGS, Nodes.id("Double"), body);
         
         DependencyGraph graph = new DependencyGraph();
         graph.addDependency(variableDeclaration, functionDeclaration);
@@ -61,11 +61,11 @@ public class DependencyGraphCheckerTest {
     
     @Test public void
     listOfVariablesBeingDeclaredIsClearedOfOldVariables() {
-        FunctionDeclarationNode firstDeclaration = Nodes.func("first", NO_ARGS, Nodes.id("Number"), Nodes.block());
+        FunctionDeclarationNode firstDeclaration = Nodes.func("first", NO_ARGS, Nodes.id("Double"), Nodes.block());
         ExpressionStatementNode firstReference = Nodes.expressionStatement(Nodes.id("first"));
         VariableDeclarationNode variableDeclaration = Nodes.immutableVar("x", Nodes.call(Nodes.id("go")));
         BlockNode body = Nodes.block(Nodes.returnStatement(Nodes.id("x")));
-        FunctionDeclarationNode functionDeclaration = Nodes.func("go", NO_ARGS, Nodes.id("Number"), body);
+        FunctionDeclarationNode functionDeclaration = Nodes.func("go", NO_ARGS, Nodes.id("Double"), body);
         
         DependencyGraph graph = new DependencyGraph();
         graph.addDependency(firstDeclaration, firstReference);
@@ -97,7 +97,7 @@ public class DependencyGraphCheckerTest {
         StatementNode call = Nodes.expressionStatement(Nodes.id("go()"));
         VariableDeclarationNode variableDeclaration = Nodes.immutableVar("x", Nodes.number("4"));
         BlockNode functionBody = Nodes.block(Nodes.returnStatement(Nodes.id("x")));
-        FunctionDeclarationNode functionDeclaration = Nodes.func("go", NO_ARGS, Nodes.id("Number"), functionBody);
+        FunctionDeclarationNode functionDeclaration = Nodes.func("go", NO_ARGS, Nodes.id("Double"), functionBody);
 
         DependencyGraph graph = new DependencyGraph();
         graph.addDependency(functionDeclaration, call);
@@ -121,8 +121,8 @@ public class DependencyGraphCheckerTest {
     
     @Test public void
     functionsCanBeMutuallyRecursive() {
-        FunctionDeclarationNode firstFunction = Nodes.func("first", NO_ARGS, Nodes.id("Number"), Nodes.block());
-        FunctionDeclarationNode secondFunction = Nodes.func("second", NO_ARGS, Nodes.id("Number"), Nodes.block());
+        FunctionDeclarationNode firstFunction = Nodes.func("first", NO_ARGS, Nodes.id("Double"), Nodes.block());
+        FunctionDeclarationNode secondFunction = Nodes.func("second", NO_ARGS, Nodes.id("Double"), Nodes.block());
         StatementNode call = Nodes.expressionStatement(Nodes.call(Nodes.id("first")));
         
         DependencyGraph graph = new DependencyGraph();

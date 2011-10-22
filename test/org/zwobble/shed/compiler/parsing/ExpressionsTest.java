@@ -202,16 +202,16 @@ public class ExpressionsTest {
     @Test public void
     canParseTypeApplication() {
         assertThat(
-            Expressions.expression().parse(tokens("Map[String, Number]")),
-            isSuccessWithNode(Nodes.typeApply(Nodes.id("Map"), Nodes.id("String"), Nodes.id("Number")))
+            Expressions.expression().parse(tokens("Map[String, Double]")),
+            isSuccessWithNode(Nodes.typeApply(Nodes.id("Map"), Nodes.id("String"), Nodes.id("Double")))
         );
     }
     
     @Test public void
     canParseTypeApplicationAsTypeExpression() {
         assertThat(
-            Expressions.typeExpression().parse(tokens("Map[String, Number]")),
-            isSuccessWithNode(Nodes.typeApply(Nodes.id("Map"), Nodes.id("String"), Nodes.id("Number")))
+            Expressions.typeExpression().parse(tokens("Map[String, Double]")),
+            isSuccessWithNode(Nodes.typeApply(Nodes.id("Map"), Nodes.id("String"), Nodes.id("Double")))
         );
     }
     
