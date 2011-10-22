@@ -12,6 +12,7 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
+import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
@@ -25,10 +26,7 @@ public class ImportStatementTypeCheckerTest {
         Type dateTime = new ClassType(dateTimeName);
         staticContext.addGlobal(dateTimeName, CoreTypes.classOf(dateTime));
         
-        assertThat(
-            typeCheckImportStatement(importStatement, staticContext),
-            is(TypeResult.<Void>success(null))
-        );
+        assertThat(typeCheckImportStatement(importStatement, staticContext), is(isSuccess()));
         assertThat(staticContext.get(importStatement), is(VariableLookupResult.success(unassignableValue(CoreTypes.classOf(dateTime)))));
     }
 

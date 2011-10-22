@@ -19,7 +19,7 @@ import static java.util.Arrays.asList;
 @EqualsAndHashCode
 public class TypeResult<T> implements HasErrors {
     public static TypeResult<Void> success() {
-        return success(null);
+        return new TypeResult<Void>(true, false, null, Collections.<CompilerError>emptyList());
     }
     
     public static <T> TypeResult<T> success(T value) {

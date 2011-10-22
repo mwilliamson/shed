@@ -49,7 +49,7 @@ public class SourceTypeChecker {
         }
         
         if (errors.isEmpty()) {
-            return success(null);
+            return success();
         } else {
             return failure(errors);
         }
