@@ -34,6 +34,10 @@ public class ShedCompiler {
     public static ShedCompiler forBrowser(OptimisationLevel optimisationLevel) {
         return new ShedCompiler(new BrowserModuleWrapper(), optimiserFor(optimisationLevel));
     }
+    
+    public static ShedCompiler build(JavaScriptModuleWrapper moduleWrapper, OptimisationLevel optimisationLevel) {
+        return new ShedCompiler(moduleWrapper, optimiserFor(optimisationLevel));
+    }
 
     private static JavaScriptOptimiser optimiserFor(OptimisationLevel optimisationLevel) {
         if (optimisationLevel == OptimisationLevel.SIMPLE) {
