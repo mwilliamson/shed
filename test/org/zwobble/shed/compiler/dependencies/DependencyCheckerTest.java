@@ -8,7 +8,7 @@ import java.util.Map;
 import org.junit.Test;
 import org.zwobble.shed.compiler.dependencies.errors.UndeclaredDependenciesError;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
-import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
@@ -94,7 +94,7 @@ public class DependencyCheckerTest {
 
     private References resolveReferences(SyntaxNode node) {
         ReferenceResolver resolver = new ReferenceResolver();
-        Map<String, GlobalDeclarationNode> globalDeclarations = ImmutableMap.of();
+        Map<String, GlobalDeclaration> globalDeclarations = ImmutableMap.of();
         ReferenceResolverResult result = resolver.resolveReferences(node, globalDeclarations);
         if (!result.isSuccess()) {
             throw new RuntimeException("Unsuccessful reference resolution: " + result.getErrors());

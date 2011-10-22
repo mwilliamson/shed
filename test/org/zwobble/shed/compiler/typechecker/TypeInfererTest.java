@@ -11,7 +11,7 @@ import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
-import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
@@ -38,6 +38,8 @@ import org.zwobble.shed.compiler.types.TypeApplication;
 
 import com.google.inject.Injector;
 
+import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -59,13 +61,13 @@ import static org.zwobble.shed.compiler.types.Types.typeParameters;
 public class TypeInfererTest {
     private final ReferencesBuilder references = new ReferencesBuilder();
 
-    private final GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Double");
+    private final GlobalDeclaration numberDeclaration = globalDeclaration("Double");
     private final VariableIdentifierNode numberReference = new VariableIdentifierNode("Double");
     
-    private final GlobalDeclarationNode stringDeclaration = new GlobalDeclarationNode("String");
+    private final GlobalDeclaration stringDeclaration = globalDeclaration("String");
     private final VariableIdentifierNode stringReference = new VariableIdentifierNode("String");
 
-    private final GlobalDeclarationNode booleanDeclaration = new GlobalDeclarationNode("Boolean");
+    private final GlobalDeclaration booleanDeclaration = globalDeclaration("Boolean");
     private final VariableIdentifierNode booleanReference = new VariableIdentifierNode("Boolean");
     
     @Test public void
@@ -92,7 +94,7 @@ public class TypeInfererTest {
     @Test public void
     variableReferencesHaveTypeOfVariable() {
         VariableIdentifierNode reference = new VariableIdentifierNode("value");
-        GlobalDeclarationNode declaration = new GlobalDeclarationNode("value");
+        GlobalDeclaration declaration = globalDeclaration("value");
         references.addReference(reference, declaration);
         StaticContext context = blankContext();
         context.add(declaration, unassignableValue(CoreTypes.STRING));
@@ -174,11 +176,11 @@ public class TypeInfererTest {
     
     @Test public void
     canInferTypesOfArgumentsOfShortLambdaExpression() {
-        GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Double");
+        GlobalDeclaration numberDeclaration = globalDeclaration("Double");
         VariableIdentifierNode numberReference = new VariableIdentifierNode("Double");
         references.addReference(numberReference, numberDeclaration);
         
-        GlobalDeclarationNode stringDeclaration = new GlobalDeclarationNode("String");
+        GlobalDeclaration stringDeclaration = globalDeclaration("String");
         VariableIdentifierNode stringReference = new VariableIdentifierNode("String");
         references.addReference(stringReference, stringDeclaration);
         
@@ -329,7 +331,7 @@ public class TypeInfererTest {
     @Test public void
     functionCallsHaveTypeOfReturnTypeOfFunctionWithNoArguments() {
         VariableIdentifierNode reference = Nodes.id("magic");
-        GlobalDeclarationNode declaration = new GlobalDeclarationNode("magic");
+        GlobalDeclaration declaration = globalDeclaration("magic");
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
@@ -343,7 +345,7 @@ public class TypeInfererTest {
     @Test public void
     functionCallsHaveTypeOfReturnTypeOfFunctionWithCorrectArguments() {
         VariableIdentifierNode reference = Nodes.id("isLength");
-        GlobalDeclarationNode declaration = new GlobalDeclarationNode("isLength");
+        GlobalDeclaration declaration = globalDeclaration("isLength");
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
@@ -357,7 +359,7 @@ public class TypeInfererTest {
     @Test public void
     errorIfActualArgumentsAreNotAssignableToFormalArguments() {
         VariableIdentifierNode reference = Nodes.id("isLength");
-        GlobalDeclarationNode declaration = new GlobalDeclarationNode("isLength");
+        GlobalDeclaration declaration = globalDeclaration("isLength");
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
@@ -377,7 +379,7 @@ public class TypeInfererTest {
     @Test public void
     cannotCallNonFunctionTypeApplications() {
         VariableIdentifierNode reference = Nodes.id("isLength");
-        GlobalDeclarationNode declaration = new GlobalDeclarationNode("isLength");
+        GlobalDeclaration declaration = globalDeclaration("isLength");
         references.addReference(reference, declaration);
         
         ClassType classType = new ClassType(fullyQualifiedName("example", "List"));
@@ -398,7 +400,7 @@ public class TypeInfererTest {
     @Test public void
     cannotCallTypesThatArentFunctionApplications() {
         VariableIdentifierNode reference = Nodes.id("isLength");
-        GlobalDeclarationNode declaration = new GlobalDeclarationNode("isLength");
+        GlobalDeclaration declaration = globalDeclaration("isLength");
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
@@ -416,7 +418,7 @@ public class TypeInfererTest {
     @Test public void
     errorIfCallingFunctionWithWrongNumberOfArguments() {
         VariableIdentifierNode reference = Nodes.id("isLength");
-        GlobalDeclarationNode declaration = new GlobalDeclarationNode("isLength");
+        GlobalDeclaration declaration = globalDeclaration("isLength");
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
@@ -434,7 +436,7 @@ public class TypeInfererTest {
     @Test public void
     memberAccessHasTypeOfMember() {
         VariableIdentifierNode reference = Nodes.id("heAintHeavy");
-        GlobalDeclarationNode declaration = new GlobalDeclarationNode("heAintHeavy");
+        GlobalDeclaration declaration = globalDeclaration("heAintHeavy");
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
@@ -450,7 +452,7 @@ public class TypeInfererTest {
     @Test public void
     memberAccessIsAssignableIfMemberIsAssignable() {
         VariableIdentifierNode reference = Nodes.id("heAintHeavy");
-        GlobalDeclarationNode declaration = new GlobalDeclarationNode("heAintHeavy");
+        GlobalDeclaration declaration = globalDeclaration("heAintHeavy");
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
@@ -466,7 +468,7 @@ public class TypeInfererTest {
     @Test public void
     memberAccessFailsIfInterfaceDoesNotHaveSpecifiedMember() {
         VariableIdentifierNode reference = Nodes.id("heAintHeavy");
-        GlobalDeclarationNode declaration = new GlobalDeclarationNode("heAintHeavy");
+        GlobalDeclaration declaration = globalDeclaration("heAintHeavy");
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
@@ -484,7 +486,7 @@ public class TypeInfererTest {
     @Test public void
     applyingTypeUpdatesParameterisedTypeWithType() {
         VariableIdentifierNode listReference = Nodes.id("List");
-        GlobalDeclarationNode listDeclaration = new GlobalDeclarationNode("List");
+        GlobalDeclaration listDeclaration = globalDeclaration("List");
         references.addReference(listReference, listDeclaration);
         
         StaticContext context = standardContext();
@@ -510,7 +512,7 @@ public class TypeInfererTest {
     @Test public void
     applyingTypeUpdatesFunctionArgumentAndReturnTypes() {
         VariableIdentifierNode identityReference = Nodes.id("identity");
-        GlobalDeclarationNode identityDeclaration = new GlobalDeclarationNode("identity");
+        GlobalDeclaration identityDeclaration = globalDeclaration("identity");
         references.addReference(identityReference, identityDeclaration);
         
         StaticContext context = standardContext();
@@ -528,7 +530,7 @@ public class TypeInfererTest {
     @Test public void
     assignmentHasTypeOfAssignedValue() {
         VariableIdentifierNode reference = Nodes.id("x");
-        GlobalDeclarationNode declaration = new GlobalDeclarationNode("x");
+        GlobalDeclaration declaration = globalDeclaration("x");
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
@@ -542,7 +544,7 @@ public class TypeInfererTest {
     @Test public void
     cannotAssignToUnassignableValue() {
         VariableIdentifierNode reference = Nodes.id("x");
-        GlobalDeclarationNode declaration = new GlobalDeclarationNode("x");
+        GlobalDeclaration declaration = globalDeclaration("x");
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
@@ -557,7 +559,7 @@ public class TypeInfererTest {
     @Test public void
     cannotAssignValueIfNotSubTypeOfVariableType() {
         VariableIdentifierNode reference = Nodes.id("x");
-        GlobalDeclarationNode declaration = new GlobalDeclarationNode("x");
+        GlobalDeclaration declaration = globalDeclaration("x");
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
@@ -572,11 +574,11 @@ public class TypeInfererTest {
     @Test public void
     canAssignValueIfSubTypeOfVariableType() {
         VariableIdentifierNode interfaceReference = Nodes.id("iterable");
-        GlobalDeclarationNode interfaceDeclaration = new GlobalDeclarationNode("iterable");
+        GlobalDeclaration interfaceDeclaration = globalDeclaration("iterable");
         references.addReference(interfaceReference, interfaceDeclaration);
 
         VariableIdentifierNode classReference = Nodes.id("iterable");
-        GlobalDeclarationNode classDeclaration = new GlobalDeclarationNode("iterable");
+        GlobalDeclaration classDeclaration = globalDeclaration("iterable");
         references.addReference(classReference, classDeclaration);
         
         StaticContext context = standardContext();

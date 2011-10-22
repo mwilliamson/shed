@@ -3,7 +3,7 @@ package org.zwobble.shed.compiler.typechecker;
 import org.junit.Test;
 import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
-import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
@@ -11,6 +11,8 @@ import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
 
 import com.google.inject.Injector;
+
+import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,7 +25,7 @@ import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 public class TypeLookupTest {
     private final ReferencesBuilder references = new ReferencesBuilder();
 
-    private final GlobalDeclarationNode stringDeclaration = new GlobalDeclarationNode("String");
+    private final GlobalDeclaration stringDeclaration = globalDeclaration("String");
     private final VariableIdentifierNode stringReference = new VariableIdentifierNode("String");
     
     @Test public void
@@ -35,7 +37,7 @@ public class TypeLookupTest {
     @Test public void
     errorIfVariableDoesNotReferenceAFunctionTypeInCurrentContext() {
         VariableIdentifierNode reference = Nodes.id("length");
-        GlobalDeclarationNode declaration = new GlobalDeclarationNode("length");
+        GlobalDeclaration declaration = globalDeclaration("length");
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();
@@ -48,7 +50,7 @@ public class TypeLookupTest {
     @Test public void
     errorIncludesNodeLocation() {
         VariableIdentifierNode reference = Nodes.id("length");
-        GlobalDeclarationNode declaration = new GlobalDeclarationNode("length");
+        GlobalDeclaration declaration = globalDeclaration("length");
         references.addReference(reference, declaration);
         
         StaticContext context = standardContext();

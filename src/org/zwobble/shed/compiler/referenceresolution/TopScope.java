@@ -2,12 +2,12 @@ package org.zwobble.shed.compiler.referenceresolution;
 
 import java.util.Map;
 
-import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 
 public class TopScope implements Scope {
-    private final Map<String, GlobalDeclarationNode> globalDeclarations;
+    private final Map<String, GlobalDeclaration> globalDeclarations;
     
-    public TopScope(Map<String, GlobalDeclarationNode> globalDeclarations) {
+    public TopScope(Map<String, GlobalDeclaration> globalDeclarations) {
         this.globalDeclarations = globalDeclarations;
     }
     

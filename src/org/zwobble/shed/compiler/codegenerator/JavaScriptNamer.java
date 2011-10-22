@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.zwobble.shed.compiler.parsing.nodes.Declaration;
-import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.References;
@@ -33,7 +33,7 @@ public class JavaScriptNamer {
     }
 
     public String freshJavaScriptIdentifierFor(Declaration declaration) {
-        if (declaration instanceof GlobalDeclarationNode) {
+        if (declaration instanceof GlobalDeclaration) {
             usedNames.add(declaration.getIdentifier());
             return declaration.getIdentifier();
         }

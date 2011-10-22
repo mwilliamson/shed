@@ -2,7 +2,7 @@ package org.zwobble.shed.compiler.typechecker;
 
 import java.util.Map;
 
-import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ParameterisedType;
 import org.zwobble.shed.compiler.types.Type;
@@ -10,9 +10,11 @@ import org.zwobble.shed.compiler.types.Type;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
+import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
+
 public class CoreModule {
     public static final Map<String, Type> VALUES;
-    public static final Map<String, GlobalDeclarationNode> GLOBAL_DECLARATIONS;
+    public static final Map<String, GlobalDeclaration> GLOBAL_DECLARATIONS;
     
     static {
         Builder<String, Type> valuesBuilder = ImmutableMap.builder();
@@ -27,9 +29,9 @@ public class CoreModule {
         }
         VALUES = valuesBuilder.build();
 
-        Builder<String, GlobalDeclarationNode> declarationsBuilder = ImmutableMap.builder();
+        Builder<String, GlobalDeclaration> declarationsBuilder = ImmutableMap.builder();
         for (String identifier : VALUES.keySet()) {
-            declarationsBuilder.put(identifier, new GlobalDeclarationNode(identifier));
+            declarationsBuilder.put(identifier, globalDeclaration(identifier));
         }
         GLOBAL_DECLARATIONS = declarationsBuilder.build();
     }

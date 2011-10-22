@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
-import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.structure.ScopedNodes;
@@ -18,7 +18,7 @@ import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.CompilerErrors.error;
 
 public class ReferenceResolver {
-    public ReferenceResolverResult resolveReferences(SyntaxNode node, Map<String, GlobalDeclarationNode> globalDeclarations) {
+    public ReferenceResolverResult resolveReferences(SyntaxNode node, Map<String, GlobalDeclaration> globalDeclarations) {
         ReferencesBuilder references = new ReferencesBuilder();
         List<CompilerError> errors = new ArrayList<CompilerError>();
         SubScope scope = scopeFor(ScopedNodes.subScope(asList(node)), new SubScope(new TopScope(globalDeclarations)), errors);

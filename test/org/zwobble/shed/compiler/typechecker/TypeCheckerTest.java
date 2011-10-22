@@ -9,7 +9,7 @@ import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
-import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
@@ -23,6 +23,8 @@ import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
 
 import com.google.inject.Injector;
+
+import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -142,7 +144,7 @@ public class TypeCheckerTest {
     
     @Test public void
     functionDeclarationAddsFunctionTypeToScope() {
-        GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Double");
+        GlobalDeclaration numberDeclaration = globalDeclaration("Double");
         VariableIdentifierNode numberReference = Nodes.id("Double");
         FunctionDeclarationNode functionDeclaration = new FunctionDeclarationNode(
             "now",
@@ -161,7 +163,7 @@ public class TypeCheckerTest {
     
     @Test public void
     functionDeclarationBodyIsTypeChecked() {
-        GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Double");
+        GlobalDeclaration numberDeclaration = globalDeclaration("Double");
         VariableIdentifierNode numberReference = Nodes.id("Double");
         
         FunctionDeclarationNode functionDeclaration = new FunctionDeclarationNode(
@@ -180,7 +182,7 @@ public class TypeCheckerTest {
     
     @Test public void
     functionDeclarationCanCallItself() {
-        GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Double");
+        GlobalDeclaration numberDeclaration = globalDeclaration("Double");
         VariableIdentifierNode numberReference = Nodes.id("Double");
         
         VariableIdentifierNode functionReference = Nodes.id("now");
@@ -202,7 +204,7 @@ public class TypeCheckerTest {
     
     @Test public void
     functionDeclarationsCanBeMutuallyRecursive() {
-        GlobalDeclarationNode numberDeclaration = new GlobalDeclarationNode("Double");
+        GlobalDeclaration numberDeclaration = globalDeclaration("Double");
         VariableIdentifierNode numberReference = Nodes.id("Double");
         references.addReference(numberReference, numberDeclaration);
         

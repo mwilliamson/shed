@@ -4,7 +4,7 @@ import org.junit.Test;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
-import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
@@ -19,6 +19,8 @@ import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
 import com.google.inject.Injector;
+
+import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -58,7 +60,7 @@ public class ReturnStatementTypeCheckerTest {
         ScalarTypeInfo listTypeInfo = new ScalarTypeInfo(interfaces(iterableType), members());
         
         VariableIdentifierNode reference = new VariableIdentifierNode("x");
-        GlobalDeclarationNode declaration = new GlobalDeclarationNode("x");
+        GlobalDeclaration declaration = globalDeclaration("x");
         references.addReference(reference, declaration);
         StaticContext context = staticContext();
         context.add(declaration, unassignableValue(listType));

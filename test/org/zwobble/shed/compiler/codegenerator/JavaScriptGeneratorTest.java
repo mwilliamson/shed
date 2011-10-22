@@ -18,7 +18,7 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
-import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LiteralNode;
@@ -44,6 +44,8 @@ import org.zwobble.shed.compiler.referenceresolution.References;
 import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 
 import com.google.common.collect.ImmutableMap;
+
+import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -88,7 +90,7 @@ public class JavaScriptGeneratorTest {
     variableIdentifiersAreConvertedToJavaScriptIdentifier() {
         VariableIdentifierNode reference = Nodes.id("blah");
         ReferencesBuilder references = new ReferencesBuilder();
-        references.addReference(reference, new GlobalDeclarationNode("blah"));
+        references.addReference(reference, globalDeclaration("blah"));
         assertGeneratedJavaScript(references.build(), reference, js.id("blah"));
     }
     
@@ -108,7 +110,7 @@ public class JavaScriptGeneratorTest {
     functionCallsWithNoArgumentsAreConverted() {
         VariableIdentifierNode reference = Nodes.id("now");
         ReferencesBuilder references = new ReferencesBuilder();
-        references.addReference(reference, new GlobalDeclarationNode("now"));
+        references.addReference(reference, globalDeclaration("now"));
         CallNode source = Nodes.call(reference);
         assertGeneratedJavaScript(references.build(), source, js.call(js.id("now")));
     }
@@ -117,7 +119,7 @@ public class JavaScriptGeneratorTest {
     functionCallsWithArgumentsAreConverted() {
         VariableIdentifierNode reference = Nodes.id("max");
         ReferencesBuilder references = new ReferencesBuilder();
-        references.addReference(reference, new GlobalDeclarationNode("max"));
+        references.addReference(reference, globalDeclaration("max"));
         
         NumberLiteralNode firstArgument = Nodes.number("2");
         NumberLiteralNode secondArgument = Nodes.number("8");
@@ -259,7 +261,7 @@ public class JavaScriptGeneratorTest {
     expressionStatementsAreConvertedToJavaScriptExpressionStatements() {
         VariableIdentifierNode reference = Nodes.id("go");
         ReferencesBuilder references = new ReferencesBuilder();
-        references.addReference(reference, new GlobalDeclarationNode("go"));
+        references.addReference(reference, globalDeclaration("go"));
         
         ExpressionStatementNode source = Nodes.expressionStatement(Nodes.call(reference));
         assertGeneratedJavaScript(references.build(), source, js.expressionStatement(js.call(js.id("go"))));
@@ -323,7 +325,7 @@ public class JavaScriptGeneratorTest {
         VariableIdentifierNode reference = Nodes.id("ball");
         MemberAccessNode source = Nodes.member(reference, "confusion");
         ReferencesBuilder references = new ReferencesBuilder();
-        references.addReference(reference, new GlobalDeclarationNode("ball"));
+        references.addReference(reference, globalDeclaration("ball"));
         assertGeneratedJavaScript(references.build(), source, js.propertyAccess(js.id("ball"), "confusion"));
     }
     
@@ -333,9 +335,9 @@ public class JavaScriptGeneratorTest {
         VariableIdentifierNode numberReference = Nodes.id("Double");
         VariableIdentifierNode stringReference = Nodes.id("String");
         ReferencesBuilder references = new ReferencesBuilder();
-        references.addReference(functionReference, new GlobalDeclarationNode("Function1"));
-        references.addReference(numberReference, new GlobalDeclarationNode("Double"));
-        references.addReference(stringReference, new GlobalDeclarationNode("String"));
+        references.addReference(functionReference, globalDeclaration("Function1"));
+        references.addReference(numberReference, globalDeclaration("Double"));
+        references.addReference(stringReference, globalDeclaration("String"));
         
         TypeApplicationNode source = Nodes.typeApply(functionReference, numberReference, stringReference);
         assertGeneratedJavaScript(references.build(), source, js.call(js.id("Function1"), js.id("Double"), js.id("String")));
@@ -392,8 +394,8 @@ public class JavaScriptGeneratorTest {
         VariableIdentifierNode firstReference = Nodes.id("x");
         VariableIdentifierNode secondReference = Nodes.id("y");
         ReferencesBuilder references = new ReferencesBuilder();
-        references.addReference(firstReference, new GlobalDeclarationNode("x"));
-        references.addReference(secondReference, new GlobalDeclarationNode("y"));
+        references.addReference(firstReference, globalDeclaration("x"));
+        references.addReference(secondReference, globalDeclaration("y"));
         
         AssignmentExpressionNode source = Nodes.assign(firstReference, Nodes.assign(secondReference, Nodes.number("372")));
         assertGeneratedJavaScript(
@@ -498,7 +500,7 @@ public class JavaScriptGeneratorTest {
     
     private References resolveReferences(SyntaxNode source) {
         return referenceResolver
-            .resolveReferences(source, Collections.<String, GlobalDeclarationNode>emptyMap())
+            .resolveReferences(source, Collections.<String, GlobalDeclaration>emptyMap())
             .getReferences();
     }
     

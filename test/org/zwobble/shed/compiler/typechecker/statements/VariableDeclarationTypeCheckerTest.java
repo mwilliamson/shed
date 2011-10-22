@@ -4,7 +4,7 @@ import org.junit.Test;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
-import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
@@ -23,6 +23,8 @@ import org.zwobble.shed.compiler.types.Type;
 
 import com.google.inject.Injector;
 
+import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
@@ -36,7 +38,7 @@ import static org.zwobble.shed.compiler.types.Members.members;
 public class VariableDeclarationTypeCheckerTest {
     private final ReferencesBuilder references = new ReferencesBuilder();
 
-    private final GlobalDeclarationNode stringDeclaration = new GlobalDeclarationNode("String");
+    private final GlobalDeclaration stringDeclaration = globalDeclaration("String");
     private final VariableIdentifierNode stringReference = new VariableIdentifierNode("String");
 
     @Test public void
@@ -109,11 +111,11 @@ public class VariableDeclarationTypeCheckerTest {
     @Test public void
     canInstantiateVariableWithSubType() {
         VariableIdentifierNode iterableTypeReference = Nodes.id("Iterable");
-        GlobalDeclarationNode iterableTypeDeclaration = new GlobalDeclarationNode("Iterable");
+        GlobalDeclaration iterableTypeDeclaration = globalDeclaration("Iterable");
         references.addReference(iterableTypeReference, iterableTypeDeclaration);
 
         VariableIdentifierNode listReference = Nodes.id("myList");
-        GlobalDeclarationNode listDeclaration = new GlobalDeclarationNode("myList");
+        GlobalDeclaration listDeclaration = globalDeclaration("myList");
         references.addReference(listReference, listDeclaration);
         
         StaticContext staticContext = standardContext();
