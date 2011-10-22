@@ -2,7 +2,7 @@ package org.zwobble.shed.compiler.typechecker;
 
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
-import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.Declaration;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.TypeDeclarationNode;
@@ -12,10 +12,10 @@ import org.zwobble.shed.compiler.types.CoreTypes;
 
 public class TypeCheckerTestFixture {
     public static VariableIdentifierNode STRING_TYPE_REFERENCE = Nodes.id("String");
-    public static DeclarationNode STRING_TYPE_DECLARATION = new GlobalDeclarationNode("String");
+    public static Declaration STRING_TYPE_DECLARATION = new GlobalDeclarationNode("String");
     
     public static VariableIdentifierNode UNIT_TYPE_REFERENCE = Nodes.id("Unit");
-    public static DeclarationNode UNIT_TYPE_DECLARATION = new GlobalDeclarationNode("Unit");
+    public static Declaration UNIT_TYPE_DECLARATION = new GlobalDeclarationNode("Unit");
     
     public static TypeCheckerTestFixture build() {
         return new TypeCheckerTestFixture();

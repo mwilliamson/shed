@@ -8,7 +8,7 @@ import java.util.Map.Entry;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
-import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.Declaration;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -18,12 +18,11 @@ import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
-import static org.zwobble.shed.compiler.typechecker.ShedTypeValue.shedTypeValue;
-
 import static com.google.common.collect.Lists.newArrayList;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
+import static org.zwobble.shed.compiler.typechecker.ShedTypeValue.shedTypeValue;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
@@ -43,7 +42,7 @@ public class StaticContext {
     }
     
     private final Map<FullyQualifiedName, Type> global = new HashMap<FullyQualifiedName, Type>();
-    private final Map<Identity<DeclarationNode>, ValueInfo> types = new HashMap<Identity<DeclarationNode>, ValueInfo>();
+    private final Map<Identity<Declaration>, ValueInfo> types = new HashMap<Identity<Declaration>, ValueInfo>();
     private final Map<ScalarType, ScalarTypeInfo> scalarTypeInfo = new HashMap<ScalarType, ScalarTypeInfo>();
     
     public StaticContext() {
@@ -53,12 +52,12 @@ public class StaticContext {
         addInfo(CoreTypes.UNIT, new ScalarTypeInfo(interfaces(), members()));
     }
     
-    public void add(DeclarationNode declaration, ValueInfo type) {
-        types.put(new Identity<DeclarationNode>(declaration), type);
+    public void add(Declaration declaration, ValueInfo type) {
+        types.put(new Identity<Declaration>(declaration), type);
     }
 
-    public VariableLookupResult get(DeclarationNode declaration) {
-        Identity<DeclarationNode> key = new Identity<DeclarationNode>(declaration);
+    public VariableLookupResult get(Declaration declaration) {
+        Identity<Declaration> key = new Identity<Declaration>(declaration);
         if (types.containsKey(key)) {
             return VariableLookupResult.success(types.get(key));
         } else {

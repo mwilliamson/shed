@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.Declaration;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 
@@ -14,10 +14,10 @@ import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 @EqualsAndHashCode
 @ToString
 public class References {
-    private final Map<Identity<VariableIdentifierNode>, Identity<DeclarationNode>> references;
+    private final Map<Identity<VariableIdentifierNode>, Identity<Declaration>> references;
     
-    public DeclarationNode findReferent(VariableIdentifierNode reference) {
-        Identity<DeclarationNode> identity = references.get(new Identity<VariableIdentifierNode>(reference));
+    public Declaration findReferent(VariableIdentifierNode reference) {
+        Identity<Declaration> identity = references.get(new Identity<VariableIdentifierNode>(reference));
         return identity == null ? null : identity.get();
     }
 }

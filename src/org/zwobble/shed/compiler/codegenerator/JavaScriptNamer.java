@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.Declaration;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
@@ -13,17 +13,17 @@ import org.zwobble.shed.compiler.referenceresolution.References;
 
 public class JavaScriptNamer {
     private final References references;
-    private final Map<Identity<DeclarationNode>, String> shedToJavaScriptNames = new HashMap<Identity<DeclarationNode>, String>();
+    private final Map<Identity<Declaration>, String> shedToJavaScriptNames = new HashMap<Identity<Declaration>, String>();
     private final Set<String> usedNames = new HashSet<String>();
 
     public JavaScriptNamer(References references) {
         this.references = references;
     }
     
-    public String javaScriptIdentifierFor(DeclarationNode node) {
-        Identity<DeclarationNode> identity = new Identity<DeclarationNode>(node);
+    public String javaScriptIdentifierFor(Declaration declaration) {
+        Identity<Declaration> identity = new Identity<Declaration>(declaration);
         if (!shedToJavaScriptNames.containsKey(identity)) {
-            shedToJavaScriptNames.put(identity, freshJavaScriptIdentifierFor(node));
+            shedToJavaScriptNames.put(identity, freshJavaScriptIdentifierFor(declaration));
         }
         return shedToJavaScriptNames.get(identity);
     }
@@ -32,13 +32,13 @@ public class JavaScriptNamer {
         return javaScriptIdentifierFor(references.findReferent(node));
     }
 
-    public String freshJavaScriptIdentifierFor(DeclarationNode declaration) {
+    public String freshJavaScriptIdentifierFor(Declaration declaration) {
         if (declaration instanceof GlobalDeclarationNode) {
             usedNames.add(declaration.getIdentifier());
             return declaration.getIdentifier();
         }
         String identifier = freshJavaScriptIdentifier(declaration.getIdentifier());
-        shedToJavaScriptNames.put(new Identity<DeclarationNode>(declaration), identifier);
+        shedToJavaScriptNames.put(new Identity<Declaration>(declaration), identifier);
         return identifier;
     }
 

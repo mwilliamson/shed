@@ -33,7 +33,7 @@ public class ReferenceResolver {
             if (lookupResult instanceof NotInScope) {
                 errors.add(error(node, new VariableNotInScopeError(variableIdentifier.getIdentifier())));
             } else {
-                references.addReference(variableIdentifier, ((Success)lookupResult).getNode());                
+                references.addReference(variableIdentifier, ((Success)lookupResult).getDeclaration());                
             }
         }
         

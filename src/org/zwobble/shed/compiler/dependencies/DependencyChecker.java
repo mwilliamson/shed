@@ -2,10 +2,11 @@ package org.zwobble.shed.compiler.dependencies;
 
 import java.util.Set;
 
+import org.zwobble.shed.compiler.ShedIterables;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
+import org.zwobble.shed.compiler.parsing.nodes.Declaration;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
-import org.zwobble.shed.compiler.parsing.nodes.Node;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
@@ -80,14 +81,16 @@ public class DependencyChecker {
         }
 
         private Iterable<DeclarationNode> findDependenciesDeclaredInBlock(StatementNode statement, Set<Identity<StatementNode>> statementsInBlock) {
-            return filter(transform(findFreeVariables(statement), toReferredDeclaration()), isDeclaredInBlock(statementsInBlock));
+            Iterable<Declaration> dependencies = transform(findFreeVariables(statement), toReferredDeclaration());
+            Iterable<Declaration> dependenciesInBlock = filter(dependencies, isDeclaredInBlock(statementsInBlock));
+            return ShedIterables.safeCast(dependenciesInBlock, DeclarationNode.class);
         }
 
-        private Predicate<DeclarationNode> isDeclaredInBlock(final Set<Identity<StatementNode>> statementsInBlock) {
-            return new Predicate<DeclarationNode>() {
+        private Predicate<Declaration> isDeclaredInBlock(final Set<Identity<StatementNode>> statementsInBlock) {
+            return new Predicate<Declaration>() {
                 @Override
-                public boolean apply(DeclarationNode input) {
-                    return statementsInBlock.contains(new Identity<Node>(input));
+                public boolean apply(Declaration input) {
+                    return statementsInBlock.contains(new Identity<Declaration>(input));
                 }
             };
         }
@@ -96,10 +99,10 @@ public class DependencyChecker {
             return filter(descendents(statement), VariableIdentifierNode.class);
         }
 
-        private Function<VariableIdentifierNode, DeclarationNode> toReferredDeclaration() {
-            return new Function<VariableIdentifierNode, DeclarationNode>() {
+        private Function<VariableIdentifierNode, Declaration> toReferredDeclaration() {
+            return new Function<VariableIdentifierNode, Declaration>() {
                 @Override
-                public DeclarationNode apply(VariableIdentifierNode input) {
+                public Declaration apply(VariableIdentifierNode input) {
                     return references.findReferent(input);
                 }
             };

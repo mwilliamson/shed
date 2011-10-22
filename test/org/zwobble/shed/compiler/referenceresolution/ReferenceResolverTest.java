@@ -11,6 +11,7 @@ import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.CompilerTesting;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
+import org.zwobble.shed.compiler.parsing.nodes.Declaration;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
@@ -38,7 +39,7 @@ import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 
 public class ReferenceResolverTest {
-    private static final References EMPTY_REFERENCES = new References(ImmutableMap.<Identity<VariableIdentifierNode>, Identity<DeclarationNode>>of());
+    private static final References EMPTY_REFERENCES = new References(ImmutableMap.<Identity<VariableIdentifierNode>, Identity<Declaration>>of());
     private static final ReferenceResolverResult EMPTY_RESULT = ReferenceResolverResult.build(EMPTY_REFERENCES, Collections.<CompilerError>emptyList());
     private final ReferenceResolver resolver = new ReferenceResolver();
     
@@ -405,7 +406,7 @@ public class ReferenceResolverTest {
         return resolver.resolveReferences(node, CoreModule.GLOBAL_DECLARATIONS);
     }
     
-    private Matcher<ReferenceResolverResult> hasReference(final VariableIdentifierNode reference, final DeclarationNode declaration) {
+    private Matcher<ReferenceResolverResult> hasReference(final VariableIdentifierNode reference, final Declaration declaration) {
         return new TypeSafeDiagnosingMatcher<ReferenceResolverResult>() {
             @Override
             public void describeTo(Description description) {
@@ -416,7 +417,7 @@ public class ReferenceResolverTest {
             protected boolean matchesSafely(ReferenceResolverResult result, Description mismatchDescription) {
                 if (result.isSuccess()) {
                     References references = result.getReferences();
-                    DeclarationNode actualReferent = references.findReferent(reference);
+                    Declaration actualReferent = references.findReferent(reference);
                     if (actualReferent == declaration) {
                         return true;
                     } else {

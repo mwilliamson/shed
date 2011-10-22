@@ -5,8 +5,8 @@ import com.google.common.base.Function;
 import lombok.ToString;
 
 @ToString
-public class Identity<T extends Node> {
-    public static <T extends Node> Function<T, Identity<T>> toIdentity() {
+public class Identity<T> {
+    public static <T> Function<T, Identity<T>> toIdentity() {
         return new Function<T, Identity<T>>() {
             @Override
             public Identity<T> apply(T input) {
