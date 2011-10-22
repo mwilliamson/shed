@@ -16,9 +16,12 @@ import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
+import org.zwobble.shed.compiler.types.TypeApplication;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+
+import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.zwobble.shed.compiler.Option.none;
@@ -96,6 +99,14 @@ public class StaticContext {
     }
     
     public Type getMetaClass(Type type) {
+        if (!metaClasses.containsKey(type)) {
+            if (type instanceof TypeApplication) {
+                // TODO: construct metaclass type info
+                metaClasses.put(type, new ClassType(fullyQualifiedName()));
+            } else {
+                throw new RuntimeException("Cannot find metaclass for: " + type);
+            }
+        }
         return metaClasses.get(type);
     }
     

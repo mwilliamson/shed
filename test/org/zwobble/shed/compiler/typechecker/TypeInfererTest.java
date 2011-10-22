@@ -483,7 +483,7 @@ public class TypeInfererTest {
             new NumberLiteralNode("42")
         );
         TypeResult<Type> result = inferType(functionExpression, context);
-        assertThat(result, is((Object)success(
+        assertThat(result, is(success(
             CoreTypes.functionTypeOf(new TypeApplication(listTypeFunction, asList((Type)CoreTypes.DOUBLE)), CoreTypes.DOUBLE)
         )));
     }
