@@ -20,7 +20,6 @@ import org.zwobble.shed.compiler.referenceresolution.ReferenceResolverResult;
 import org.zwobble.shed.compiler.referenceresolution.References;
 import org.zwobble.shed.compiler.tokeniser.TokenPosition;
 import org.zwobble.shed.compiler.tokeniser.Tokeniser;
-import org.zwobble.shed.compiler.typechecker.CoreModule;
 import org.zwobble.shed.compiler.typechecker.SourceTypeChecker;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeCheckerInjector;
@@ -69,7 +68,7 @@ public class ShedCompiler {
         
         if (parseResult.isSuccess()) {
             SourceNode sourceNode = parseResult.get();
-            ReferenceResolverResult referencesResult = referenceResolver.resolveReferences(sourceNode, CoreModule.GLOBAL_DECLARATIONS);
+            ReferenceResolverResult referencesResult = referenceResolver.resolveReferences(sourceNode, context.getBuiltIns());
             errors.addAll(referencesResult.getErrors());
             if (referencesResult.isSuccess()) {
                 FullyQualifiedNames fullNames = new TypeNamer().generateFullyQualifiedNames(sourceNode);
@@ -83,7 +82,7 @@ public class ShedCompiler {
                 errors.addAll(dependencyCheckResult.getErrors());
                 
                 if (typeCheckResult.isSuccess()) {
-                    JavaScriptNode javaScript = javaScriptGenerator(references).generate(sourceNode, CoreModule.VALUES.keySet());
+                    JavaScriptNode javaScript = javaScriptGenerator(references).generate(sourceNode, context.getBuiltIns().keySet());
                     javaScriptOutput = javaScriptOptimiser.optimise(javaScriptWriter.write(javaScript));
                 }   
             }

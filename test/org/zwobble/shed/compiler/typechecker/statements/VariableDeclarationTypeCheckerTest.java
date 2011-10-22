@@ -1,16 +1,16 @@
 package org.zwobble.shed.compiler.typechecker.statements;
 
+import java.util.Collections;
+
 import org.junit.Test;
 import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
-import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
-import org.zwobble.shed.compiler.typechecker.TypeCheckerInjector;
+import org.zwobble.shed.compiler.typechecker.TypeCheckerTestFixture;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult;
@@ -21,25 +21,20 @@ import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
-import com.google.inject.Injector;
-
-import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
+import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 
 public class VariableDeclarationTypeCheckerTest {
-    private final ReferencesBuilder references = new ReferencesBuilder();
-
-    private final GlobalDeclaration stringDeclaration = globalDeclaration("String");
-    private final VariableIdentifierNode stringReference = new VariableIdentifierNode("String");
+    private final TypeCheckerTestFixture fixture = TypeCheckerTestFixture.build();
+    private final VariableIdentifierNode stringReference = fixture.stringTypeReference();
 
     @Test public void
     declaringVariableWithoutTypeSpecifierAddsVariableAsUnknownValue() {
@@ -112,19 +107,18 @@ public class VariableDeclarationTypeCheckerTest {
     canInstantiateVariableWithSubType() {
         VariableIdentifierNode iterableTypeReference = Nodes.id("Iterable");
         GlobalDeclaration iterableTypeDeclaration = globalDeclaration("Iterable");
-        references.addReference(iterableTypeReference, iterableTypeDeclaration);
+        fixture.addReference(iterableTypeReference, iterableTypeDeclaration);
 
         VariableIdentifierNode listReference = Nodes.id("myList");
         GlobalDeclaration listDeclaration = globalDeclaration("myList");
-        references.addReference(listReference, listDeclaration);
+        fixture.addReference(listReference, listDeclaration);
         
         StaticContext staticContext = standardContext();
         InterfaceType iterableType = new InterfaceType(fullyQualifiedName("shed", "util", "Iterable"));
         ClassType listType = new ClassType(fullyQualifiedName("shed", "util", "List"));
         ScalarTypeInfo listTypeInfo = new ScalarTypeInfo(interfaces(iterableType), members());
-        staticContext.add(listDeclaration, unassignableValue(listType));
-        staticContext.add(iterableTypeDeclaration, unassignableValue(CoreTypes.classOf(iterableType)));
-        staticContext.addInfo(listType, listTypeInfo);
+        staticContext.addClass(listDeclaration, listType, Collections.<Type>emptyList(), listTypeInfo);
+        staticContext.addInterface(iterableTypeDeclaration, iterableType, ScalarTypeInfo.EMPTY);
         
         VariableDeclarationNode variableNode = Nodes.immutableVar("x", iterableTypeReference, listReference);
         
@@ -145,17 +139,10 @@ public class VariableDeclarationTypeCheckerTest {
     }
 
     private VariableDeclarationTypeChecker typeChecker(StaticContext context) {
-        Injector injector = TypeCheckerInjector.build(new FullyQualifiedNamesBuilder().build(), context, references.build());
-        VariableDeclarationTypeChecker typeChecker = injector.getInstance(VariableDeclarationTypeChecker.class);
-        return typeChecker;
+        return fixture.get(VariableDeclarationTypeChecker.class);
     }
     
     private StaticContext standardContext() {
-        references.addReference(stringReference, stringDeclaration);
-        
-        StaticContext context = new StaticContext();
-        context.add(stringDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.STRING)));
-        
-        return context;
+        return fixture.context();
     }
 }

@@ -1,36 +1,28 @@
 package org.zwobble.shed.compiler.typechecker;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
-import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
-
-import com.google.inject.Injector;
-
-import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
+import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 public class TypeLookupTest {
-    private final ReferencesBuilder references = new ReferencesBuilder();
-
-    private final GlobalDeclaration stringDeclaration = globalDeclaration("String");
-    private final VariableIdentifierNode stringReference = new VariableIdentifierNode("String");
+    private final TypeCheckerTestFixture fixture = TypeCheckerTestFixture.build();
     
     @Test public void
     canLookupTypesFromContext() {
-        TypeResult<Type> result = lookupTypeReference(stringReference, standardContext());
+        TypeResult<Type> result = lookupTypeReference(fixture.stringTypeReference(), standardContext());
         assertThat(result, is(success((Type)CoreTypes.STRING)));
     }
     
@@ -38,7 +30,7 @@ public class TypeLookupTest {
     errorIfVariableDoesNotReferenceAFunctionTypeInCurrentContext() {
         VariableIdentifierNode reference = Nodes.id("length");
         GlobalDeclaration declaration = globalDeclaration("length");
-        references.addReference(reference, declaration);
+        fixture.addReference(reference, declaration);
         
         StaticContext context = standardContext();
         context.add(declaration, unassignableValue(CoreTypes.DOUBLE));
@@ -51,7 +43,7 @@ public class TypeLookupTest {
     errorIncludesNodeLocation() {
         VariableIdentifierNode reference = Nodes.id("length");
         GlobalDeclaration declaration = globalDeclaration("length");
-        references.addReference(reference, declaration);
+        fixture.addReference(reference, declaration);
         
         StaticContext context = standardContext();
         context.add(declaration, unassignableValue(CoreTypes.DOUBLE));
@@ -64,17 +56,11 @@ public class TypeLookupTest {
     }
     
     private TypeResult<Type> lookupTypeReference(ExpressionNode typeReference, StaticContext context) {
-        Injector injector = TypeCheckerInjector.build(new FullyQualifiedNamesBuilder().build(), context, references.build());
-        TypeLookup typeLookup = injector.getInstance(TypeLookup.class);
+        TypeLookup typeLookup = fixture.get(TypeLookup.class);
         return typeLookup.lookupTypeReference(typeReference);
     }
     
     private StaticContext standardContext() {
-        references.addReference(stringReference, stringDeclaration);
-        
-        StaticContext context = new StaticContext();
-        context.add(stringDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.STRING)));
-        
-        return context;
+        return fixture.context();
     }
 }

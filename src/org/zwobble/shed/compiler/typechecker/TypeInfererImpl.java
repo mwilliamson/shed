@@ -264,7 +264,7 @@ public class TypeInfererImpl implements TypeInferer {
                     }
                     return TypeResult.success(CoreTypes.functionTypeOf(Eager.transform(functionType.getFunctionTypeParameters(), toReplacement(replacements.build()))));
                 } else if (baseType instanceof ParameterisedType) {
-                    return TypeResult.success((Type)CoreTypes.classOf(new TypeApplication((ParameterisedType)baseType, parameterTypes)));   
+                    return TypeResult.success((Type)context.getMetaClass(new TypeApplication((ParameterisedType)baseType, parameterTypes)));   
                 } else {
                     throw new RuntimeException("Don't know how to apply types " + parameterTypes + " to " + baseType);
                 }

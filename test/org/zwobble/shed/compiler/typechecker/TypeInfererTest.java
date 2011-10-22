@@ -6,7 +6,6 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerErrorDescription;
-import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
@@ -21,7 +20,6 @@ import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
-import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 import org.zwobble.shed.compiler.typechecker.errors.InvalidAssignmentError;
 import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.typechecker.errors.UntypedReferenceError;
@@ -36,10 +34,6 @@ import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
 
-import com.google.inject.Injector;
-
-import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -49,6 +43,7 @@ import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
+import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
@@ -59,44 +54,39 @@ import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedTyp
 import static org.zwobble.shed.compiler.types.Types.typeParameters;
 
 public class TypeInfererTest {
-    private final ReferencesBuilder references = new ReferencesBuilder();
+    private final TypeCheckerTestFixture fixture = TypeCheckerTestFixture.build();
 
-    private final GlobalDeclaration numberDeclaration = globalDeclaration("Double");
-    private final VariableIdentifierNode numberReference = new VariableIdentifierNode("Double");
-    
-    private final GlobalDeclaration stringDeclaration = globalDeclaration("String");
-    private final VariableIdentifierNode stringReference = new VariableIdentifierNode("String");
-
-    private final GlobalDeclaration booleanDeclaration = globalDeclaration("Boolean");
-    private final VariableIdentifierNode booleanReference = new VariableIdentifierNode("Boolean");
+    private final VariableIdentifierNode doubleReference = fixture.doubleTypeReference();
+    private final VariableIdentifierNode stringReference = fixture.stringTypeReference();
+    private final VariableIdentifierNode booleanReference = fixture.booleanTypeReference();
     
     @Test public void
     canInferTypeOfBooleanLiteralsAsBoolean() {
-        assertThat(inferType(new BooleanLiteralNode(true), blankContext()), isType(CoreTypes.BOOLEAN));
-        assertThat(inferType(new BooleanLiteralNode(false), blankContext()), isType(CoreTypes.BOOLEAN));
+        assertThat(inferType(new BooleanLiteralNode(true), standardContext()), isType(CoreTypes.BOOLEAN));
+        assertThat(inferType(new BooleanLiteralNode(false), standardContext()), isType(CoreTypes.BOOLEAN));
     }
     
     @Test public void
     canInferTypeOfNumberLiteralsAsNumber() {
-        assertThat(inferType(new NumberLiteralNode("2.2"), blankContext()), isType(CoreTypes.DOUBLE));
+        assertThat(inferType(new NumberLiteralNode("2.2"), standardContext()), isType(CoreTypes.DOUBLE));
     }
     
     @Test public void
     canInferTypeOfStringLiteralsAsString() {
-        assertThat(inferType(new StringLiteralNode("Everything's as if we never said"), blankContext()), isType(CoreTypes.STRING));
+        assertThat(inferType(new StringLiteralNode("Everything's as if we never said"), standardContext()), isType(CoreTypes.STRING));
     }
     
     @Test public void
     canInferTypeOfUnitLiteralsAsUnit() {
-        assertThat(inferType(Nodes.unit(), blankContext()), isType(CoreTypes.UNIT));
+        assertThat(inferType(Nodes.unit(), standardContext()), isType(CoreTypes.UNIT));
     }
     
     @Test public void
     variableReferencesHaveTypeOfVariable() {
         VariableIdentifierNode reference = new VariableIdentifierNode("value");
         GlobalDeclaration declaration = globalDeclaration("value");
-        references.addReference(reference, declaration);
-        StaticContext context = blankContext();
+        fixture.addReference(reference, declaration);
+        StaticContext context = standardContext();
         context.add(declaration, unassignableValue(CoreTypes.STRING));
         assertThat(inferType(reference, context), isType(CoreTypes.STRING));
     }
@@ -104,7 +94,7 @@ public class TypeInfererTest {
     @Test public void
     cannotReferToVariableNotInContext() {
         VariableIdentifierNode node = new VariableIdentifierNode("value");
-        TypeResult<Type> result = inferType(node, blankContext());
+        TypeResult<Type> result = inferType(node, standardContext());
         assertThat(result, is((Object)failure(error(node, new UntypedReferenceError("value")))));
     }
     
@@ -115,7 +105,7 @@ public class TypeInfererTest {
             none(ExpressionNode.class),
             new NumberLiteralNode("42")
         );
-        TypeResult<Type> result = inferType(functionExpression, blankContext());
+        TypeResult<Type> result = inferType(functionExpression, standardContext());
         assertThat(result, is(success(CoreTypes.functionTypeOf(CoreTypes.DOUBLE))));
     }
     
@@ -126,7 +116,7 @@ public class TypeInfererTest {
             none(ExpressionNode.class),
             new VariableIdentifierNode("blah")
         );
-        TypeResult<Type> result = inferType(functionExpression, blankContext());
+        TypeResult<Type> result = inferType(functionExpression, standardContext());
         assertThat(errorStrings(result), is(asList("Could not determine type of reference: blah")));
     }
     
@@ -150,20 +140,19 @@ public class TypeInfererTest {
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             asList(
                 new FormalArgumentNode("name", new VariableIdentifierNode("Name")),
-                new FormalArgumentNode("age", numberReference),
+                new FormalArgumentNode("age", doubleReference),
                 new FormalArgumentNode("address", new VariableIdentifierNode("Address"))
             ),
             none(ExpressionNode.class),
             new BooleanLiteralNode(true)
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        CompilerErrorDescription[] errorsArray = { new UntypedReferenceError("Name"), new UntypedReferenceError("Address") };
-        assertThat(result, isFailureWithErrors(errorsArray));
+        assertThat(result, isFailureWithErrors(new UntypedReferenceError("Name"), new UntypedReferenceError("Address")));
     }
     
     @Test public void
     errorIfCannotFindReturnType() {
-        StaticContext context = blankContext();
+        StaticContext context = standardContext();
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             Collections.<FormalArgumentNode>emptyList(),
             some(new VariableIdentifierNode("String")),
@@ -176,20 +165,10 @@ public class TypeInfererTest {
     
     @Test public void
     canInferTypesOfArgumentsOfShortLambdaExpression() {
-        GlobalDeclaration numberDeclaration = globalDeclaration("Double");
-        VariableIdentifierNode numberReference = new VariableIdentifierNode("Double");
-        references.addReference(numberReference, numberDeclaration);
-        
-        GlobalDeclaration stringDeclaration = globalDeclaration("String");
-        VariableIdentifierNode stringReference = new VariableIdentifierNode("String");
-        references.addReference(stringReference, stringDeclaration);
-        
-        StaticContext context = blankContext();
-        context.add(numberDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.DOUBLE)));
-        context.add(stringDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.STRING)));
+        StaticContext context = standardContext();
         
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
-            asList(new FormalArgumentNode("name", stringReference), new FormalArgumentNode("age", numberReference)),
+            asList(new FormalArgumentNode("name", stringReference), new FormalArgumentNode("age", doubleReference)),
             none(ExpressionNode.class),
             new BooleanLiteralNode(true)
         );
@@ -202,7 +181,7 @@ public class TypeInfererTest {
         LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
             asList(
                 new FormalArgumentNode("name", stringReference),
-                new FormalArgumentNode("age", numberReference)
+                new FormalArgumentNode("age", doubleReference)
             ),
             booleanReference,
             Nodes.block(new ReturnNode(new BooleanLiteralNode(true)))
@@ -240,16 +219,16 @@ public class TypeInfererTest {
     
     @Test public void
     longLambdaExpressionAddsArgumentsToFunctionScope() {
-        FormalArgumentNode ageArgument = new FormalArgumentNode("age", numberReference);
+        FormalArgumentNode ageArgument = new FormalArgumentNode("age", doubleReference);
         VariableIdentifierNode ageReference = new VariableIdentifierNode("age");
-        references.addReference(ageReference, ageArgument);
+        fixture.addReference(ageReference, ageArgument);
         
         LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
             asList(
                 new FormalArgumentNode("name", stringReference),
                 ageArgument
             ),
-            numberReference,
+            doubleReference,
             Nodes.block(new ReturnNode(ageReference))
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
@@ -262,7 +241,7 @@ public class TypeInfererTest {
             asList(
                 new FormalArgumentNode("name", new VariableIdentifierNode("Strink"))
             ),
-            numberReference,
+            doubleReference,
             Nodes.block(new ReturnNode(new NumberLiteralNode("4")))
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
@@ -272,9 +251,9 @@ public class TypeInfererTest {
     
     @Test public void
     shortLambdaExpressionAddsArgumentsToFunctionScope() {
-        FormalArgumentNode ageArgument = new FormalArgumentNode("age", numberReference);
+        FormalArgumentNode ageArgument = new FormalArgumentNode("age", doubleReference);
         VariableIdentifierNode ageReference = new VariableIdentifierNode("age");
-        references.addReference(ageReference, ageArgument);
+        fixture.addReference(ageReference, ageArgument);
         
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             asList(
@@ -307,9 +286,9 @@ public class TypeInfererTest {
     shortLambdaExpressionHandlesUnrecognisedUntypeableBodyWhenReturnTypeIsExplicit() {
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             asList(
-                new FormalArgumentNode("age", numberReference)
+                new FormalArgumentNode("age", doubleReference)
             ),
-            some(numberReference),
+            some(doubleReference),
             new VariableIdentifierNode("blah")
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
@@ -332,7 +311,7 @@ public class TypeInfererTest {
     functionCallsHaveTypeOfReturnTypeOfFunctionWithNoArguments() {
         VariableIdentifierNode reference = Nodes.id("magic");
         GlobalDeclaration declaration = globalDeclaration("magic");
-        references.addReference(reference, declaration);
+        fixture.addReference(reference, declaration);
         
         StaticContext context = standardContext();
         context.add(declaration, unassignableValue(CoreTypes.functionTypeOf(CoreTypes.DOUBLE)));
@@ -346,7 +325,7 @@ public class TypeInfererTest {
     functionCallsHaveTypeOfReturnTypeOfFunctionWithCorrectArguments() {
         VariableIdentifierNode reference = Nodes.id("isLength");
         GlobalDeclaration declaration = globalDeclaration("isLength");
-        references.addReference(reference, declaration);
+        fixture.addReference(reference, declaration);
         
         StaticContext context = standardContext();
         // isLength: (String, Double) -> Boolean 
@@ -360,7 +339,7 @@ public class TypeInfererTest {
     errorIfActualArgumentsAreNotAssignableToFormalArguments() {
         VariableIdentifierNode reference = Nodes.id("isLength");
         GlobalDeclaration declaration = globalDeclaration("isLength");
-        references.addReference(reference, declaration);
+        fixture.addReference(reference, declaration);
         
         StaticContext context = standardContext();
         // isLength: (String, Double) -> Boolean 
@@ -380,7 +359,7 @@ public class TypeInfererTest {
     cannotCallNonFunctionTypeApplications() {
         VariableIdentifierNode reference = Nodes.id("isLength");
         GlobalDeclaration declaration = globalDeclaration("isLength");
-        references.addReference(reference, declaration);
+        fixture.addReference(reference, declaration);
         
         ClassType classType = new ClassType(fullyQualifiedName("example", "List"));
         ParameterisedType typeFunction = parameterisedType(classType, asList(new FormalTypeParameter("T")));
@@ -401,7 +380,7 @@ public class TypeInfererTest {
     cannotCallTypesThatArentFunctionApplications() {
         VariableIdentifierNode reference = Nodes.id("isLength");
         GlobalDeclaration declaration = globalDeclaration("isLength");
-        references.addReference(reference, declaration);
+        fixture.addReference(reference, declaration);
         
         StaticContext context = standardContext();
         context.add(declaration, unassignableValue(CoreTypes.BOOLEAN));
@@ -419,7 +398,7 @@ public class TypeInfererTest {
     errorIfCallingFunctionWithWrongNumberOfArguments() {
         VariableIdentifierNode reference = Nodes.id("isLength");
         GlobalDeclaration declaration = globalDeclaration("isLength");
-        references.addReference(reference, declaration);
+        fixture.addReference(reference, declaration);
         
         StaticContext context = standardContext();
         // isLength: (String, Double) -> Boolean 
@@ -437,7 +416,7 @@ public class TypeInfererTest {
     memberAccessHasTypeOfMember() {
         VariableIdentifierNode reference = Nodes.id("heAintHeavy");
         GlobalDeclaration declaration = globalDeclaration("heAintHeavy");
-        references.addReference(reference, declaration);
+        fixture.addReference(reference, declaration);
         
         StaticContext context = standardContext();
         InterfaceType interfaceType = new InterfaceType(fullyQualifiedName("shed", "example", "Brother"));
@@ -453,7 +432,7 @@ public class TypeInfererTest {
     memberAccessIsAssignableIfMemberIsAssignable() {
         VariableIdentifierNode reference = Nodes.id("heAintHeavy");
         GlobalDeclaration declaration = globalDeclaration("heAintHeavy");
-        references.addReference(reference, declaration);
+        fixture.addReference(reference, declaration);
         
         StaticContext context = standardContext();
         InterfaceType interfaceType = new InterfaceType(fullyQualifiedName("shed", "example", "Brother"));
@@ -469,7 +448,7 @@ public class TypeInfererTest {
     memberAccessFailsIfInterfaceDoesNotHaveSpecifiedMember() {
         VariableIdentifierNode reference = Nodes.id("heAintHeavy");
         GlobalDeclaration declaration = globalDeclaration("heAintHeavy");
-        references.addReference(reference, declaration);
+        fixture.addReference(reference, declaration);
         
         StaticContext context = standardContext();
         InterfaceType interfaceType = new InterfaceType(fullyQualifiedName("shed", "example", "Brother"));
@@ -487,7 +466,7 @@ public class TypeInfererTest {
     applyingTypeUpdatesParameterisedTypeWithType() {
         VariableIdentifierNode listReference = Nodes.id("List");
         GlobalDeclaration listDeclaration = globalDeclaration("List");
-        references.addReference(listReference, listDeclaration);
+        fixture.addReference(listReference, listDeclaration);
         
         StaticContext context = standardContext();
         FormalTypeParameter typeParameter = new FormalTypeParameter("T");
@@ -496,7 +475,7 @@ public class TypeInfererTest {
             asList(typeParameter)
         );
         context.add(listDeclaration, unassignableValue(listTypeFunction));
-        TypeApplicationNode typeApplication = Nodes.typeApply(listReference, numberReference);
+        TypeApplicationNode typeApplication = Nodes.typeApply(listReference, doubleReference);
         
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             asList(new FormalArgumentNode("dummy", typeApplication)),
@@ -513,7 +492,7 @@ public class TypeInfererTest {
     applyingTypeUpdatesFunctionArgumentAndReturnTypes() {
         VariableIdentifierNode identityReference = Nodes.id("identity");
         GlobalDeclaration identityDeclaration = globalDeclaration("identity");
-        references.addReference(identityReference, identityDeclaration);
+        fixture.addReference(identityReference, identityDeclaration);
         
         StaticContext context = standardContext();
         
@@ -522,7 +501,7 @@ public class TypeInfererTest {
             typeParameters(typeParameter, typeParameter),
             asList(typeParameter)
         )));
-        CallNode call = Nodes.call(Nodes.typeApply(identityReference, numberReference), Nodes.number("2"));
+        CallNode call = Nodes.call(Nodes.typeApply(identityReference, doubleReference), Nodes.number("2"));
         TypeResult<Type> result = inferType(call, context);
         assertThat(result, isType(CoreTypes.DOUBLE));
     }
@@ -531,7 +510,7 @@ public class TypeInfererTest {
     assignmentHasTypeOfAssignedValue() {
         VariableIdentifierNode reference = Nodes.id("x");
         GlobalDeclaration declaration = globalDeclaration("x");
-        references.addReference(reference, declaration);
+        fixture.addReference(reference, declaration);
         
         StaticContext context = standardContext();
         
@@ -545,7 +524,7 @@ public class TypeInfererTest {
     cannotAssignToUnassignableValue() {
         VariableIdentifierNode reference = Nodes.id("x");
         GlobalDeclaration declaration = globalDeclaration("x");
-        references.addReference(reference, declaration);
+        fixture.addReference(reference, declaration);
         
         StaticContext context = standardContext();
         
@@ -560,7 +539,7 @@ public class TypeInfererTest {
     cannotAssignValueIfNotSubTypeOfVariableType() {
         VariableIdentifierNode reference = Nodes.id("x");
         GlobalDeclaration declaration = globalDeclaration("x");
-        references.addReference(reference, declaration);
+        fixture.addReference(reference, declaration);
         
         StaticContext context = standardContext();
         
@@ -575,11 +554,11 @@ public class TypeInfererTest {
     canAssignValueIfSubTypeOfVariableType() {
         VariableIdentifierNode interfaceReference = Nodes.id("iterable");
         GlobalDeclaration interfaceDeclaration = globalDeclaration("iterable");
-        references.addReference(interfaceReference, interfaceDeclaration);
+        fixture.addReference(interfaceReference, interfaceDeclaration);
 
         VariableIdentifierNode classReference = Nodes.id("iterable");
         GlobalDeclaration classDeclaration = globalDeclaration("iterable");
-        references.addReference(classReference, classDeclaration);
+        fixture.addReference(classReference, classDeclaration);
         
         StaticContext context = standardContext();
         
@@ -602,25 +581,11 @@ public class TypeInfererTest {
     }
 
     private TypeInferer typeInferer(StaticContext context) {
-        Injector injector = TypeCheckerInjector.build(new FullyQualifiedNamesBuilder().build(), context, references.build());
-        return injector.getInstance(TypeInferer.class);
-    }
-    
-    private StaticContext blankContext() {
-        return new StaticContext();
+        return fixture.get(TypeInferer.class);
     }
     
     private StaticContext standardContext() {
-        references.addReference(numberReference, numberDeclaration);
-        references.addReference(stringReference, stringDeclaration);
-        references.addReference(booleanReference, booleanDeclaration);
-        
-        StaticContext context = blankContext();
-        context.add(numberDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.DOUBLE)));
-        context.add(stringDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.STRING)));
-        context.add(booleanDeclaration, unassignableValue(CoreTypes.classOf(CoreTypes.BOOLEAN)));
-        
-        return context;
+        return fixture.context();
     }
     
     private Matcher<TypeResult<Type>> isType(Type type) {

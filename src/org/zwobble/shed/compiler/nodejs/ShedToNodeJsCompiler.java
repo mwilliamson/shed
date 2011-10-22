@@ -9,6 +9,7 @@ import org.zwobble.shed.compiler.CompilationResult;
 import org.zwobble.shed.compiler.OptimisationLevel;
 import org.zwobble.shed.compiler.ShedCompiler;
 import org.zwobble.shed.compiler.codegenerator.BrowserModuleWrapper;
+import org.zwobble.shed.compiler.typechecker.DefaultContext;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -71,7 +72,7 @@ public class ShedToNodeJsCompiler {
     }
     
     private static StaticContext context() {
-        StaticContext context = StaticContext.defaultContext();
+        StaticContext context = DefaultContext.defaultContext();
 
         ClassType sysType = new ClassType(fullyQualifiedName("shed", "sys"));
         ScalarTypeInfo sysTypeInfo = new ScalarTypeInfo(

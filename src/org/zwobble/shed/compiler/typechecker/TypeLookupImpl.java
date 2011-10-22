@@ -3,9 +3,7 @@ package org.zwobble.shed.compiler.typechecker;
 import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
-import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
-import org.zwobble.shed.compiler.types.TypeApplication;
 
 import com.google.common.base.Function;
 
@@ -15,10 +13,12 @@ import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 public class TypeLookupImpl implements TypeLookup {
     private final TypeInferer typeInferer;
+    private final StaticContext context;
 
     @Inject
-    public TypeLookupImpl(TypeInferer typeInferer) {
+    public TypeLookupImpl(TypeInferer typeInferer, StaticContext context) {
         this.typeInferer = typeInferer;
+        this.context = context;
     }
     
     public TypeResult<Type>
@@ -26,22 +26,16 @@ public class TypeLookupImpl implements TypeLookup {
         return typeInferer.inferType(typeReference).ifValueThen(extractType(typeReference));
     }
 
-    private static Function<Type, TypeResult<Type>> extractType(final ExpressionNode expression) {
+    private Function<Type, TypeResult<Type>> extractType(final ExpressionNode expression) {
         return new Function<Type, TypeResult<Type>>() {
             @Override
             public TypeResult<Type> apply(Type variableType) {
-                if (!isType(variableType)) {
+                if (!context.isMetaClass(variableType)) {
                     return failure(error(expression, ("Not a type but an instance of \"" + variableType.shortName() + "\"")));
                 }
                 
-                Type type = ((TypeApplication)variableType).getTypeParameters().get(0);
-                return success(type);
+                return success(context.getTypeFromMetaClass(variableType));
             }
         };
     }
-    
-    private static boolean isType(Type type) {
-        return type instanceof TypeApplication && ((TypeApplication)type).getBaseType().equals(CoreTypes.CLASS);
-    }
-
 }

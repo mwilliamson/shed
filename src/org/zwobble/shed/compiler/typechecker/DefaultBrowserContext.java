@@ -1,5 +1,8 @@
 package org.zwobble.shed.compiler.typechecker;
 
+import java.util.Collections;
+
+import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
@@ -9,28 +12,28 @@ import org.zwobble.shed.compiler.types.Type;
 
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
+import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 
 public class DefaultBrowserContext {
     public static StaticContext defaultBrowserContext() {
-        StaticContext context = StaticContext.defaultContext();
+        StaticContext context = DefaultContext.defaultContext();
         
         FormalTypeParameter formalTypeParameter = new FormalTypeParameter("T");
         Type importValueType = new ParameterisedFunctionType(
             asList(CoreTypes.STRING, formalTypeParameter),
             asList(formalTypeParameter)
         );
-        // TODO: replace with metaclass that implements both Class and Function1
-        ClassType javaScriptImporterType = new ClassType(fullyQualifiedName("shed", "javascript", "JavaScriptImporter"));
+        FullyQualifiedName javaScriptImporterName = fullyQualifiedName("shed", "javascript", "JavaScriptImporter");
+        ClassType javaScriptImporterType = new ClassType(javaScriptImporterName);
         ScalarTypeInfo javaScriptImporterTypeInfo = new ScalarTypeInfo(
-            interfaces(CoreTypes.functionTypeOf(javaScriptImporterType), CoreTypes.classOf(javaScriptImporterType)),
+            interfaces(),
             members("importValue", unassignableValue(importValueType))
         );
         
-        context.addGlobal(fullyQualifiedName("shed", "javascript", "JavaScriptImporter"), CoreTypes.functionTypeOf(javaScriptImporterType));
-        context.addInfo(javaScriptImporterType, javaScriptImporterTypeInfo);
+        context.addClass(globalDeclaration(javaScriptImporterName), javaScriptImporterType, Collections.<Type>emptyList(), javaScriptImporterTypeInfo);
         
         ClassType browserType = new ClassType(fullyQualifiedName("shed", "browser"));
         ScalarTypeInfo browserTypeInfo = new ScalarTypeInfo(

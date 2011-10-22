@@ -16,6 +16,7 @@ import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
@@ -28,7 +29,6 @@ import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
-import org.zwobble.shed.compiler.typechecker.CoreModule;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -39,6 +39,8 @@ import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 
 public class ReferenceResolverTest {
+    private static final GlobalDeclaration STRING_DECLARATION = GlobalDeclaration.globalDeclaration("String");
+    private static final GlobalDeclaration DOUBLE_DECLARATION = GlobalDeclaration.globalDeclaration("Double");
     private static final References EMPTY_REFERENCES = new References(ImmutableMap.<Identity<VariableIdentifierNode>, Identity<Declaration>>of());
     private static final ReferenceResolverResult EMPTY_RESULT = ReferenceResolverResult.build(EMPTY_REFERENCES, Collections.<CompilerError>emptyList());
     private final ReferenceResolver resolver = new ReferenceResolver();
@@ -206,7 +208,7 @@ public class ReferenceResolverTest {
             Option.<ExpressionNode>none(),
             Nodes.id("first")
         );
-        assertThat(resolveReferences(source), hasReference(typeReference, CoreModule.GLOBAL_DECLARATIONS.get("String")));
+        assertThat(resolveReferences(source), hasReference(typeReference, STRING_DECLARATION));
     }
 
     @Test public void
@@ -217,7 +219,7 @@ public class ReferenceResolverTest {
             Option.<ExpressionNode>some(typeReference),
             Nodes.string("Falling from your mouth")
         );
-        assertThat(resolveReferences(source), hasReference(typeReference, CoreModule.GLOBAL_DECLARATIONS.get("String")));
+        assertThat(resolveReferences(source), hasReference(typeReference, STRING_DECLARATION));
     }
 
     @Test public void
@@ -228,7 +230,7 @@ public class ReferenceResolverTest {
             typeReference,
             Nodes.block(Nodes.returnStatement(Nodes.string("Falling from your mouth")))
         );
-        assertThat(resolveReferences(source), hasReference(typeReference, CoreModule.GLOBAL_DECLARATIONS.get("String")));
+        assertThat(resolveReferences(source), hasReference(typeReference, STRING_DECLARATION));
     }
 
     @Test public void
@@ -322,7 +324,7 @@ public class ReferenceResolverTest {
         VariableIdentifierNode numberReference = Nodes.id("Double");
         SyntaxNode source = Nodes.block(listDeclaration, Nodes.expressionStatement(Nodes.typeApply(listReference, numberReference)));
         assertThat(resolveReferences(source), hasReference(listReference, listDeclaration));
-        assertThat(resolveReferences(source), hasReference(numberReference, CoreModule.GLOBAL_DECLARATIONS.get("Double")));
+        assertThat(resolveReferences(source), hasReference(numberReference, DOUBLE_DECLARATION));
     }
     
     @Test public void
@@ -403,7 +405,10 @@ public class ReferenceResolverTest {
     }
 
     private ReferenceResolverResult resolveReferences(SyntaxNode node) {
-        return resolver.resolveReferences(node, CoreModule.GLOBAL_DECLARATIONS);
+        return resolver.resolveReferences(node, ImmutableMap.of(
+            "Double", DOUBLE_DECLARATION,
+            "String", STRING_DECLARATION
+        ));
     }
     
     private Matcher<ReferenceResolverResult> hasReference(final VariableIdentifierNode reference, final Declaration declaration) {

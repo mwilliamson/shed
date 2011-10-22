@@ -5,7 +5,7 @@ import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.typechecker.errors.UnresolvedImportError;
 import org.zwobble.shed.compiler.types.ClassType;
-import org.zwobble.shed.compiler.types.CoreTypes;
+import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
 import static java.util.Arrays.asList;
@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
+import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 public class ImportStatementTypeCheckerTest {
@@ -23,11 +24,13 @@ public class ImportStatementTypeCheckerTest {
         StaticContext staticContext = new StaticContext();
         
         FullyQualifiedName dateTimeName = fullyQualifiedName("shed", "time", "DateTime");
-        Type dateTime = new ClassType(dateTimeName);
-        staticContext.addGlobal(dateTimeName, CoreTypes.classOf(dateTime));
+        ClassType dateTime = new ClassType(dateTimeName);
+        staticContext.addClass(globalDeclaration(dateTimeName), dateTime, ScalarTypeInfo.EMPTY);
+        Type dateTimeMetaClass = staticContext.getMetaClass(dateTime);
+        staticContext.addGlobal(dateTimeName, dateTimeMetaClass);
         
         assertThat(typeCheckImportStatement(importStatement, staticContext), is(isSuccess()));
-        assertThat(staticContext.get(importStatement), is(VariableLookupResult.success(unassignableValue(CoreTypes.classOf(dateTime)))));
+        assertThat(staticContext.get(importStatement), is(VariableLookupResult.success(unassignableValue(dateTimeMetaClass))));
     }
 
     @Test public void

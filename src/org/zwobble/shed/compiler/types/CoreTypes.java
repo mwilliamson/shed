@@ -16,23 +16,16 @@ import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualified
 import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedType;
 
 public class CoreTypes {
-    public static final ScalarType BOOLEAN = coreType("Boolean");
-    public static final ScalarType DOUBLE = coreType("Double");
-    public static final ScalarType STRING = coreType("String");
-    public static final ScalarType UNIT = coreType("Unit");
+    public static final ClassType BOOLEAN = coreType("Boolean");
+    public static final ClassType DOUBLE = coreType("Double");
+    public static final ClassType STRING = coreType("String");
+    public static final ClassType UNIT = coreType("Unit");
     
-    private static ScalarType coreType(String name) {
+    private static ClassType coreType(String name) {
         return new ClassType(fullyQualifiedName(name));
     }
     
-    public static final ParameterisedType CLASS = parameterisedType(
-        new InterfaceType(fullyQualifiedName("Class")),
-        asList(new FormalTypeParameter("C"))
-    );
-    
-    public static Type classOf(Type type) {
-        return new TypeApplication(CLASS, asList(type));
-    }
+    public static final Type CLASS = new InterfaceType(fullyQualifiedName("Class"));
     
     private static Map<Integer, ParameterisedType> functionTypes = new HashMap<Integer, ParameterisedType>();
     private static Set<Type> baseFunctionTypes = new HashSet<Type>();
