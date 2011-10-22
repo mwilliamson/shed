@@ -40,6 +40,7 @@ public class NodeTests {
         writer.write(CharStreams.toString(new FileReader(new File("src/org/zwobble/shed/runtime/shed.node.js"))));
         ShedToNodeJsCompiler.compile(new File("src/org/zwobble/shed/runtime/stdlib"), main, writer);
         ShedToNodeJsCompiler.compile(new File("node-test-files", directory), main, writer);
+        writer.flush();
         return compiledFile;
     }
 

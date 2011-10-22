@@ -26,7 +26,6 @@ public class ShedToNodeJsCompiler {
     public static ShedToNodeJsCompilationResult compile(File sourceDirectory, String target, Writer writer) {
         try {
             compileFiles(sourceDirectory, writer);
-            writer.flush();
             return new ShedToNodeJsCompilationResult();
         } catch (IOException e) {
             throw new RuntimeException(e);
