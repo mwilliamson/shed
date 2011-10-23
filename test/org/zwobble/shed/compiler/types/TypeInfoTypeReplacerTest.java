@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
@@ -32,6 +33,20 @@ public class TypeInfoTypeReplacerTest {
             "get", unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.BOOLEAN)),
             "targetLoad", assignableValue(CoreTypes.DOUBLE)
         )));
+    }
+    
+    @Test public void
+    interfacesHaveTypeParametersUpdated() {
+        InterfaceType listBaseType = new InterfaceType(fullyQualifiedName("List"));
+        ParameterisedType listType = parameterisedType(listBaseType, asList(formalTypeParameter("T")));
+        
+        ClassType arrayListBaseType = new ClassType(fullyQualifiedName("ArrayList"));
+        FormalTypeParameter arrayListTypeParameter = formalTypeParameter("T");
+        ParameterisedType arrayListType = parameterisedType(arrayListBaseType, asList(arrayListTypeParameter));
+        ScalarTypeInfo arrayListTypeInfo = new ScalarTypeInfo(interfaces(applyTypes(listType, typeParameters(arrayListTypeParameter))), members());
+        
+        ScalarTypeInfo typeInfo = buildTypeInfo(applyTypes(arrayListType, typeParameters(CoreTypes.STRING)), arrayListTypeInfo);
+        assertThat(typeInfo.getSuperTypes(), containsInAnyOrder((Type)applyTypes(listType, typeParameters(CoreTypes.STRING))));
     }
     
     private ScalarTypeInfo buildTypeInfo(TypeApplication typeApplication, ScalarTypeInfo typeInfo) {
