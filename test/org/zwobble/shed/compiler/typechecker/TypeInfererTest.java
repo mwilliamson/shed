@@ -4,7 +4,6 @@ import java.util.Collections;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerErrorDescription;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
@@ -34,8 +33,6 @@ import org.zwobble.shed.compiler.types.ParameterisedType;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
-
-import com.google.common.collect.ImmutableMap;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -493,7 +490,6 @@ public class TypeInfererTest {
         )));
     }
     
-    @Ignore
     @Test public void
     applyingTypeBuildsMetaClassWithUpdatedMembers() {
         VariableIdentifierNode listReference = Nodes.id("List");
@@ -514,7 +510,7 @@ public class TypeInfererTest {
         Type metaClass = result.get();
         ScalarType type = (ScalarType) context.getTypeFromMetaClass(metaClass);
         ScalarTypeInfo typeInfo = context.getInfo(type);
-        assertThat(typeInfo.getMembers(), is((Object)ImmutableMap.of("get", unassignableValue(CoreTypes.DOUBLE))));
+        assertThat(typeInfo.getMembers(), is(members("get", unassignableValue(CoreTypes.DOUBLE))));
     }
     
     @Test public void

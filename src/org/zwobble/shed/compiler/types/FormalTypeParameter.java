@@ -8,6 +8,10 @@ import lombok.ToString;
 @ToString
 @Getter
 public class FormalTypeParameter implements Type {
+    public static FormalTypeParameter formalTypeParameter(String name) {
+        return new FormalTypeParameter(name);
+    }
+    
     private final String name;
     
     @Override

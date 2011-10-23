@@ -18,4 +18,8 @@ public class Members {
     public static Map<String, ValueInfo> members(String name1, ValueInfo value1) {
         return ImmutableMap.of(name1, value1);
     }
+    
+    public static Map<String, ValueInfo> members(String name1, ValueInfo value1, String name2, ValueInfo value2) {
+        return ImmutableMap.of(name1, value1, name2, value2);
+    }
 }

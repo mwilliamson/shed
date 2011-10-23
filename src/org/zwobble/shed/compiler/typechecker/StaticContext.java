@@ -17,15 +17,16 @@ import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
+import org.zwobble.shed.compiler.types.TypeInfoTypeReplacer;
+import org.zwobble.shed.compiler.types.TypeReplacer;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
-import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
-
 import static com.google.common.collect.Lists.newArrayList;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
+import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.typechecker.ShedTypeValue.shedTypeValue;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
@@ -67,7 +68,15 @@ public class StaticContext {
     }
     
     public ScalarTypeInfo getInfo(ScalarType scalarType) {
-        return scalarTypeInfo.get(scalarType);
+        if (scalarType instanceof TypeApplication) {
+            return getTypeApplicationInfo((TypeApplication)scalarType);
+        } else {
+            return scalarTypeInfo.get(scalarType);
+        }
+    }
+
+    private ScalarTypeInfo getTypeApplicationInfo(TypeApplication typeApplication) {
+        return new TypeInfoTypeReplacer(new TypeReplacer()).buildTypeInfo(typeApplication, getInfo(typeApplication.getParameterisedType().getBaseType()));
     }
 
     public void addClass(Declaration declaration, ClassType type, Iterable<Type> classParameters, ScalarTypeInfo classTypeInfo) {
