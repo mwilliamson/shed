@@ -11,21 +11,20 @@ import com.google.common.base.Joiner;
 
 import static com.google.common.collect.Lists.transform;
 
-@Data
+@Data(staticConstructor="applyTypes")
 public class TypeApplication implements ScalarType {
-    // TODO: store ScalarType directly, and store a map from formal type parameters to actual type parameters
-    private final ParameterisedType baseType;
+    private final ParameterisedType parameterisedType;
     private final List<Type> typeParameters;
   
     @Override
     public String shortName() {
         Iterable<String> typeParameterNames = transform(typeParameters, toShortName());
-        return baseType.shortName() + "[" + Joiner.on(", ").join(typeParameterNames) + "]";
+        return parameterisedType.shortName() + "[" + Joiner.on(", ").join(typeParameterNames) + "]";
     }
   
     @Override
     public FullyQualifiedName getFullyQualifiedName() {
-        return baseType.getBaseType().getFullyQualifiedName().replaceLast(shortName());
+        return parameterisedType.getBaseType().getFullyQualifiedName().replaceLast(shortName());
     }
   
     private Function<Type, String> toShortName() {

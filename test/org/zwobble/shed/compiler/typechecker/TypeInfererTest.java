@@ -34,7 +34,6 @@ import org.zwobble.shed.compiler.types.ParameterisedType;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
-import org.zwobble.shed.compiler.types.TypeApplication;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -56,6 +55,7 @@ import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedType;
+import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
 import static org.zwobble.shed.compiler.types.Types.typeParameters;
 
 public class TypeInfererTest {
@@ -367,9 +367,9 @@ public class TypeInfererTest {
         fixture.addReference(reference, declaration);
         
         ClassType classType = new ClassType(fullyQualifiedName("example", "List"));
-        ParameterisedType typeFunction = parameterisedType(classType, ScalarTypeInfo.EMPTY, asList(new FormalTypeParameter("T")));
+        ParameterisedType typeFunction = parameterisedType(classType, asList(new FormalTypeParameter("T")));
         StaticContext context = standardContext();
-        context.add(declaration, unassignableValue(new TypeApplication(typeFunction, asList((Type)CoreTypes.STRING))));
+        context.add(declaration, unassignableValue(applyTypes(typeFunction, asList((Type)CoreTypes.STRING))));
         
         CallNode call = Nodes.call(reference);
         TypeResult<Type> result = inferType(call, context);
@@ -477,7 +477,6 @@ public class TypeInfererTest {
         FormalTypeParameter typeParameter = new FormalTypeParameter("T");
         ParameterisedType listTypeFunction = parameterisedType(
             new InterfaceType(fullyQualifiedName("shed", "List")),
-            ScalarTypeInfo.EMPTY,
             asList(typeParameter)
         );
         context.add(listDeclaration, unassignableValue(listTypeFunction));
@@ -490,7 +489,7 @@ public class TypeInfererTest {
         );
         TypeResult<Type> result = inferType(functionExpression, context);
         assertThat(result, is(success(
-            CoreTypes.functionTypeOf(new TypeApplication(listTypeFunction, asList((Type)CoreTypes.DOUBLE)), CoreTypes.DOUBLE)
+            CoreTypes.functionTypeOf(applyTypes(listTypeFunction, asList((Type)CoreTypes.DOUBLE)), CoreTypes.DOUBLE)
         )));
     }
     
@@ -504,12 +503,10 @@ public class TypeInfererTest {
         StaticContext context = standardContext();
         FormalTypeParameter typeParameter = new FormalTypeParameter("T");
         ScalarTypeInfo listTypeInfo = new ScalarTypeInfo(interfaces(), members("get", unassignableValue(typeParameter)));
-        ParameterisedType listTypeFunction = parameterisedType(
-            new InterfaceType(fullyQualifiedName("shed", "List")),
-            listTypeInfo,
-            asList(typeParameter)
-        );
+        InterfaceType baseListType = new InterfaceType(fullyQualifiedName("shed", "List"));
+        ParameterisedType listTypeFunction = parameterisedType(baseListType, asList(typeParameter));
         context.add(listDeclaration, unassignableValue(listTypeFunction));
+        context.addInfo(baseListType, listTypeInfo);
         TypeApplicationNode typeApplication = Nodes.typeApply(listReference, doubleReference);
         
         TypeResult<Type> result = inferType(typeApplication, context);

@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedType;
+import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
 
 public class TypeReplacerTest {
     @Test public void
@@ -49,13 +50,13 @@ public class TypeReplacerTest {
         FormalTypeParameter listFormalTypeParameter = new FormalTypeParameter("E");
         FormalTypeParameter functionFormalTypeParameter = new FormalTypeParameter("T");
         ClassType scalarType = new ClassType(fullyQualifiedName("shed", "example", "List"));
-        ParameterisedType parameterisedType = parameterisedType(scalarType, ScalarTypeInfo.EMPTY, asList(listFormalTypeParameter));
-        Type typeApplication = new TypeApplication(parameterisedType, asList((Type)functionFormalTypeParameter));
+        ParameterisedType parameterisedType = parameterisedType(scalarType, asList(listFormalTypeParameter));
+        Type typeApplication = applyTypes(parameterisedType, asList((Type)functionFormalTypeParameter));
         
         Type replacement = typeReplacer.replaceTypes(
             typeApplication,
             ImmutableMap.<FormalTypeParameter, Type>of(functionFormalTypeParameter, CoreTypes.DOUBLE)
         );
-        assertThat(replacement, is((Type)new TypeApplication(parameterisedType, asList((Type)CoreTypes.DOUBLE))));
+        assertThat(replacement, is((Type)applyTypes(parameterisedType, asList((Type)CoreTypes.DOUBLE))));
     }
 }

@@ -5,6 +5,8 @@ import java.util.Map;
 
 import com.google.common.base.Function;
 
+import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
+
 import static com.google.common.collect.Lists.transform;
 
 public class TypeReplacer {
@@ -16,7 +18,7 @@ public class TypeReplacer {
         if (type instanceof TypeApplication) {
             TypeApplication typeApplication = (TypeApplication) type;
             List<Type> transformedTypeParameters = transform(typeApplication.getTypeParameters(), toReplacement(replacements));
-            return new TypeApplication((ParameterisedType)replaceTypes(typeApplication.getBaseType(), replacements), transformedTypeParameters);
+            return applyTypes((ParameterisedType)replaceTypes(typeApplication.getParameterisedType(), replacements), transformedTypeParameters);
         }
         return type;
     }

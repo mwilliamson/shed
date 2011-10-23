@@ -8,6 +8,8 @@ import java.util.Set;
 
 import com.google.common.base.Function;
 
+import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
+
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
@@ -28,21 +30,20 @@ public class CoreTypes {
     public static final Type CLASS = new InterfaceType(fullyQualifiedName("Class"));
     
     private static Map<Integer, ParameterisedType> functionTypes = new HashMap<Integer, ParameterisedType>();
-    private static Set<Type> baseFunctionTypes = new HashSet<Type>();
+    private static Set<ParameterisedType> baseFunctionTypes = new HashSet<ParameterisedType>();
     
     public static boolean isFunction(Type type) {
-        return type instanceof TypeApplication && baseFunctionTypes.contains((((TypeApplication)type).getBaseType().getBaseType()));
+        return type instanceof TypeApplication && baseFunctionTypes.contains((((TypeApplication)type).getParameterisedType()));
     }
     
     public static ParameterisedType functionType(int arguments) {
         if (!functionTypes.containsKey(arguments)) {
             InterfaceType baseType = new InterfaceType(fullyQualifiedName("Function" + arguments));
-            baseFunctionTypes.add(baseType);
-            
             List<FormalTypeParameter> formalTypeParameters = newArrayList(transform(range(arguments), toFormalTypeParameter()));
             formalTypeParameters.add(new FormalTypeParameter("TResult"));
-            ParameterisedType functionType = parameterisedType(baseType, ScalarTypeInfo.EMPTY, formalTypeParameters);
+            ParameterisedType functionType = parameterisedType(baseType, formalTypeParameters);
             functionTypes.put(arguments, functionType);
+            baseFunctionTypes.add(functionType);
         }
         return functionTypes.get(arguments);
     }
@@ -52,7 +53,7 @@ public class CoreTypes {
     }
     
     public static Type functionTypeOf(List<Type> types) {
-        return new TypeApplication(functionType(types.size() - 1), types);
+        return applyTypes(functionType(types.size() - 1), types);
     }
 
     private static Function<Integer, FormalTypeParameter> toFormalTypeParameter() {

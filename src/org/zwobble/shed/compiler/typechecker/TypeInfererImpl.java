@@ -42,6 +42,8 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
+import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
+
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.Option.some;
@@ -264,7 +266,7 @@ public class TypeInfererImpl implements TypeInferer {
                     }
                     return TypeResult.success(CoreTypes.functionTypeOf(Eager.transform(functionType.getFunctionTypeParameters(), toReplacement(replacements.build()))));
                 } else if (baseType instanceof ParameterisedType) {
-                    return TypeResult.success((Type)context.getMetaClass(new TypeApplication((ParameterisedType)baseType, parameterTypes)));   
+                    return TypeResult.success((Type)context.getMetaClass(applyTypes((ParameterisedType)baseType, parameterTypes)));   
                 } else {
                     throw new RuntimeException("Don't know how to apply types " + parameterTypes + " to " + baseType);
                 }
