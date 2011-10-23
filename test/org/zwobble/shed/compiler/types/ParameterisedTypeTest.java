@@ -14,6 +14,7 @@ public class ParameterisedTypeTest {
     shortNameIncludesParameters() {
         ParameterisedType typeFunction = parameterisedType(
             new InterfaceType(fullyQualifiedName("shed", "Map")),
+            ScalarTypeInfo.EMPTY,
             asList(new FormalTypeParameter("K"), new FormalTypeParameter("V"))
         );
         assertThat(typeFunction.shortName(), is("[K, V] -> Class[Map[K, V]]"));

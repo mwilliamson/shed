@@ -12,6 +12,7 @@ import static com.google.common.collect.Iterables.transform;
 @Data(staticConstructor="parameterisedType")
 public class ParameterisedType implements TypeFunction {
     private final ScalarType baseType;
+    private final ScalarTypeInfo baseTypeInfo;
     private final List<FormalTypeParameter> formalTypeParameters;
     
     @Override

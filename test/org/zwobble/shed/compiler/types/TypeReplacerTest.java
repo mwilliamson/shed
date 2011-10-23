@@ -49,7 +49,7 @@ public class TypeReplacerTest {
         FormalTypeParameter listFormalTypeParameter = new FormalTypeParameter("E");
         FormalTypeParameter functionFormalTypeParameter = new FormalTypeParameter("T");
         ClassType scalarType = new ClassType(fullyQualifiedName("shed", "example", "List"));
-        ParameterisedType parameterisedType = parameterisedType(scalarType, asList(listFormalTypeParameter));
+        ParameterisedType parameterisedType = parameterisedType(scalarType, ScalarTypeInfo.EMPTY, asList(listFormalTypeParameter));
         Type typeApplication = new TypeApplication(parameterisedType, asList((Type)functionFormalTypeParameter));
         
         Type replacement = typeReplacer.replaceTypes(

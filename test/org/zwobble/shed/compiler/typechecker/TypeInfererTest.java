@@ -4,6 +4,7 @@ import java.util.Collections;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerErrorDescription;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
@@ -30,9 +31,12 @@ import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Interfaces;
 import org.zwobble.shed.compiler.types.ParameterisedFunctionType;
 import org.zwobble.shed.compiler.types.ParameterisedType;
+import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
+
+import com.google.common.collect.ImmutableMap;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -40,6 +44,7 @@ import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
+import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
@@ -362,7 +367,7 @@ public class TypeInfererTest {
         fixture.addReference(reference, declaration);
         
         ClassType classType = new ClassType(fullyQualifiedName("example", "List"));
-        ParameterisedType typeFunction = parameterisedType(classType, asList(new FormalTypeParameter("T")));
+        ParameterisedType typeFunction = parameterisedType(classType, ScalarTypeInfo.EMPTY, asList(new FormalTypeParameter("T")));
         StaticContext context = standardContext();
         context.add(declaration, unassignableValue(new TypeApplication(typeFunction, asList((Type)CoreTypes.STRING))));
         
@@ -472,6 +477,7 @@ public class TypeInfererTest {
         FormalTypeParameter typeParameter = new FormalTypeParameter("T");
         ParameterisedType listTypeFunction = parameterisedType(
             new InterfaceType(fullyQualifiedName("shed", "List")),
+            ScalarTypeInfo.EMPTY,
             asList(typeParameter)
         );
         context.add(listDeclaration, unassignableValue(listTypeFunction));
@@ -486,6 +492,32 @@ public class TypeInfererTest {
         assertThat(result, is(success(
             CoreTypes.functionTypeOf(new TypeApplication(listTypeFunction, asList((Type)CoreTypes.DOUBLE)), CoreTypes.DOUBLE)
         )));
+    }
+    
+    @Ignore
+    @Test public void
+    applyingTypeBuildsMetaClassWithUpdatedMembers() {
+        VariableIdentifierNode listReference = Nodes.id("List");
+        GlobalDeclaration listDeclaration = globalDeclaration("List");
+        fixture.addReference(listReference, listDeclaration);
+        
+        StaticContext context = standardContext();
+        FormalTypeParameter typeParameter = new FormalTypeParameter("T");
+        ScalarTypeInfo listTypeInfo = new ScalarTypeInfo(interfaces(), members("get", unassignableValue(typeParameter)));
+        ParameterisedType listTypeFunction = parameterisedType(
+            new InterfaceType(fullyQualifiedName("shed", "List")),
+            listTypeInfo,
+            asList(typeParameter)
+        );
+        context.add(listDeclaration, unassignableValue(listTypeFunction));
+        TypeApplicationNode typeApplication = Nodes.typeApply(listReference, doubleReference);
+        
+        TypeResult<Type> result = inferType(typeApplication, context);
+        assertThat(result, isSuccess());
+        Type metaClass = result.get();
+        ScalarType type = (ScalarType) context.getTypeFromMetaClass(metaClass);
+        ScalarTypeInfo typeInfo = context.getInfo(type);
+        assertThat(typeInfo.getMembers(), is((Object)ImmutableMap.of("get", unassignableValue(CoreTypes.DOUBLE))));
     }
     
     @Test public void

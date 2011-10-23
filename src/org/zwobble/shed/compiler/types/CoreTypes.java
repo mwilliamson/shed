@@ -41,7 +41,7 @@ public class CoreTypes {
             
             List<FormalTypeParameter> formalTypeParameters = newArrayList(transform(range(arguments), toFormalTypeParameter()));
             formalTypeParameters.add(new FormalTypeParameter("TResult"));
-            ParameterisedType functionType = parameterisedType(baseType, formalTypeParameters);
+            ParameterisedType functionType = parameterisedType(baseType, ScalarTypeInfo.EMPTY, formalTypeParameters);
             functionTypes.put(arguments, functionType);
         }
         return functionTypes.get(arguments);
