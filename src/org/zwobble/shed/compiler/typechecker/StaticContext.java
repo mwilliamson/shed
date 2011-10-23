@@ -70,21 +70,21 @@ public class StaticContext {
         return scalarTypeInfo.get(scalarType);
     }
 
-    public Type addClass(Declaration declaration, ClassType type, Iterable<Type> classParameters, ScalarTypeInfo classTypeInfo) {
+    public void addClass(Declaration declaration, ClassType type, Iterable<Type> classParameters, ScalarTypeInfo classTypeInfo) {
         List<Type> functionTypeParameters = newArrayList(classParameters);
         functionTypeParameters.add(type);
-        return addScalarType(declaration, type, classTypeInfo, interfaces(CoreTypes.functionTypeOf(functionTypeParameters), CoreTypes.CLASS));
+        addScalarType(declaration, type, classTypeInfo, interfaces(CoreTypes.functionTypeOf(functionTypeParameters), CoreTypes.CLASS));
     }
 
-    public Type addClass(Declaration declaration, ClassType type, ScalarTypeInfo classTypeInfo) {
-        return addScalarType(declaration, type, classTypeInfo, interfaces(CoreTypes.CLASS));
+    public void addClass(Declaration declaration, ClassType type, ScalarTypeInfo classTypeInfo) {
+        addScalarType(declaration, type, classTypeInfo, interfaces(CoreTypes.CLASS));
     }
 
-    public Type addInterface(Declaration declaration, InterfaceType type, ScalarTypeInfo classTypeInfo) {
-        return addScalarType(declaration, type, classTypeInfo, interfaces(CoreTypes.CLASS));
+    public void addInterface(Declaration declaration, InterfaceType type, ScalarTypeInfo classTypeInfo) {
+        addScalarType(declaration, type, classTypeInfo, interfaces(CoreTypes.CLASS));
     }
     
-    private Type addScalarType(Declaration declaration, ScalarType type, ScalarTypeInfo scalarTypeInfo, Set<Type> superClasses) {
+    private void addScalarType(Declaration declaration, ScalarType type, ScalarTypeInfo scalarTypeInfo, Set<Type> superClasses) {
         // TODO: forbid user-declared members called Meta 
         FullyQualifiedName metaClassName = type.getFullyQualifiedName().extend("Meta");
         ClassType metaClass = new ClassType(metaClassName);
@@ -94,8 +94,6 @@ public class StaticContext {
         addInfo(type, scalarTypeInfo);
         addInfo(metaClass, metaClassTypeInfo);
         metaClasses.put(type, metaClass);
-        // TODO: don't return metaClass (can be accessed through getter, not obvious that we'd return the metaclass from name of methods)
-        return metaClass;
     }
     
     public Type getMetaClass(Type type) {
