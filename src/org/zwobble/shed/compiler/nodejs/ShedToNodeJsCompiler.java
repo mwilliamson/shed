@@ -9,18 +9,10 @@ import org.zwobble.shed.compiler.CompilationResult;
 import org.zwobble.shed.compiler.OptimisationLevel;
 import org.zwobble.shed.compiler.ShedCompiler;
 import org.zwobble.shed.compiler.codegenerator.BrowserModuleWrapper;
-import org.zwobble.shed.compiler.typechecker.DefaultContext;
-import org.zwobble.shed.compiler.typechecker.StaticContext;
-import org.zwobble.shed.compiler.types.ClassType;
-import org.zwobble.shed.compiler.types.CoreTypes;
-import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 
 import com.google.common.io.CharStreams;
 
-import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
-import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
-import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
-import static org.zwobble.shed.compiler.types.Members.members;
+import static org.zwobble.shed.compiler.nodejs.DefaultNodeJsContext.defaultNodeJsContext;
 
 public class ShedToNodeJsCompiler {
     public static ShedToNodeJsCompilationResult compile(File sourceDirectory, String target, Writer writer) {
@@ -54,7 +46,7 @@ public class ShedToNodeJsCompiler {
         } else if (file.getName().endsWith(".shed")) {
             if (!file.getName().endsWith(".browser.shed")) {
                 String source = CharStreams.toString(new FileReader(file));
-                CompilationResult result = compiler().compile(source, context());
+                CompilationResult result = compiler().compile(source, defaultNodeJsContext());
                 if (!result.isSuccess()) {
                     throw new RuntimeException(result.getErrors().toString());
                 }
@@ -66,19 +58,5 @@ public class ShedToNodeJsCompiler {
 
     private static ShedCompiler compiler() {
         return ShedCompiler.build(new BrowserModuleWrapper(), OptimisationLevel.SIMPLE);
-    }
-    
-    private static StaticContext context() {
-        StaticContext context = DefaultContext.defaultContext();
-
-        ClassType sysType = new ClassType(fullyQualifiedName("shed", "sys"));
-        ScalarTypeInfo sysTypeInfo = new ScalarTypeInfo(
-            interfaces(),
-            members("print", unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.UNIT)))
-        );
-        
-        context.addGlobal(fullyQualifiedName("shed", "sys"), sysType);
-        context.addInfo(sysType, sysTypeInfo);
-        return context;
     }
 }
