@@ -360,25 +360,7 @@ public class TypeInfererTest {
     }
     
     @Test public void
-    cannotCallNonFunctionTypeApplications() {
-        VariableIdentifierNode reference = Nodes.id("isLength");
-        GlobalDeclaration declaration = globalDeclaration("isLength");
-        fixture.addReference(reference, declaration);
-        
-        ClassType classType = new ClassType(fullyQualifiedName("example", "List"));
-        ParameterisedType typeFunction = parameterisedType(classType, asList(new FormalTypeParameter("T")));
-        StaticContext context = standardContext();
-        context.addInfo(classType, ScalarTypeInfo.EMPTY);
-        TypeApplication type = applyTypes(typeFunction, asList((Type)CoreTypes.STRING));
-        context.add(declaration, unassignableValue(type));
-        
-        CallNode call = Nodes.call(reference);
-        TypeResult<Type> result = inferType(call, context);
-        assertThat(result, isFailureWithErrors(new NotCallableError(type)));
-    }
-    
-    @Test public void
-    cannotCallTypesThatArentFunctionApplications() {
+    cannotCallTypesThatArentFunctions() {
         VariableIdentifierNode reference = Nodes.id("isLength");
         GlobalDeclaration declaration = globalDeclaration("isLength");
         fixture.addReference(reference, declaration);
