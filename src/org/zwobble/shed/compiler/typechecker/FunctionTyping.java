@@ -26,15 +26,17 @@ public class FunctionTyping {
         this.context = context;
     }
     
-    public boolean isFunction(ScalarType type) {
+    public boolean isFunction(Type type) {
         return extractFunctionTypeParameters(type).hasValue();
     }
     
-    public Option<List<Type>> extractFunctionTypeParameters(ScalarType type) {
-        if (isFunctionType(type)) {
+    public Option<List<Type>> extractFunctionTypeParameters(Type type) {
+        if (!(type instanceof ScalarType)) {
+            return Option.<List<Type>>none();
+        } else if (isFunctionType(type)) {
             return some(((TypeApplication)type).getTypeParameters());
         } else {
-            Iterable<ScalarType> superTypes = filter(context.getInfo(type).getSuperTypes(), ScalarType.class);
+            Iterable<ScalarType> superTypes = filter(context.getInfo((ScalarType)type).getSuperTypes(), ScalarType.class);
             return getFirst(filter(transform(superTypes, toFunctionTypeParameters()), hasValue()), Option.<List<Type>>none());
         }
     }

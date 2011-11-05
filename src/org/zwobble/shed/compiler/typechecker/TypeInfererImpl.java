@@ -204,10 +204,10 @@ public class TypeInfererImpl implements TypeInferer {
         return calledTypeResult.ifValueThen(new Function<Type, TypeResult<Type>>() {
             @Override
             public TypeResult<Type> apply(Type calledType) {
-                if (!(calledType instanceof ScalarType) || !functionTyping.isFunction((ScalarType)calledType)) {
+                if (!functionTyping.isFunction(calledType)) {
                     return TypeResult.failure(error(expression, new NotCallableError(calledType)));
                 }
-                final List<? extends Type> typeParameters = functionTyping.extractFunctionTypeParameters((ScalarType)calledType).get();
+                final List<? extends Type> typeParameters = functionTyping.extractFunctionTypeParameters(calledType).get();
                 
                 int numberOfFormalAguments = typeParameters.size() - 1;
                 int numberOfActualArguments = expression.getArguments().size();

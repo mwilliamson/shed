@@ -5,8 +5,8 @@ import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.ParameterisedType;
-import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
+import org.zwobble.shed.compiler.types.Type;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -55,7 +55,14 @@ public class FunctionTypingTest {
         assertThat(isFunction(classType, context), is(true));
     }
     
-    private boolean isFunction(ScalarType type, StaticContext staticContext) {
+    @Test public void
+    typeFunctionsAreNotFunctions() {
+        InterfaceType interfaceType = new InterfaceType(fullyQualifiedName());
+        StaticContext context = new StaticContext();
+        assertThat(isFunction(ParameterisedType.parameterisedType(interfaceType, asList(formalTypeParameter("T"))), context), is(false));
+    }
+    
+    private boolean isFunction(Type type, StaticContext staticContext) {
         return new FunctionTyping(staticContext).isFunction(type);
     }
 }
