@@ -13,14 +13,9 @@ import com.google.javascript.jscomp.JSSourceFile;
 import static java.util.Arrays.asList;
 
 public class GoogleClosureJavaScriptOptimiser implements JavaScriptOptimiser {
-    private final Compiler compiler;
-
-    public GoogleClosureJavaScriptOptimiser() {
-        this.compiler = new Compiler();
-    }
-    
     @Override
     public String optimise(String javaScript) {
+        Compiler compiler = new Compiler();
         List<JSSourceFile> externs = Collections.emptyList();
         List<JSSourceFile> inputs = asList(stringToSourceFile(javaScript));
         compiler.compile(externs, inputs, options());

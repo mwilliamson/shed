@@ -1,0 +1,8 @@
+package shed;
+
+import shed.javascript.NodeJavaScriptImporter;
+
+public object sys {
+    val importer = NodeJavaScriptImporter();
+    public val print = importer.importValueFromModule[Function1[String, Unit]]("sys", "print");
+}

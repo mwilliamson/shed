@@ -4,9 +4,11 @@ import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
+import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Members;
 import org.zwobble.shed.compiler.types.MembersBuilder;
 import org.zwobble.shed.compiler.types.ParameterisedType;
+import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
@@ -23,6 +25,7 @@ public class DefaultContext {
         addCore(staticContext, CoreTypes.BOOLEAN, new ScalarTypeInfo(interfaces(), members()));
         addCore(staticContext, CoreTypes.DOUBLE, numberTypeInfo(CoreTypes.DOUBLE));
         addCore(staticContext, CoreTypes.UNIT, new ScalarTypeInfo(interfaces(), members()));
+        addCore(staticContext, CoreTypes.CLASS, new ScalarTypeInfo(interfaces(), members()));
         
         for (int i = 0; i < 20; i += 1) {
             ParameterisedType functionType = CoreTypes.functionType(i);
@@ -35,10 +38,14 @@ public class DefaultContext {
         return staticContext;
     }
 
-    private static void addCore(StaticContext staticContext, ClassType type, ScalarTypeInfo typeInfo) {
+    private static void addCore(StaticContext staticContext, ScalarType type, ScalarTypeInfo typeInfo) {
         FullyQualifiedName name = type.getFullyQualifiedName();
         GlobalDeclaration declaration = globalDeclaration(name);
-        staticContext.addClass(declaration, type, typeInfo);
+        if (type instanceof ClassType) {
+            staticContext.addClass(declaration, (ClassType)type, typeInfo);
+        } else {
+            staticContext.addInterface(declaration, (InterfaceType)type, typeInfo);
+        }
         staticContext.addBuiltIn(name.last(), declaration);
     }
     

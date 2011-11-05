@@ -9,36 +9,44 @@ import org.zwobble.shed.compiler.CompilationResult;
 import org.zwobble.shed.compiler.OptimisationLevel;
 import org.zwobble.shed.compiler.ShedCompiler;
 import org.zwobble.shed.compiler.codegenerator.BrowserModuleWrapper;
+import org.zwobble.shed.compiler.files.ResourceRuntimeFileReader;
+import org.zwobble.shed.compiler.files.RuntimeImporter;
+import org.zwobble.shed.compiler.typechecker.StaticContext;
 
 import com.google.common.io.CharStreams;
 
 import static org.zwobble.shed.compiler.nodejs.DefaultNodeJsContext.defaultNodeJsContext;
 
 public class ShedToNodeJsCompiler {
+    private static final ShedCompiler compiler = ShedCompiler.build(new BrowserModuleWrapper(), OptimisationLevel.SIMPLE);
+    
     public static ShedToNodeJsCompilationResult compile(File sourceDirectory, String target, Writer writer) {
+        StaticContext context = defaultNodeJsContext();
         try {
-            compileFiles(sourceDirectory, writer);
+            new RuntimeImporter(compiler).importRuntime(context, ResourceRuntimeFileReader.build().listFiles());
+            System.out.println(context);
+            compileFiles(sourceDirectory, writer, context);
             return new ShedToNodeJsCompilationResult();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static void compileFiles(File file, Writer writer) throws IOException {
+    private static void compileFiles(File file, Writer writer, StaticContext context) throws IOException {
         if (file.isDirectory()) {
-            compileDirectory(file, writer);
+            compileDirectory(file, writer, context);
         } else {
-            compileFile(file, writer);
+            compileFile(file, writer, context);
         }
     }
 
-    private static void compileDirectory(File directory, Writer writer) throws IOException {
+    private static void compileDirectory(File directory, Writer writer, StaticContext context) throws IOException {
         for (File file : directory.listFiles()) {
-            compileFiles(file, writer);
+            compileFiles(file, writer, context);
         }
     }
 
-    private static void compileFile(File file, Writer writer) throws IOException {
+    private static void compileFile(File file, Writer writer, StaticContext context) throws IOException {
         if (file.getName().endsWith(".js")) {
             if (!file.getName().endsWith(".browser.js")) {
                 writer.write(CharStreams.toString(new FileReader(file)));
@@ -46,7 +54,7 @@ public class ShedToNodeJsCompiler {
         } else if (file.getName().endsWith(".shed")) {
             if (!file.getName().endsWith(".browser.shed")) {
                 String source = CharStreams.toString(new FileReader(file));
-                CompilationResult result = compiler().compile(source, defaultNodeJsContext());
+                CompilationResult result = compiler.compile(source, context);
                 if (!result.isSuccess()) {
                     throw new RuntimeException(result.getErrors().toString());
                 }
@@ -54,9 +62,5 @@ public class ShedToNodeJsCompiler {
                 writer.write("\n\n");
             }
         }
-    }
-
-    private static ShedCompiler compiler() {
-        return ShedCompiler.build(new BrowserModuleWrapper(), OptimisationLevel.SIMPLE);
     }
 }
