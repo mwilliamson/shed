@@ -22,17 +22,7 @@ import static org.zwobble.shed.compiler.types.Members.members;
 public class DefaultNodeJsContext {
     public static StaticContext defaultNodeJsContext() {
         StaticContext context = DefaultContext.defaultContext();
-
         addNodeJavaScriptImporter(context);
-        
-//        ClassType sysType = new ClassType(fullyQualifiedName("shed", "sys"));
-//        ScalarTypeInfo sysTypeInfo = new ScalarTypeInfo(
-//            interfaces(),
-//            members("print", unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.UNIT)))
-//        );
-//        
-//        context.addGlobal(fullyQualifiedName("shed", "sys"), sysType);
-//        context.addInfo(sysType, sysTypeInfo);
         return context;
     }
 
