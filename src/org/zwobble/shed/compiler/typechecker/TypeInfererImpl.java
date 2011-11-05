@@ -201,11 +201,10 @@ public class TypeInfererImpl implements TypeInferer {
         return calledTypeResult.ifValueThen(new Function<Type, TypeResult<Type>>() {
             @Override
             public TypeResult<Type> apply(Type calledType) {
-                if (!CoreTypes.isFunction(calledType)) {
+                if (!(calledType instanceof ScalarType) || !CoreTypes.isFunction((ScalarType)calledType, context)) {
                     return TypeResult.failure(error(expression, new NotCallableError(calledType)));
                 }
-                TypeApplication functionType = (TypeApplication)calledType;
-                final List<? extends Type> typeParameters = functionType.getTypeParameters();
+                final List<? extends Type> typeParameters = CoreTypes.extractFunctionTypeParameters((ScalarType)calledType, context).get();
                 
                 int numberOfFormalAguments = typeParameters.size() - 1;
                 int numberOfActualArguments = expression.getArguments().size();
@@ -265,7 +264,7 @@ public class TypeInfererImpl implements TypeInferer {
                     for (int i = 0; i < functionType.getFormalTypeParameters().size(); i += 1) {
                         replacements.put(functionType.getFormalTypeParameters().get(i), parameterTypes.get(i));
                     }
-                    return TypeResult.success(CoreTypes.functionTypeOf(Eager.transform(functionType.getFunctionTypeParameters(), toReplacement(replacements.build()))));
+                    return TypeResult.success((Type)CoreTypes.functionTypeOf(Eager.transform(functionType.getFunctionTypeParameters(), toReplacement(replacements.build()))));
                 } else if (baseType instanceof ParameterisedType) {
                     return TypeResult.success((Type)context.getMetaClass(applyTypes((ParameterisedType)baseType, parameterTypes)));   
                 } else {
@@ -332,7 +331,7 @@ public class TypeInfererImpl implements TypeInferer {
             public TypeResult<Type> apply(List<Type> argumentTypes) {
                 List<Type> typeParameters = new ArrayList<Type>(argumentTypes);
                 typeParameters.add(returnType);
-                return success(CoreTypes.functionTypeOf(typeParameters));
+                return success((Type)CoreTypes.functionTypeOf(typeParameters));
             }
         };
     }

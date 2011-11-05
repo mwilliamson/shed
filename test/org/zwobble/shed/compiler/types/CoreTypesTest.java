@@ -7,7 +7,6 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
-import static org.zwobble.shed.compiler.types.CoreTypes.functionType;
 import static org.zwobble.shed.compiler.types.CoreTypes.isFunction;
 import static org.zwobble.shed.compiler.types.FormalTypeParameter.formalTypeParameter;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
@@ -19,18 +18,16 @@ import static org.zwobble.shed.compiler.types.Types.typeParameters;
 public class CoreTypesTest {
     @Test public void
     typeApplicationsWithFunctionAsBaseTypeAreConsideredFunctions() {
-        assertThat(isFunction(CoreTypes.functionTypeOf(CoreTypes.STRING)), is(true));
+        assertThat(isFunction(CoreTypes.functionTypeOf(CoreTypes.STRING), new StaticContext()), is(true));
     }
     
     @Test public void
     typeApplicationsWithoutFunctionAsBaseTypeIsNotFunction() {
-        ParameterisedType parameterisedType = parameterisedType(new ClassType(fullyQualifiedName()), asList(formalTypeParameter("T")));
-        assertThat(isFunction(applyTypes(parameterisedType, typeParameters(CoreTypes.STRING))), is(false));
-    }
-    
-    @Test public void
-    parameterisedFunctionTypeIsNotFunction() {
-        assertThat(isFunction(functionType(1)), is(false));
+        StaticContext context = new StaticContext();
+        ClassType classType = new ClassType(fullyQualifiedName());
+        context.addInfo(classType, ScalarTypeInfo.EMPTY);
+        ParameterisedType parameterisedType = parameterisedType(classType, asList(formalTypeParameter("T")));
+        assertThat(isFunction(applyTypes(parameterisedType, typeParameters(CoreTypes.STRING)), context), is(false));
     }
     
     @Test public void

@@ -6,20 +6,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 
-import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
-
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.getFirst;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.IntRange.range;
+import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedType;
+import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
 
 public class CoreTypes {
     public static final ClassType BOOLEAN = coreType("Boolean");
@@ -31,27 +33,42 @@ public class CoreTypes {
         return new ClassType(fullyQualifiedName(name));
     }
     
-    public static final Type CLASS = new InterfaceType(fullyQualifiedName("Class"));
+    public static final ScalarType CLASS = new InterfaceType(fullyQualifiedName("Class"));
     
     private static Map<Integer, ParameterisedType> functionTypes = new HashMap<Integer, ParameterisedType>();
     private static Set<ParameterisedType> baseFunctionTypes = new HashSet<ParameterisedType>();
     
-    public static boolean isFunction(Type type) {
+    private static boolean isFunctionType(Type type) {
         return type instanceof TypeApplication && baseFunctionTypes.contains((((TypeApplication)type).getParameterisedType()));
     }
     // TODO: move elsewhere (CoreTypes shouldn't know about StaticContext)
-    public static boolean isFunction(ScalarType type, StaticContext context) {
-        return isFunction(type) || Iterables.any(context.getInfo(type).getSuperTypes(), isFunction(context));
+    public static Option<List<Type>> extractFunctionTypeParameters(ScalarType type, StaticContext context) {
+        if (isFunctionType(type)) {
+            return some(((TypeApplication)type).getTypeParameters());
+        } else {
+            Iterable<ScalarType> superTypes = filter(context.getInfo(type).getSuperTypes(), ScalarType.class);
+            return getFirst(filter(transform(superTypes, toFunctionTypeParameters(context)), hasValue()), Option.<List<Type>>none());
+        }
     }
     
-    private static Predicate<Type> isFunction(final StaticContext context) {
-        return new Predicate<Type>() {
+    private static Predicate<Option<?>> hasValue() {
+        return new Predicate<Option<?>>() {
             @Override
-            public boolean apply(Type input) {
-                // TODO: handle non-scalar types
-                return isFunction((ScalarType)input, context);
+            public boolean apply(Option<?> input) {
+                return input.hasValue();
             }
         };
+    }
+    private static Function<ScalarType, Option<List<Type>>> toFunctionTypeParameters(final StaticContext context) {
+        return new Function<ScalarType, Option<List<Type>>>() {
+            @Override
+            public Option<List<Type>> apply(ScalarType input) {
+                return extractFunctionTypeParameters(input, context);
+            }
+        };
+    }
+    public static boolean isFunction(ScalarType type, StaticContext context) {
+        return extractFunctionTypeParameters(type, context).hasValue();
     }
     
     public static ParameterisedType functionType(int arguments) {
@@ -66,11 +83,11 @@ public class CoreTypes {
         return functionTypes.get(arguments);
     }
     
-    public static Type functionTypeOf(Type... types) {
+    public static ScalarType functionTypeOf(Type... types) {
         return functionTypeOf(asList(types));
     }
     
-    public static Type functionTypeOf(List<Type> types) {
+    public static ScalarType functionTypeOf(List<Type> types) {
         return applyTypes(functionType(types.size() - 1), types);
     }
 

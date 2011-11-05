@@ -110,7 +110,7 @@ public class TypeInfererTest {
             new NumberLiteralNode("42")
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, is(success(CoreTypes.functionTypeOf(CoreTypes.DOUBLE))));
+        assertThat(result, is(success((Type)CoreTypes.functionTypeOf(CoreTypes.DOUBLE))));
     }
     
     @Test public void
@@ -177,7 +177,7 @@ public class TypeInfererTest {
             new BooleanLiteralNode(true)
         );
         TypeResult<Type> result = inferType(functionExpression, context);
-        assertThat(result, is(success(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.BOOLEAN))));
+        assertThat(result, is(success((Type)CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.BOOLEAN))));
     }
     
     @Test public void
@@ -191,7 +191,7 @@ public class TypeInfererTest {
             Nodes.block(new ReturnNode(new BooleanLiteralNode(true)))
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, is(success(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.BOOLEAN))));
+        assertThat(result, is(success((Type)CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.BOOLEAN))));
     }
     
     @Test public void
@@ -236,7 +236,7 @@ public class TypeInfererTest {
             Nodes.block(new ReturnNode(ageReference))
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, is(success(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.DOUBLE))));
+        assertThat(result, is(success((Type)CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.DOUBLE))));
     }
     
     @Test public void
@@ -268,7 +268,7 @@ public class TypeInfererTest {
             ageReference
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, is(success(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.DOUBLE))));
+        assertThat(result, is(success((Type)CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.DOUBLE))));
     }
     
     @Test public void
@@ -368,6 +368,7 @@ public class TypeInfererTest {
         ClassType classType = new ClassType(fullyQualifiedName("example", "List"));
         ParameterisedType typeFunction = parameterisedType(classType, asList(new FormalTypeParameter("T")));
         StaticContext context = standardContext();
+        context.addInfo(classType, ScalarTypeInfo.EMPTY);
         TypeApplication type = applyTypes(typeFunction, asList((Type)CoreTypes.STRING));
         context.add(declaration, unassignableValue(type));
         
@@ -405,6 +406,22 @@ public class TypeInfererTest {
             errorStrings(result),
             is(asList("Function requires 2 argument(s), but is called with 1"))
         );
+    }
+    
+    @Test public void
+    canCallClassConstructor() {
+        VariableIdentifierNode reference = Nodes.id("Person");
+        GlobalDeclaration declaration = globalDeclaration("Person");
+        fixture.addReference(reference, declaration);
+        
+        StaticContext context = standardContext();
+        ClassType type = new ClassType(fullyQualifiedName("Person"));
+        context.addClass(declaration, type, typeParameters(), ScalarTypeInfo.EMPTY);
+        context.addInfo(type, ScalarTypeInfo.EMPTY);
+        
+        CallNode call = Nodes.call(reference);
+        TypeResult<Type> result = inferType(call, context);
+        assertThat(result, isType(type));
     }
     
     @Test public void
@@ -479,7 +496,7 @@ public class TypeInfererTest {
         );
         TypeResult<Type> result = inferType(functionExpression, context);
         assertThat(result, is(success(
-            CoreTypes.functionTypeOf(applyTypes(listTypeFunction, asList((Type)CoreTypes.DOUBLE)), CoreTypes.DOUBLE)
+            (Type)CoreTypes.functionTypeOf(applyTypes(listTypeFunction, asList((Type)CoreTypes.DOUBLE)), CoreTypes.DOUBLE)
         )));
     }
     

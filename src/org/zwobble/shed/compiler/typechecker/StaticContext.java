@@ -75,7 +75,7 @@ public class StaticContext {
             return getTypeApplicationInfo((TypeApplication)scalarType);
         } else {
             if (!scalarTypeInfo.containsKey(scalarType)) {
-                throw new RuntimeException();
+                throw new RuntimeException("No type info for " + scalarType);
             }
             return scalarTypeInfo.get(scalarType);
         }
