@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.ToString;
+
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.parsing.nodes.Declaration;
@@ -31,6 +33,7 @@ import static org.zwobble.shed.compiler.typechecker.ShedTypeValue.shedTypeValue;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 
+@ToString
 public class StaticContext {
     private final Map<FullyQualifiedName, Type> global = new HashMap<FullyQualifiedName, Type>();
     private final Map<Identity<Declaration>, ValueInfo> types = new HashMap<Identity<Declaration>, ValueInfo>();
@@ -71,6 +74,9 @@ public class StaticContext {
         if (scalarType instanceof TypeApplication) {
             return getTypeApplicationInfo((TypeApplication)scalarType);
         } else {
+            if (!scalarTypeInfo.containsKey(scalarType)) {
+                throw new RuntimeException();
+            }
             return scalarTypeInfo.get(scalarType);
         }
     }
@@ -118,7 +124,11 @@ public class StaticContext {
     }
     
     public Type getTypeFromMetaClass(Type type) {
-        return metaClasses.inverse().get(type);
+        BiMap<Type, Type> metaClassToClass = metaClasses.inverse();
+        if (!metaClassToClass.containsKey(type)) {
+            throw new RuntimeException();
+        }
+        return metaClassToClass.get(type);
     }
     
     public boolean isMetaClass(Type type) {

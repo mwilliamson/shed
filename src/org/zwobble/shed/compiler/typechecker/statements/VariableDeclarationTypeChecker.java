@@ -54,7 +54,6 @@ public class VariableDeclarationTypeChecker implements DeclarationTypeChecker<Va
         
         TypeResult<Type> valueTypeResult = typeInferer.inferType(variableDeclaration.getValue());
         typeResult.addErrors(valueTypeResult);
-        
         if (isForwardDeclarable(variableDeclaration)) {
             VariableLookupResult variableLookupResult = context.get(variableDeclaration);
             if (variableLookupResult.getStatus() == Status.SUCCESS) {
@@ -66,7 +65,7 @@ public class VariableDeclarationTypeChecker implements DeclarationTypeChecker<Va
                     ));
                 }
             }
-        } else {
+        } else if (valueTypeResult.hasValue()) {
             Type type = valueTypeResult.get();
             ValueInfo valueInfo = toValueInfo(variableDeclaration, type);
             context.add(variableDeclaration, valueInfo);

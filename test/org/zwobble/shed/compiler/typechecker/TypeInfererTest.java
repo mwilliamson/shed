@@ -21,6 +21,7 @@ import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.typechecker.errors.InvalidAssignmentError;
+import org.zwobble.shed.compiler.typechecker.errors.NotCallableError;
 import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.typechecker.errors.UntypedReferenceError;
 import org.zwobble.shed.compiler.types.ClassType;
@@ -33,6 +34,7 @@ import org.zwobble.shed.compiler.types.ParameterisedType;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
+import org.zwobble.shed.compiler.types.TypeApplication;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -366,16 +368,12 @@ public class TypeInfererTest {
         ClassType classType = new ClassType(fullyQualifiedName("example", "List"));
         ParameterisedType typeFunction = parameterisedType(classType, asList(new FormalTypeParameter("T")));
         StaticContext context = standardContext();
-        context.add(declaration, unassignableValue(applyTypes(typeFunction, asList((Type)CoreTypes.STRING))));
+        TypeApplication type = applyTypes(typeFunction, asList((Type)CoreTypes.STRING));
+        context.add(declaration, unassignableValue(type));
         
         CallNode call = Nodes.call(reference);
         TypeResult<Type> result = inferType(call, context);
-        assertThat(
-            errorStrings(result),
-            is(asList(
-                "Cannot call objects that aren't functions"
-            ))
-        );
+        assertThat(result, isFailureWithErrors(new NotCallableError(type)));
     }
     
     @Test public void
@@ -388,12 +386,7 @@ public class TypeInfererTest {
         context.add(declaration, unassignableValue(CoreTypes.BOOLEAN));
         CallNode call = Nodes.call(reference);
         TypeResult<Type> result = inferType(call, context);
-        assertThat(
-            errorStrings(result),
-            is(asList(
-                "Cannot call objects that aren't functions"
-            ))
-        );
+        assertThat(result, isFailureWithErrors(new NotCallableError(CoreTypes.BOOLEAN)));
     }
     
     @Test public void

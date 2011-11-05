@@ -47,15 +47,12 @@ public class ShedToNodeJsCompiler {
     }
 
     private static void compileFile(File file, Writer writer) throws IOException {
-        System.out.println("Compiling " + file.getAbsolutePath());
         if (file.getName().endsWith(".js")) {
             if (!file.getName().endsWith(".browser.js")) {
-                System.out.println("* Copying " + file.getAbsolutePath());
                 writer.write(CharStreams.toString(new FileReader(file)));
             }
         } else if (file.getName().endsWith(".shed")) {
             if (!file.getName().endsWith(".browser.shed")) {
-                System.out.println("* Compiling " + file.getAbsolutePath());
                 String source = CharStreams.toString(new FileReader(file));
                 CompilationResult result = compiler().compile(source, context());
                 if (!result.isSuccess()) {

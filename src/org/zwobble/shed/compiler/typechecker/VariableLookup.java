@@ -23,7 +23,7 @@ public class VariableLookup {
     
     public TypeResult<ValueInfo> lookupVariableReference(VariableIdentifierNode reference) {
         VariableLookupResult result = context.get(references.findReferent(reference));
-        if (result.getStatus() == Status.SUCCESS) {
+        if (result.getStatus() == Status.SUCCESS && result.getValueInfo().hasType()) {
             return success(result.getValueInfo());
         } else {
             return failure(error(

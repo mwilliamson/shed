@@ -34,6 +34,7 @@ public class DefaultBrowserContext {
         );
         
         context.addClass(globalDeclaration(javaScriptImporterName), javaScriptImporterType, Collections.<Type>emptyList(), javaScriptImporterTypeInfo);
+        context.addGlobal(javaScriptImporterName, context.getMetaClass(javaScriptImporterType));
         
         ClassType browserType = new ClassType(fullyQualifiedName("shed", "browser"));
         ScalarTypeInfo browserTypeInfo = new ScalarTypeInfo(

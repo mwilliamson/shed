@@ -26,6 +26,7 @@ import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.typechecker.errors.InvalidAssignmentError;
 import org.zwobble.shed.compiler.typechecker.errors.MissingReturnStatementError;
+import org.zwobble.shed.compiler.typechecker.errors.NotCallableError;
 import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.typechecker.statements.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -201,7 +202,7 @@ public class TypeInfererImpl implements TypeInferer {
             @Override
             public TypeResult<Type> apply(Type calledType) {
                 if (!CoreTypes.isFunction(calledType)) {
-                    return TypeResult.failure(error(expression, "Cannot call objects that aren't functions"));
+                    return TypeResult.failure(error(expression, new NotCallableError(calledType)));
                 }
                 TypeApplication functionType = (TypeApplication)calledType;
                 final List<? extends Type> typeParameters = functionType.getTypeParameters();

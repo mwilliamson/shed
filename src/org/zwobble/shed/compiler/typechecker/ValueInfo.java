@@ -53,6 +53,10 @@ public class ValueInfo {
         }
         return status == Status.ASSIGNABLE;
     }
+
+    public boolean hasType() {
+        return status != Status.UNKNOWN;
+    }
     
     private static enum Status {
         ASSIGNABLE,

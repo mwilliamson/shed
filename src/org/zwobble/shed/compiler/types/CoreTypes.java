@@ -6,7 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.zwobble.shed.compiler.typechecker.StaticContext;
+
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 
 import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
 
@@ -34,6 +38,20 @@ public class CoreTypes {
     
     public static boolean isFunction(Type type) {
         return type instanceof TypeApplication && baseFunctionTypes.contains((((TypeApplication)type).getParameterisedType()));
+    }
+    // TODO: move elsewhere (CoreTypes shouldn't know about StaticContext)
+    public static boolean isFunction(ScalarType type, StaticContext context) {
+        return isFunction(type) || Iterables.any(context.getInfo(type).getSuperTypes(), isFunction(context));
+    }
+    
+    private static Predicate<Type> isFunction(final StaticContext context) {
+        return new Predicate<Type>() {
+            @Override
+            public boolean apply(Type input) {
+                // TODO: handle non-scalar types
+                return isFunction((ScalarType)input, context);
+            }
+        };
     }
     
     public static ParameterisedType functionType(int arguments) {

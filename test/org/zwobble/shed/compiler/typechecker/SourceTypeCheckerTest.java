@@ -11,11 +11,14 @@ import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.PackageDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
+import org.zwobble.shed.compiler.typechecker.errors.NotCallableError;
+import org.zwobble.shed.compiler.types.CoreTypes;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
+import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 
 public class SourceTypeCheckerTest {
     private final TypeCheckerTestFixture fixture = TypeCheckerTestFixture.build();
@@ -50,10 +53,7 @@ public class SourceTypeCheckerTest {
             Collections.<ImportNode>emptyList(),
             asList((StatementNode)Nodes.expressionStatement(Nodes.call(Nodes.string(""))))
         );
-        assertThat(
-            errorStrings(typeCheck(source)),
-            is(asList("Cannot call objects that aren't functions"))
-        );
+        assertThat(typeCheck(source), isFailureWithErrors(new NotCallableError(CoreTypes.STRING)));
     }
 
     private HasErrors typeCheck(SourceNode source) {
