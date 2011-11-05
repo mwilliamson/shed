@@ -6,19 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.typechecker.StaticContext;
-
 import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 
-import static com.google.common.collect.Iterables.filter;
-import static com.google.common.collect.Iterables.getFirst;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.IntRange.range;
-import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedType;
 import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
@@ -38,37 +31,8 @@ public class CoreTypes {
     private static Map<Integer, ParameterisedType> functionTypes = new HashMap<Integer, ParameterisedType>();
     private static Set<ParameterisedType> baseFunctionTypes = new HashSet<ParameterisedType>();
     
-    private static boolean isFunctionType(Type type) {
+    public static boolean isFunctionType(Type type) {
         return type instanceof TypeApplication && baseFunctionTypes.contains((((TypeApplication)type).getParameterisedType()));
-    }
-    // TODO: move elsewhere (CoreTypes shouldn't know about StaticContext)
-    public static Option<List<Type>> extractFunctionTypeParameters(ScalarType type, StaticContext context) {
-        if (isFunctionType(type)) {
-            return some(((TypeApplication)type).getTypeParameters());
-        } else {
-            Iterable<ScalarType> superTypes = filter(context.getInfo(type).getSuperTypes(), ScalarType.class);
-            return getFirst(filter(transform(superTypes, toFunctionTypeParameters(context)), hasValue()), Option.<List<Type>>none());
-        }
-    }
-    
-    private static Predicate<Option<?>> hasValue() {
-        return new Predicate<Option<?>>() {
-            @Override
-            public boolean apply(Option<?> input) {
-                return input.hasValue();
-            }
-        };
-    }
-    private static Function<ScalarType, Option<List<Type>>> toFunctionTypeParameters(final StaticContext context) {
-        return new Function<ScalarType, Option<List<Type>>>() {
-            @Override
-            public Option<List<Type>> apply(ScalarType input) {
-                return extractFunctionTypeParameters(input, context);
-            }
-        };
-    }
-    public static boolean isFunction(ScalarType type, StaticContext context) {
-        return extractFunctionTypeParameters(type, context).hasValue();
     }
     
     public static ParameterisedType functionType(int arguments) {

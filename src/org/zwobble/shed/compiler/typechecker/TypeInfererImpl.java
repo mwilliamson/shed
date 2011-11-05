@@ -58,6 +58,7 @@ public class TypeInfererImpl implements TypeInferer {
     private final BlockTypeChecker blockTypeChecker;
     private final TypeLookup typeLookup;
     private final VariableLookup variableLookup;
+    private final FunctionTyping functionTyping;
     private final StaticContext context;
 
     @Inject
@@ -66,12 +67,14 @@ public class TypeInfererImpl implements TypeInferer {
         BlockTypeChecker blockTypeChecker, 
         TypeLookup typeLookup, 
         VariableLookup variableLookup,
+        FunctionTyping functionTyping,
         StaticContext context
     ) {
         this.argumentTypeInferer = argumentTypeInferer;
         this.blockTypeChecker = blockTypeChecker;
         this.typeLookup = typeLookup;
         this.variableLookup = variableLookup;
+        this.functionTyping = functionTyping;
         this.context = context;
     }
     
@@ -201,10 +204,10 @@ public class TypeInfererImpl implements TypeInferer {
         return calledTypeResult.ifValueThen(new Function<Type, TypeResult<Type>>() {
             @Override
             public TypeResult<Type> apply(Type calledType) {
-                if (!(calledType instanceof ScalarType) || !CoreTypes.isFunction((ScalarType)calledType, context)) {
+                if (!(calledType instanceof ScalarType) || !functionTyping.isFunction((ScalarType)calledType)) {
                     return TypeResult.failure(error(expression, new NotCallableError(calledType)));
                 }
-                final List<? extends Type> typeParameters = CoreTypes.extractFunctionTypeParameters((ScalarType)calledType, context).get();
+                final List<? extends Type> typeParameters = functionTyping.extractFunctionTypeParameters((ScalarType)calledType).get();
                 
                 int numberOfFormalAguments = typeParameters.size() - 1;
                 int numberOfActualArguments = expression.getArguments().size();

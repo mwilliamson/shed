@@ -1,13 +1,17 @@
-package org.zwobble.shed.compiler.types;
+package org.zwobble.shed.compiler.typechecker;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.typechecker.StaticContext;
+import org.zwobble.shed.compiler.types.ClassType;
+import org.zwobble.shed.compiler.types.CoreTypes;
+import org.zwobble.shed.compiler.types.InterfaceType;
+import org.zwobble.shed.compiler.types.ParameterisedType;
+import org.zwobble.shed.compiler.types.ScalarType;
+import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
-import static org.zwobble.shed.compiler.types.CoreTypes.isFunction;
 import static org.zwobble.shed.compiler.types.FormalTypeParameter.formalTypeParameter;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
@@ -15,12 +19,12 @@ import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedTyp
 import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
 import static org.zwobble.shed.compiler.types.Types.typeParameters;
 
-public class CoreTypesTest {
+public class FunctionTypingTest {
     @Test public void
     typeApplicationsWithFunctionAsBaseTypeAreConsideredFunctions() {
         assertThat(isFunction(CoreTypes.functionTypeOf(CoreTypes.STRING), new StaticContext()), is(true));
     }
-    
+
     @Test public void
     typeApplicationsWithoutFunctionAsBaseTypeIsNotFunction() {
         StaticContext context = new StaticContext();
@@ -49,5 +53,9 @@ public class CoreTypesTest {
         context.addInfo(classType, classTypeInfo);
         context.addInfo(interfaceType, interfaceTypeInfo);
         assertThat(isFunction(classType, context), is(true));
+    }
+    
+    private boolean isFunction(ScalarType type, StaticContext staticContext) {
+        return new FunctionTyping(staticContext).isFunction(type);
     }
 }
