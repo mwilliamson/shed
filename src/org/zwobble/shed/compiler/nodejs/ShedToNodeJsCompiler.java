@@ -23,8 +23,8 @@ public class ShedToNodeJsCompiler {
     public static ShedToNodeJsCompilationResult compile(File sourceDirectory, String target, Writer writer) {
         StaticContext context = defaultNodeJsContext();
         try {
-            new RuntimeImporter(compiler).importRuntime(context, ResourceRuntimeFileReader.build().listFiles());
-            System.out.println(context);
+            RuntimeImporter runtimeImporter = new RuntimeImporter(compiler);
+            runtimeImporter.importRuntime(context, ResourceRuntimeFileReader.build().listFiles());
             compileFiles(sourceDirectory, writer, context);
             return new ShedToNodeJsCompilationResult();
         } catch (IOException e) {
