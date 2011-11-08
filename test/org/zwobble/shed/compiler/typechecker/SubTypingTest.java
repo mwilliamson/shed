@@ -1,0 +1,62 @@
+package org.zwobble.shed.compiler.typechecker;
+
+import org.junit.Test;
+import org.zwobble.shed.compiler.types.ClassType;
+import org.zwobble.shed.compiler.types.InterfaceType;
+import org.zwobble.shed.compiler.types.Type;
+import org.zwobble.shed.compiler.types.TypeMaker;
+
+import com.natpryce.makeiteasy.Instantiator;
+
+import static com.natpryce.makeiteasy.MakeItEasy.a;
+import static com.natpryce.makeiteasy.MakeItEasy.an;
+import static com.natpryce.makeiteasy.MakeItEasy.make;
+import static com.natpryce.makeiteasy.MakeItEasy.with;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
+import static org.zwobble.shed.compiler.types.TypeMaker.superTypes;
+
+@SuppressWarnings("unchecked")
+public class SubTypingTest {
+    private final StaticContext context = new StaticContext();
+    
+    @Test public void
+    typeIsSubClassOfItself() {
+        ClassType type = make(a(classType()));
+        assertThat(isSubType(type, type), is(true));
+    }
+    
+    @Test public void
+    unrelatedTypesAreNotSubTypesOfEachOther() {
+        ClassType firstType = make(a(classType()));
+        ClassType secondType = make(a(classType()));
+        assertThat(isSubType(firstType, secondType), is(false));
+    }
+    
+    @Test public void
+    classIsSubTypeOfImplementedInterface() {
+        InterfaceType interfaceType = make(an(interfaceType()));
+        ClassType classType = make(a(classType(), with(superTypes, interfaces(interfaceType))));
+        assertThat(isSubType(classType, interfaceType), is(true));
+    }
+    
+    @Test public void
+    classIsNotSuperTypeOfImplementedInterface() {
+        InterfaceType interfaceType = make(an(interfaceType()));
+        ClassType classType = make(a(classType(), with(superTypes, interfaces(interfaceType))));
+        assertThat(isSubType(interfaceType, classType), is(false));
+    }
+
+    private boolean isSubType(Type subType, Type superType) {
+        return SubTyping.isSubType(subType, superType, context);
+    }
+    
+    private Instantiator<ClassType> classType() {
+        return TypeMaker.classType(context);
+    }
+
+    private Instantiator<InterfaceType> interfaceType() {
+        return TypeMaker.interfaceType(context);
+    }
+}
