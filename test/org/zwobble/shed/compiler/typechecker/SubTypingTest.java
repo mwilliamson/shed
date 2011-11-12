@@ -103,6 +103,14 @@ public class SubTypingTest {
         TypeApplication secondType = applyTypes(parameterisedType, typeParameters(interfaceType));
         assertThat(isSubType(firstType, secondType), is(true));
     }
+    
+    @Test public void
+    firstAppliedTypeIsNotSubTypeOfSecondAppliedTypeIfFormalTypeParameterIsCovariantAndTypeParameterOfFirstIsSuperTypeOfTypeParameterOfSecond() {
+        ParameterisedType parameterisedType = parameterisedType(make(an(interfaceType())), asList(covariantTypeParameter));
+        TypeApplication firstType = applyTypes(parameterisedType, typeParameters(interfaceType));
+        TypeApplication secondType = applyTypes(parameterisedType, typeParameters(implementingClassType));
+        assertThat(isSubType(firstType, secondType), is(false));
+    }
 
     private boolean isSubType(Type subType, Type superType) {
         return SubTyping.isSubType(subType, superType, context);
