@@ -1,15 +1,17 @@
 package org.zwobble.shed.compiler.types;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 
-@AllArgsConstructor
 @ToString
 @Getter
 public class FormalTypeParameter implements Type {
-    public static FormalTypeParameter formalTypeParameter(String name) {
+    public static FormalTypeParameter invariantFormalTypeParameter(String name) {
         return new FormalTypeParameter(name);
+    }
+    
+    private FormalTypeParameter(String name) {
+        this.name = name;
     }
     
     private final String name;

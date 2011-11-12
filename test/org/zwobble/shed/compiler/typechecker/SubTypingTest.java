@@ -19,7 +19,7 @@ import static com.natpryce.makeiteasy.MakeItEasy.with;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.zwobble.shed.compiler.types.FormalTypeParameter.formalTypeParameter;
+import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedType;
 import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
@@ -59,12 +59,22 @@ public class SubTypingTest {
     
     @Test public void
     classTypeCanImplementParameterisedInterface() {
-        FormalTypeParameter formalTypeParameter = formalTypeParameter("T");
+        FormalTypeParameter formalTypeParameter = invariantFormalTypeParameter("T");
         InterfaceType interfaceType = make(an(interfaceType()));
         ParameterisedType parameterisedType = parameterisedType(interfaceType, asList(formalTypeParameter));
         TypeApplication concreteInterfaceType = applyTypes(parameterisedType, typeParameters(CoreTypes.BOOLEAN));
         ClassType classType = make(a(classType(), with(superTypes, interfaces(concreteInterfaceType))));
         assertThat(isSubType(classType, applyTypes(parameterisedType, typeParameters(CoreTypes.BOOLEAN))), is(true));
+    }
+    
+    @Test public void
+    appliedTypesAreNotSubTypesOfEachOtherIfTheyDifferOnlyInTypeParameters() {
+        FormalTypeParameter formalTypeParameter = invariantFormalTypeParameter("T");
+        InterfaceType interfaceType = make(an(interfaceType()));
+        ParameterisedType parameterisedType = parameterisedType(interfaceType, asList(formalTypeParameter));
+        TypeApplication firstType = applyTypes(parameterisedType, typeParameters(CoreTypes.BOOLEAN));
+        TypeApplication secondType = applyTypes(parameterisedType, typeParameters(CoreTypes.STRING));
+        assertThat(isSubType(firstType, secondType), is(false));
     }
 
     private boolean isSubType(Type subType, Type superType) {

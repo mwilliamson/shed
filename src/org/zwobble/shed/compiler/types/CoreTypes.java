@@ -8,6 +8,8 @@ import java.util.Set;
 
 import com.google.common.base.Function;
 
+import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
+
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
@@ -39,7 +41,7 @@ public class CoreTypes {
         if (!functionTypes.containsKey(arguments)) {
             InterfaceType baseType = new InterfaceType(fullyQualifiedName("Function" + arguments));
             List<FormalTypeParameter> formalTypeParameters = newArrayList(transform(range(arguments), toFormalTypeParameter()));
-            formalTypeParameters.add(new FormalTypeParameter("TResult"));
+            formalTypeParameters.add(invariantFormalTypeParameter("TResult"));
             ParameterisedType functionType = parameterisedType(baseType, formalTypeParameters);
             functionTypes.put(arguments, functionType);
             baseFunctionTypes.add(functionType);
@@ -59,7 +61,7 @@ public class CoreTypes {
         return new Function<Integer, FormalTypeParameter>() {
             @Override
             public FormalTypeParameter apply(Integer input) {
-                return new FormalTypeParameter("T" + (input + 1));
+                return invariantFormalTypeParameter("T" + (input + 1));
             }
         };
     }

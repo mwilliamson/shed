@@ -12,7 +12,7 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
-import static org.zwobble.shed.compiler.types.FormalTypeParameter.formalTypeParameter;
+import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedType;
@@ -30,7 +30,7 @@ public class FunctionTypingTest {
         StaticContext context = new StaticContext();
         ClassType classType = new ClassType(fullyQualifiedName());
         context.addInfo(classType, ScalarTypeInfo.EMPTY);
-        ParameterisedType parameterisedType = parameterisedType(classType, asList(formalTypeParameter("T")));
+        ParameterisedType parameterisedType = parameterisedType(classType, asList(invariantFormalTypeParameter("T")));
         assertThat(isFunction(applyTypes(parameterisedType, typeParameters(CoreTypes.STRING)), context), is(false));
     }
     
@@ -59,7 +59,7 @@ public class FunctionTypingTest {
     typeFunctionsAreNotFunctions() {
         InterfaceType interfaceType = new InterfaceType(fullyQualifiedName());
         StaticContext context = new StaticContext();
-        assertThat(isFunction(ParameterisedType.parameterisedType(interfaceType, asList(formalTypeParameter("T"))), context), is(false));
+        assertThat(isFunction(ParameterisedType.parameterisedType(interfaceType, asList(invariantFormalTypeParameter("T"))), context), is(false));
     }
     
     private boolean isFunction(Type type, StaticContext staticContext) {

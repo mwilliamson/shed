@@ -9,7 +9,7 @@ import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
-import static org.zwobble.shed.compiler.types.FormalTypeParameter.formalTypeParameter;
+import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedType;
@@ -19,8 +19,8 @@ import static org.zwobble.shed.compiler.types.Types.typeParameters;
 public class TypeInfoTypeReplacerTest {
     @Test public void
     membersHaveTypeParametersUpdated() {
-        FormalTypeParameter keyFormalTypeParameter = formalTypeParameter("K");
-        FormalTypeParameter valueFormalTypeParameter = formalTypeParameter("V");
+        FormalTypeParameter keyFormalTypeParameter = invariantFormalTypeParameter("K");
+        FormalTypeParameter valueFormalTypeParameter = invariantFormalTypeParameter("V");
         InterfaceType dictionaryBaseType = new InterfaceType(fullyQualifiedName("Dictionary"));
         ScalarTypeInfo dictionaryTypeInfo = new ScalarTypeInfo(interfaces(), members(
             "get", unassignableValue(CoreTypes.functionTypeOf(keyFormalTypeParameter, valueFormalTypeParameter)),
@@ -38,10 +38,10 @@ public class TypeInfoTypeReplacerTest {
     @Test public void
     interfacesHaveTypeParametersUpdated() {
         InterfaceType listBaseType = new InterfaceType(fullyQualifiedName("List"));
-        ParameterisedType listType = parameterisedType(listBaseType, asList(formalTypeParameter("T")));
+        ParameterisedType listType = parameterisedType(listBaseType, asList(invariantFormalTypeParameter("T")));
         
         ClassType arrayListBaseType = new ClassType(fullyQualifiedName("ArrayList"));
-        FormalTypeParameter arrayListTypeParameter = formalTypeParameter("T");
+        FormalTypeParameter arrayListTypeParameter = invariantFormalTypeParameter("T");
         ParameterisedType arrayListType = parameterisedType(arrayListBaseType, asList(arrayListTypeParameter));
         ScalarTypeInfo arrayListTypeInfo = new ScalarTypeInfo(interfaces(applyTypes(listType, typeParameters(arrayListTypeParameter))), members());
         

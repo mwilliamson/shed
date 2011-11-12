@@ -2,6 +2,8 @@ package org.zwobble.shed.compiler.types;
 
 import org.junit.Test;
 
+import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
+
 import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedType;
 
 import static java.util.Arrays.asList;
@@ -14,7 +16,7 @@ public class ParameterisedTypeTest {
     shortNameIncludesParameters() {
         ParameterisedType typeFunction = parameterisedType(
             new InterfaceType(fullyQualifiedName("shed", "Map")),
-            asList(new FormalTypeParameter("K"), new FormalTypeParameter("V"))
+            asList(invariantFormalTypeParameter("K"), invariantFormalTypeParameter("V"))
         );
         assertThat(typeFunction.shortName(), is("[K, V] -> Class[Map[K, V]]"));
     }

@@ -35,6 +35,8 @@ import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
+import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -462,7 +464,7 @@ public class TypeInfererTest {
         fixture.addReference(listReference, listDeclaration);
         
         StaticContext context = standardContext();
-        FormalTypeParameter typeParameter = new FormalTypeParameter("T");
+        FormalTypeParameter typeParameter = invariantFormalTypeParameter("T");
         ParameterisedType listTypeFunction = parameterisedType(
             new InterfaceType(fullyQualifiedName("shed", "List")),
             asList(typeParameter)
@@ -488,7 +490,7 @@ public class TypeInfererTest {
         fixture.addReference(listReference, listDeclaration);
         
         StaticContext context = standardContext();
-        FormalTypeParameter typeParameter = new FormalTypeParameter("T");
+        FormalTypeParameter typeParameter = invariantFormalTypeParameter("T");
         ScalarTypeInfo listTypeInfo = new ScalarTypeInfo(interfaces(), members("get", unassignableValue(typeParameter)));
         InterfaceType baseListType = new InterfaceType(fullyQualifiedName("shed", "List"));
         ParameterisedType listTypeFunction = parameterisedType(baseListType, asList(typeParameter));
@@ -512,7 +514,7 @@ public class TypeInfererTest {
         
         StaticContext context = standardContext();
         
-        FormalTypeParameter typeParameter = new FormalTypeParameter("T");
+        FormalTypeParameter typeParameter = invariantFormalTypeParameter("T");
         context.add(identityDeclaration, unassignableValue(new ParameterisedFunctionType(
             typeParameters(typeParameter, typeParameter),
             asList(typeParameter)

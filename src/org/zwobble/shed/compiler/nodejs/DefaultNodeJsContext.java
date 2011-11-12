@@ -12,6 +12,8 @@ import org.zwobble.shed.compiler.types.ParameterisedFunctionType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
+import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
+
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
@@ -27,7 +29,7 @@ public class DefaultNodeJsContext {
     }
 
     private static void addNodeJavaScriptImporter(StaticContext context) {
-        FormalTypeParameter formalTypeParameter = new FormalTypeParameter("T");
+        FormalTypeParameter formalTypeParameter = invariantFormalTypeParameter("T");
         Type importValueFromModuleType = new ParameterisedFunctionType(
             asList(CoreTypes.STRING, CoreTypes.STRING, formalTypeParameter),
             asList(formalTypeParameter)
