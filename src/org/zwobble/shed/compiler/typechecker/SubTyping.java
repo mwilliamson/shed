@@ -52,6 +52,8 @@ public class SubTyping {
                     return subTypeParameter.equals(superTypeParameter);
                 } else if (variance == Variance.COVARIANT) {
                     return isSubType(subTypeParameter, superTypeParameter, context);
+                } else if (variance == Variance.CONTRAVARIANT) {
+                    return isSubType(superTypeParameter, subTypeParameter, context);
                 } else {
                     throw new RuntimeException("Unrecognised variance");
                 }

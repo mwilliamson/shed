@@ -12,6 +12,8 @@ import org.zwobble.shed.compiler.types.TypeMaker;
 
 import com.natpryce.makeiteasy.Instantiator;
 
+import static org.zwobble.shed.compiler.types.FormalTypeParameter.contravariantFormalTypeParameter;
+
 import static org.zwobble.shed.compiler.types.FormalTypeParameter.covariantFormalTypeParameter;
 
 import static com.natpryce.makeiteasy.MakeItEasy.a;
@@ -33,6 +35,7 @@ public class SubTypingTest {
     private final StaticContext context = new StaticContext();
     private final FormalTypeParameter invariantTypeParameter = invariantFormalTypeParameter("TInvariant");
     private final FormalTypeParameter covariantTypeParameter = covariantFormalTypeParameter("TCovariant");
+    private final FormalTypeParameter contravariantTypeParameter = contravariantFormalTypeParameter("TContravariant");
 
     private final InterfaceType interfaceType = make(an(interfaceType()));
     private final ClassType implementingClassType = make(a(classType(), with(superTypes, interfaces(interfaceType))));    
@@ -109,6 +112,22 @@ public class SubTypingTest {
         ParameterisedType parameterisedType = parameterisedType(make(an(interfaceType())), asList(covariantTypeParameter));
         TypeApplication firstType = applyTypes(parameterisedType, typeParameters(interfaceType));
         TypeApplication secondType = applyTypes(parameterisedType, typeParameters(implementingClassType));
+        assertThat(isSubType(firstType, secondType), is(false));
+    }
+    
+    @Test public void
+    firstAppliedTypeIsSuperTypeOfSecondAppliedTypeIfFormalTypeParameterIsContravariantAndTypeParameterOfFirstIsSuperTypeOfTypeParameterOfSecond() {
+        ParameterisedType parameterisedType = parameterisedType(make(an(interfaceType())), asList(contravariantTypeParameter));
+        TypeApplication firstType = applyTypes(parameterisedType, typeParameters(interfaceType));
+        TypeApplication secondType = applyTypes(parameterisedType, typeParameters(implementingClassType));
+        assertThat(isSubType(firstType, secondType), is(true));
+    }
+    
+    @Test public void
+    firstAppliedTypeIsNotSubTypeOfSecondAppliedTypeIfFormalTypeParameterIsContravariantAndTypeParameterOfFirstIsSubTypeOfTypeParameterOfSecond() {
+        ParameterisedType parameterisedType = parameterisedType(make(an(interfaceType())), asList(contravariantTypeParameter));
+        TypeApplication firstType = applyTypes(parameterisedType, typeParameters(implementingClassType));
+        TypeApplication secondType = applyTypes(parameterisedType, typeParameters(interfaceType));
         assertThat(isSubType(firstType, secondType), is(false));
     }
 

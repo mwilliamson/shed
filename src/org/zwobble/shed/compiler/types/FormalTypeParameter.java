@@ -13,6 +13,10 @@ public class FormalTypeParameter implements Type {
     public static FormalTypeParameter covariantFormalTypeParameter(String name) {
         return new FormalTypeParameter(name, Variance.COVARIANT);
     }
+
+    public static FormalTypeParameter contravariantFormalTypeParameter(String name) {
+        return new FormalTypeParameter(name, Variance.CONTRAVARIANT);
+    }
     
     private FormalTypeParameter(String name, Variance variance) {
         this.name = name;
@@ -29,6 +33,7 @@ public class FormalTypeParameter implements Type {
     
     public static enum Variance {
         INVARIANT,
-        COVARIANT
+        COVARIANT,
+        CONTRAVARIANT
     }
 }
