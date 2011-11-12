@@ -400,7 +400,6 @@ public class TypeInfererTest {
         StaticContext context = standardContext();
         ClassType type = new ClassType(fullyQualifiedName("Person"));
         context.addClass(declaration, type, typeParameters(), ScalarTypeInfo.EMPTY);
-        context.addInfo(type, ScalarTypeInfo.EMPTY);
         
         CallNode call = Nodes.call(reference);
         TypeResult<Type> result = inferType(call, context);
