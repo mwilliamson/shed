@@ -31,6 +31,8 @@ import static org.zwobble.shed.compiler.types.Types.typeParameters;
 @SuppressWarnings("unchecked")
 public class SubTypingTest {
     private final StaticContext context = new StaticContext();
+    private final FormalTypeParameter invariantTypeParameter = invariantFormalTypeParameter("TInvariant");
+    private final FormalTypeParameter covariantTypeParameter = covariantFormalTypeParameter("TCovariant");
     
     @Test public void
     typeIsSubClassOfItself() {
@@ -61,9 +63,8 @@ public class SubTypingTest {
     
     @Test public void
     classTypeCanImplementParameterisedInterface() {
-        FormalTypeParameter formalTypeParameter = invariantFormalTypeParameter("T");
         InterfaceType interfaceType = make(an(interfaceType()));
-        ParameterisedType parameterisedType = parameterisedType(interfaceType, asList(formalTypeParameter));
+        ParameterisedType parameterisedType = parameterisedType(interfaceType, asList(invariantTypeParameter));
         TypeApplication concreteInterfaceType = applyTypes(parameterisedType, typeParameters(CoreTypes.BOOLEAN));
         ClassType classType = make(a(classType(), with(superTypes, interfaces(concreteInterfaceType))));
         assertThat(isSubType(classType, applyTypes(parameterisedType, typeParameters(CoreTypes.BOOLEAN))), is(true));
@@ -71,9 +72,8 @@ public class SubTypingTest {
     
     @Test public void
     appliedTypesAreNotSubTypesOfEachOtherIfTheyDifferOnlyInTypeParameters() {
-        FormalTypeParameter formalTypeParameter = invariantFormalTypeParameter("T");
         InterfaceType interfaceType = make(an(interfaceType()));
-        ParameterisedType parameterisedType = parameterisedType(interfaceType, asList(formalTypeParameter));
+        ParameterisedType parameterisedType = parameterisedType(interfaceType, asList(invariantTypeParameter));
         TypeApplication firstType = applyTypes(parameterisedType, typeParameters(CoreTypes.BOOLEAN));
         TypeApplication secondType = applyTypes(parameterisedType, typeParameters(CoreTypes.STRING));
         assertThat(isSubType(firstType, secondType), is(false));
@@ -81,9 +81,8 @@ public class SubTypingTest {
     
     @Test public void
     appliedTypesAreSubTypesOfEachOtherIfTheyAgreeOnParameterisedTypeAndTypeParameters() {
-        FormalTypeParameter formalTypeParameter = invariantFormalTypeParameter("T");
         InterfaceType interfaceType = make(an(interfaceType()));
-        ParameterisedType parameterisedType = parameterisedType(interfaceType, asList(formalTypeParameter));
+        ParameterisedType parameterisedType = parameterisedType(interfaceType, asList(invariantTypeParameter));
         TypeApplication firstType = applyTypes(parameterisedType, typeParameters(CoreTypes.BOOLEAN));
         TypeApplication secondType = applyTypes(parameterisedType, typeParameters(CoreTypes.BOOLEAN));
         assertThat(isSubType(firstType, secondType), is(true));
@@ -94,8 +93,7 @@ public class SubTypingTest {
         InterfaceType interfaceType = make(an(interfaceType()));
         ClassType classType = make(a(classType(), with(superTypes, interfaces(interfaceType))));
         
-        FormalTypeParameter formalTypeParameter = invariantFormalTypeParameter("T");
-        ParameterisedType parameterisedType = parameterisedType(make(an(interfaceType())), asList(formalTypeParameter));
+        ParameterisedType parameterisedType = parameterisedType(make(an(interfaceType())), asList(invariantTypeParameter));
         TypeApplication firstType = applyTypes(parameterisedType, typeParameters(classType));
         TypeApplication secondType = applyTypes(parameterisedType, typeParameters(interfaceType));
         assertThat(isSubType(firstType, secondType), is(false));
@@ -106,8 +104,7 @@ public class SubTypingTest {
         InterfaceType interfaceType = make(an(interfaceType()));
         ClassType classType = make(a(classType(), with(superTypes, interfaces(interfaceType))));
         
-        FormalTypeParameter formalTypeParameter = covariantFormalTypeParameter("T");
-        ParameterisedType parameterisedType = parameterisedType(make(an(interfaceType())), asList(formalTypeParameter));
+        ParameterisedType parameterisedType = parameterisedType(make(an(interfaceType())), asList(covariantTypeParameter));
         TypeApplication firstType = applyTypes(parameterisedType, typeParameters(classType));
         TypeApplication secondType = applyTypes(parameterisedType, typeParameters(interfaceType));
         assertThat(isSubType(firstType, secondType), is(true));
