@@ -7,17 +7,28 @@ import lombok.ToString;
 @Getter
 public class FormalTypeParameter implements Type {
     public static FormalTypeParameter invariantFormalTypeParameter(String name) {
-        return new FormalTypeParameter(name);
+        return new FormalTypeParameter(name, Variance.INVARIANT);
     }
     
-    private FormalTypeParameter(String name) {
+    public static FormalTypeParameter covariantFormalTypeParameter(String name) {
+        return new FormalTypeParameter(name, Variance.COVARIANT);
+    }
+    
+    private FormalTypeParameter(String name, Variance variance) {
         this.name = name;
+        this.variance = variance;
     }
     
     private final String name;
+    private final Variance variance;
     
     @Override
     public String shortName() {
         return name;
+    }
+    
+    public static enum Variance {
+        INVARIANT,
+        COVARIANT
     }
 }

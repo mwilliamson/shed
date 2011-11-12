@@ -12,6 +12,8 @@ import org.zwobble.shed.compiler.types.TypeMaker;
 
 import com.natpryce.makeiteasy.Instantiator;
 
+import static org.zwobble.shed.compiler.types.FormalTypeParameter.covariantFormalTypeParameter;
+
 import static com.natpryce.makeiteasy.MakeItEasy.a;
 import static com.natpryce.makeiteasy.MakeItEasy.an;
 import static com.natpryce.makeiteasy.MakeItEasy.make;
@@ -75,6 +77,40 @@ public class SubTypingTest {
         TypeApplication firstType = applyTypes(parameterisedType, typeParameters(CoreTypes.BOOLEAN));
         TypeApplication secondType = applyTypes(parameterisedType, typeParameters(CoreTypes.STRING));
         assertThat(isSubType(firstType, secondType), is(false));
+    }
+    
+    @Test public void
+    appliedTypesAreSubTypesOfEachOtherIfTheyAgreeOnParameterisedTypeAndTypeParameters() {
+        FormalTypeParameter formalTypeParameter = invariantFormalTypeParameter("T");
+        InterfaceType interfaceType = make(an(interfaceType()));
+        ParameterisedType parameterisedType = parameterisedType(interfaceType, asList(formalTypeParameter));
+        TypeApplication firstType = applyTypes(parameterisedType, typeParameters(CoreTypes.BOOLEAN));
+        TypeApplication secondType = applyTypes(parameterisedType, typeParameters(CoreTypes.BOOLEAN));
+        assertThat(isSubType(firstType, secondType), is(true));
+    }
+    
+    @Test public void
+    firstAppliedTypeIsNotSubTypeOfSecondAppliedTypeIfFormalTypeParameterIsInvariantAndTypeParameterOfFirstIsSubTypeOfTypeParameterOfSecond() {
+        InterfaceType interfaceType = make(an(interfaceType()));
+        ClassType classType = make(a(classType(), with(superTypes, interfaces(interfaceType))));
+        
+        FormalTypeParameter formalTypeParameter = invariantFormalTypeParameter("T");
+        ParameterisedType parameterisedType = parameterisedType(make(an(interfaceType())), asList(formalTypeParameter));
+        TypeApplication firstType = applyTypes(parameterisedType, typeParameters(classType));
+        TypeApplication secondType = applyTypes(parameterisedType, typeParameters(interfaceType));
+        assertThat(isSubType(firstType, secondType), is(false));
+    }
+    
+    @Test public void
+    firstAppliedTypeIsSubTypeOfSecondAppliedTypeIfFormalTypeParameterIsCovariantAndTypeParameterOfFirstIsSubTypeOfTypeParameterOfSecond() {
+        InterfaceType interfaceType = make(an(interfaceType()));
+        ClassType classType = make(a(classType(), with(superTypes, interfaces(interfaceType))));
+        
+        FormalTypeParameter formalTypeParameter = covariantFormalTypeParameter("T");
+        ParameterisedType parameterisedType = parameterisedType(make(an(interfaceType())), asList(formalTypeParameter));
+        TypeApplication firstType = applyTypes(parameterisedType, typeParameters(classType));
+        TypeApplication secondType = applyTypes(parameterisedType, typeParameters(interfaceType));
+        assertThat(isSubType(firstType, secondType), is(true));
     }
 
     private boolean isSubType(Type subType, Type superType) {

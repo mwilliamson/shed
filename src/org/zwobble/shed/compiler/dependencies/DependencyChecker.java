@@ -2,7 +2,6 @@ package org.zwobble.shed.compiler.dependencies;
 
 import java.util.Set;
 
-import org.zwobble.shed.compiler.ShedIterables;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.Declaration;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
@@ -13,6 +12,7 @@ import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.References;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
+import org.zwobble.shed.compiler.util.ShedIterables;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
