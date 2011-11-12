@@ -43,15 +43,13 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
-import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
-
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.Option.some;
-import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
 
 public class TypeInfererImpl implements TypeInferer {
     private final ArgumentTypeInferer argumentTypeInferer;
@@ -59,6 +57,7 @@ public class TypeInfererImpl implements TypeInferer {
     private final TypeLookup typeLookup;
     private final VariableLookup variableLookup;
     private final FunctionTyping functionTyping;
+    private final SubTyping subTyping;
     private final StaticContext context;
 
     @Inject
@@ -68,6 +67,7 @@ public class TypeInfererImpl implements TypeInferer {
         TypeLookup typeLookup, 
         VariableLookup variableLookup,
         FunctionTyping functionTyping,
+        SubTyping subTyping,
         StaticContext context
     ) {
         this.argumentTypeInferer = argumentTypeInferer;
@@ -75,6 +75,7 @@ public class TypeInfererImpl implements TypeInferer {
         this.typeLookup = typeLookup;
         this.variableLookup = variableLookup;
         this.functionTyping = functionTyping;
+        this.subTyping = subTyping;
         this.context = context;
     }
     
@@ -224,7 +225,7 @@ public class TypeInfererImpl implements TypeInferer {
                     result = result.withErrorsFrom(inferType(argument).ifValueThen(new Function<Type, TypeResult<Void>>() {
                         @Override
                         public TypeResult<Void> apply(Type actualArgumentType) {
-                            if (isSubType(actualArgumentType, typeParameters.get(index), context)) {
+                            if (subTyping.isSubType(actualArgumentType, typeParameters.get(index))) {
                                 return success();
                             } else {
                                 return failure(error(argument, ("Expected expression of type " + typeParameters.get(index).shortName() +
@@ -295,7 +296,7 @@ public class TypeInfererImpl implements TypeInferer {
         if (valueTypeResult.hasValue() && targetInfo.hasValue()) {
             Type valueType = valueTypeResult.get();
             Type targetType = targetInfo.get().getType();
-            if (!isSubType(valueType, targetType, context)) {
+            if (!subTyping.isSubType(valueType, targetType)) {
                 result = result.withErrorsFrom(failure(error(expression, new TypeMismatchError(targetType, valueType))));
             }
         }

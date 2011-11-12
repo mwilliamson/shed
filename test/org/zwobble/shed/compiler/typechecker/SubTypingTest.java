@@ -132,7 +132,7 @@ public class SubTypingTest {
     }
 
     private boolean isSubType(Type subType, Type superType) {
-        return SubTyping.isSubType(subType, superType, context);
+        return new SubTyping(context).isSubType(subType, superType);
     }
     
     private Instantiator<ClassType> classType() {

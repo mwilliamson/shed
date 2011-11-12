@@ -1,5 +1,7 @@
 package org.zwobble.shed.compiler.typechecker;
 
+import javax.inject.Inject;
+
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
 import org.zwobble.shed.compiler.types.FormalTypeParameter.Variance;
 import org.zwobble.shed.compiler.types.ParameterisedType;
@@ -16,34 +18,41 @@ import static com.google.common.collect.Iterables.all;
 import static org.zwobble.shed.compiler.util.ShedIterables.zip;
 
 public class SubTyping {
-    public static boolean isSubType(Type subType, Type superType, StaticContext context) {
+    private final StaticContext context;
+
+    @Inject
+    public SubTyping(StaticContext context) {
+        this.context = context;
+    }
+    
+    public boolean isSubType(Type subType, Type superType) {
         if (subType.equals(superType)) {
             return true;
         }
         
         if (subType instanceof TypeApplication && superType instanceof TypeApplication) {
-            if (typeApplicationIsSubType((TypeApplication)subType, (TypeApplication)superType, context)) {
+            if (typeApplicationIsSubType((TypeApplication)subType, (TypeApplication)superType)) {
                 return true;
             }
         }
         
         if (subType instanceof ScalarType) {
-            if (firstTypeImplementsSecondType(((ScalarType)subType), superType, context)) {
+            if (firstTypeImplementsSecondType(((ScalarType)subType), superType)) {
                 return true;
             }
         }
         return false;
     }
     
-    private static boolean typeApplicationIsSubType(TypeApplication subType, TypeApplication superType, StaticContext context) {
+    private boolean typeApplicationIsSubType(TypeApplication subType, TypeApplication superType) {
         ParameterisedType subTypeParameterisedType = subType.getParameterisedType();
         return all(
             zip(subTypeParameterisedType.getFormalTypeParameters(), subType.getTypeParameters(), superType.getTypeParameters()),
-            typeParametersMatch(context)
+            typeParametersMatch()
         );
     }
     
-    private static Predicate<Triple<FormalTypeParameter, Type, Type>> typeParametersMatch(final StaticContext context) {
+    private Predicate<Triple<FormalTypeParameter, Type, Type>> typeParametersMatch() {
         return ShedIterables.unpack(new Predicate3<FormalTypeParameter, Type, Type>() {
             @Override
             public boolean apply(FormalTypeParameter formalTypeParameter, Type subTypeParameter, Type superTypeParameter) {
@@ -51,9 +60,9 @@ public class SubTyping {
                 if (variance == Variance.INVARIANT) {
                     return subTypeParameter.equals(superTypeParameter);
                 } else if (variance == Variance.COVARIANT) {
-                    return isSubType(subTypeParameter, superTypeParameter, context);
+                    return isSubType(subTypeParameter, superTypeParameter);
                 } else if (variance == Variance.CONTRAVARIANT) {
-                    return isSubType(superTypeParameter, subTypeParameter, context);
+                    return isSubType(superTypeParameter, subTypeParameter);
                 } else {
                     throw new RuntimeException("Unrecognised variance");
                 }
@@ -61,10 +70,10 @@ public class SubTyping {
         });
     }
 
-    private static boolean firstTypeImplementsSecondType(ScalarType first, Type second, StaticContext context) {
+    private boolean firstTypeImplementsSecondType(ScalarType first, Type second) {
         Iterable<Type> superTypes = context.getInfo(first).getSuperTypes();
         for (Type superType : superTypes) {
-            if (isSubType(superType, second, context)) {
+            if (isSubType(superType, second)) {
                 return true;
             }
         }

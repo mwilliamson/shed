@@ -5,7 +5,7 @@ import javax.inject.Inject;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
-import org.zwobble.shed.compiler.typechecker.StaticContext;
+import org.zwobble.shed.compiler.typechecker.SubTyping;
 import org.zwobble.shed.compiler.typechecker.TypeInferer;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.TypeResultBuilder;
@@ -14,17 +14,16 @@ import org.zwobble.shed.compiler.typechecker.errors.WrongReturnTypeError;
 import org.zwobble.shed.compiler.types.Type;
 
 import static org.zwobble.shed.compiler.CompilerErrors.error;
-import static org.zwobble.shed.compiler.typechecker.SubTyping.isSubType;
 import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
 
 public class ReturnStatementTypeChecker implements StatementTypeChecker<ReturnNode> {
     private final TypeInferer typeInferer;
-    private final StaticContext context;
+    private final SubTyping subTyping;
 
     @Inject
-    public ReturnStatementTypeChecker(TypeInferer typeInferer, StaticContext context) {
+    public ReturnStatementTypeChecker(TypeInferer typeInferer, SubTyping subTyping) {
         this.typeInferer = typeInferer;
-        this.context = context;
+        this.subTyping = subTyping;
     }
     
     @Override
@@ -35,7 +34,7 @@ public class ReturnStatementTypeChecker implements StatementTypeChecker<ReturnNo
         typeResult.addErrors(expressionTypeResult);
         if (!returnType.hasValue()) {
             typeResult.addError(error(returnStatement, new CannotReturnHereError()));
-        } else if (expressionTypeResult.hasValue() && !isSubType(expressionTypeResult.get(), returnType.get(), context)) {
+        } else if (expressionTypeResult.hasValue() && !subTyping.isSubType(expressionTypeResult.get(), returnType.get())) {
             typeResult.addError(error(expression, new WrongReturnTypeError(returnType.get(), expressionTypeResult.get())));
         }
         return typeResult.build();

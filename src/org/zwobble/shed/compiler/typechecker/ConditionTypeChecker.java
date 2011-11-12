@@ -13,12 +13,12 @@ import static org.zwobble.shed.compiler.CompilerErrors.error;
 
 public class ConditionTypeChecker {
     private final TypeInferer typeInferer;
-    private final StaticContext context;
-
+    private final SubTyping subTyping;
+    
     @Inject
-    public ConditionTypeChecker(TypeInferer typeInferer, StaticContext context) {
+    public ConditionTypeChecker(TypeInferer typeInferer, SubTyping subTyping) {
         this.typeInferer = typeInferer;
-        this.context = context;
+        this.subTyping = subTyping;
     }
     
     public TypeResult<Void> typeAndCheckCondition(ExpressionNode condition) {
@@ -30,7 +30,7 @@ public class ConditionTypeChecker {
         return new Function<Type, TypeResult<Void>>() {
             @Override
             public TypeResult<Void> apply(Type input) {
-                if (SubTyping.isSubType(input, CoreTypes.BOOLEAN, context)) {
+                if (subTyping.isSubType(input, CoreTypes.BOOLEAN)) {
                     return TypeResult.success();
                 } else {
                     return TypeResult.failure(error(condition, new ConditionNotBooleanError(input)));
