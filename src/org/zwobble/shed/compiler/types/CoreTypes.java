@@ -8,13 +8,13 @@ import java.util.Set;
 
 import com.google.common.base.Function;
 
-import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
-
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.IntRange.range;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
+import static org.zwobble.shed.compiler.types.FormalTypeParameter.contravariantFormalTypeParameter;
+import static org.zwobble.shed.compiler.types.FormalTypeParameter.covariantFormalTypeParameter;
 import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedType;
 import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
 
@@ -36,8 +36,8 @@ public class CoreTypes {
     public static ParameterisedType functionType(int arguments) {
         if (!functionTypes.containsKey(arguments)) {
             InterfaceType baseType = new InterfaceType(fullyQualifiedName("Function" + arguments));
-            List<FormalTypeParameter> formalTypeParameters = newArrayList(transform(range(arguments), toFormalTypeParameter()));
-            formalTypeParameters.add(invariantFormalTypeParameter("TResult"));
+            List<FormalTypeParameter> formalTypeParameters = newArrayList(transform(range(arguments), toContravariantFormalTypeParameter()));
+            formalTypeParameters.add(covariantFormalTypeParameter("TResult"));
             ParameterisedType functionType = parameterisedType(baseType, formalTypeParameters);
             functionTypes.put(arguments, functionType);
             baseFunctionTypes.add(functionType);
@@ -53,11 +53,11 @@ public class CoreTypes {
         return applyTypes(functionType(types.size() - 1), types);
     }
 
-    private static Function<Integer, FormalTypeParameter> toFormalTypeParameter() {
+    private static Function<Integer, FormalTypeParameter> toContravariantFormalTypeParameter() {
         return new Function<Integer, FormalTypeParameter>() {
             @Override
             public FormalTypeParameter apply(Integer input) {
-                return invariantFormalTypeParameter("T" + (input + 1));
+                return contravariantFormalTypeParameter("T" + (input + 1));
             }
         };
     }

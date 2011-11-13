@@ -33,6 +33,7 @@ public class DefaultContext {
             GlobalDeclaration declaration = globalDeclaration(name);
             staticContext.add(declaration, ValueInfo.unassignableValue(functionType));
             staticContext.addBuiltIn(name.last(), declaration);
+            staticContext.addInfo(functionType.getBaseType(), ScalarTypeInfo.EMPTY);
         }
         
         return staticContext;
