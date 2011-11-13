@@ -12,6 +12,7 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionSignatureDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.InterfaceBodyNode;
 import org.zwobble.shed.compiler.parsing.nodes.InterfaceDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
@@ -232,19 +233,34 @@ public class Statements {
     
     public static Rule<InterfaceDeclarationNode> interfaceDeclaration() {
         final Rule<String> identifier = tokenOfType(IDENTIFIER);
-        final Rule<List<FunctionSignatureDeclarationNode>> body = zeroOrMore(functionSignatureDeclaration());
+        final Rule<InterfaceBodyNode> body = interfaceBody();
         return then(
             sequence(OnError.FINISH,
                 guard(keyword(Keyword.INTERFACE)),
                 identifier,
-                symbol("{"),
-                body,
-                symbol("}")
+                body
             ),
             new SimpleParseAction<RuleValues, InterfaceDeclarationNode>() {
                 @Override
                 public InterfaceDeclarationNode apply(RuleValues result) {
                     return new InterfaceDeclarationNode(result.get(identifier), result.get(body));
+                }
+            }
+        );
+    }
+    
+    public static Rule<InterfaceBodyNode> interfaceBody() {
+        final Rule<List<FunctionSignatureDeclarationNode>> body = zeroOrMore(functionSignatureDeclaration());
+        return then(
+            sequence(OnError.FINISH,
+                symbol("{"),
+                body,
+                symbol("}")
+            ),
+            new SimpleParseAction<RuleValues, InterfaceBodyNode>() {
+                @Override
+                public InterfaceBodyNode apply(RuleValues result) {
+                    return new InterfaceBodyNode(result.get(body));
                 }
             }
         );

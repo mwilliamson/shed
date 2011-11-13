@@ -62,8 +62,12 @@ public class Nodes {
         return new ClassDeclarationNode(identifier, formalArguments, body);
     }
 
-    public static InterfaceDeclarationNode interfaceDeclaration(String identifier, List<FunctionSignatureDeclarationNode> body) {
+    public static InterfaceDeclarationNode interfaceDeclaration(String identifier, InterfaceBodyNode body) {
         return new InterfaceDeclarationNode(identifier, body);
+    }
+
+    public static InterfaceBodyNode interfaceBody(FunctionSignatureDeclarationNode... functionDeclarations) {
+        return new InterfaceBodyNode(asList(functionDeclarations));
     }
 
     public static PublicDeclarationNode publik(DeclarationNode declaration) {

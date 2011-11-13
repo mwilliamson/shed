@@ -1,9 +1,6 @@
 package org.zwobble.shed.compiler.parsing;
 
-import java.util.Collections;
-
 import org.junit.Test;
-import org.zwobble.shed.compiler.parsing.nodes.FunctionSignatureDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
@@ -161,7 +158,7 @@ public class StatementsTest {
     canParseEmptyInterfaceDeclarations() {
         assertThat(
             Statements.statement().parse(tokens("interface Instrument { }")),
-            isSuccessWithNode(Nodes.interfaceDeclaration("Instrument", Collections.<FunctionSignatureDeclarationNode>emptyList()))
+            isSuccessWithNode(Nodes.interfaceDeclaration("Instrument", Nodes.interfaceBody()))
         );
     }
     
@@ -171,7 +168,7 @@ public class StatementsTest {
             Statements.statement().parse(tokens("interface Instrument { fun repeat(str: String, times: Double): String; }")),
             isSuccessWithNode(Nodes.interfaceDeclaration(
                 "Instrument",
-                asList(Nodes.funcSignature(
+                Nodes.interfaceBody(Nodes.funcSignature(
                     "repeat",
                     asList(Nodes.formalArgument("str", Nodes.id("String")), Nodes.formalArgument("times", Nodes.id("Double"))),
                     Nodes.id("String")
