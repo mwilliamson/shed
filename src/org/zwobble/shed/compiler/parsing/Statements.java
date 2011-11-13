@@ -10,8 +10,9 @@ import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
-import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.FunctionSignatureDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.InterfaceDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
@@ -22,6 +23,8 @@ import org.zwobble.shed.compiler.parsing.nodes.WhileStatementNode;
 import org.zwobble.shed.compiler.tokeniser.Keyword;
 
 import static org.zwobble.shed.compiler.parsing.Expressions.expression;
+import static org.zwobble.shed.compiler.parsing.Functions.functionDeclaration;
+import static org.zwobble.shed.compiler.parsing.Functions.functionSignatureDeclaration;
 import static org.zwobble.shed.compiler.parsing.ParseResult.subResults;
 import static org.zwobble.shed.compiler.parsing.Rules.firstOf;
 import static org.zwobble.shed.compiler.parsing.Rules.guard;
@@ -31,6 +34,7 @@ import static org.zwobble.shed.compiler.parsing.Rules.sequence;
 import static org.zwobble.shed.compiler.parsing.Rules.symbol;
 import static org.zwobble.shed.compiler.parsing.Rules.then;
 import static org.zwobble.shed.compiler.parsing.Rules.tokenOfType;
+import static org.zwobble.shed.compiler.parsing.Rules.zeroOrMore;
 import static org.zwobble.shed.compiler.parsing.TypeReferences.typeSpecifier;
 import static org.zwobble.shed.compiler.tokeniser.TokenType.IDENTIFIER;
 
@@ -76,6 +80,7 @@ public class Statements {
             mutableVariable(),
             objectDeclaration(),
             classDeclaration(),
+            interfaceDeclaration(),
             functionDeclaration()
         );
     }
@@ -225,28 +230,21 @@ public class Statements {
         );
     }
     
-    public static Rule<FunctionDeclarationNode> functionDeclaration() {
+    public static Rule<InterfaceDeclarationNode> interfaceDeclaration() {
         final Rule<String> identifier = tokenOfType(IDENTIFIER);
-        final Rule<List<FormalArgumentNode>> formalArguments = Arguments.formalArgumentList();
-        final Rule<ExpressionNode> returnType = TypeReferences.typeSpecifier();
-        final Rule<BlockNode> body = Blocks.block();
+        final Rule<List<FunctionSignatureDeclarationNode>> body = zeroOrMore(functionSignatureDeclaration());
         return then(
             sequence(OnError.FINISH,
-                guard(keyword(Keyword.FUN)),
+                guard(keyword(Keyword.INTERFACE)),
                 identifier,
-                formalArguments,
-                returnType,
-                body
+                symbol("{"),
+                body,
+                symbol("}")
             ),
-            new SimpleParseAction<RuleValues, FunctionDeclarationNode>() {
+            new SimpleParseAction<RuleValues, InterfaceDeclarationNode>() {
                 @Override
-                public FunctionDeclarationNode apply(RuleValues result) {
-                    return new FunctionDeclarationNode(
-                        result.get(identifier),
-                        result.get(formalArguments),
-                        result.get(returnType),
-                        result.get(body)
-                    );
+                public InterfaceDeclarationNode apply(RuleValues result) {
+                    return new InterfaceDeclarationNode(result.get(identifier), result.get(body));
                 }
             }
         );

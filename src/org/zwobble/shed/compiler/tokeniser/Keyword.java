@@ -11,6 +11,7 @@ public enum Keyword {
     FALSE,
     OBJECT,
     CLASS,
+    INTERFACE,
     IF,
     ELSE,
     WHILE,

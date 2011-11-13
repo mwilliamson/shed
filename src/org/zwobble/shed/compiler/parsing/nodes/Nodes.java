@@ -62,6 +62,10 @@ public class Nodes {
         return new ClassDeclarationNode(identifier, formalArguments, body);
     }
 
+    public static InterfaceDeclarationNode interfaceDeclaration(String identifier, List<FunctionSignatureDeclarationNode> body) {
+        return new InterfaceDeclarationNode(identifier, body);
+    }
+
     public static PublicDeclarationNode publik(DeclarationNode declaration) {
         return new PublicDeclarationNode(declaration);
     }
@@ -132,5 +136,9 @@ public class Nodes {
 
     public static FunctionDeclarationNode func(String identifier, List<FormalArgumentNode> formalArguments, ExpressionNode returnType, BlockNode body) {
         return new FunctionDeclarationNode(identifier, formalArguments, returnType, body);
+    }
+
+    public static FunctionSignatureDeclarationNode funcSignature(String identifier, List<FormalArgumentNode> formalArguments, ExpressionNode returnType) {
+        return new FunctionSignatureDeclarationNode(identifier, formalArguments, returnType);
     }
 }
