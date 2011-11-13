@@ -17,7 +17,19 @@ import static org.zwobble.shed.compiler.parsing.Statements.statement;
 
 public class Blocks {
     public static Rule<BlockNode> block() {
-        final Rule<List<StatementNode>> statements = statements();
+        return then(
+            bracedStatementSequence(statement()),
+            new SimpleParseAction<List<StatementNode>, BlockNode>() {
+                @Override
+                public BlockNode apply(List<StatementNode> result) {
+                    return new BlockNode(result);
+                }
+            }
+        );
+    }
+    
+    public static <T> Rule<List<T>> bracedStatementSequence(Rule<T> statement) {
+        final Rule<List<T>> statements = zeroOrMore(statement);
         return then(
             new Rule<RuleValues>() {
                 @Override
@@ -36,13 +48,14 @@ public class Blocks {
                 }
             },
             
-            new SimpleParseAction<RuleValues, BlockNode>() {
+            new SimpleParseAction<RuleValues, List<T>>() {
                 @Override
-                public BlockNode apply(RuleValues result) {
-                    return new BlockNode(result.get(statements));
+                public List<T> apply(RuleValues result) {
+                    return result.get(statements);
                 }
             }
         );
+        
     }
     
     public static Rule<List<StatementNode>> statements() {

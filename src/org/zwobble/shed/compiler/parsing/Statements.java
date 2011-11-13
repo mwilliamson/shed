@@ -23,6 +23,7 @@ import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.WhileStatementNode;
 import org.zwobble.shed.compiler.tokeniser.Keyword;
 
+import static org.zwobble.shed.compiler.parsing.Blocks.bracedStatementSequence;
 import static org.zwobble.shed.compiler.parsing.Expressions.expression;
 import static org.zwobble.shed.compiler.parsing.Functions.functionDeclaration;
 import static org.zwobble.shed.compiler.parsing.Functions.functionSignatureDeclaration;
@@ -35,7 +36,6 @@ import static org.zwobble.shed.compiler.parsing.Rules.sequence;
 import static org.zwobble.shed.compiler.parsing.Rules.symbol;
 import static org.zwobble.shed.compiler.parsing.Rules.then;
 import static org.zwobble.shed.compiler.parsing.Rules.tokenOfType;
-import static org.zwobble.shed.compiler.parsing.Rules.zeroOrMore;
 import static org.zwobble.shed.compiler.parsing.TypeReferences.typeSpecifier;
 import static org.zwobble.shed.compiler.tokeniser.TokenType.IDENTIFIER;
 
@@ -250,17 +250,12 @@ public class Statements {
     }
     
     public static Rule<InterfaceBodyNode> interfaceBody() {
-        final Rule<List<FunctionSignatureDeclarationNode>> body = zeroOrMore(functionSignatureDeclaration());
         return then(
-            sequence(OnError.FINISH,
-                symbol("{"),
-                body,
-                symbol("}")
-            ),
-            new SimpleParseAction<RuleValues, InterfaceBodyNode>() {
+            bracedStatementSequence(functionSignatureDeclaration()),
+            new SimpleParseAction<List<FunctionSignatureDeclarationNode>, InterfaceBodyNode>() {
                 @Override
-                public InterfaceBodyNode apply(RuleValues result) {
-                    return new InterfaceBodyNode(result.get(body));
+                public InterfaceBodyNode apply(List<FunctionSignatureDeclarationNode> result) {
+                    return new InterfaceBodyNode(result);
                 }
             }
         );
