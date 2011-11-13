@@ -5,6 +5,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
@@ -16,7 +17,6 @@ import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.getFirst;
 import static com.google.common.collect.Iterables.transform;
 import static org.zwobble.shed.compiler.Option.some;
-import static org.zwobble.shed.compiler.types.CoreTypes.isFunctionType;
 
 public class FunctionTyping {
     private final StaticContext context;
@@ -56,5 +56,14 @@ public class FunctionTyping {
                 return extractFunctionTypeParameters(input);
             }
         };
+    }
+    
+    private static boolean isFunctionType(Type type) {
+        if (type instanceof TypeApplication) {
+            TypeApplication typeApplication = (TypeApplication)type;
+            return CoreTypes.functionType(typeApplication.getTypeParameters().size() - 1).equals(typeApplication.getParameterisedType());
+        } else {
+            return false;
+        }
     }
 }

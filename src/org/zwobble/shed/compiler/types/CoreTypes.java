@@ -33,10 +33,6 @@ public class CoreTypes {
     private static Map<Integer, ParameterisedType> functionTypes = new HashMap<Integer, ParameterisedType>();
     private static Set<ParameterisedType> baseFunctionTypes = new HashSet<ParameterisedType>();
     
-    public static boolean isFunctionType(Type type) {
-        return type instanceof TypeApplication && baseFunctionTypes.contains((((TypeApplication)type).getParameterisedType()));
-    }
-    
     public static ParameterisedType functionType(int arguments) {
         if (!functionTypes.containsKey(arguments)) {
             InterfaceType baseType = new InterfaceType(fullyQualifiedName("Function" + arguments));
