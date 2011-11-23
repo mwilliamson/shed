@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Writer;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.zwobble.shed.compiler.GoogleClosureJavaScriptOptimiser;
 import org.zwobble.shed.compiler.nodejs.ShedToNodeJsCompiler;
@@ -21,6 +22,12 @@ public class NodeTests {
     @Test
     public void canCalculateFibonacciNumbersAndPrintResult() {
         assertThat(compileAndExecute("fibonacci", "main"), isSuccessWithOutput("55"));
+    }
+    
+    @Ignore
+    @Test
+    public void classesAndObjectsCanImplementAnInterface() {
+        assertThat(compileAndExecute("interfaces", "main"), isSuccessWithOutput("Bob\nBanana\n"));
     }
     
     private NodeExecutionResult compileAndExecute(String directory, String main) {

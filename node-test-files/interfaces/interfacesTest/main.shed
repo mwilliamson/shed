@@ -1,0 +1,24 @@
+package interfacesTest;
+
+import shed.sys;
+
+interface ToStringable {
+    fun toString() : String;
+}
+
+class Person(name: String) <: ToStringable {
+    fun toString() : String {
+        return name;
+    }
+}
+
+object banana : ToStringable {
+    fun toString() : String {
+        return "Banana";
+    }
+}
+
+sys.print(Person("Bob"));
+sys.print("\n");
+sys.print(banana);
+sys.print("\n");
