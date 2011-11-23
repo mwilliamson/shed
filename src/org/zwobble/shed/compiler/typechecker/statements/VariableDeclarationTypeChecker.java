@@ -11,8 +11,6 @@ import org.zwobble.shed.compiler.typechecker.TypeLookup;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.TypeResultBuilder;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
-import org.zwobble.shed.compiler.typechecker.VariableLookupResult;
-import org.zwobble.shed.compiler.typechecker.VariableLookupResult.Status;
 import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.types.Type;
 
@@ -57,9 +55,9 @@ public class VariableDeclarationTypeChecker implements DeclarationTypeChecker<Va
         TypeResult<Type> valueTypeResult = typeInferer.inferType(variableDeclaration.getValue());
         typeResult.addErrors(valueTypeResult);
         if (isForwardDeclarable(variableDeclaration)) {
-            VariableLookupResult variableLookupResult = context.get(variableDeclaration);
-            if (variableLookupResult.getStatus() == Status.SUCCESS) {
-                Type specifiedType = variableLookupResult.getType();
+            Option<Type> type = context.getTypeOf(variableDeclaration);
+            if (type.hasValue()) {
+                Type specifiedType = type.get();
                 if (valueTypeResult.hasValue() && !subTyping.isSubType(valueTypeResult.get(), specifiedType)) {
                     typeResult.addError(error(
                         variableDeclaration.getValue(),

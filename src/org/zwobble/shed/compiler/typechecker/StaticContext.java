@@ -53,6 +53,15 @@ public class StaticContext {
             return VariableLookupResult.notDeclared();            
         }
     }
+    
+    public Option<Type> getTypeOf(Declaration declaration) {
+        Identity<Declaration> key = new Identity<Declaration>(declaration);
+        if (types.containsKey(key)) {
+            return Option.some(types.get(key).getType());
+        } else {
+            return Option.none();
+        }
+    }
 
     public void addGlobal(FullyQualifiedName name, Type type) {
         global.put(name, type);
