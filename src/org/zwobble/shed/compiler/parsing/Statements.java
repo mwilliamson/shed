@@ -1,6 +1,7 @@
 package org.zwobble.shed.compiler.parsing;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.zwobble.shed.compiler.Option;
@@ -25,17 +26,20 @@ import org.zwobble.shed.compiler.tokeniser.Keyword;
 
 import static org.zwobble.shed.compiler.parsing.Blocks.bracedStatementSequence;
 import static org.zwobble.shed.compiler.parsing.Expressions.expression;
+import static org.zwobble.shed.compiler.parsing.Expressions.typeExpression;
 import static org.zwobble.shed.compiler.parsing.Functions.functionDeclaration;
 import static org.zwobble.shed.compiler.parsing.Functions.functionSignatureDeclaration;
 import static org.zwobble.shed.compiler.parsing.ParseResult.subResults;
 import static org.zwobble.shed.compiler.parsing.Rules.firstOf;
 import static org.zwobble.shed.compiler.parsing.Rules.guard;
 import static org.zwobble.shed.compiler.parsing.Rules.keyword;
+import static org.zwobble.shed.compiler.parsing.Rules.oneOrMoreWithSeparator;
 import static org.zwobble.shed.compiler.parsing.Rules.optional;
 import static org.zwobble.shed.compiler.parsing.Rules.sequence;
 import static org.zwobble.shed.compiler.parsing.Rules.symbol;
 import static org.zwobble.shed.compiler.parsing.Rules.then;
 import static org.zwobble.shed.compiler.parsing.Rules.tokenOfType;
+import static org.zwobble.shed.compiler.parsing.Separator.hardSeparator;
 import static org.zwobble.shed.compiler.parsing.TypeReferences.typeSpecifier;
 import static org.zwobble.shed.compiler.tokeniser.TokenType.IDENTIFIER;
 
@@ -214,20 +218,34 @@ public class Statements {
     public static Rule<ClassDeclarationNode> classDeclaration() {
         final Rule<String> identifier = tokenOfType(IDENTIFIER);
         final Rule<List<FormalArgumentNode>> formalArguments = Arguments.formalArgumentList();
+        final Rule<Option<List<ExpressionNode>>> superTypes = optional(superTypeSpecifier());
         final Rule<BlockNode> body = Blocks.block();
         return then(
             sequence(OnError.FINISH,
                 guard(keyword(Keyword.CLASS)),
                 identifier,
                 formalArguments,
+                superTypes,
                 body
             ),
             new SimpleParseAction<RuleValues, ClassDeclarationNode>() {
                 @Override
                 public ClassDeclarationNode apply(RuleValues result) {
-                    return new ClassDeclarationNode(result.get(identifier), result.get(formalArguments), result.get(body));
+                    List<ExpressionNode> superTypeExpressions = result.get(superTypes).orElse(Collections.<ExpressionNode>emptyList());
+                    return new ClassDeclarationNode(result.get(identifier), result.get(formalArguments), superTypeExpressions, result.get(body));
                 }
             }
+        );
+    }
+    
+    private static Rule<List<ExpressionNode>> superTypeSpecifier() {
+        Rule<List<ExpressionNode>> typeExpressions = oneOrMoreWithSeparator(typeExpression(), hardSeparator(symbol(",")));
+        return then(
+            sequence(OnError.FINISH,
+                guard(symbol("<:")),
+                typeExpressions
+            ),
+            ParseActions.extract(typeExpressions)
         );
     }
     

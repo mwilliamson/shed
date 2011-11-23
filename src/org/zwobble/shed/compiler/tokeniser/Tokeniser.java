@@ -23,7 +23,7 @@ import static org.zwobble.shed.compiler.tokeniser.Token.token;
 
 public class Tokeniser {
     private static final List<String> symbols = asList(
-        "=>", "`", "¬", "!", "£", "$", "%", "^", "&", "*", "(", ")", "-",
+        "=>", "<:", "`", "¬", "!", "£", "$", "%", "^", "&", "*", "(", ")", "-",
         "=", "+", "[", "]", "{", "}", ";", ":", "'", "@", "#", "~", "<",
         ">", ",", ".", "/", "?", "\\", "|"
     );

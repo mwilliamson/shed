@@ -1,6 +1,7 @@
 package org.zwobble.shed.compiler.parsing;
 
 import org.junit.Test;
+import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
@@ -88,6 +89,14 @@ public class StatementsTest {
         assertThat(
             Statements.statement().parse(tokens("class Browser() { val version = 42; }")),
             isSuccessWithNode(Nodes.clazz("Browser", Nodes.noFormalArguments(), Nodes.block(Nodes.immutableVar("version", Nodes.number("42")))))
+        );
+    }
+    
+    @Test public void
+    canDeclareClassWithSuperTypes() {
+        assertThat(
+            Statements.statement().parse(tokens("class Mosaic() <: Browser { }")),
+            isSuccessWithNode(Nodes.clazz("Mosaic", Nodes.noFormalArguments(), asList((ExpressionNode)Nodes.id("Browser")), Nodes.block()))
         );
     }
     

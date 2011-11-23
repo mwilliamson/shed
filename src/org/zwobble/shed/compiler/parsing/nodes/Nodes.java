@@ -59,7 +59,11 @@ public class Nodes {
     }
 
     public static ClassDeclarationNode clazz(String identifier, List<FormalArgumentNode> formalArguments, BlockNode body) {
-        return new ClassDeclarationNode(identifier, formalArguments, body);
+        return new ClassDeclarationNode(identifier, formalArguments, Collections.<ExpressionNode>emptyList(), body);
+    }
+
+    public static ClassDeclarationNode clazz(String identifier, List<FormalArgumentNode> formalArguments, List<ExpressionNode> superTypes, BlockNode body) {
+        return new ClassDeclarationNode(identifier, formalArguments, superTypes, body);
     }
 
     public static InterfaceDeclarationNode interfaceDeclaration(String identifier, InterfaceBodyNode body) {
