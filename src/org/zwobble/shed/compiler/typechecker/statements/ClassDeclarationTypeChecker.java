@@ -16,30 +16,28 @@ import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeLookup;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
-import org.zwobble.shed.compiler.typechecker.VariableLookupResult;
-import org.zwobble.shed.compiler.typechecker.VariableLookupResult.Status;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 
+import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
-import static org.zwobble.shed.compiler.Option.none;
-import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 
 public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<ClassDeclarationNode> {
     private final BlockTypeChecker blockTypeChecker;
+    private final MembersBuilder membersBuilder;
     private final TypeLookup typeLookup;
     private final FullyQualifiedNames fullyQualifiedNames;
     private final StaticContext context;
 
     @Inject
-    public ClassDeclarationTypeChecker(BlockTypeChecker blockTypeChecker, TypeLookup typeLookup, FullyQualifiedNames fullyQualifiedNames, StaticContext context) {
+    public ClassDeclarationTypeChecker(
+        BlockTypeChecker blockTypeChecker, MembersBuilder membersBuilder, TypeLookup typeLookup, FullyQualifiedNames fullyQualifiedNames, StaticContext context) {
         this.blockTypeChecker = blockTypeChecker;
+        this.membersBuilder = membersBuilder;
         this.typeLookup = typeLookup;
         this.fullyQualifiedNames = fullyQualifiedNames;
         this.context = context;
@@ -73,26 +71,18 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
     }
 
     private Map<String, ValueInfo> buildMembers(ClassDeclarationNode classDeclaration) {
-        ImmutableMap.Builder<String, ValueInfo> members = ImmutableMap.builder();
-        
-        Iterable<PublicDeclarationNode> publicDeclarations = Iterables.filter(classDeclaration.getBody(), PublicDeclarationNode.class);
-        for (PublicDeclarationNode publicDeclaration : publicDeclarations) {
-            DeclarationNode memberDeclaration = publicDeclaration.getDeclaration();
-            Option<ValueInfo> memberType = findMemberType(memberDeclaration);
-            if (memberType.hasValue()) {
-                members.put(memberDeclaration.getIdentifier(), memberType.get());
-            }
-        }
-        return members.build();
+        Iterable<PublicDeclarationNode> publicDeclarations = filter(classDeclaration.getBody(), PublicDeclarationNode.class);
+        Iterable<DeclarationNode> memberDeclarations = transform(publicDeclarations, toMemberDeclaration());
+        return membersBuilder.buildMembers(memberDeclarations);
     }
 
-    private Option<ValueInfo> findMemberType(DeclarationNode memberDeclaration) {
-        VariableLookupResult result = context.get(memberDeclaration);
-        if (result.getStatus() == Status.SUCCESS) {
-            return some(result.getValueInfo());
-        } else {
-            return none();
-        }
+    private Function<PublicDeclarationNode, DeclarationNode> toMemberDeclaration() {
+        return new Function<PublicDeclarationNode, DeclarationNode>() {
+            @Override
+            public DeclarationNode apply(PublicDeclarationNode input) {
+                return input.getDeclaration();
+            }
+        };
     }
 
     private Function<FormalArgumentNode, Type> toType() {

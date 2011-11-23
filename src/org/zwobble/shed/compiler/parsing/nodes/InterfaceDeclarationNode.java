@@ -8,7 +8,7 @@ import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.parsing.nodes.structure.ScopedNodes.subScope;
 
 @Data
-public class InterfaceDeclarationNode implements DeclarationNode {
+public class InterfaceDeclarationNode implements TypeDeclarationNode {
     private final String identifier;
     private final InterfaceBodyNode body;
     

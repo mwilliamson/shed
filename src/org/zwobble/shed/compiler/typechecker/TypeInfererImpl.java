@@ -15,6 +15,7 @@ import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
+import org.zwobble.shed.compiler.parsing.nodes.FunctionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionWithBodyNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
@@ -166,7 +167,7 @@ public class TypeInfererImpl implements TypeInferer {
         return typeResult.ifValueThen(typeCheckBody(function));
     }
     
-    public TypeResult<ValueInfo> inferFunctionType(final FunctionWithBodyNode function) {
+    public TypeResult<ValueInfo> inferFunctionType(final FunctionNode function) {
         final TypeResult<List<Type>> argumentTypeResults = argumentTypeInferer.inferArgumentTypesAndAddToContext(function.getFormalArguments());
         TypeResult<Type> returnTypeResult = typeLookup.lookupTypeReference(function.getReturnType());
         

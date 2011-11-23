@@ -26,7 +26,7 @@ public class BlockTypeChecker {
         return typeCheck(statements, returnType).withErrorsFrom(result);
     }
 
-    public TypeResult<?> forwardDeclare(Iterable<StatementNode> statements) {
+    public TypeResult<?> forwardDeclare(Iterable<? extends StatementNode> statements) {
         TypeResult<Void> result = TypeResult.success();
         for (StatementNode statement : statements) {
             TypeResult<?> statementResult = statementsTypeChecker.forwardDeclare(statement);
