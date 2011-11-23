@@ -47,13 +47,7 @@ public class Blocks {
                     return errorRecovered(result.getErrors(), subResults(result));
                 }
             },
-            
-            new SimpleParseAction<RuleValues, List<T>>() {
-                @Override
-                public List<T> apply(RuleValues result) {
-                    return result.get(statements);
-                }
-            }
+            ParseActions.extract(statements)
         );
         
     }

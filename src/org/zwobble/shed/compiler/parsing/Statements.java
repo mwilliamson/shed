@@ -153,12 +153,7 @@ public class Statements {
                 guard(keyword(Keyword.ELSE)),
                 ifFalse
             ),
-            new SimpleParseAction<RuleValues, BlockNode>() {
-                @Override
-                public BlockNode apply(RuleValues result) {
-                    return result.get(ifFalse);
-                }
-            }
+            ParseActions.extract(ifFalse)
         );
     }
     

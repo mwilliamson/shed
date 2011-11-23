@@ -235,12 +235,7 @@ public class Expressions {
                 expression,
                 symbol(")")
             ),
-            new SimpleParseAction<RuleValues, ExpressionNode>() {
-                @Override
-                public ExpressionNode apply(RuleValues result) {
-                    return result.get(expression);
-                }
-            }
+            ParseActions.extract(expression)
         );
     }
     

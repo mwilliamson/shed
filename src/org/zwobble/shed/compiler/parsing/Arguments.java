@@ -24,12 +24,7 @@ public class Arguments {
                 formalArguments,
                 guard(symbol(")"))
             ),
-            new SimpleParseAction<RuleValues, List<FormalArgumentNode>>() {
-                @Override
-                public List<FormalArgumentNode> apply(RuleValues result) {
-                    return result.get(formalArguments);
-                }
-            }
+            ParseActions.extract(formalArguments)
         );
         
     }
