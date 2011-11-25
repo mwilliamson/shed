@@ -8,4 +8,8 @@ public class Types {
     public static List<Type> typeParameters(Type... types) {
         return asList(types);
     }
+
+    public static Type newUnknown() {
+        return new UnknownType();
+    }
 }

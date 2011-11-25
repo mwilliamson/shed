@@ -24,13 +24,6 @@ public class VariableLookupTest {
     }
     
     @Test public void
-    failsToLookupVariableIfTypeOfValueIsUnknown() {
-        fixture.addReference(reference, declaration);
-        fixture.context().add(declaration, ValueInfo.unknown());
-        assertThat(lookup(reference), isFailureWithErrors(new UntypedReferenceError("name")));
-    }
-    
-    @Test public void
     looksUpValueInfoUsingStaticContext() {
         fixture.addReference(reference, declaration);
         fixture.context().add(declaration, unassignableValue(CoreTypes.STRING));

@@ -20,8 +20,10 @@ import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
+import org.zwobble.shed.compiler.types.UnknownType;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
@@ -42,7 +44,9 @@ public class VariableDeclarationTypeCheckerTest {
         VariableDeclarationNode variableNode = Nodes.immutableVar("dontFeelLike", Nodes.string("dancing"));
         
         assertThat(forwardDeclare(variableNode, staticContext), isSuccess());
-        assertThat(staticContext.get(variableNode), is(VariableLookupResult.success(ValueInfo.unknown())));
+        VariableLookupResult lookupResult = staticContext.get(variableNode);
+        assertThat(lookupResult.getStatus(), is(VariableLookupResult.Status.SUCCESS));
+        assertThat(lookupResult.getType(), instanceOf(UnknownType.class));
     }
     
     @Test public void

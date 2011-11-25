@@ -11,8 +11,6 @@ import static org.zwobble.shed.compiler.Option.some;
 @ToString
 @EqualsAndHashCode
 public class ValueInfo {
-    private static ValueInfo UNKNOWN_VALUE = new ValueInfo(null, Status.UNKNOWN, Option.<ShedValue>none());
-    
     public static ValueInfo unassignableValue(Type type, ShedValue value) {
         return new ValueInfo(type, Status.UNASSIGNABLE, some(value));
     }
@@ -23,10 +21,6 @@ public class ValueInfo {
 
     public static ValueInfo assignableValue(Type type) {
         return new ValueInfo(type, Status.ASSIGNABLE, Option.<ShedValue>none());
-    }
-    
-    public static ValueInfo unknown() {
-        return UNKNOWN_VALUE;
     }
     
     private final Type type;
@@ -48,19 +42,11 @@ public class ValueInfo {
     }
     
     public boolean isAssignable() {
-        if (status == Status.UNKNOWN) {
-            throw new UnsupportedOperationException();
-        }
         return status == Status.ASSIGNABLE;
     }
 
-    public boolean hasType() {
-        return status != Status.UNKNOWN;
-    }
-    
     private static enum Status {
         ASSIGNABLE,
-        UNASSIGNABLE,
-        UNKNOWN
+        UNASSIGNABLE
     }
 }

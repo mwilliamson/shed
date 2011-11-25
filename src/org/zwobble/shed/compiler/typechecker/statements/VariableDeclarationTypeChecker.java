@@ -13,6 +13,7 @@ import org.zwobble.shed.compiler.typechecker.TypeResultBuilder;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.types.Type;
+import org.zwobble.shed.compiler.types.Types;
 
 import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
@@ -43,7 +44,7 @@ public class VariableDeclarationTypeChecker implements DeclarationTypeChecker<Va
             }
             return typeResult;
         } else {
-            context.add(variableDeclaration, ValueInfo.unknown());
+            context.add(variableDeclaration, toValueInfo(variableDeclaration, Types.newUnknown()));
             return TypeResult.success();
         }
     }

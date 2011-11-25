@@ -2,7 +2,10 @@ package org.zwobble.shed.compiler.typechecker.statements;
 
 import java.util.Map;
 
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
+import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.Test;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
@@ -21,11 +24,13 @@ import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
+import org.zwobble.shed.compiler.types.UnknownType;
 
 import com.google.common.collect.ImmutableMap;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
@@ -122,11 +127,9 @@ public class ClassDeclarationTypeCheckerTest {
         ShedTypeValue value = (ShedTypeValue) context.get(declaration).getValue().get();
         ClassType type = (ClassType)value.getType();
         ScalarTypeInfo typeInfo = context.getInfo(type);
-        assertThat(typeInfo.getMembers(), Matchers.<Map<String, ValueInfo>>is(ImmutableMap.of(
-            "firstName", ValueInfo.unknown()
-        )));
+        assertThat(typeInfo.getMembers(), hasEntry(is("firstName"), hasUnknownType()));
     }
-    
+
     @Test public void
     errorsArePassedAlongFromForwardDeclaringMembers() {
         BlockNode body = Nodes.block(
@@ -190,5 +193,24 @@ public class ClassDeclarationTypeCheckerTest {
 
     private ClassDeclarationTypeChecker typeChecker() {
         return fixture.get(ClassDeclarationTypeChecker.class);
+    }
+    
+    private Matcher<ValueInfo> hasUnknownType() {
+        return new TypeSafeDiagnosingMatcher<ValueInfo>() {
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("Unknown type");
+            }
+
+            @Override
+            protected boolean matchesSafely(ValueInfo item, Description mismatchDescription) {
+                if (item.getType() instanceof UnknownType) {
+                    return true;
+                } else {
+                    mismatchDescription.appendText("was of type " + item.getType());
+                    return false;
+                }
+            }
+        };
     }
 }
