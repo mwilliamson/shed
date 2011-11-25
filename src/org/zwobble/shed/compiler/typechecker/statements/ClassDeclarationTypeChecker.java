@@ -9,6 +9,7 @@ import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
+import org.zwobble.shed.compiler.typechecker.ArgumentTypeInferer;
 import org.zwobble.shed.compiler.typechecker.BlockTypeChecker;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeLookup;
@@ -27,6 +28,7 @@ import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 
 public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<ClassDeclarationNode> {
     private final BlockTypeChecker blockTypeChecker;
+    private final ArgumentTypeInferer argumentTypeInferer;
     private final MembersBuilder membersBuilder;
     private final TypeLookup typeLookup;
     private final TypeStore typeStore;
@@ -34,8 +36,11 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
 
     @Inject
     public ClassDeclarationTypeChecker(
-        BlockTypeChecker blockTypeChecker, MembersBuilder membersBuilder, TypeLookup typeLookup, TypeStore typeStore, StaticContext context) {
+        BlockTypeChecker blockTypeChecker, ArgumentTypeInferer argumentTypeInferer, 
+        MembersBuilder membersBuilder, TypeLookup typeLookup, TypeStore typeStore, StaticContext context
+    ) {
         this.blockTypeChecker = blockTypeChecker;
+        this.argumentTypeInferer = argumentTypeInferer;
         this.membersBuilder = membersBuilder;
         this.typeLookup = typeLookup;
         this.typeStore = typeStore;
@@ -63,6 +68,7 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
 
     @Override
     public TypeResult<StatementTypeCheckResult> typeCheck(ClassDeclarationNode classDeclaration, Option<Type> returnType) {
+        argumentTypeInferer.inferArgumentTypesAndAddToContext(classDeclaration.getFormalArguments());
         TypeResult<StatementTypeCheckResult> result = blockTypeChecker.typeCheck(classDeclaration.getBody(), returnType);
         buildClassType(classDeclaration);
         return result;

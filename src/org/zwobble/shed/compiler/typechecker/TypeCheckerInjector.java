@@ -30,6 +30,7 @@ public class TypeCheckerInjector {
             bind(References.class).toInstance(references);
             bind(TypeLookup.class).to(TypeLookupImpl.class);
             bind(TypeInferer.class).to(TypeInfererImpl.class);
+            bind(ArgumentTypeInferer.class).to(ArgumentTypeInfererImpl.class);
         }
     }
 }

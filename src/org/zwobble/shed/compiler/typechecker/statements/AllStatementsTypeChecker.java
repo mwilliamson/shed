@@ -11,6 +11,7 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionSignatureDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
+import org.zwobble.shed.compiler.parsing.nodes.InterfaceDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
@@ -42,6 +43,7 @@ public class AllStatementsTypeChecker {
         addDeclarationTypeChecker(VariableDeclarationNode.class, VariableDeclarationTypeChecker.class);
         addDeclarationTypeChecker(FunctionDeclarationNode.class, FunctionDeclarationTypeChecker.class);
         addDeclarationTypeChecker(ClassDeclarationNode.class, ClassDeclarationTypeChecker.class);
+        addDeclarationTypeChecker(InterfaceDeclarationNode.class, InterfaceDeclarationTypeChecker.class);
         addDeclarationTypeChecker(FunctionSignatureDeclarationNode.class, FunctionSignatureDeclarationTypeChecker.class);
     }
     

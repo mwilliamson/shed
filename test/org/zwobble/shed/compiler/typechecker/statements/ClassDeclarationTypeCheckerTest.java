@@ -11,7 +11,9 @@ import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
+import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.typechecker.ShedTypeValue;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeCheckerTestFixture;
@@ -135,6 +137,22 @@ public class ClassDeclarationTypeCheckerTest {
         TypeResult<?> result = typeCheck(declaration);
         
         assertThat(result, isFailureWithErrors(new TypeMismatchError(CoreTypes.UNIT, CoreTypes.STRING)));
+    }
+    
+    @Test public void
+    classArgumentsAreAddedToContextOfBody() {
+        FormalArgumentNode formalArgument = Nodes.formalArgument("initialAge", fixture.doubleTypeReference());
+        VariableIdentifierNode argumentReference = Nodes.id("initialAge");
+        BlockNode body = Nodes.block(
+            Nodes.mutableVar("age", fixture.doubleTypeReference(), argumentReference)
+        );
+        ClassDeclarationNode declaration = Nodes.clazz("Person", asList(formalArgument), body);
+        fixture.addType(declaration, type);
+        fixture.addReference(argumentReference, formalArgument);
+        forwardDeclare(declaration);
+        TypeResult<?> result = typeCheck(declaration);
+        
+        assertThat(result, isSuccess());
     }
     
     @Test public void
