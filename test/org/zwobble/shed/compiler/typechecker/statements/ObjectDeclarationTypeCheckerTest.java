@@ -12,7 +12,7 @@ import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typechecker.errors.CannotReturnHereError;
 import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.types.CoreTypes;
-import org.zwobble.shed.compiler.types.ScalarType;
+import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
@@ -62,13 +62,13 @@ public class ObjectDeclarationTypeCheckerTest {
                 Nodes.immutableVar("version", Nodes.number("1.2")),
                 Nodes.publik(Nodes.immutableVar("name", Nodes.string("firefox")))
             ));
-        fixture.addFullyQualifiedName(objectDeclarationNode, fullyQualifiedName("shed", "browser"));
+        InterfaceType type = new InterfaceType(fullyQualifiedName("shed", "browser"));
+        fixture.addType(objectDeclarationNode, type);
         StaticContext staticContext = fixture.context();
         TypeResult<StatementTypeCheckResult> result = typeCheckObjectDeclaration(objectDeclarationNode);
         assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
-        ScalarType browserType = (ScalarType)staticContext.get(objectDeclarationNode).getType();
-        assertThat(browserType.getFullyQualifiedName(), is(fullyQualifiedName("shed", "browser")));
-        ScalarTypeInfo browserTypeInfo = staticContext.getInfo(browserType);
+        assertThat(staticContext.get(objectDeclarationNode).getType(), is((Type)type));
+        ScalarTypeInfo browserTypeInfo = staticContext.getInfo(type);
         assertThat(browserTypeInfo.getMembers(), is((Object)ImmutableMap.of("name", ValueInfo.unassignableValue(CoreTypes.STRING))));
     }
     

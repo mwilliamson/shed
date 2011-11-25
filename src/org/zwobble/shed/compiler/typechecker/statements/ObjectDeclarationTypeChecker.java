@@ -3,7 +3,6 @@ package org.zwobble.shed.compiler.typechecker.statements;
 import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.naming.FullyQualifiedNames;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
@@ -12,6 +11,7 @@ import org.zwobble.shed.compiler.typechecker.BlockTypeChecker;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
+import org.zwobble.shed.compiler.typegeneration.TypeStore;
 import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
@@ -24,13 +24,13 @@ import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 
 public class ObjectDeclarationTypeChecker implements StatementTypeChecker<ObjectDeclarationNode> {
     private final BlockTypeChecker blockTypeChecker;
-    private final FullyQualifiedNames fullyQualifiedNames;
+    private final TypeStore typeStore;
     private final StaticContext context;
 
     @Inject
-    public ObjectDeclarationTypeChecker(BlockTypeChecker blockTypeChecker, FullyQualifiedNames fullyQualifiedNames, StaticContext context) {
+    public ObjectDeclarationTypeChecker(BlockTypeChecker blockTypeChecker, TypeStore typeStore, StaticContext context) {
         this.blockTypeChecker = blockTypeChecker;
-        this.fullyQualifiedNames = fullyQualifiedNames;
+        this.typeStore = typeStore;
         this.context = context;
     }
     
@@ -52,7 +52,7 @@ public class ObjectDeclarationTypeChecker implements StatementTypeChecker<Object
                 }
             }
             
-            InterfaceType type = new InterfaceType(fullyQualifiedNames.fullyQualifiedNameOf(objectDeclaration));
+            InterfaceType type = (InterfaceType) typeStore.typeDeclaredBy(objectDeclaration);
             context.add(objectDeclaration, unassignableValue(type));
             context.addInfo(type, new ScalarTypeInfo(interfaces(), memberBuilder.build()));
         }

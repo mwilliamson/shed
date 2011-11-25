@@ -5,8 +5,6 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.naming.FullyQualifiedName;
-import org.zwobble.shed.compiler.naming.FullyQualifiedNames;
 import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
@@ -16,6 +14,7 @@ import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeLookup;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
+import org.zwobble.shed.compiler.typegeneration.TypeStore;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
@@ -30,16 +29,16 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
     private final BlockTypeChecker blockTypeChecker;
     private final MembersBuilder membersBuilder;
     private final TypeLookup typeLookup;
-    private final FullyQualifiedNames fullyQualifiedNames;
+    private final TypeStore typeStore;
     private final StaticContext context;
 
     @Inject
     public ClassDeclarationTypeChecker(
-        BlockTypeChecker blockTypeChecker, MembersBuilder membersBuilder, TypeLookup typeLookup, FullyQualifiedNames fullyQualifiedNames, StaticContext context) {
+        BlockTypeChecker blockTypeChecker, MembersBuilder membersBuilder, TypeLookup typeLookup, TypeStore typeStore, StaticContext context) {
         this.blockTypeChecker = blockTypeChecker;
         this.membersBuilder = membersBuilder;
         this.typeLookup = typeLookup;
-        this.fullyQualifiedNames = fullyQualifiedNames;
+        this.typeStore = typeStore;
         this.context = context;
     }
     
@@ -55,9 +54,8 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
     }
 
     private void buildClassType(ClassDeclarationNode classDeclaration) {
-        FullyQualifiedName name = fullyQualifiedNames.fullyQualifiedNameOf(classDeclaration);
         Map<String, ValueInfo> members = buildMembers(classDeclaration);
-        ClassType type = new ClassType(name);
+        ClassType type = (ClassType)typeStore.typeDeclaredBy(classDeclaration);
         Iterable<Type> classParameters = transform(classDeclaration.getFormalArguments(), toType());
         ScalarTypeInfo classTypeInfo = new ScalarTypeInfo(interfaces(), members);
         context.addClass(classDeclaration, type, classParameters, classTypeInfo);

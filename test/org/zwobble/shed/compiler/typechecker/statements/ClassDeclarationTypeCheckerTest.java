@@ -39,34 +39,18 @@ import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualified
 
 public class ClassDeclarationTypeCheckerTest {
     private final TypeCheckerTestFixture fixture = TypeCheckerTestFixture.build();
-    
-    @Test public void
-    classTypeIsBuiltInForwardDeclarationWithNameOfClass() {
-        ClassDeclarationNode declaration = Nodes.clazz("Browser", Nodes.noFormalArguments(), Nodes.block());
-        FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Browser");
-        fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
-        StaticContext context = fixture.context();
-        
-        TypeResult<?> result = forwardDeclare(declaration);
-        
-        assertThat(result, isSuccess());
-        ShedTypeValue value = (ShedTypeValue) context.get(declaration).getValue().get();
-        ClassType type = (ClassType)value.getType();
-        assertThat(type.getFullyQualifiedName(), is(fullyQualifiedName));
-    }
+    private final FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Browser");
+    private final ClassType type = new ClassType(fullyQualifiedName);
     
     @Test public void
     classTypeIsAlsoConstructor() {
         ClassDeclarationNode declaration = Nodes.clazz("Browser", asList(Nodes.formalArgument("name", fixture.stringTypeReference())), Nodes.block());
-        FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Browser");
-        fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
+        fixture.addType(declaration, type);
         StaticContext context = fixture.context();
         
         TypeResult<?> result = forwardDeclare(declaration);
         
         assertThat(result, isSuccess());
-        ShedTypeValue value = (ShedTypeValue) context.get(declaration).getValue().get();
-        ClassType type = (ClassType)value.getType();
         ScalarType metaClass = (ScalarType) context.get(declaration).getType();
         ScalarTypeInfo metaClassInfo = context.getInfo(metaClass);
         assertThat(metaClassInfo.getSuperTypes(), hasItem(CoreTypes.functionTypeOf(CoreTypes.STRING, type)));
@@ -75,8 +59,7 @@ public class ClassDeclarationTypeCheckerTest {
     @Test public void
     classTypeIsAnInstanceOfClass() {
         ClassDeclarationNode declaration = Nodes.clazz("Browser", asList(Nodes.formalArgument("name", fixture.stringTypeReference())), Nodes.block());
-        FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Browser");
-        fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
+        fixture.addType(declaration, type);
         StaticContext context = fixture.context();
         
         TypeResult<?> result = forwardDeclare(declaration);
@@ -95,8 +78,7 @@ public class ClassDeclarationTypeCheckerTest {
             Nodes.immutableVar("lastName", fixture.stringTypeReference(), Nodes.string("Bobertson"))
         );
         ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.noFormalArguments(), body);
-        FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Person");
-        fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
+        fixture.addType(declaration, type);
         StaticContext context = fixture.context();
         
         TypeResult<?> result = forwardDeclare(declaration);
@@ -117,8 +99,7 @@ public class ClassDeclarationTypeCheckerTest {
             Nodes.publik(Nodes.immutableVar("firstName", Nodes.string("Bob")))
         );
         ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.noFormalArguments(), body);
-        FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Person");
-        fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
+        fixture.addType(declaration, type);
         StaticContext context = fixture.context();
         
         TypeResult<?> result = forwardDeclare(declaration);
@@ -136,8 +117,7 @@ public class ClassDeclarationTypeCheckerTest {
             Nodes.publik(Nodes.immutableVar("firstName", Nodes.id("Blah"), Nodes.string("Bob")))
         );
         ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.noFormalArguments(), body);
-        FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Person");
-        fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
+        fixture.addType(declaration, type);
         
         TypeResult<?> result = forwardDeclare(declaration);
         
@@ -150,8 +130,7 @@ public class ClassDeclarationTypeCheckerTest {
             Nodes.immutableVar("firstName", fixture.unitTypeReference(), Nodes.string("Bob"))
         );
         ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.noFormalArguments(), body);
-        FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Person");
-        fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
+        fixture.addType(declaration, type);
         forwardDeclare(declaration);
         TypeResult<?> result = typeCheck(declaration);
         
@@ -166,8 +145,7 @@ public class ClassDeclarationTypeCheckerTest {
             Nodes.publik(Nodes.immutableVar("lastName", Nodes.string("Bobertson")))
         );
         ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.noFormalArguments(), body);
-        FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Person");
-        fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
+        fixture.addType(declaration, type);
         StaticContext context = fixture.context();
         
         forwardDeclare(declaration);

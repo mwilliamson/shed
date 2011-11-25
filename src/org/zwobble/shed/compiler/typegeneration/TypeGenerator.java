@@ -4,6 +4,7 @@ import org.zwobble.shed.compiler.naming.FullyQualifiedNames;
 import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.InterfaceDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.NodeNavigator;
+import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeDeclarationNode;
 import org.zwobble.shed.compiler.types.ClassType;
@@ -27,7 +28,8 @@ public class TypeGenerator {
             TypeDeclarationNode typeDeclarationNode = (TypeDeclarationNode) node;
             if (node instanceof ClassDeclarationNode) {
                 builder.add(typeDeclarationNode, new ClassType(names.fullyQualifiedNameOf(typeDeclarationNode)));
-            } else if (node instanceof InterfaceDeclarationNode) {
+            } else if (node instanceof InterfaceDeclarationNode || node instanceof ObjectDeclarationNode) {
+                // TODO: give object declarations a different name to the object name
                 builder.add(typeDeclarationNode, new InterfaceType(names.fullyQualifiedNameOf(typeDeclarationNode)));
             } else {
                 throw new RuntimeException("Could not add type for type declaration: " + typeDeclarationNode);

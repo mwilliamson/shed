@@ -24,6 +24,8 @@ import org.zwobble.shed.compiler.typechecker.SourceTypeChecker;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeCheckerInjector;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
+import org.zwobble.shed.compiler.typegeneration.TypeGenerator;
+import org.zwobble.shed.compiler.typegeneration.TypeStore;
 
 import com.google.inject.Injector;
 
@@ -72,8 +74,9 @@ public class ShedCompiler {
             errors.addAll(referencesResult.getErrors());
             if (referencesResult.isSuccess()) {
                 FullyQualifiedNames fullNames = new TypeNamer().generateFullyQualifiedNames(sourceNode);
+                TypeStore types = new TypeGenerator(fullNames).generateTypes(sourceNode);
                 References references = referencesResult.getReferences();
-                Injector typeCheckerInjector = TypeCheckerInjector.build(fullNames, context, references);
+                Injector typeCheckerInjector = TypeCheckerInjector.build(types, context, references);
                 SourceTypeChecker sourceTypeChecker = typeCheckerInjector.getInstance(SourceTypeChecker.class);
                 TypeResult<Void> typeCheckResult = sourceTypeChecker.typeCheck(sourceNode);
                 errors.addAll(typeCheckResult.getErrors());

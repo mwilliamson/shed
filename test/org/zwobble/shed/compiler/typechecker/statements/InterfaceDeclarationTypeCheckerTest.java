@@ -31,27 +31,14 @@ import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualified
 public class InterfaceDeclarationTypeCheckerTest {
     private final TypeCheckerTestFixture fixture = TypeCheckerTestFixture.build();
     private final FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Browser");
-    
-    @Test public void
-    interfaceTypeIsBuiltInForwardDeclarationWithNameOfInterface() {
-        InterfaceDeclarationNode declaration = Nodes.interfaceDeclaration("Browser", Nodes.interfaceBody());
-        fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
-        StaticContext context = fixture.context();
-        
-        TypeResult<?> result = forwardDeclare(declaration);
-        
-        assertThat(result, isSuccess());
-        ShedTypeValue value = (ShedTypeValue) context.get(declaration).getValue().get();
-        InterfaceType type = (InterfaceType)value.getType();
-        assertThat(type.getFullyQualifiedName(), is(fullyQualifiedName));
-    }
+    private final InterfaceType type = new InterfaceType(fullyQualifiedName);
     
     @Test public void
     interfaceTypeIsBuiltInForwardDeclarationWithMembers() {
         InterfaceDeclarationNode declaration = Nodes.interfaceDeclaration("Browser", Nodes.interfaceBody(
             Nodes.funcSignature("alert", asList(Nodes.formalArgument("string", fixture.stringTypeReference())), fixture.unitTypeReference())
         ));
-        fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
+        fixture.addType(declaration, type);
         StaticContext context = fixture.context();
         
         TypeResult<?> result = forwardDeclare(declaration);
@@ -68,7 +55,7 @@ public class InterfaceDeclarationTypeCheckerTest {
     @Test public void
     interfaceDeclarationDoesntReturn() {
         InterfaceDeclarationNode declaration = Nodes.interfaceDeclaration("Browser", Nodes.interfaceBody());
-        fixture.addFullyQualifiedName(declaration, fullyQualifiedName);
+        fixture.addType(declaration, type);
         
         TypeResult<StatementTypeCheckResult> result = typeCheck(declaration);
         

@@ -2,14 +2,14 @@ package org.zwobble.shed.compiler.typechecker;
 
 import java.util.Map;
 
-import org.zwobble.shed.compiler.naming.FullyQualifiedName;
-import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.Declaration;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.TypeDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
+import org.zwobble.shed.compiler.typegeneration.TypeStore;
+import org.zwobble.shed.compiler.types.Type;
 
 public class TypeCheckerTestFixture {
     private static VariableIdentifierNode STRING_TYPE_REFERENCE = Nodes.id("String");
@@ -21,7 +21,7 @@ public class TypeCheckerTestFixture {
         return new TypeCheckerTestFixture();
     }
     
-    private final FullyQualifiedNamesBuilder fullNames = new FullyQualifiedNamesBuilder();
+    private final TypeStore.Builder typeStoreBuilder = TypeStore.builder();
     private final StaticContext context;
     private final ReferencesBuilder references = new ReferencesBuilder();
     
@@ -46,15 +46,15 @@ public class TypeCheckerTestFixture {
     }
 
     public <T> T get(Class<T> clazz) {
-        return TypeCheckerInjector.build(fullNames.build(), context, references.build()).getInstance(clazz);
+        return TypeCheckerInjector.build(typeStoreBuilder.build(), context, references.build()).getInstance(clazz);
     }
     
     public StaticContext context() {
         return context;
     }
     
-    public void addFullyQualifiedName(TypeDeclarationNode node, FullyQualifiedName name) {
-        fullNames.addFullyQualifiedName(node, name);
+    public void addType(TypeDeclarationNode node, Type type) {
+        typeStoreBuilder.add(node, type);
     }
     
     public void addReference(VariableIdentifierNode reference, Declaration declaration) {

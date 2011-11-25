@@ -9,6 +9,7 @@ import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.InterfaceDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
+import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeDeclarationNode;
 import org.zwobble.shed.compiler.types.Type;
@@ -33,6 +34,14 @@ public class TypeGeneratorTest {
     typesAreGeneratedForInterfaceDeclarations() {
         InterfaceDeclarationNode declarationNode = Nodes.interfaceDeclaration("Song", Nodes.interfaceBody());
         FullyQualifiedName name = fullyQualifiedName("shed", "music", "Song");
+        names.addFullyQualifiedName(declarationNode, name);
+        assertThat(generate(declarationNode), isTypeStoreWith(declarationNode, interfaceTypeWithName(name)));
+    }
+    
+    @Test public void
+    typesAreGeneratedForObjectDeclarations() {
+        ObjectDeclarationNode declarationNode = Nodes.object("song", Nodes.block());
+        FullyQualifiedName name = fullyQualifiedName("shed", "music", "song");
         names.addFullyQualifiedName(declarationNode, name);
         assertThat(generate(declarationNode), isTypeStoreWith(declarationNode, interfaceTypeWithName(name)));
     }
