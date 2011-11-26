@@ -7,18 +7,18 @@ interface ToStringable {
 }
 
 class Person(name: String) <: ToStringable {
-    fun toString() : String {
+    public fun toString() : String {
         return name;
     }
 }
 
-object banana : ToStringable {
+/*object banana : ToStringable {
     fun toString() : String {
         return "Banana";
     }
-}
+}*/
 
-sys.print(Person("Bob"));
+sys.print(Person("Bob").toString());
 sys.print("\n");
-sys.print(banana);
-sys.print("\n");
+//sys.print(banana);
+//sys.print("\n");

@@ -26,6 +26,7 @@ import org.zwobble.shed.compiler.parsing.nodes.FunctionWithBodyNode;
 import org.zwobble.shed.compiler.parsing.nodes.HoistableStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
+import org.zwobble.shed.compiler.parsing.nodes.InterfaceDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.LiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
@@ -178,6 +179,9 @@ public class JavaScriptGenerator {
                 transform(classDeclaration.getFormalArguments(), toFormalArgumentName()),
                 generateObjectBody(classDeclaration.getBody())
             ));
+        }
+        if (node instanceof InterfaceDeclarationNode) {
+            return js.statements();
         }
         if (node instanceof IfThenElseStatementNode) {
             IfThenElseStatementNode ifThenElse = (IfThenElseStatementNode) node;

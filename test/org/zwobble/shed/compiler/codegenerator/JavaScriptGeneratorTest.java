@@ -21,6 +21,7 @@ import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
+import org.zwobble.shed.compiler.parsing.nodes.InterfaceDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.LiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
@@ -317,6 +318,15 @@ public class JavaScriptGeneratorTest {
                     )
                 )
             )
+        );
+    }
+    
+    @Test public void
+    interfaceDoesNotGenerateAnyJavaScript() {
+        InterfaceDeclarationNode source = Nodes.interfaceDeclaration("Number", Nodes.interfaceBody());
+        assertGeneratedJavaScript(
+            source,
+            js.statements()
         );
     }
     
