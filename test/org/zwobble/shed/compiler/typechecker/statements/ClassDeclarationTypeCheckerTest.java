@@ -11,6 +11,8 @@ import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.Declaration;
+import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
@@ -19,10 +21,13 @@ import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeCheckerTestFixture;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
+import org.zwobble.shed.compiler.typechecker.errors.MissingMemberError;
 import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.typechecker.errors.UntypedReferenceError;
+import org.zwobble.shed.compiler.typechecker.errors.WrongMemberTypeError;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
+import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
@@ -38,6 +43,11 @@ import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
+import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+import static org.zwobble.shed.compiler.types.CoreTypes.functionTypeOf;
+import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
+import static org.zwobble.shed.compiler.types.Members.members;
 
 public class ClassDeclarationTypeCheckerTest {
     private final TypeCheckerTestFixture fixture = TypeCheckerTestFixture.build();
@@ -156,25 +166,93 @@ public class ClassDeclarationTypeCheckerTest {
     }
     
     @Test public void
-    classTypeIsBuiltInTypeCheckingWithAllMembers() {
+    classImplementsInterfaceIfAllMembersAreSubtypesOfInterfacesMembers() {
+        InterfaceType interfaceType = new InterfaceType(fullyQualifiedName("Store"));
+        VariableIdentifierNode interfaceReference = Nodes.id("Store");
+        Declaration interfaceDeclaration = globalDeclaration("Store");
+        fixture.addReference(interfaceReference, interfaceDeclaration);
+        
         BlockNode body = Nodes.block(
-            Nodes.publik(Nodes.immutableVar("firstName", fixture.stringTypeReference(), Nodes.string("Bob"))),
-            Nodes.publik(Nodes.func("close", Nodes.noFormalArguments(), fixture.unitTypeReference(), Nodes.block(Nodes.returnStatement(Nodes.unit())))),
-            Nodes.publik(Nodes.immutableVar("lastName", Nodes.string("Bobertson")))
+            Nodes.publik(Nodes.func(
+                "add",
+                asList(Nodes.formalArgument("song", fixture.interfaceTypeReference())),
+                fixture.unitTypeReference(),
+                Nodes.block(Nodes.returnStatement(Nodes.unit()))
+            ))
         );
-        ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.noFormalArguments(), body);
+        ClassDeclarationNode declaration = Nodes.clazz("Account", Nodes.noFormalArguments(), asList((ExpressionNode)interfaceReference), body);
         fixture.addType(declaration, type);
         StaticContext context = fixture.context();
-        
-        forwardDeclare(declaration);
-        typeCheck(declaration);
+        ScalarType interfaceFunctionType = functionTypeOf(fixture.implementingClassType(), CoreTypes.UNIT);
+        ScalarTypeInfo interfaceTypeInfo = new ScalarTypeInfo(interfaces(), members("add", unassignableValue(interfaceFunctionType)));
+        context.addInterface(interfaceDeclaration, interfaceType, interfaceTypeInfo);
+        context.add(interfaceDeclaration, ValueInfo.unassignableValue(context.getMetaClass(interfaceType)));
 
-        ScalarTypeInfo typeInfo = context.getInfo(type);
-        assertThat(typeInfo.getMembers(), Matchers.<Map<String, ValueInfo>>is(ImmutableMap.of(
-            "firstName", ValueInfo.unassignableValue(CoreTypes.STRING),
-            "close", ValueInfo.unassignableValue(CoreTypes.functionTypeOf(CoreTypes.UNIT)),
-            "lastName", ValueInfo.unassignableValue(CoreTypes.STRING)
+        forwardDeclareSuccessfully(declaration);
+        TypeResult<?> result = typeCheck(declaration);
+        
+        assertThat(result, isSuccess());
+    }
+    
+    @Test public void
+    typeErrorIfClassDoesNotImplementAllMembersOfInterface() {
+        InterfaceType interfaceType = new InterfaceType(fullyQualifiedName("Store"));
+        VariableIdentifierNode interfaceReference = Nodes.id("Store");
+        Declaration interfaceDeclaration = globalDeclaration("Store");
+        fixture.addReference(interfaceReference, interfaceDeclaration);
+        
+        ClassDeclarationNode declaration = Nodes.clazz("Account", Nodes.noFormalArguments(), asList((ExpressionNode)interfaceReference), Nodes.block());
+        fixture.addType(declaration, type);
+        StaticContext context = fixture.context();
+        ScalarType interfaceFunctionType = functionTypeOf(fixture.implementingClassType(), CoreTypes.UNIT);
+        ScalarTypeInfo interfaceTypeInfo = new ScalarTypeInfo(interfaces(), members("add", unassignableValue(interfaceFunctionType)));
+        context.addInterface(interfaceDeclaration, interfaceType, interfaceTypeInfo);
+        context.add(interfaceDeclaration, ValueInfo.unassignableValue(context.getMetaClass(interfaceType)));
+
+        
+        forwardDeclareSuccessfully(declaration);
+        TypeResult<?> result = typeCheck(declaration);
+        
+        assertThat(result, isFailureWithErrors(new MissingMemberError(interfaceType, "add")));
+    }
+    
+    @Test public void
+    typeErrorIfClassDoesNotImplementMemberWithCorrectType() {
+        InterfaceType interfaceType = new InterfaceType(fullyQualifiedName("Store"));
+        VariableIdentifierNode interfaceReference = Nodes.id("Store");
+        Declaration interfaceDeclaration = globalDeclaration("Store");
+        fixture.addReference(interfaceReference, interfaceDeclaration);
+
+        BlockNode body = Nodes.block(
+            Nodes.publik(Nodes.func(
+                "add",
+                asList(Nodes.formalArgument("song", fixture.implementingClassTypeReference())),
+                fixture.unitTypeReference(),
+                Nodes.block(Nodes.returnStatement(Nodes.unit()))
+            ))
+        );
+        ClassDeclarationNode declaration = Nodes.clazz("Account", Nodes.noFormalArguments(), asList((ExpressionNode)interfaceReference), body);
+        fixture.addType(declaration, type);
+        StaticContext context = fixture.context();
+        ScalarType interfaceFunctionType = functionTypeOf(fixture.interfaceType(), CoreTypes.UNIT);
+        ScalarTypeInfo interfaceTypeInfo = new ScalarTypeInfo(interfaces(), members("add", unassignableValue(interfaceFunctionType)));
+        context.addInterface(interfaceDeclaration, interfaceType, interfaceTypeInfo);
+        context.add(interfaceDeclaration, ValueInfo.unassignableValue(context.getMetaClass(interfaceType)));
+
+        
+        forwardDeclareSuccessfully(declaration);
+        TypeResult<?> result = typeCheck(declaration);
+        
+        assertThat(result, isFailureWithErrors(new WrongMemberTypeError(
+            interfaceType,
+            "add",
+            interfaceFunctionType,
+            functionTypeOf(fixture.implementingClassType(), CoreTypes.UNIT)
         )));
+    }
+    
+    private void forwardDeclareSuccessfully(ClassDeclarationNode classDeclaration) {
+        assertThat(typeChecker().forwardDeclare(classDeclaration), isSuccess());
     }
     
     private TypeResult<?> forwardDeclare(ClassDeclarationNode classDeclaration) {

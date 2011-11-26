@@ -70,6 +70,9 @@ public class TypeResult<T> implements HasErrors {
     }
     
     public T get() {
+        if (!hasValue) {
+            throw new RuntimeException("No value");
+        }
         return value;
     }
     
