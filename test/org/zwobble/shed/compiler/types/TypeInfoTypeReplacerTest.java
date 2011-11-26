@@ -46,7 +46,7 @@ public class TypeInfoTypeReplacerTest {
         ScalarTypeInfo arrayListTypeInfo = new ScalarTypeInfo(interfaces(applyTypes(listType, typeParameters(arrayListTypeParameter))), members());
         
         ScalarTypeInfo typeInfo = buildTypeInfo(applyTypes(arrayListType, typeParameters(CoreTypes.STRING)), arrayListTypeInfo);
-        assertThat(typeInfo.getSuperTypes(), containsInAnyOrder((Type)applyTypes(listType, typeParameters(CoreTypes.STRING))));
+        assertThat(typeInfo.getInterfaces(), containsInAnyOrder((Type)applyTypes(listType, typeParameters(CoreTypes.STRING))));
     }
     
     private ScalarTypeInfo buildTypeInfo(TypeApplication typeApplication, ScalarTypeInfo typeInfo) {

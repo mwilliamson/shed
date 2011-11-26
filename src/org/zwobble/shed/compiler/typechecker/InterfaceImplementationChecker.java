@@ -30,7 +30,7 @@ public class InterfaceImplementationChecker {
     public HasErrors checkInterfaces(SyntaxNode declaration, ScalarType type) {
         TypeResultBuilder<?> resultBuilder = typeResultBuilder();
         ScalarTypeInfo typeInfo = context.getInfo(type);
-        for (ScalarType superType : typeInfo.getSuperTypes()) {
+        for (ScalarType superType : typeInfo.getInterfaces()) {
             ScalarTypeInfo superTypeInfo = context.getInfo(superType);
             
             for (Member member : superTypeInfo.getMembers()) {

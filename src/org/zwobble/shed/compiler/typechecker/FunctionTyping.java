@@ -36,7 +36,7 @@ public class FunctionTyping {
         } else if (isFunctionType(type)) {
             return some(((TypeApplication)type).getTypeParameters());
         } else {
-            Iterable<ScalarType> superTypes = filter(context.getInfo((ScalarType)type).getSuperTypes(), ScalarType.class);
+            Iterable<ScalarType> superTypes = filter(context.getInfo((ScalarType)type).getInterfaces(), ScalarType.class);
             return getFirst(filter(transform(superTypes, toFunctionTypeParameters()), hasValue()), Option.<List<Type>>none());
         }
     }

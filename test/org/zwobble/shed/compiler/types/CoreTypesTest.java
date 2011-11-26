@@ -15,13 +15,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.types.CoreTypes.functionTypeOf;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
-import static org.zwobble.shed.compiler.types.TypeMaker.superTypes;
+import static org.zwobble.shed.compiler.types.TypeMaker.interfaces;
 
 @SuppressWarnings("unchecked")
 public class CoreTypesTest {
     private final StaticContext context = DefaultContext.defaultContext();
     private final InterfaceType interfaceType = make(an(interfaceType()));
-    private final ClassType implementingClassType = make(a(classType(), with(superTypes, interfaces(interfaceType))));    
+    private final ClassType implementingClassType = make(a(classType(), with(interfaces, interfaces(interfaceType))));    
     
     @Test public void
     functionTypeIsCovariantInReturnType() {

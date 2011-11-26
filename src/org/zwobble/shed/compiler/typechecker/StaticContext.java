@@ -3,7 +3,6 @@ package org.zwobble.shed.compiler.typechecker;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import lombok.ToString;
 
@@ -15,6 +14,7 @@ import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
+import org.zwobble.shed.compiler.types.Interfaces;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
@@ -108,11 +108,11 @@ public class StaticContext {
         addScalarType(declaration, type, typeInfo, interfaces(CoreTypes.CLASS));
     }
     
-    private void addScalarType(Declaration declaration, ScalarType type, ScalarTypeInfo typeInfo, Set<ScalarType> superClasses) {
+    private void addScalarType(Declaration declaration, ScalarType type, ScalarTypeInfo typeInfo, Interfaces interfaces) {
         // TODO: forbid user-declared members called Meta 
         FullyQualifiedName metaClassName = type.getFullyQualifiedName().extend("Meta");
         ClassType metaClass = new ClassType(metaClassName);
-        ScalarTypeInfo metaClassTypeInfo = new ScalarTypeInfo(superClasses, members());
+        ScalarTypeInfo metaClassTypeInfo = new ScalarTypeInfo(interfaces, members());
         
         add(declaration, ValueInfo.unassignableValue(metaClass, shedTypeValue(type)));
         addInfo(type, typeInfo);

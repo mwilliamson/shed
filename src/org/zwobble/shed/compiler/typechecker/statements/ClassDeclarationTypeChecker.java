@@ -1,7 +1,5 @@
 package org.zwobble.shed.compiler.typechecker.statements;
 
-import java.util.Set;
-
 import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.Option;
@@ -19,18 +17,19 @@ import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.TypeResultBuilder;
 import org.zwobble.shed.compiler.typegeneration.TypeStore;
 import org.zwobble.shed.compiler.types.ClassType;
+import org.zwobble.shed.compiler.types.Interfaces;
 import org.zwobble.shed.compiler.types.Members;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableSet;
 
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
 import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
 import static org.zwobble.shed.compiler.typechecker.statements.StatementTypeCheckResult.noReturn;
+import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 
 public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<ClassDeclarationNode> {
     private final BlockTypeChecker blockTypeChecker;
@@ -81,10 +80,10 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
 
     private ClassType buildClassType(ClassDeclarationNode classDeclaration) {
         Members members = buildMembers(classDeclaration);
-        Set<ScalarType> superTypes = buildSuperTypes(classDeclaration);
+        Interfaces interfaces = dereferenceInterfaces(classDeclaration);
         ClassType type = (ClassType)typeStore.typeDeclaredBy(classDeclaration);
         Iterable<Type> classParameters = transform(classDeclaration.getFormalArguments(), toType());
-        ScalarTypeInfo classTypeInfo = new ScalarTypeInfo(superTypes, members);
+        ScalarTypeInfo classTypeInfo = new ScalarTypeInfo(interfaces, members);
         context.addClass(classDeclaration, type, classParameters, classTypeInfo);
         return type;
     }
@@ -95,8 +94,8 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
         return membersBuilder.buildMembers(memberDeclarations);
     }
 
-    private Set<ScalarType> buildSuperTypes(ClassDeclarationNode classDeclaration) {
-        return ImmutableSet.copyOf(transform(classDeclaration.getSuperTypes(), lookupType()));
+    private Interfaces dereferenceInterfaces(ClassDeclarationNode classDeclaration) {
+        return interfaces(transform(classDeclaration.getSuperTypes(), lookupType()));
     }
 
     private Function<PublicDeclarationNode, DeclarationNode> toMemberDeclaration() {

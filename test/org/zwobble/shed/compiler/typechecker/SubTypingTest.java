@@ -27,7 +27,7 @@ import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantForma
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedType;
 import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
-import static org.zwobble.shed.compiler.types.TypeMaker.superTypes;
+import static org.zwobble.shed.compiler.types.TypeMaker.interfaces;
 import static org.zwobble.shed.compiler.types.Types.typeParameters;
 
 @SuppressWarnings("unchecked")
@@ -38,7 +38,7 @@ public class SubTypingTest {
     private final FormalTypeParameter contravariantTypeParameter = contravariantFormalTypeParameter("TContravariant");
 
     private final InterfaceType interfaceType = make(an(interfaceType()));
-    private final ClassType implementingClassType = make(a(classType(), with(superTypes, interfaces(interfaceType))));    
+    private final ClassType implementingClassType = make(a(classType(), with(interfaces, interfaces(interfaceType))));    
     
     @Test public void
     typeIsSubClassOfItself() {
@@ -56,14 +56,14 @@ public class SubTypingTest {
     @Test public void
     classIsSubTypeOfImplementedInterface() {
         InterfaceType interfaceType = make(an(interfaceType()));
-        ClassType classType = make(a(classType(), with(superTypes, interfaces(interfaceType))));
+        ClassType classType = make(a(classType(), with(interfaces, interfaces(interfaceType))));
         assertThat(isSubType(classType, interfaceType), is(true));
     }
     
     @Test public void
     classIsNotSuperTypeOfImplementedInterface() {
         InterfaceType interfaceType = make(an(interfaceType()));
-        ClassType classType = make(a(classType(), with(superTypes, interfaces(interfaceType))));
+        ClassType classType = make(a(classType(), with(interfaces, interfaces(interfaceType))));
         assertThat(isSubType(interfaceType, classType), is(false));
     }
     
@@ -71,7 +71,7 @@ public class SubTypingTest {
     classTypeCanImplementParameterisedInterface() {
         ParameterisedType parameterisedType = parameterisedType(interfaceType, asList(invariantTypeParameter));
         TypeApplication concreteInterfaceType = applyTypes(parameterisedType, typeParameters(CoreTypes.BOOLEAN));
-        ClassType classType = make(a(classType(), with(superTypes, interfaces(concreteInterfaceType))));
+        ClassType classType = make(a(classType(), with(interfaces, interfaces(concreteInterfaceType))));
         assertThat(isSubType(classType, applyTypes(parameterisedType, typeParameters(CoreTypes.BOOLEAN))), is(true));
     }
     

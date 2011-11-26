@@ -2,15 +2,14 @@ package org.zwobble.shed.compiler.types;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
 import static com.google.common.collect.Iterables.transform;
+import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Member.member;
 import static org.zwobble.shed.compiler.types.Members.members;
 
@@ -34,11 +33,11 @@ public class TypeInfoTypeReplacer {
     }
     
     private ScalarTypeInfo buildTypeInfo(ScalarTypeInfo info, Map<FormalTypeParameter, Type> replacements) {
-        return new ScalarTypeInfo(buildSuperTypes(info.getSuperTypes(), replacements), buildMembers(info.getMembers(), replacements));
+        return new ScalarTypeInfo(buildInterfaces(info.getInterfaces(), replacements), buildMembers(info.getMembers(), replacements));
     }
 
-    private Set<ScalarType> buildSuperTypes(Set<ScalarType> superTypes, Map<FormalTypeParameter, Type> replacements) {
-        return ImmutableSet.copyOf(transform(superTypes, replaceTypes(replacements)));
+    private Interfaces buildInterfaces(Interfaces interfaces, Map<FormalTypeParameter, Type> replacements) {
+        return interfaces(transform(interfaces, replaceTypes(replacements)));
     }
 
     private Members buildMembers(Members members, Map<FormalTypeParameter, Type> replacements) {

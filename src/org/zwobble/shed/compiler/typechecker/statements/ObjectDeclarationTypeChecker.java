@@ -1,7 +1,5 @@
 package org.zwobble.shed.compiler.typechecker.statements;
 
-import java.util.Set;
-
 import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.Option;
@@ -18,6 +16,7 @@ import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.TypeResultBuilder;
 import org.zwobble.shed.compiler.typegeneration.TypeStore;
 import org.zwobble.shed.compiler.types.InterfaceType;
+import org.zwobble.shed.compiler.types.Interfaces;
 import org.zwobble.shed.compiler.types.Members;
 import org.zwobble.shed.compiler.types.MembersBuilder;
 import org.zwobble.shed.compiler.types.ScalarType;
@@ -25,11 +24,11 @@ import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableSet;
 
 import static com.google.common.collect.Iterables.transform;
 import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 
 public class ObjectDeclarationTypeChecker implements StatementTypeChecker<ObjectDeclarationNode> {
     private final BlockTypeChecker blockTypeChecker;
@@ -57,12 +56,12 @@ public class ObjectDeclarationTypeChecker implements StatementTypeChecker<Object
         result.addErrors(blockResult);
         
         if (blockResult.isSuccess()) {
-            Set<ScalarType> superTypes = buildSuperTypes(objectDeclaration);
+            Interfaces interfaces = dereferenceInterfaces(objectDeclaration);
             Members members = buildMembers(objectDeclaration);
             
             InterfaceType type = (InterfaceType) typeStore.typeDeclaredBy(objectDeclaration);
             context.add(objectDeclaration, unassignableValue(type));
-            context.addInfo(type, new ScalarTypeInfo(superTypes, members));
+            context.addInfo(type, new ScalarTypeInfo(interfaces, members));
             
             result.addErrors(interfaceImplementationChecker.checkInterfaces(objectDeclaration, type));
         }
@@ -70,9 +69,9 @@ public class ObjectDeclarationTypeChecker implements StatementTypeChecker<Object
         return result.build();
     }
 
-    private Set<ScalarType> buildSuperTypes(ObjectDeclarationNode objectDeclaration) {
+    private Interfaces dereferenceInterfaces(ObjectDeclarationNode objectDeclaration) {
         // TODO: copied from ClassDeclarationTypeChecker
-        return ImmutableSet.copyOf(transform(objectDeclaration.getSuperTypes(), lookupType()));
+        return interfaces(transform(objectDeclaration.getSuperTypes(), lookupType()));
     }
 
     private Function<ExpressionNode, ScalarType> lookupType() {

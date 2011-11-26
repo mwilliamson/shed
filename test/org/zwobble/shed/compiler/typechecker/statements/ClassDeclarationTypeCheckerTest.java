@@ -60,7 +60,7 @@ public class ClassDeclarationTypeCheckerTest {
         assertThat(result, isSuccess());
         ScalarType metaClass = (ScalarType) context.get(declaration).getType();
         ScalarTypeInfo metaClassInfo = context.getInfo(metaClass);
-        assertThat(metaClassInfo.getSuperTypes(), hasItem(CoreTypes.functionTypeOf(CoreTypes.STRING, type)));
+        assertThat(metaClassInfo.getInterfaces(), hasItem(CoreTypes.functionTypeOf(CoreTypes.STRING, type)));
     }
     
     @Test public void
@@ -74,7 +74,7 @@ public class ClassDeclarationTypeCheckerTest {
         assertThat(result, isSuccess());
         ScalarType metaClass = (ScalarType) context.get(declaration).getType();
         ScalarTypeInfo metaClassInfo = context.getInfo(metaClass);
-        assertThat(metaClassInfo.getSuperTypes(), hasItem(CoreTypes.CLASS));
+        assertThat(metaClassInfo.getInterfaces(), hasItem(CoreTypes.CLASS));
     }
     
     @Test public void

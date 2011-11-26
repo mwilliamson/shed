@@ -1,7 +1,5 @@
 package org.zwobble.shed.compiler.types;
 
-import java.util.Set;
-
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 
 import com.natpryce.makeiteasy.Instantiator;
@@ -14,7 +12,7 @@ import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 
 public class TypeMaker {
-    public static final Property<ScalarType, Set<ScalarType>> superTypes = newProperty();
+    public static final Property<ScalarType, Interfaces> interfaces = newProperty();
     public static final Property<ScalarType, Members> members = newProperty();
     
     public static Instantiator<ClassType> classType(final StaticContext context) {
@@ -40,6 +38,6 @@ public class TypeMaker {
     }
 
     private static ScalarTypeInfo buildTypeInfo(PropertyLookup<? extends ScalarType> lookup) {
-        return new ScalarTypeInfo(lookup.valueOf(superTypes, interfaces()), lookup.valueOf(members, members()));
+        return new ScalarTypeInfo(lookup.valueOf(interfaces, interfaces()), lookup.valueOf(members, members()));
     }
 }
