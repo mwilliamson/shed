@@ -1,7 +1,5 @@
 package org.zwobble.shed.compiler.types;
 
-import java.util.Map;
-
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 
 import com.google.common.collect.ImmutableMap;
@@ -13,7 +11,7 @@ public class MembersBuilder {
         members.put(name, valueInfo);
     }
     
-    public Map<String, ValueInfo> build() {
-        return members.build();
+    public Members build() {
+        return Members.members(members.build());
     }
 }

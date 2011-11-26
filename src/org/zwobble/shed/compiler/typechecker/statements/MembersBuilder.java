@@ -1,7 +1,5 @@
 package org.zwobble.shed.compiler.typechecker.statements;
 
-import java.util.Map;
-
 import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.Option;
@@ -10,11 +8,13 @@ import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult.Status;
+import org.zwobble.shed.compiler.types.Members;
 
 import com.google.common.collect.ImmutableMap;
 
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
+import static org.zwobble.shed.compiler.types.Members.members;
 
 public class MembersBuilder {
     private final StaticContext context;
@@ -24,7 +24,7 @@ public class MembersBuilder {
         this.context = context;
     }
     
-    public Map<String, ValueInfo> buildMembers(Iterable<? extends DeclarationNode> declarations) {
+    public Members buildMembers(Iterable<? extends DeclarationNode> declarations) {
         ImmutableMap.Builder<String, ValueInfo> members = ImmutableMap.builder();
         
         for (DeclarationNode memberDeclaration : declarations) {
@@ -33,7 +33,7 @@ public class MembersBuilder {
                 members.put(memberDeclaration.getIdentifier(), memberType.get());
             }
         }
-        return members.build();
+        return members(members.build());
     }
 
     private Option<ValueInfo> findMemberType(DeclarationNode memberDeclaration) {

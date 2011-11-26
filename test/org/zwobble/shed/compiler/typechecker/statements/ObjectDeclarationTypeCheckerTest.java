@@ -16,12 +16,11 @@ import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
-import com.google.common.collect.ImmutableMap;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
+import static org.zwobble.shed.compiler.types.Members.members;
 
 public class ObjectDeclarationTypeCheckerTest {
     private final TypeCheckerTestFixture fixture = TypeCheckerTestFixture.build();
@@ -69,7 +68,7 @@ public class ObjectDeclarationTypeCheckerTest {
         assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
         assertThat(staticContext.get(objectDeclarationNode).getType(), is((Type)type));
         ScalarTypeInfo browserTypeInfo = staticContext.getInfo(type);
-        assertThat(browserTypeInfo.getMembers(), is((Object)ImmutableMap.of("name", ValueInfo.unassignableValue(CoreTypes.STRING))));
+        assertThat(browserTypeInfo.getMembers(), is(members("name", ValueInfo.unassignableValue(CoreTypes.STRING))));
     }
     
     private TypeResult<StatementTypeCheckResult> typeCheckObjectDeclaration(ObjectDeclarationNode objectDeclaration) {

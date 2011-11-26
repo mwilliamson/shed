@@ -1,8 +1,5 @@
 package org.zwobble.shed.compiler.typechecker.statements;
 
-import java.util.Map;
-
-import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
@@ -18,15 +15,14 @@ import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
-import com.google.common.collect.ImmutableMap;
-
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
+import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.types.Member.member;
 
 public class InterfaceDeclarationTypeCheckerTest {
     private final TypeCheckerTestFixture fixture = TypeCheckerTestFixture.build();
@@ -47,9 +43,9 @@ public class InterfaceDeclarationTypeCheckerTest {
         ShedTypeValue value = (ShedTypeValue) context.get(declaration).getValue().get();
         InterfaceType type = (InterfaceType)value.getType();
         ScalarTypeInfo typeInfo = context.getInfo(type);
-        assertThat(typeInfo.getMembers(), Matchers.<Map<String, ValueInfo>>is(ImmutableMap.of(
-            "alert", ValueInfo.unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.UNIT))
-        )));
+        assertThat(typeInfo.getMembers(), contains(
+            member("alert", ValueInfo.unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.UNIT)))
+        ));
     }
     
     @Test public void

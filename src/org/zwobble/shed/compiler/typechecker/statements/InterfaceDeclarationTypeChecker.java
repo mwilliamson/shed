@@ -1,7 +1,5 @@
 package org.zwobble.shed.compiler.typechecker.statements;
 
-import java.util.Map;
-
 import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.Option;
@@ -9,10 +7,10 @@ import org.zwobble.shed.compiler.parsing.nodes.InterfaceDeclarationNode;
 import org.zwobble.shed.compiler.typechecker.BlockTypeChecker;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
-import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typegeneration.TypeStore;
 import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Interfaces;
+import org.zwobble.shed.compiler.types.Members;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
@@ -44,7 +42,7 @@ public class InterfaceDeclarationTypeChecker implements DeclarationTypeChecker<I
         return blockTypeChecker.forwardDeclare(declaration.getBody());
     }
     
-    private Map<String, ValueInfo> buildMembers(InterfaceDeclarationNode declaration) {
+    private Members buildMembers(InterfaceDeclarationNode declaration) {
         return membersBuilder.buildMembers(declaration.getBody());
     }
 

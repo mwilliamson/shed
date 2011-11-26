@@ -9,9 +9,10 @@ import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 
 import static com.google.common.collect.Iterables.transform;
+import static org.zwobble.shed.compiler.types.Member.member;
+import static org.zwobble.shed.compiler.types.Members.members;
 
 public class TypeInfoTypeReplacer {
     private final TypeReplacer typeReplacer;
@@ -40,19 +41,20 @@ public class TypeInfoTypeReplacer {
         return ImmutableSet.copyOf(transform(superTypes, replaceTypes(replacements)));
     }
 
-    private Map<String, ValueInfo> buildMembers(Map<String, ValueInfo> members, Map<FormalTypeParameter, Type> replacements) {
-        return Maps.transformValues(members, replaceTypesInValueInfo(replacements));
+    private Members buildMembers(Members members, Map<FormalTypeParameter, Type> replacements) {
+        return members(transform(members, replaceTypesInMember(replacements)));
     }
 
-    private Function<ValueInfo, ValueInfo> replaceTypesInValueInfo(final Map<FormalTypeParameter, Type> replacements) {
-        return new Function<ValueInfo, ValueInfo>() {
+    private Function<Member, Member> replaceTypesInMember(final Map<FormalTypeParameter, Type> replacements) {
+        return new Function<Member, Member>() {
             @Override
-            public ValueInfo apply(ValueInfo input) {
+            public Member apply(Member input) {
                 Type type = typeReplacer.replaceTypes(input.getType(), replacements);
-                if (input.isAssignable()) {
-                    return ValueInfo.assignableValue(type);
+                ValueInfo valueInfo = input.getValueInfo();
+                if (valueInfo.isAssignable()) {
+                    return member(input.getName(), ValueInfo.assignableValue(type));
                 } else {
-                    return ValueInfo.unassignableValue(type);
+                    return member(input.getName(), ValueInfo.unassignableValue(type));
                 }
             }
         };

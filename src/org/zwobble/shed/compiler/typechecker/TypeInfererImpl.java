@@ -2,7 +2,6 @@ package org.zwobble.shed.compiler.typechecker;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -32,6 +31,8 @@ import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.typechecker.statements.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
+import org.zwobble.shed.compiler.types.Member;
+import org.zwobble.shed.compiler.types.Members;
 import org.zwobble.shed.compiler.types.ParameterisedFunctionType;
 import org.zwobble.shed.compiler.types.ParameterisedType;
 import org.zwobble.shed.compiler.types.ScalarType;
@@ -246,10 +247,11 @@ public class TypeInfererImpl implements TypeInferer {
             public TypeResult<ValueInfo> apply(Type leftType) {
                 String name = memberAccess.getMemberName();
                 ScalarTypeInfo leftTypeInfo = context.getInfo((ScalarType)leftType);
-                Map<String, ValueInfo> members = leftTypeInfo.getMembers();
+                Members members = leftTypeInfo.getMembers();
+                Option<Member> member = members.lookup(name);
                 
-                if (members.containsKey(name)) {
-                    return TypeResult.success(members.get(name));
+                if (member.hasValue()) {
+                    return TypeResult.success(member.get().getValueInfo());
                 } else {
                     return TypeResult.failure(error(memberAccess, ("No such member: " + name)));
                 }

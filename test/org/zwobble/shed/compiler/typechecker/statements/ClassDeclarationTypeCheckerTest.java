@@ -1,10 +1,7 @@
 package org.zwobble.shed.compiler.typechecker.statements;
 
-import java.util.Map;
-
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.Test;
 import org.zwobble.shed.compiler.Option;
@@ -28,18 +25,16 @@ import org.zwobble.shed.compiler.typechecker.errors.WrongMemberTypeError;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
+import org.zwobble.shed.compiler.types.Member;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.UnknownType;
 
-import com.google.common.collect.ImmutableMap;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
@@ -47,6 +42,7 @@ import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDe
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.types.CoreTypes.functionTypeOf;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
+import static org.zwobble.shed.compiler.types.Member.member;
 import static org.zwobble.shed.compiler.types.Members.members;
 
 public class ClassDeclarationTypeCheckerTest {
@@ -99,10 +95,10 @@ public class ClassDeclarationTypeCheckerTest {
         ShedTypeValue value = (ShedTypeValue) context.get(declaration).getValue().get();
         ClassType type = (ClassType)value.getType();
         ScalarTypeInfo typeInfo = context.getInfo(type);
-        assertThat(typeInfo.getMembers(), Matchers.<Map<String, ValueInfo>>is(ImmutableMap.of(
-            "firstName", ValueInfo.unassignableValue(CoreTypes.STRING),
-            "close", ValueInfo.unassignableValue(CoreTypes.functionTypeOf(CoreTypes.UNIT))
-        )));
+        assertThat(typeInfo.getMembers(), contains(
+            member("firstName", ValueInfo.unassignableValue(CoreTypes.STRING)),
+            member("close", ValueInfo.unassignableValue(CoreTypes.functionTypeOf(CoreTypes.UNIT)))
+        ));
     }
     
     @Test public void
@@ -120,7 +116,7 @@ public class ClassDeclarationTypeCheckerTest {
         ShedTypeValue value = (ShedTypeValue) context.get(declaration).getValue().get();
         ClassType type = (ClassType)value.getType();
         ScalarTypeInfo typeInfo = context.getInfo(type);
-        assertThat(typeInfo.getMembers(), hasEntry(is("firstName"), hasUnknownType()));
+        assertThat(typeInfo.getMembers(), contains(memberOfUnknownType("firstName")));
     }
 
     @Test public void
@@ -267,15 +263,19 @@ public class ClassDeclarationTypeCheckerTest {
         return fixture.get(ClassDeclarationTypeChecker.class);
     }
     
-    private Matcher<ValueInfo> hasUnknownType() {
-        return new TypeSafeDiagnosingMatcher<ValueInfo>() {
+    private Matcher<Member> memberOfUnknownType(final String name) {
+        return new TypeSafeDiagnosingMatcher<Member>() {
             @Override
             public void describeTo(Description description) {
-                description.appendText("Unknown type");
+                description.appendText("Member " + name + " with unknown type");
             }
 
             @Override
-            protected boolean matchesSafely(ValueInfo item, Description mismatchDescription) {
+            protected boolean matchesSafely(Member item, Description mismatchDescription) {
+                if (!item.getName().equals(name)) {
+                    mismatchDescription.appendText("had name " + item.getName());
+                    return false;
+                }
                 if (item.getType() instanceof UnknownType) {
                     return true;
                 } else {

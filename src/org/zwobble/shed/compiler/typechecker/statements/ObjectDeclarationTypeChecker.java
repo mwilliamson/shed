@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
+import static org.zwobble.shed.compiler.types.Members.members;
 
 public class ObjectDeclarationTypeChecker implements StatementTypeChecker<ObjectDeclarationNode> {
     private final BlockTypeChecker blockTypeChecker;
@@ -54,7 +55,7 @@ public class ObjectDeclarationTypeChecker implements StatementTypeChecker<Object
             
             InterfaceType type = (InterfaceType) typeStore.typeDeclaredBy(objectDeclaration);
             context.add(objectDeclaration, unassignableValue(type));
-            context.addInfo(type, new ScalarTypeInfo(interfaces(), memberBuilder.build()));
+            context.addInfo(type, new ScalarTypeInfo(interfaces(), members(memberBuilder.build())));
         }
         
         return result;
