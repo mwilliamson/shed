@@ -169,8 +169,6 @@ public class ClassDeclarationTypeCheckerTest {
         forwardDeclare(declaration);
         typeCheck(declaration);
 
-        ShedTypeValue value = (ShedTypeValue) context.get(declaration).getValue().get();
-        ClassType type = (ClassType)value.getType();
         ScalarTypeInfo typeInfo = context.getInfo(type);
         assertThat(typeInfo.getMembers(), Matchers.<Map<String, ValueInfo>>is(ImmutableMap.of(
             "firstName", ValueInfo.unassignableValue(CoreTypes.STRING),
