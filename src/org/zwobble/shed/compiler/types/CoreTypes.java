@@ -28,7 +28,7 @@ public class CoreTypes {
         return new ClassType(fullyQualifiedName(name));
     }
     
-    public static final ScalarType CLASS = new InterfaceType(fullyQualifiedName("Class"));
+    public static final InterfaceType CLASS = new InterfaceType(fullyQualifiedName("Class"));
     
     private static Map<Integer, ParameterisedType> functionTypes = new HashMap<Integer, ParameterisedType>();
     private static Set<ParameterisedType> baseFunctionTypes = new HashSet<ParameterisedType>();

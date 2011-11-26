@@ -87,7 +87,7 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
 
     private ClassType buildClassType(ClassDeclarationNode classDeclaration) {
         Members members = buildMembers(classDeclaration);
-        Set<Type> superTypes = buildSuperTypes(classDeclaration);
+        Set<ScalarType> superTypes = buildSuperTypes(classDeclaration);
         ClassType type = (ClassType)typeStore.typeDeclaredBy(classDeclaration);
         Iterable<Type> classParameters = transform(classDeclaration.getFormalArguments(), toType());
         ScalarTypeInfo classTypeInfo = new ScalarTypeInfo(superTypes, members);
@@ -101,7 +101,7 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
         return membersBuilder.buildMembers(memberDeclarations);
     }
 
-    private Set<Type> buildSuperTypes(ClassDeclarationNode classDeclaration) {
+    private Set<ScalarType> buildSuperTypes(ClassDeclarationNode classDeclaration) {
         return ImmutableSet.copyOf(transform(classDeclaration.getSuperTypes(), lookupType()));
     }
 
@@ -159,16 +159,17 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
         };
     }
 
-    private Function<ExpressionNode, Type> lookupType() {
-        return new Function<ExpressionNode, Type>() {
+    private Function<ExpressionNode, ScalarType> lookupType() {
+        return new Function<ExpressionNode, ScalarType>() {
             @Override
-            public Type apply(ExpressionNode input) {
+            public ScalarType apply(ExpressionNode input) {
                 TypeResult<Type> lookupResult = typeLookup.lookupTypeReference(input);
                 if (!lookupResult.isSuccess()) {
                     // TODO:
                     throw new RuntimeException("Failed type lookup " + lookupResult.getErrors());
                 }
-                return lookupResult.get();
+                // TODO: handle non-scalar types
+                return (ScalarType)lookupResult.get();
             }
         };
     }

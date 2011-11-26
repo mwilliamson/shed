@@ -108,7 +108,7 @@ public class StaticContext {
         addScalarType(declaration, type, classTypeInfo, interfaces(CoreTypes.CLASS));
     }
     
-    private void addScalarType(Declaration declaration, ScalarType type, ScalarTypeInfo scalarTypeInfo, Set<Type> superClasses) {
+    private void addScalarType(Declaration declaration, ScalarType type, ScalarTypeInfo scalarTypeInfo, Set<ScalarType> superClasses) {
         // TODO: forbid user-declared members called Meta 
         FullyQualifiedName metaClassName = type.getFullyQualifiedName().extend("Meta");
         ClassType metaClass = new ClassType(metaClassName);

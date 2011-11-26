@@ -14,7 +14,7 @@ import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 
 public class TypeMaker {
-    public static final Property<ScalarType, Set<Type>> superTypes = newProperty();
+    public static final Property<ScalarType, Set<ScalarType>> superTypes = newProperty();
     public static final Property<ScalarType, Members> members = newProperty();
     
     public static Instantiator<ClassType> classType(final StaticContext context) {

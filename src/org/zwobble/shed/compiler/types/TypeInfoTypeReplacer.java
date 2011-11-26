@@ -37,7 +37,7 @@ public class TypeInfoTypeReplacer {
         return new ScalarTypeInfo(buildSuperTypes(info.getSuperTypes(), replacements), buildMembers(info.getMembers(), replacements));
     }
 
-    private Set<Type> buildSuperTypes(Set<Type> superTypes, Map<FormalTypeParameter, Type> replacements) {
+    private Set<ScalarType> buildSuperTypes(Set<ScalarType> superTypes, Map<FormalTypeParameter, Type> replacements) {
         return ImmutableSet.copyOf(transform(superTypes, replaceTypes(replacements)));
     }
 
@@ -60,11 +60,11 @@ public class TypeInfoTypeReplacer {
         };
     }
 
-    private Function<Type, Type> replaceTypes(final Map<FormalTypeParameter, Type> replacements) {
-        return new Function<Type, Type>() {
+    private Function<ScalarType, ScalarType> replaceTypes(final Map<FormalTypeParameter, Type> replacements) {
+        return new Function<ScalarType, ScalarType>() {
             @Override
-            public Type apply(Type input) {
-                return typeReplacer.replaceTypes(input, replacements);
+            public ScalarType apply(ScalarType input) {
+                return (ScalarType) typeReplacer.replaceTypes(input, replacements);
             }
         };
     }

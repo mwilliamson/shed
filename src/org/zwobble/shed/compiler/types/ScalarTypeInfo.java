@@ -11,6 +11,6 @@ import static org.zwobble.shed.compiler.types.Members.members;
 public class ScalarTypeInfo {
     public static final ScalarTypeInfo EMPTY = new ScalarTypeInfo(interfaces(), members());
     
-    private final Set<Type> superTypes;
+    private final Set<ScalarType> superTypes;
     private final Members members;
 }

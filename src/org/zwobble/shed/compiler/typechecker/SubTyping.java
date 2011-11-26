@@ -71,7 +71,7 @@ public class SubTyping {
     }
 
     private boolean firstTypeImplementsSecondType(ScalarType first, Type second) {
-        Iterable<Type> superTypes = context.getInfo(first).getSuperTypes();
+        Iterable<ScalarType> superTypes = context.getInfo(first).getSuperTypes();
         for (Type superType : superTypes) {
             if (isSubType(superType, second)) {
                 return true;
