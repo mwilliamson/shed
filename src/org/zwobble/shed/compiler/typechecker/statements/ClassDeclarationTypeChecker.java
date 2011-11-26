@@ -109,7 +109,6 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
         TypeResultBuilder<?> resultBuilder = typeResultBuilder();
         ScalarTypeInfo typeInfo = context.getInfo(type);
         for (Type superType : typeInfo.getSuperTypes()) {
-            // TODO: make all super types scalar types (or consider what it means if they're not...)
             ScalarTypeInfo superTypeInfo = context.getInfo((ScalarType)superType);
             
             for (Member member : superTypeInfo.getMembers()) {
