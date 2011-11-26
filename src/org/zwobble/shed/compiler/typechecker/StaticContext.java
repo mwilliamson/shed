@@ -100,22 +100,22 @@ public class StaticContext {
         addScalarType(declaration, type, classTypeInfo, interfaces(CoreTypes.functionTypeOf(functionTypeParameters), CoreTypes.CLASS));
     }
 
-    public void addClass(Declaration declaration, ClassType type, ScalarTypeInfo classTypeInfo) {
-        addScalarType(declaration, type, classTypeInfo, interfaces(CoreTypes.CLASS));
+    public void addClass(Declaration declaration, ClassType type, ScalarTypeInfo typeInfo) {
+        addScalarType(declaration, type, typeInfo, interfaces(CoreTypes.CLASS));
     }
 
-    public void addInterface(Declaration declaration, InterfaceType type, ScalarTypeInfo classTypeInfo) {
-        addScalarType(declaration, type, classTypeInfo, interfaces(CoreTypes.CLASS));
+    public void addInterface(Declaration declaration, InterfaceType type, ScalarTypeInfo typeInfo) {
+        addScalarType(declaration, type, typeInfo, interfaces(CoreTypes.CLASS));
     }
     
-    private void addScalarType(Declaration declaration, ScalarType type, ScalarTypeInfo scalarTypeInfo, Set<ScalarType> superClasses) {
+    private void addScalarType(Declaration declaration, ScalarType type, ScalarTypeInfo typeInfo, Set<ScalarType> superClasses) {
         // TODO: forbid user-declared members called Meta 
         FullyQualifiedName metaClassName = type.getFullyQualifiedName().extend("Meta");
         ClassType metaClass = new ClassType(metaClassName);
         ScalarTypeInfo metaClassTypeInfo = new ScalarTypeInfo(superClasses, members());
         
         add(declaration, ValueInfo.unassignableValue(metaClass, shedTypeValue(type)));
-        addInfo(type, scalarTypeInfo);
+        addInfo(type, typeInfo);
         addInfo(metaClass, metaClassTypeInfo);
         metaClasses.put(type, metaClass);
     }

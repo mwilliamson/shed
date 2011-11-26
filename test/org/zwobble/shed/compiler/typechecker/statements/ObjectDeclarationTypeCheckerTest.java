@@ -2,6 +2,7 @@ package org.zwobble.shed.compiler.typechecker.statements;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.parsing.nodes.Declaration;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
@@ -10,9 +11,12 @@ import org.zwobble.shed.compiler.typechecker.TypeCheckerTestFixture;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typechecker.errors.CannotReturnHereError;
+import org.zwobble.shed.compiler.typechecker.errors.MissingMemberError;
 import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
+import org.zwobble.shed.compiler.types.Interfaces;
+import org.zwobble.shed.compiler.types.Members;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
@@ -20,6 +24,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
+import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+import static org.zwobble.shed.compiler.types.CoreTypes.functionTypeOf;
 import static org.zwobble.shed.compiler.types.Members.members;
 
 public class ObjectDeclarationTypeCheckerTest {
@@ -69,6 +76,25 @@ public class ObjectDeclarationTypeCheckerTest {
         assertThat(staticContext.get(objectDeclarationNode).getType(), is((Type)type));
         ScalarTypeInfo browserTypeInfo = staticContext.getInfo(type);
         assertThat(browserTypeInfo.getMembers(), is(members("name", ValueInfo.unassignableValue(CoreTypes.STRING))));
+    }
+    
+    @Test public void
+    superTypesOfObjectAreChecked() {
+        InterfaceType superType = new InterfaceType(fullyQualifiedName("Store"));
+        VariableIdentifierNode interfaceReference = Nodes.id("Store");
+        Declaration interfaceDeclaration = globalDeclaration("Store");
+        fixture.addReference(interfaceReference, interfaceDeclaration);
+        
+        ObjectDeclarationNode objectDeclarationNode = Nodes.object("browser", Nodes.expressions(interfaceReference), Nodes.block());
+        InterfaceType objectType = new InterfaceType(fullyQualifiedName("shed", "browser"));
+        fixture.addType(objectDeclarationNode, objectType);
+        StaticContext staticContext = fixture.context();
+        Members interfaceMembers = members("add", unassignableValue(functionTypeOf(CoreTypes.STRING, CoreTypes.UNIT)));
+        staticContext.addInterface(interfaceDeclaration, superType, new ScalarTypeInfo(Interfaces.interfaces(), interfaceMembers));
+        
+        TypeResult<StatementTypeCheckResult> result = typeCheckObjectDeclaration(objectDeclarationNode);
+        
+        assertThat(result, isFailureWithErrors(new MissingMemberError(superType, "add")));
     }
     
     private TypeResult<StatementTypeCheckResult> typeCheckObjectDeclaration(ObjectDeclarationNode objectDeclaration) {

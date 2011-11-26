@@ -153,4 +153,8 @@ public class Nodes {
     public static FunctionSignatureDeclarationNode funcSignature(String identifier, List<FormalArgumentNode> formalArguments, ExpressionNode returnType) {
         return new FunctionSignatureDeclarationNode(identifier, formalArguments, returnType);
     }
+
+    public static List<ExpressionNode> expressions(ExpressionNode... expressions) {
+        return asList(expressions);
+    }
 }

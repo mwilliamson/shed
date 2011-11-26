@@ -4,9 +4,6 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-import org.zwobble.shed.compiler.CompilerErrorDescription;
-import org.zwobble.shed.compiler.CompilerErrorWithSyntaxNode;
-import org.zwobble.shed.compiler.HasErrors;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
@@ -15,16 +12,13 @@ import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.typechecker.ArgumentTypeInferer;
 import org.zwobble.shed.compiler.typechecker.BlockTypeChecker;
+import org.zwobble.shed.compiler.typechecker.InterfaceImplementationChecker;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
-import org.zwobble.shed.compiler.typechecker.SubTyping;
 import org.zwobble.shed.compiler.typechecker.TypeLookup;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.TypeResultBuilder;
-import org.zwobble.shed.compiler.typechecker.errors.MissingMemberError;
-import org.zwobble.shed.compiler.typechecker.errors.WrongMemberTypeError;
 import org.zwobble.shed.compiler.typegeneration.TypeStore;
 import org.zwobble.shed.compiler.types.ClassType;
-import org.zwobble.shed.compiler.types.Member;
 import org.zwobble.shed.compiler.types.Members;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
@@ -41,7 +35,7 @@ import static org.zwobble.shed.compiler.typechecker.statements.StatementTypeChec
 public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<ClassDeclarationNode> {
     private final BlockTypeChecker blockTypeChecker;
     private final ArgumentTypeInferer argumentTypeInferer;
-    private final SubTyping subTyping; 
+    private final InterfaceImplementationChecker interfaceImplementationChecker; 
     private final MembersBuilder membersBuilder;
     private final TypeLookup typeLookup;
     private final TypeStore typeStore;
@@ -49,12 +43,12 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
 
     @Inject
     public ClassDeclarationTypeChecker(
-        BlockTypeChecker blockTypeChecker, ArgumentTypeInferer argumentTypeInferer, SubTyping subTyping, 
+        BlockTypeChecker blockTypeChecker, ArgumentTypeInferer argumentTypeInferer, InterfaceImplementationChecker interfaceImplementationChecker, 
         MembersBuilder membersBuilder, TypeLookup typeLookup, TypeStore typeStore, StaticContext context
     ) {
         this.blockTypeChecker = blockTypeChecker;
         this.argumentTypeInferer = argumentTypeInferer;
-        this.subTyping = subTyping;
+        this.interfaceImplementationChecker = interfaceImplementationChecker;
         this.membersBuilder = membersBuilder;
         this.typeLookup = typeLookup;
         this.typeStore = typeStore;
@@ -76,7 +70,7 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
         resultBuilder.addErrors(blockTypeChecker.typeCheck(classDeclaration.getBody(), returnType));
         ClassType type = buildClassType(classDeclaration);
         
-        resultBuilder.addErrors(checkInterfaces(classDeclaration, type));
+        resultBuilder.addErrors(interfaceImplementationChecker.checkInterfaces(classDeclaration, type));
         
         return resultBuilder.build();
     }
@@ -103,36 +97,6 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
 
     private Set<ScalarType> buildSuperTypes(ClassDeclarationNode classDeclaration) {
         return ImmutableSet.copyOf(transform(classDeclaration.getSuperTypes(), lookupType()));
-    }
-
-    private HasErrors checkInterfaces(ClassDeclarationNode classDeclaration, ClassType type) {
-        TypeResultBuilder<?> resultBuilder = typeResultBuilder();
-        ScalarTypeInfo typeInfo = context.getInfo(type);
-        for (ScalarType superType : typeInfo.getSuperTypes()) {
-            ScalarTypeInfo superTypeInfo = context.getInfo(superType);
-            
-            for (Member member : superTypeInfo.getMembers()) {
-                resultBuilder.addErrors(checkInterfaceMember(classDeclaration, typeInfo, superType, member));
-            }
-        }
-        return resultBuilder.build();
-    }
-
-    private TypeResult<?> checkInterfaceMember(ClassDeclarationNode classDeclaration, ScalarTypeInfo typeInfo, Type superType, Member member) {
-        String memberName = member.getName();
-        Members classMembers = typeInfo.getMembers();
-        Option<Member> actualMemberOption = classMembers.lookup(memberName);
-        if (!actualMemberOption.hasValue()) {
-            return TypeResult.failure(new CompilerErrorWithSyntaxNode(classDeclaration, new MissingMemberError(superType, memberName)));
-        }
-        Type expectedMemberType = member.getType();
-        Type actualMemberType = actualMemberOption.get().getType();
-        if (!subTyping.isSubType(actualMemberType, expectedMemberType)) {
-            CompilerErrorDescription description = new WrongMemberTypeError(superType, memberName, expectedMemberType, actualMemberType);
-            return TypeResult.failure(new CompilerErrorWithSyntaxNode(classDeclaration, description));
-        }
-        
-        return TypeResult.success();
     }
 
     private Function<PublicDeclarationNode, DeclarationNode> toMemberDeclaration() {
