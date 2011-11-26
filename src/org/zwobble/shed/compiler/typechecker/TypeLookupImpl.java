@@ -21,8 +21,7 @@ public class TypeLookupImpl implements TypeLookup {
         this.context = context;
     }
     
-    public TypeResult<Type>
-    lookupTypeReference(ExpressionNode typeReference) {
+    public TypeResult<Type> lookupTypeReference(ExpressionNode typeReference) {
         return typeInferer.inferType(typeReference).ifValueThen(extractType(typeReference));
     }
 
