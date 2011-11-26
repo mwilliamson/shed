@@ -108,8 +108,8 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
     private HasErrors checkInterfaces(ClassDeclarationNode classDeclaration, ClassType type) {
         TypeResultBuilder<?> resultBuilder = typeResultBuilder();
         ScalarTypeInfo typeInfo = context.getInfo(type);
-        for (Type superType : typeInfo.getSuperTypes()) {
-            ScalarTypeInfo superTypeInfo = context.getInfo((ScalarType)superType);
+        for (ScalarType superType : typeInfo.getSuperTypes()) {
+            ScalarTypeInfo superTypeInfo = context.getInfo(superType);
             
             for (Member member : superTypeInfo.getMembers()) {
                 resultBuilder.addErrors(checkInterfaceMember(classDeclaration, typeInfo, superType, member));
