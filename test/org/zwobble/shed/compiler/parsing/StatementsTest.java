@@ -69,6 +69,14 @@ public class StatementsTest {
     }
     
     @Test public void
+    canDeclareObjectWithSuperTypes() {
+        assertThat(
+            Statements.statement().parse(tokens("object browser : Openable { }")),
+            isSuccessWithNode(Nodes.object("browser", asList((ExpressionNode)Nodes.id("Openable")), Nodes.block()))
+        );
+    }
+    
+    @Test public void
     canDeclareAnEmptyClass() {
         assertThat(
             Statements.statement().parse(tokens("class Browser() { }")),

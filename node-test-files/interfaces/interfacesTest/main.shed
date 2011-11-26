@@ -12,13 +12,13 @@ class Person(name: String) <: ToStringable {
     }
 }
 
-/*object banana : ToStringable {
+object banana : ToStringable {
     fun toString() : String {
         return "Banana";
     }
-}*/
+}
 
 sys.print(Person("Bob").toString());
 sys.print("\n");
-//sys.print(banana);
-//sys.print("\n");
+sys.print(banana.toString());
+sys.print("\n");

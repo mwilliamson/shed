@@ -193,27 +193,31 @@ public class Statements {
     public static Rule<ObjectDeclarationNode> objectDeclaration() {
         final Rule<String> identifier = tokenOfType(IDENTIFIER);
         final Rule<BlockNode> body = Blocks.block();
+        final Rule<Option<List<ExpressionNode>>> superTypes = optional(objectSuperTypeSpecifier());
         return then(
             sequence(OnError.FINISH,
                 guard(keyword(Keyword.OBJECT)),
                 identifier,
+                superTypes,
                 body
             ),
             new SimpleParseAction<RuleValues, ObjectDeclarationNode>() {
                 @Override
                 public ObjectDeclarationNode apply(RuleValues result) {
-                    String objectName = result.get(identifier);
-                    BlockNode statements = result.get(body);
-                    return new ObjectDeclarationNode(objectName, statements);
+                    return Nodes.object(
+                        result.get(identifier),
+                        result.get(superTypes).orElse(Collections.<ExpressionNode>emptyList()), 
+                        result.get(body)
+                    );
                 }
             }
         );
     }
-    
+
     public static Rule<ClassDeclarationNode> classDeclaration() {
         final Rule<String> identifier = tokenOfType(IDENTIFIER);
         final Rule<List<FormalArgumentNode>> formalArguments = Arguments.formalArgumentList();
-        final Rule<Option<List<ExpressionNode>>> superTypes = optional(superTypeSpecifier());
+        final Rule<Option<List<ExpressionNode>>> superTypes = optional(classSuperTypeSpecifier());
         final Rule<BlockNode> body = Blocks.block();
         return then(
             sequence(OnError.FINISH,
@@ -233,11 +237,19 @@ public class Statements {
         );
     }
     
-    private static Rule<List<ExpressionNode>> superTypeSpecifier() {
-        Rule<List<ExpressionNode>> typeExpressions = oneOrMoreWithSeparator(typeExpression(), hardSeparator(symbol(",")));
+    private static Rule<List<ExpressionNode>> classSuperTypeSpecifier() {
+        return superTypeSpecifier("<:");
+    }
+    
+    private static Rule<List<ExpressionNode>> objectSuperTypeSpecifier() {
+        return superTypeSpecifier(":");
+    }
+    
+    private static Rule<List<ExpressionNode>> superTypeSpecifier(String symbol) {
+        Rule<List<ExpressionNode>> typeExpressions = superTypeList();
         return then(
             sequence(OnError.FINISH,
-                guard(symbol("<:")),
+                guard(symbol(symbol)),
                 typeExpressions
             ),
             ParseActions.extract(typeExpressions)
@@ -313,5 +325,9 @@ public class Statements {
 
     private interface VariableNodeConstructor<T> {
         T apply(String identifier, Option<ExpressionNode> typeReference, ExpressionNode expression);
+    }
+
+    private static Rule<List<ExpressionNode>> superTypeList() {
+        return oneOrMoreWithSeparator(typeExpression(), hardSeparator(symbol(",")));
     }
 }

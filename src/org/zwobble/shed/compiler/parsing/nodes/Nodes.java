@@ -55,7 +55,11 @@ public class Nodes {
     }
     
     public static ObjectDeclarationNode object(String name, BlockNode body) {
-        return new ObjectDeclarationNode(name, body);
+        return new ObjectDeclarationNode(name, Collections.<ExpressionNode>emptyList(), body);
+    }
+    
+    public static ObjectDeclarationNode object(String name, List<ExpressionNode> superTypes, BlockNode body) {
+        return new ObjectDeclarationNode(name, superTypes, body);
     }
 
     public static ClassDeclarationNode clazz(String identifier, List<FormalArgumentNode> formalArguments, BlockNode body) {

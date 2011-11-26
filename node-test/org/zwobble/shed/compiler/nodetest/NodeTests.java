@@ -25,8 +25,7 @@ public class NodeTests {
     
     @Test
     public void classesAndObjectsCanImplementAnInterface() {
-//        assertThat(compileAndExecute("interfaces", "main"), isSuccessWithOutput("Bob\nBanana\n"));
-        assertThat(compileAndExecute("interfaces", "main"), isSuccessWithOutput("Bob\n"));
+        assertThat(compileAndExecute("interfaces", "main"), isSuccessWithOutput("Bob\nBanana\n"));
     }
     
     private NodeExecutionResult compileAndExecute(String directory, String main) {

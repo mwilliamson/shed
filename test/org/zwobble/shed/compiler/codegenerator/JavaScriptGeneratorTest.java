@@ -272,7 +272,7 @@ public class JavaScriptGeneratorTest {
     objectIsExpressedAsObjectLiteralReturnedFromImmediatelyCalledAnonymousFunction() {
         VariableDeclarationNode nameDeclaration = Nodes.immutableVar("name", Nodes.string("Bob"));
         VariableDeclarationNode ageDeclaration = Nodes.immutableVar("age", Nodes.number("22"));
-        ObjectDeclarationNode source = new ObjectDeclarationNode(
+        ObjectDeclarationNode source = Nodes.object(
             "person",
             Nodes.block(
                 Nodes.publik(nameDeclaration),

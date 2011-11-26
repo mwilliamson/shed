@@ -29,7 +29,7 @@ public class ObjectDeclarationTypeCheckerTest {
     bodyOfObjectIsTypeChecked() {
         VariableIdentifierNode stringReference = Nodes.id("String");
         fixture.addReference(stringReference, fixture.stringTypeDeclaration());
-        ObjectDeclarationNode objectDeclarationNode = new ObjectDeclarationNode(
+        ObjectDeclarationNode objectDeclarationNode = Nodes.object(
             "browser",
             Nodes.block(Nodes.immutableVar("version", stringReference, Nodes.number("1.2")))
         );
@@ -39,14 +39,14 @@ public class ObjectDeclarationTypeCheckerTest {
     
     @Test public void
     objectDeclarationDoesNotReturnFromScope() {
-        ObjectDeclarationNode objectDeclarationNode = new ObjectDeclarationNode("browser", Nodes.block());
+        ObjectDeclarationNode objectDeclarationNode = Nodes.object("browser", Nodes.block());
         TypeResult<StatementTypeCheckResult> result = typeCheckObjectDeclaration(objectDeclarationNode);
         assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
     }
     
     @Test public void
     objectDeclarationBodyCannotReturn() {
-        ObjectDeclarationNode objectDeclarationNode = new ObjectDeclarationNode(
+        ObjectDeclarationNode objectDeclarationNode = Nodes.object(
             "browser",
             Nodes.block(Nodes.returnStatement(Nodes.number("42")))
         );
@@ -57,7 +57,7 @@ public class ObjectDeclarationTypeCheckerTest {
     @Test public void
     objectDeclarationCreatesNewTypeWithPublicMembers() {
         ObjectDeclarationNode objectDeclarationNode = 
-            new ObjectDeclarationNode("browser", Nodes.block(
+            Nodes.object("browser", Nodes.block(
                 Nodes.immutableVar("version", Nodes.number("1.2")),
                 Nodes.publik(Nodes.immutableVar("name", Nodes.string("firefox")))
             ));
