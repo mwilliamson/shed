@@ -43,7 +43,7 @@ public class BlockTypeChecker {
             TypeResult<StatementTypeCheckResult> statementResult = statementsTypeChecker.typeCheck(statement, returnType);
             result = result.withErrorsFrom(statementResult);
             if (statementResult.hasValue()) {
-                hasReturnedYet |= statementResult.get().hasReturned();   
+                hasReturnedYet |= statementResult.getOrThrow().hasReturned();   
             }
         }
         final boolean hasReturned = hasReturnedYet;

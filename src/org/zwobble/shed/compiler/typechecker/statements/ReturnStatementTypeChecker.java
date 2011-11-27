@@ -34,8 +34,8 @@ public class ReturnStatementTypeChecker implements StatementTypeChecker<ReturnNo
         typeResult.addErrors(expressionTypeResult);
         if (!returnType.hasValue()) {
             typeResult.addError(error(returnStatement, new CannotReturnHereError()));
-        } else if (expressionTypeResult.hasValue() && !subTyping.isSubType(expressionTypeResult.get(), returnType.get())) {
-            typeResult.addError(error(expression, new WrongReturnTypeError(returnType.get(), expressionTypeResult.get())));
+        } else if (expressionTypeResult.hasValue() && !subTyping.isSubType(expressionTypeResult.getOrThrow(), returnType.get())) {
+            typeResult.addError(error(expression, new WrongReturnTypeError(returnType.get(), expressionTypeResult.getOrThrow())));
         }
         return typeResult.build();
     }

@@ -142,8 +142,8 @@ public class TypeInfererImpl implements TypeInferer {
                 returnTypeOption = returnTypeResult.asOption();
             }
             if (bodyTypeResult.hasValue() && returnTypeResult.hasValue()) {
-                Type bodyType = bodyTypeResult.get();
-                Type returnType = returnTypeResult.get();
+                Type bodyType = bodyTypeResult.getOrThrow();
+                Type returnType = returnTypeResult.getOrThrow();
                 if (!subTyping.isSubType(bodyType, returnType)) {
                     result = result.withErrorsFrom(failure(error(
                         lambdaExpression.getBody(),
@@ -189,7 +189,7 @@ public class TypeInfererImpl implements TypeInferer {
                 TypeResult<StatementTypeCheckResult> blockResult = typeCheckBlock(function.getBody(), some(returnType));
                 result = result.withErrorsFrom(blockResult);
                 
-                if (!blockResult.get().hasReturned()) {
+                if (!blockResult.getOrThrow().hasReturned()) {
                     result = result.withErrorsFrom(TypeResult.<Type>failure(error(
                         function,
                         new MissingReturnStatementError()
@@ -295,8 +295,8 @@ public class TypeInfererImpl implements TypeInferer {
         
         TypeResult<ValueInfo> result = valueTypeResult.withErrorsFrom(targetInfo).ifValueThen(toValueInfo());
         if (valueTypeResult.hasValue() && targetInfo.hasValue()) {
-            Type valueType = valueTypeResult.get();
-            Type targetType = targetInfo.get().getType();
+            Type valueType = valueTypeResult.getOrThrow();
+            Type targetType = targetInfo.getOrThrow().getType();
             if (!subTyping.isSubType(valueType, targetType)) {
                 result = result.withErrorsFrom(failure(error(expression, new TypeMismatchError(targetType, valueType))));
             }
@@ -326,7 +326,7 @@ public class TypeInfererImpl implements TypeInferer {
                     // TODO: handle failure
                     throw new RuntimeException(result.getErrors().toString());
                 }
-                return result.get();
+                return result.getOrThrow();
             }
         };
     }

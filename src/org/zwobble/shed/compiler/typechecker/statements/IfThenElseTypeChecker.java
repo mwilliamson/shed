@@ -28,8 +28,8 @@ public class IfThenElseTypeChecker implements StatementTypeChecker<IfThenElseSta
         TypeResult<StatementTypeCheckResult> ifFalseResult = typeCheckBlock(statement.getIfFalse(), returnType);
         
         boolean returns = 
-            ifTrueResult.hasValue() && ifTrueResult.get().hasReturned() && 
-            ifFalseResult.hasValue() && ifFalseResult.get().hasReturned();
+            ifTrueResult.hasValue() && ifTrueResult.getOrThrow().hasReturned() && 
+            ifFalseResult.hasValue() && ifFalseResult.getOrThrow().hasReturned();
         
         return TypeResult.success(StatementTypeCheckResult.doesReturn(returns))
             .withErrorsFrom(conditionResult)

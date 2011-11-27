@@ -33,7 +33,7 @@ public class ArgumentTypeInfererImpl implements ArgumentTypeInferer {
             public TypeResult<Type> apply(FormalArgumentNode argument) {
                 TypeResult<Type> lookupTypeReference = typeLookup.lookupTypeReference(argument.getType());
                 if (lookupTypeReference.hasValue()) {
-                    context.add(argument, ValueInfo.unassignableValue(lookupTypeReference.get()));
+                    context.add(argument, ValueInfo.unassignableValue(lookupTypeReference.getOrThrow()));
                 }
                 return lookupTypeReference;
             }

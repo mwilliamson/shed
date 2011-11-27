@@ -73,7 +73,7 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
         TypeResult<ClassType> typeResult = buildClassType(classDeclaration);
         resultBuilder.addErrors(typeResult);
         
-        resultBuilder.addErrors(interfaceImplementationChecker.checkInterfaces(classDeclaration, typeResult.get()));
+        resultBuilder.addErrors(interfaceImplementationChecker.checkInterfaces(classDeclaration, typeResult.getOrThrow()));
         
         return resultBuilder.build();
     }
@@ -87,8 +87,8 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
         TypeResult<Interfaces> interfacesResult = interfaceDereferencer.dereferenceInterfaces(classDeclaration.getSuperTypes());
         ClassType type = (ClassType)typeStore.typeDeclaredBy(classDeclaration);
         TypeResult<List<Type>> classParameters = TypeResult.combine(transform(classDeclaration.getFormalArguments(), toType()));
-        ScalarTypeInfo classTypeInfo = new ScalarTypeInfo(interfacesResult.get(), members);
-        context.addClass(classDeclaration, type, classParameters.get(), classTypeInfo);
+        ScalarTypeInfo classTypeInfo = new ScalarTypeInfo(interfacesResult.getOrThrow(), members);
+        context.addClass(classDeclaration, type, classParameters.getOrThrow(), classTypeInfo);
         return success(type).withErrorsFrom(classParameters, interfacesResult);
     }
 

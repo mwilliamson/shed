@@ -67,7 +67,7 @@ public class TypeResult<T> implements HasErrors {
         this.errors = errors;
     }
     
-    public T get() {
+    public T getOrThrow() {
         return value.get();
     }
     
@@ -98,7 +98,7 @@ public class TypeResult<T> implements HasErrors {
     
     public <R> TypeResult<R> ifValueThen(Function<T, TypeResult<R>> function) {
         if (hasValue()) {
-            TypeResult<R> result = function.apply(get());
+            TypeResult<R> result = function.apply(getOrThrow());
             return thenResult(result);
         } else {
             return new TypeResult<R>(Option.<R>none(), errors);

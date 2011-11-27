@@ -41,7 +41,7 @@ public class InterfaceDereferencerTest {
     validInterfaceReferencesAreDereferencedInThePresenceOfInvalidInterfaceReferences() {
         TypeResult<Interfaces> result = dereference(asList((ExpressionNode)fixture.implementingClassTypeReference(), fixture.interfaceTypeReference()));
         assertThat(result, is(isFailureWithErrors(new NotAnInterfaceError(fixture.implementingClassType()))));
-        assertThat(result.get(), is(interfaces(fixture.interfaceType())));
+        assertThat(result.getOrThrow(), is(interfaces(fixture.interfaceType())));
     }
     
     private TypeResult<Interfaces> dereference(List<ExpressionNode> interfaces) {

@@ -38,7 +38,7 @@ public class VariableDeclarationTypeChecker implements DeclarationTypeChecker<Va
         if (isForwardDeclarable(variableDeclaration)) {
             TypeResult<Type> typeResult = typeLookup.lookupTypeReference(variableDeclaration.getTypeReference().get());
             if (typeResult.hasValue()) {
-                Type type = typeResult.get();
+                Type type = typeResult.getOrThrow();
                 ValueInfo valueInfo = toValueInfo(variableDeclaration, type);
                 context.add(variableDeclaration, valueInfo);
             }
@@ -59,15 +59,15 @@ public class VariableDeclarationTypeChecker implements DeclarationTypeChecker<Va
             Option<Type> type = context.getTypeOf(variableDeclaration);
             if (type.hasValue()) {
                 Type specifiedType = type.get();
-                if (valueTypeResult.hasValue() && !subTyping.isSubType(valueTypeResult.get(), specifiedType)) {
+                if (valueTypeResult.hasValue() && !subTyping.isSubType(valueTypeResult.getOrThrow(), specifiedType)) {
                     typeResult.addError(error(
                         variableDeclaration.getValue(),
-                        new TypeMismatchError(specifiedType, valueTypeResult.get())
+                        new TypeMismatchError(specifiedType, valueTypeResult.getOrThrow())
                     ));
                 }
             }
         } else if (valueTypeResult.hasValue()) {
-            Type type = valueTypeResult.get();
+            Type type = valueTypeResult.getOrThrow();
             ValueInfo valueInfo = toValueInfo(variableDeclaration, type);
             context.add(variableDeclaration, valueInfo);
         }
