@@ -29,6 +29,7 @@ public class CoreTypes {
     }
     
     public static final InterfaceType CLASS = new InterfaceType(fullyQualifiedName("Class"));
+    public static final Type ANY = AnyType.ANY;
     
     private static Map<Integer, ParameterisedType> functionTypes = new HashMap<Integer, ParameterisedType>();
     private static Set<ParameterisedType> baseFunctionTypes = new HashSet<ParameterisedType>();

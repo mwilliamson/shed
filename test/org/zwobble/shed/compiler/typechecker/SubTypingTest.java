@@ -128,7 +128,17 @@ public class SubTypingTest {
         TypeApplication secondType = applyTypes(parameterisedType, typeParameters(interfaceType));
         assertThat(isSubType(firstType, secondType), is(false));
     }
-
+    
+    @Test public void
+    allTypesAreSubTypeOfAnyType() {
+        assertThat(isSubType(CoreTypes.BOOLEAN, CoreTypes.ANY), is(true));
+    }
+    
+    @Test public void
+    anyIsNotSubTypeOfOtherTypes() {
+        assertThat(isSubType(CoreTypes.ANY, CoreTypes.BOOLEAN), is(false));
+    }
+    
     private boolean isSubType(Type subType, Type superType) {
         return new SubTyping(context).isSubType(subType, superType);
     }

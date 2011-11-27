@@ -4,6 +4,7 @@ import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
 import org.zwobble.shed.compiler.types.FormalTypeParameter.Variance;
+import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.ParameterisedType;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.Type;
@@ -27,6 +28,10 @@ public class SubTyping {
     
     public boolean isSubType(Type subType, Type superType) {
         if (subType.equals(superType)) {
+            return true;
+        }
+        
+        if (superType.equals(CoreTypes.ANY)) {
             return true;
         }
         
