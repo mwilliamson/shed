@@ -14,4 +14,14 @@ public class Options {
         }
         return Option.some(result);
     }
+
+    public static <T> List<T> flatten(Iterable<Option<T>> options) {
+        List<T> result = new ArrayList<T>();
+        for (Option<? extends T> option : options) {
+            if (option.hasValue()) {
+                result.add(option.get());
+            }
+        }
+        return result;
+    }
 }

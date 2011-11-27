@@ -84,12 +84,12 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
 
     private TypeResult<ClassType> buildClassType(ClassDeclarationNode classDeclaration) {
         Members members = buildMembers(classDeclaration);
-        Interfaces interfaces = interfaceDereferencer.dereferenceInterfaces(classDeclaration.getSuperTypes()).get();
+        TypeResult<Interfaces> interfacesResult = interfaceDereferencer.dereferenceInterfaces(classDeclaration.getSuperTypes());
         ClassType type = (ClassType)typeStore.typeDeclaredBy(classDeclaration);
         TypeResult<List<Type>> classParameters = TypeResult.combine(transform(classDeclaration.getFormalArguments(), toType()));
-        ScalarTypeInfo classTypeInfo = new ScalarTypeInfo(interfaces, members);
+        ScalarTypeInfo classTypeInfo = new ScalarTypeInfo(interfacesResult.get(), members);
         context.addClass(classDeclaration, type, classParameters.get(), classTypeInfo);
-        return success(type).withErrorsFrom(classParameters);
+        return success(type).withErrorsFrom(classParameters, interfacesResult);
     }
 
     private Members buildMembers(ClassDeclarationNode classDeclaration) {

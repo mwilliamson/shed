@@ -5,6 +5,8 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.CompilerErrorWithSyntaxNode;
+import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.Options;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.typechecker.errors.NotAnInterfaceError;
 import org.zwobble.shed.compiler.types.Interfaces;
@@ -26,15 +28,16 @@ public class InterfaceDereferencer {
     }
     
     public TypeResult<Interfaces> dereferenceInterfaces(List<ExpressionNode> interfaces) {
-        TypeResult<List<ScalarType>> result = TypeResult.combine(transform(interfaces, lookupType())); 
-        return result.ifValueThen(toInterfaces());
+        Iterable<TypeResult<ScalarType>> results = transform(interfaces, lookupType());
+        List<ScalarType> dereferencedInterfaces = Options.flatten(transform(results, toOption()));
+        return TypeResult.success(interfaces(dereferencedInterfaces)).withErrorsFrom(TypeResult.combine(results));
     }
 
-    private Function<List<ScalarType>, TypeResult<Interfaces>> toInterfaces() {
-        return new Function<List<ScalarType>, TypeResult<Interfaces>>() {
+    private Function<TypeResult<ScalarType>, Option<ScalarType>> toOption() {
+        return new Function<TypeResult<ScalarType>, Option<ScalarType>>() {
             @Override
-            public TypeResult<Interfaces> apply(List<ScalarType> input) {
-                return TypeResult.success(interfaces(input));
+            public Option<ScalarType> apply(TypeResult<ScalarType> input) {
+                return input.asOption();
             }
         };
     }

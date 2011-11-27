@@ -32,9 +32,16 @@ public class InterfaceDereferencerTest {
     }
     
     @Test public void
-    errorIfReferenceInInterfaceListIsNotToAnIntefaceType() {
+    errorIfReferenceInInterfaceListIsNotToAnInterfaceType() {
         TypeResult<Interfaces> result = dereference(asList((ExpressionNode)fixture.implementingClassTypeReference()));
         assertThat(result, is(isFailureWithErrors(new NotAnInterfaceError(fixture.implementingClassType()))));
+    }
+    
+    @Test public void
+    validInterfaceReferencesAreDereferencedInThePresenceOfInvalidInterfaceReferences() {
+        TypeResult<Interfaces> result = dereference(asList((ExpressionNode)fixture.implementingClassTypeReference(), fixture.interfaceTypeReference()));
+        assertThat(result, is(isFailureWithErrors(new NotAnInterfaceError(fixture.implementingClassType()))));
+        assertThat(result.get(), is(interfaces(fixture.interfaceType())));
     }
     
     private TypeResult<Interfaces> dereference(List<ExpressionNode> interfaces) {

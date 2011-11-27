@@ -194,6 +194,16 @@ public class ClassDeclarationTypeCheckerTest {
         assertThat(result, isFailureWithErrors(new MissingMemberError(interfaceType, "add")));
     }
     
+    @Test public void
+    errorIfInterfaceCannotBeFound() {
+        ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.noFormalArguments(), asList((ExpressionNode)Nodes.id("Data")), Nodes.block());
+        fixture.addType(declaration, type);
+        forwardDeclare(declaration);
+        TypeResult<?> result = typeCheck(declaration);
+        
+        assertThat(result, isFailureWithErrors(new UntypedReferenceError("Data")));
+    }
+    
     private void forwardDeclareSuccessfully(ClassDeclarationNode classDeclaration) {
         assertThat(typeChecker().forwardDeclare(classDeclaration), isSuccess());
     }
