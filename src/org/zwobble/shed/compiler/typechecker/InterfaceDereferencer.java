@@ -4,10 +4,13 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.zwobble.shed.compiler.CompilerErrorWithSyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
+import org.zwobble.shed.compiler.typechecker.errors.NotAnInterfaceError;
 import org.zwobble.shed.compiler.types.Interfaces;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.Type;
+import org.zwobble.shed.compiler.types.Types;
 
 import com.google.common.base.Function;
 
@@ -23,20 +26,34 @@ public class InterfaceDereferencer {
     }
     
     public TypeResult<Interfaces> dereferenceInterfaces(List<ExpressionNode> interfaces) {
-        return TypeResult.success(interfaces(transform(interfaces, lookupType())));
+        TypeResult<List<ScalarType>> result = TypeResult.combine(transform(interfaces, lookupType())); 
+        return result.ifValueThen(toInterfaces());
     }
 
-    private Function<ExpressionNode, ScalarType> lookupType() {
-        return new Function<ExpressionNode, ScalarType>() {
+    private Function<List<ScalarType>, TypeResult<Interfaces>> toInterfaces() {
+        return new Function<List<ScalarType>, TypeResult<Interfaces>>() {
             @Override
-            public ScalarType apply(ExpressionNode input) {
+            public TypeResult<Interfaces> apply(List<ScalarType> input) {
+                return TypeResult.success(interfaces(input));
+            }
+        };
+    }
+
+    private Function<ExpressionNode, TypeResult<ScalarType>> lookupType() {
+        return new Function<ExpressionNode, TypeResult<ScalarType>>() {
+            @Override
+            public TypeResult<ScalarType> apply(ExpressionNode input) {
                 TypeResult<Type> lookupResult = typeLookup.lookupTypeReference(input);
-                if (!lookupResult.isSuccess()) {
-                    // TODO:
-                    throw new RuntimeException("Failed type lookup " + lookupResult.getErrors());
-                }
+                // We should always get a result -- if we fail, we get unknown type
                 // TODO: handle non-scalar types
-                return (ScalarType)lookupResult.get();
+                Type type = lookupResult.get();
+                if (Types.isInterface(type)) {
+                    return TypeResult.success((ScalarType)type);
+                } else if (lookupResult.isSuccess()) {
+                    return TypeResult.failure(new CompilerErrorWithSyntaxNode(input, new NotAnInterfaceError(type)));
+                } else {
+                    return TypeResult.failure(lookupResult.getErrors());
+                }
             }
         };
     }

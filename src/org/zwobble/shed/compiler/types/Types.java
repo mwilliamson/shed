@@ -16,4 +16,9 @@ public class Types {
     public static boolean isUnknown(Type type) {
         return type instanceof UnknownType;
     }
+
+    public static boolean isInterface(Type type) {
+        // TODO: handle TypeApplications over interface types
+        return type instanceof InterfaceType;
+    }
 }
