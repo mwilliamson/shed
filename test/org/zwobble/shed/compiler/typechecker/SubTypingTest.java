@@ -12,10 +12,6 @@ import org.zwobble.shed.compiler.types.TypeMaker;
 
 import com.natpryce.makeiteasy.Instantiator;
 
-import static org.zwobble.shed.compiler.types.FormalTypeParameter.contravariantFormalTypeParameter;
-
-import static org.zwobble.shed.compiler.types.FormalTypeParameter.covariantFormalTypeParameter;
-
 import static com.natpryce.makeiteasy.MakeItEasy.a;
 import static com.natpryce.makeiteasy.MakeItEasy.an;
 import static com.natpryce.makeiteasy.MakeItEasy.make;
@@ -23,6 +19,8 @@ import static com.natpryce.makeiteasy.MakeItEasy.with;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.zwobble.shed.compiler.types.FormalTypeParameter.contravariantFormalTypeParameter;
+import static org.zwobble.shed.compiler.types.FormalTypeParameter.covariantFormalTypeParameter;
 import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedType;

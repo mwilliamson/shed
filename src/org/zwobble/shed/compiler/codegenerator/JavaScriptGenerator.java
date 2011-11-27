@@ -25,7 +25,6 @@ import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionWithBodyNode;
 import org.zwobble.shed.compiler.parsing.nodes.HoistableStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
-import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.InterfaceDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.LiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
@@ -60,7 +59,6 @@ import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.Eager.transform;
 
 public class JavaScriptGenerator {
-    public static final ImportNode CORE_TYPES_IMPORT_NODE = new ImportNode(asList("shed", "core"));
     public static final String CORE_VALUES_OBJECT_NAME = ShedSymbols.INTERNAL_PREFIX + "core";
     
     private final JavaScriptNodes js = new JavaScriptNodes();
@@ -193,8 +191,8 @@ public class JavaScriptGenerator {
         }
         if (node instanceof WhileStatementNode) {
             WhileStatementNode whileNode = (WhileStatementNode) node;
-            String loopBodyIdentifier = namer.freshJavaScriptIdentifier("__tmp_loopBody");
-            String resultIdentifier = namer.freshJavaScriptIdentifier("__tmp_loopBodyResult");
+            String loopBodyIdentifier = namer.freshJavaScriptIdentifier("$tmp_loopBody");
+            String resultIdentifier = namer.freshJavaScriptIdentifier("$tmp_loopBodyResult");
             return js.statements(
                 js.var(loopBodyIdentifier, js.func(
                     Collections.<String>emptyList(),

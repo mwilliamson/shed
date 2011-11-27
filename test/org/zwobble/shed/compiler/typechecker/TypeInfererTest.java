@@ -35,8 +35,6 @@ import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
-import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -52,6 +50,7 @@ import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedType;

@@ -5,9 +5,9 @@ import java.util.Map;
 
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.SourceRange;
+import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.parsing.nodes.Node;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
-import org.zwobble.shed.compiler.parsing.nodes.Identity;
 
 public class SimpleNodeLocations implements NodeLocations {
     private final Map<Identity<?>, SourceRange> locations = new HashMap<Identity<?>, SourceRange>();

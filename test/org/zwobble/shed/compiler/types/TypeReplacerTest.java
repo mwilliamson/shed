@@ -4,13 +4,12 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
 
-import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
+import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
 import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedType;
 import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
 

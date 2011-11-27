@@ -91,11 +91,6 @@ public class TokeniserTest {
     }
     
     @Test public void
-    identifiersCannotStartWithDoubleUnderscores() {
-        assertThat(tokens("__blah"), is(asList(error("__blah"), Token.end())));
-    }
-    
-    @Test public void
     numbersAfterWhitespace() {
         assertThat(tokens(" 42"), is(asList(whitespace(" "), number("42"), Token.end())));
     }

@@ -2,13 +2,11 @@ package org.zwobble.shed.compiler.types;
 
 import org.junit.Test;
 
-import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
-
-import static org.zwobble.shed.compiler.types.Types.typeParameters;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
+import static org.zwobble.shed.compiler.types.Types.typeParameters;
 
 public class ParameterisedFunctionTypeTest {
     @Test public void

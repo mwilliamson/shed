@@ -34,7 +34,7 @@ public class BrowserModuleWrapperTest {
                         js.string("shed.blah"),
                         js.string("shed.example"),
                         js.func(
-                            asList(JavaScriptGenerator.CORE_VALUES_OBJECT_NAME, "blah__1", "example__1"),
+                            asList(JavaScriptGenerator.CORE_VALUES_OBJECT_NAME, "blah$1", "example$1"),
                             asList((JavaScriptStatementNode)original)
                         )
                     )

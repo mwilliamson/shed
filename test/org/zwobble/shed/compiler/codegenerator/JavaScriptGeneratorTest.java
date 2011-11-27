@@ -46,13 +46,12 @@ import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
 
 import com.google.common.collect.ImmutableMap;
 
-import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.codegenerator.JavaScriptGenerator.CORE_VALUES_OBJECT_NAME;
+import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
 
 public class JavaScriptGeneratorTest {
     private final JavaScriptNodes js = new JavaScriptNodes();
@@ -66,25 +65,25 @@ public class JavaScriptGeneratorTest {
     
     private void booleanLiteralIsConvertedToBoxedBooleansWhenBooleanIs(boolean value) {
         BooleanLiteralNode source = new BooleanLiteralNode(value);
-        assertGeneratedJavaScript(source, js.call(js.id("__core.Boolean"), js.bool(value)));
+        assertGeneratedJavaScript(source, js.call(js.id("$core.Boolean"), js.bool(value)));
     }
     
     @Test public void
     numberLiteralsAreConvertedToBoxedDoubles() {
         NumberLiteralNode source = new NumberLiteralNode("4.2");
-        assertGeneratedJavaScript(source, js.call(js.id("__core.Double"), js.number("4.2")));
+        assertGeneratedJavaScript(source, js.call(js.id("$core.Double"), js.number("4.2")));
     }
     
     @Test public void
     stringLiteralsAreConvertedToBoxedStrings() {
         StringLiteralNode source = new StringLiteralNode("Stop giving me verses");
-        assertGeneratedJavaScript(source, js.call(js.id("__core.String"), js.string("Stop giving me verses")));
+        assertGeneratedJavaScript(source, js.call(js.id("$core.String"), js.string("Stop giving me verses")));
     }
     
     @Test public void
     unitLiteralsAreConvertedToUnitValue() {
         UnitLiteralNode source = Nodes.unit();
-        assertGeneratedJavaScript(source, js.call(js.id("__core.Unit")));
+        assertGeneratedJavaScript(source, js.call(js.id("$core.Unit")));
     }
     
     @Test public void
@@ -98,13 +97,13 @@ public class JavaScriptGeneratorTest {
     @Test public void
     immutableVariableNodesAreConvertedToVariableDeclarations() {
         VariableDeclarationNode source = Nodes.immutableVar("x", new BooleanLiteralNode(true));
-        assertGeneratedJavaScript(source, js.var("x__1", generateLiteral(new BooleanLiteralNode(true))));
+        assertGeneratedJavaScript(source, js.var("x$1", generateLiteral(new BooleanLiteralNode(true))));
     }
     
     @Test public void
     mutableVariableNodesAreConvertedToVariableDeclarations() {
         VariableDeclarationNode source = Nodes.immutableVar("x", new BooleanLiteralNode(true));
-        assertGeneratedJavaScript(source, js.var("x__1", generateLiteral(new BooleanLiteralNode(true))));
+        assertGeneratedJavaScript(source, js.var("x$1", generateLiteral(new BooleanLiteralNode(true))));
     }
     
     @Test public void
@@ -161,7 +160,7 @@ public class JavaScriptGeneratorTest {
         assertGeneratedJavaScript(
             source, 
             js.func(
-                asList("name__1", "age__1"), 
+                asList("name$1", "age$1"), 
                 asList((JavaScriptStatementNode)js.ret(generateLiteral(new BooleanLiteralNode(true))))
             )
         );
@@ -187,8 +186,8 @@ public class JavaScriptGeneratorTest {
         );
         assertGeneratedJavaScript(
             source,
-            js.func(asList("name__1", "age__1"), asList(
-                js.var("x__1", generateLiteral(Nodes.bool(true))),
+            js.func(asList("name$1", "age$1"), asList(
+                js.var("x$1", generateLiteral(Nodes.bool(true))),
                 js.ret(generateLiteral(Nodes.number("42")))
             ))
         );
@@ -224,8 +223,8 @@ public class JavaScriptGeneratorTest {
         assertThat(
             generator.generate(source, Collections.<String>emptyList()),
             is((JavaScriptNode)js.statements(
-                js.var("magic__1", generateLiteral(Nodes.number("42"))),
-                js.expressionStatement(js.call(js.id("SHED.exportValue"), js.string("shed.example.magic"), js.id("magic__1")))
+                js.var("magic$1", generateLiteral(Nodes.number("42"))),
+                js.expressionStatement(js.call(js.id("SHED.exportValue"), js.string("shed.example.magic"), js.id("magic$1")))
             ))
         );
     }
@@ -281,13 +280,13 @@ public class JavaScriptGeneratorTest {
         );
         assertGeneratedJavaScript(
             source, 
-            js.var("person__1", js.call(
+            js.var("person$1", js.call(
                 js.func(
                     Collections.<String>emptyList(),
                     asList(
-                        js.var("name__1", generateLiteral(Nodes.string("Bob"))),
-                        js.var("age__1", generateLiteral(Nodes.number("22"))),
-                        js.ret(js.object(ImmutableMap.<String, JavaScriptExpressionNode>of("name", js.id("name__1"))))
+                        js.var("name$1", generateLiteral(Nodes.string("Bob"))),
+                        js.var("age$1", generateLiteral(Nodes.number("22"))),
+                        js.ret(js.object(ImmutableMap.<String, JavaScriptExpressionNode>of("name", js.id("name$1"))))
                     )
                 )
             ))
@@ -308,13 +307,13 @@ public class JavaScriptGeneratorTest {
         );
         assertGeneratedJavaScript(
             source,
-            js.var("person__1",
+            js.var("person$1",
                 js.func(
-                    asList("initialName__1"),
+                    asList("initialName$1"),
                     asList(
-                        js.var("name__1", js.id("initialName__1")),
-                        js.var("age__1", generateLiteral(Nodes.number("22"))),
-                        js.ret(js.object(ImmutableMap.<String, JavaScriptExpressionNode>of("name", js.id("name__1"))))
+                        js.var("name$1", js.id("initialName$1")),
+                        js.var("age$1", generateLiteral(Nodes.number("22"))),
+                        js.ret(js.object(ImmutableMap.<String, JavaScriptExpressionNode>of("name", js.id("name$1"))))
                     )
                 )
             )
@@ -374,8 +373,8 @@ public class JavaScriptGeneratorTest {
         );
         assertGeneratedJavaScript(source, js.ifThenElse(
             generateLiteral(Nodes.bool(true)),
-            Arrays.<JavaScriptStatementNode>asList(js.var("x__1", generateLiteral(Nodes.number("5")))),
-            Arrays.<JavaScriptStatementNode>asList(js.var("x__2", generateLiteral(Nodes.number("8"))))
+            Arrays.<JavaScriptStatementNode>asList(js.var("x$1", generateLiteral(Nodes.number("5")))),
+            Arrays.<JavaScriptStatementNode>asList(js.var("x$2", generateLiteral(Nodes.number("8"))))
         ));
     }
     
@@ -384,16 +383,16 @@ public class JavaScriptGeneratorTest {
         StatementNode body = Nodes.returnStatement(Nodes.number("8"));
         WhileStatementNode source =  Nodes.whileLoop(Nodes.bool(true), Nodes.block(body));
         assertGeneratedJavaScript(source, js.statements(
-            js.var("__tmp_loopBody__1", js.func(
+            js.var("$tmp_loopBody$1", js.func(
                 Collections.<String>emptyList(),
                 Arrays.<JavaScriptStatementNode>asList(js.ret(generateLiteral(Nodes.number("8"))))
             )),
             js.whileLoop(
                 generateLiteral(Nodes.bool(true)),
-                js.var("__tmp_loopBodyResult__1", js.call(js.id("__tmp_loopBody__1"))),
+                js.var("$tmp_loopBodyResult$1", js.call(js.id("$tmp_loopBody$1"))),
                 js.ifThen(
-                    js.operator("!==", js.id("__tmp_loopBodyResult__1"), js.undefined()),
-                    js.ret(js.id("__tmp_loopBodyResult__1"))
+                    js.operator("!==", js.id("$tmp_loopBodyResult$1"), js.undefined()),
+                    js.ret(js.id("$tmp_loopBodyResult$1"))
                 )
             )
         ));
@@ -429,7 +428,7 @@ public class JavaScriptGeneratorTest {
         );
         assertGeneratedJavaScript(
             source,
-            js.var("rank__1", js.func(asList("name__1", "age__1"), asList(
+            js.var("rank$1", js.func(asList("name$1", "age$1"), asList(
                 (JavaScriptStatementNode)js.ret(generateLiteral(Nodes.number("42")))
             )))
         );
@@ -449,10 +448,10 @@ public class JavaScriptGeneratorTest {
         assertGeneratedJavaScript(
             source,
             js.statements(
-                js.var("magic__1", js.func(Collections.<String>emptyList(), asList(
+                js.var("magic$1", js.func(Collections.<String>emptyList(), asList(
                     (JavaScriptStatementNode)js.ret(generateLiteral(Nodes.number("42")))
                 ))),
-                js.expressionStatement(js.call(js.id("magic__1")))
+                js.expressionStatement(js.call(js.id("magic$1")))
             )
         );
     }
@@ -476,10 +475,10 @@ public class JavaScriptGeneratorTest {
         assertThat(
             generator.generate(source, Collections.<String>emptyList()),
             is((JavaScriptNode)js.statements(
-                js.var("magic__1", js.func(Collections.<String>emptyList(), asList(
+                js.var("magic$1", js.func(Collections.<String>emptyList(), asList(
                     (JavaScriptStatementNode)js.ret(generateLiteral(Nodes.number("42")))
                 ))),
-                js.expressionStatement(js.call(js.id("magic__1")))
+                js.expressionStatement(js.call(js.id("magic$1")))
             ))
         );
     }

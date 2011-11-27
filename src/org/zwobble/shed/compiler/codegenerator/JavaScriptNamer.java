@@ -46,7 +46,7 @@ public class JavaScriptNamer {
         int index = 1;
         String identifier;
         do {
-            identifier = base + "__" + index;
+            identifier = base + "$" + index;
             index += 1;
         } while (usedNames.contains(identifier));
         usedNames.add(identifier);

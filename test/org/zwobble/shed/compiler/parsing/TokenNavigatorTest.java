@@ -3,10 +3,9 @@ package org.zwobble.shed.compiler.parsing;
 import org.junit.Test;
 import org.zwobble.shed.compiler.tokeniser.Token;
 
-import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.zwobble.shed.compiler.parsing.SourcePosition.position;
 
 public class TokenNavigatorTest {
     @Test public void

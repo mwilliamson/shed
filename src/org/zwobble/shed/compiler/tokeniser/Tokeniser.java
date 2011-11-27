@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.zwobble.shed.compiler.PsychicIterator;
-import org.zwobble.shed.compiler.ShedSymbols;
 import org.zwobble.shed.compiler.parsing.SourcePosition;
 
 import com.google.common.base.Predicate;
@@ -116,8 +115,6 @@ public class Tokeniser {
             String value = takeWhile(characters, isIdentifierCharacter());
             if (isKeyword(value)) {
                 return token(TokenType.KEYWORD, value);
-            } else if (value.startsWith(ShedSymbols.INTERNAL_PREFIX)) {
-                return token(TokenType.ERROR, value);
             } else {
                 return token(TokenType.IDENTIFIER, value);
             }

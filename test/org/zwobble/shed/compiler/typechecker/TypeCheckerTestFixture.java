@@ -14,9 +14,8 @@ import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
-import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
-
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
+import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 
