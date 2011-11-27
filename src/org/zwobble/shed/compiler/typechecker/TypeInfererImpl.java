@@ -323,6 +323,7 @@ public class TypeInfererImpl implements TypeInferer {
             public Type apply(ExpressionNode expression) {
                 TypeResult<Type> result = typeLookup.lookupTypeReference(expression);
                 if (!result.isSuccess()) {
+                    // TODO: handle failure
                     throw new RuntimeException(result.getErrors().toString());
                 }
                 return result.get();
