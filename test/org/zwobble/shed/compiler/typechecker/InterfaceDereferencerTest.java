@@ -6,6 +6,8 @@ import org.junit.Test;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.types.Interfaces;
 
+import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -16,10 +18,11 @@ public class InterfaceDereferencerTest {
     
     @Test public void
     interfacesAreDeferenced() {
-        assertThat(dereference(asList((ExpressionNode)fixture.interfaceTypeReference())), is(interfaces(fixture.interfaceType())));
+        TypeResult<Interfaces> result = dereference(asList((ExpressionNode)fixture.interfaceTypeReference()));
+        assertThat(result, is(success(interfaces(fixture.interfaceType()))));
     }
     
-    private Interfaces dereference(List<ExpressionNode> interfaces) {
+    private TypeResult<Interfaces> dereference(List<ExpressionNode> interfaces) {
         return fixture.get(InterfaceDereferencer.class).dereferenceInterfaces(interfaces);
     }
 }
