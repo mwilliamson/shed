@@ -8,7 +8,6 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import org.zwobble.shed.compiler.CompilerError;
-import org.zwobble.shed.compiler.Function0;
 import org.zwobble.shed.compiler.HasErrors;
 
 import com.google.common.base.Function;
@@ -87,11 +86,6 @@ public class TypeResult<T> implements HasErrors {
     
     public boolean hasValue() {
         return hasValue;
-    }
-    
-    public <R> TypeResult<R> then(Function0<TypeResult<R>> function) {
-        TypeResult<R> result = function.apply();
-        return thenResult(result);
     }
     
     public <R> TypeResult<R> use(Function<T, TypeResult<R>> function) {

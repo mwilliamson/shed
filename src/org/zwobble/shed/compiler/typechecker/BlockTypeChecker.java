@@ -2,12 +2,13 @@ package org.zwobble.shed.compiler.typechecker;
 
 import javax.inject.Inject;
 
-import org.zwobble.shed.compiler.Function0;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.typechecker.statements.AllStatementsTypeChecker;
 import org.zwobble.shed.compiler.typechecker.statements.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.types.Type;
+
+import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 
 public class BlockTypeChecker {
@@ -36,7 +37,7 @@ public class BlockTypeChecker {
     }
 
     public TypeResult<StatementTypeCheckResult> typeCheck(Iterable<StatementNode> statements, Option<Type> returnType) {
-        TypeResult<Void> result = TypeResult.success();
+        TypeResult<Void> result = success();
         boolean hasReturnedYet = false;
         for (StatementNode statement : statements) {
             TypeResult<StatementTypeCheckResult> statementResult = statementsTypeChecker.typeCheck(statement, returnType);
@@ -46,11 +47,6 @@ public class BlockTypeChecker {
             }
         }
         final boolean hasReturned = hasReturnedYet;
-        return result.then(new Function0<TypeResult<StatementTypeCheckResult>>() {
-            @Override
-            public TypeResult<StatementTypeCheckResult> apply() {
-                return TypeResult.success(new StatementTypeCheckResult(hasReturned));
-            }
-        });
+        return success(new StatementTypeCheckResult(hasReturned)).withErrorsFrom(result);
     }
 }
