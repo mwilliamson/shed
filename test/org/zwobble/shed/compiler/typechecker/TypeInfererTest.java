@@ -142,6 +142,20 @@ public class TypeInfererTest {
     }
     
     @Test public void
+    bodyOfShortLambdaExpressionCanBeSubTypeOfExplicitReturnType() {
+        FormalArgumentNode argument = Nodes.formalArgument("value", fixture.implementingClassTypeReference());
+        VariableIdentifierNode body = Nodes.id("value");
+        fixture.addReference(body, argument);
+        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
+            asList(argument),
+            some(fixture.interfaceTypeReference()),
+            body
+        );
+        TypeResult<Type> result = inferType(functionExpression, standardContext());
+        assertThat(result, is(success((Type)CoreTypes.functionTypeOf(fixture.implementingClassType(), fixture.interfaceType()))));
+    }
+    
+    @Test public void
     errorIfCannotFindArgumentType() {
         ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
             asList(

@@ -20,7 +20,7 @@ import static org.zwobble.shed.compiler.types.Members.members;
 public class DefaultContext {
     public static StaticContext defaultContext() {
         StaticContext staticContext = new StaticContext();
-        
+
         addCore(staticContext, CoreTypes.STRING, new ScalarTypeInfo(interfaces(), members()));
         addCore(staticContext, CoreTypes.BOOLEAN, new ScalarTypeInfo(interfaces(), members()));
         addCore(staticContext, CoreTypes.DOUBLE, numberTypeInfo(CoreTypes.DOUBLE));

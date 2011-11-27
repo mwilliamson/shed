@@ -129,18 +129,22 @@ public class TypeInfererImpl implements TypeInferer {
 
     private TypeResult<ValueInfo> inferType(final ShortLambdaExpressionNode lambdaExpression) {
         TypeResult<List<Type>> result = argumentTypeInferer.inferArgumentTypesAndAddToContext(lambdaExpression.getFormalArguments());
-        final TypeResult<Type> bodyTypeResult = inferType(lambdaExpression.getBody());
         
+        final TypeResult<Type> bodyTypeResult = inferType(lambdaExpression.getBody());
         result = result.withErrorsFrom(bodyTypeResult);
+        Option<Type> returnTypeOption = bodyTypeResult.asOption();
         
         Option<? extends ExpressionNode> returnTypeReference = lambdaExpression.getReturnType();
         if (returnTypeReference.hasValue()) {
             TypeResult<Type> returnTypeResult = typeLookup.lookupTypeReference(returnTypeReference.get());
             result = result.withErrorsFrom(returnTypeResult);
+            if (returnTypeResult.hasValue()) {
+                returnTypeOption = returnTypeResult.asOption();
+            }
             if (bodyTypeResult.hasValue() && returnTypeResult.hasValue()) {
                 Type bodyType = bodyTypeResult.get();
                 Type returnType = returnTypeResult.get();
-                if (!bodyType.equals(returnType)) {
+                if (!subTyping.isSubType(bodyType, returnType)) {
                     result = result.withErrorsFrom(failure(error(
                         lambdaExpression.getBody(),
                         new TypeMismatchError(returnType, bodyType)
@@ -149,8 +153,9 @@ public class TypeInfererImpl implements TypeInferer {
             }
         }
         
-        if (bodyTypeResult.hasValue()) {
-            return result.ifValueThen(buildFunctionType(bodyTypeResult.get())).ifValueThen(toValueInfo());            
+        
+        if (returnTypeOption.hasValue()) {
+            return result.ifValueThen(buildFunctionType(returnTypeOption.get())).ifValueThen(toValueInfo());            
         } else {
             return TypeResult.<ValueInfo>failure(result.getErrors());
         }

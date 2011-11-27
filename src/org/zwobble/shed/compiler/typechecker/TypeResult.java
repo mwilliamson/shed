@@ -75,6 +75,10 @@ public class TypeResult<T> implements HasErrors {
         return value.get();
     }
     
+    public Option<T> asOption() {
+        return value;
+    }
+    
     @Override
     public List<CompilerError> getErrors() {
         return errors;
