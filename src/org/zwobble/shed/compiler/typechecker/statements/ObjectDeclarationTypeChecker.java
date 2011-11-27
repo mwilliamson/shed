@@ -4,14 +4,12 @@ import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
-import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.typechecker.BlockTypeChecker;
 import org.zwobble.shed.compiler.typechecker.InterfaceImplementationChecker;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
-import org.zwobble.shed.compiler.typechecker.TypeLookup;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.TypeResultBuilder;
 import org.zwobble.shed.compiler.typegeneration.TypeStore;
@@ -19,30 +17,23 @@ import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.Interfaces;
 import org.zwobble.shed.compiler.types.Members;
 import org.zwobble.shed.compiler.types.MembersBuilder;
-import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
-import com.google.common.base.Function;
-
-import static com.google.common.collect.Iterables.transform;
 import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
-import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 
 public class ObjectDeclarationTypeChecker implements StatementTypeChecker<ObjectDeclarationNode> {
     private final BlockTypeChecker blockTypeChecker;
     private final InterfaceImplementationChecker interfaceImplementationChecker;
-    private final TypeLookup typeLookup;
     private final TypeStore typeStore;
     private final StaticContext context;
 
     @Inject
     public ObjectDeclarationTypeChecker(BlockTypeChecker blockTypeChecker, InterfaceImplementationChecker interfaceImplementationChecker,
-        TypeLookup typeLookup, TypeStore typeStore, StaticContext context) {
+        TypeStore typeStore, StaticContext context) {
         this.blockTypeChecker = blockTypeChecker;
         this.interfaceImplementationChecker = interfaceImplementationChecker;
-        this.typeLookup = typeLookup;
         this.typeStore = typeStore;
         this.context = context;
     }
@@ -56,7 +47,7 @@ public class ObjectDeclarationTypeChecker implements StatementTypeChecker<Object
         result.addErrors(blockResult);
         
         if (blockResult.isSuccess()) {
-            Interfaces interfaces = dereferenceInterfaces(objectDeclaration);
+            Interfaces interfaces = interfaceImplementationChecker.dereferenceInterfaces(objectDeclaration.getSuperTypes());
             Members members = buildMembers(objectDeclaration);
             
             InterfaceType type = (InterfaceType) typeStore.typeDeclaredBy(objectDeclaration);
@@ -67,26 +58,6 @@ public class ObjectDeclarationTypeChecker implements StatementTypeChecker<Object
         }
         
         return result.build();
-    }
-
-    private Interfaces dereferenceInterfaces(ObjectDeclarationNode objectDeclaration) {
-        // TODO: copied from ClassDeclarationTypeChecker
-        return interfaces(transform(objectDeclaration.getSuperTypes(), lookupType()));
-    }
-
-    private Function<ExpressionNode, ScalarType> lookupType() {
-        return new Function<ExpressionNode, ScalarType>() {
-            @Override
-            public ScalarType apply(ExpressionNode input) {
-                TypeResult<Type> lookupResult = typeLookup.lookupTypeReference(input);
-                if (!lookupResult.isSuccess()) {
-                    // TODO:
-                    throw new RuntimeException("Failed type lookup " + lookupResult.getErrors());
-                }
-                // TODO: handle non-scalar types
-                return (ScalarType)lookupResult.get();
-            }
-        };
     }
 
     private Members buildMembers(ObjectDeclarationNode objectDeclaration) {
