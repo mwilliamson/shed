@@ -45,7 +45,6 @@ public class InterfaceDereferencer {
             public TypeResult<ScalarType> apply(ExpressionNode input) {
                 TypeResult<Type> lookupResult = typeLookup.lookupTypeReference(input);
                 // We should always get a result -- if we fail, we get unknown type
-                // TODO: handle non-scalar types
                 Type type = lookupResult.get();
                 if (Types.isInterface(type)) {
                     return TypeResult.success((ScalarType)type);
