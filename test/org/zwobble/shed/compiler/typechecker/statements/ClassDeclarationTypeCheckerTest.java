@@ -28,6 +28,7 @@ import org.zwobble.shed.compiler.types.Member;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
+import org.zwobble.shed.compiler.types.Types;
 import org.zwobble.shed.compiler.types.UnknownType;
 
 import static java.util.Arrays.asList;
@@ -223,7 +224,7 @@ public class ClassDeclarationTypeCheckerTest {
                     mismatchDescription.appendText("had name " + item.getName());
                     return false;
                 }
-                if (item.getType() instanceof UnknownType) {
+                if (Types.isUnknown(item.getType())) {
                     return true;
                 } else {
                     mismatchDescription.appendText("was of type " + item.getType());

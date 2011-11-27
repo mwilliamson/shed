@@ -12,4 +12,8 @@ public class Types {
     public static Type newUnknown() {
         return new UnknownType();
     }
+
+    public static boolean isUnknown(Type type) {
+        return type instanceof UnknownType;
+    }
 }
