@@ -88,14 +88,6 @@ public class TypeResult<T> implements HasErrors {
         return hasValue;
     }
     
-    public <R> TypeResult<R> use(Function<T, TypeResult<R>> function) {
-        if (hasValue()) {
-            return function.apply(value);
-        } else {
-            return new TypeResult<R>(false, false, null, Collections.<CompilerError>emptyList());
-        }
-    }
-    
     public TypeResult<T> orElse(T elseValue) {
         if (hasValue) {
             return this;

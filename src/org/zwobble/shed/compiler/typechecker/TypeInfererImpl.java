@@ -129,35 +129,28 @@ public class TypeInfererImpl implements TypeInferer {
 
     private TypeResult<ValueInfo> inferType(final ShortLambdaExpressionNode lambdaExpression) {
         TypeResult<List<Type>> result = argumentTypeInferer.inferArgumentTypesAndAddToContext(lambdaExpression.getFormalArguments());
-        final TypeResult<Type> expressionTypeResult = inferType(lambdaExpression.getBody());
+        final TypeResult<Type> bodyTypeResult = inferType(lambdaExpression.getBody());
         
-        result = result.withErrorsFrom(expressionTypeResult);
+        result = result.withErrorsFrom(bodyTypeResult);
         
         Option<? extends ExpressionNode> returnTypeReference = lambdaExpression.getReturnType();
         if (returnTypeReference.hasValue()) {
             TypeResult<Type> returnTypeResult = typeLookup.lookupTypeReference(returnTypeReference.get());
-            result = result.withErrorsFrom(returnTypeResult.ifValueThen(new Function<Type, TypeResult<Void>>() {
-                @Override
-                public TypeResult<Void> apply(final Type returnType) {
-                    return expressionTypeResult.use(new Function<Type, TypeResult<Void>>() {
-                        @Override
-                        public TypeResult<Void> apply(Type expressionType) {
-                            if (expressionType.equals(returnType)) {
-                                return success();
-                            } else {
-                                return failure(error(
-                                    lambdaExpression.getBody(),
-                                    new TypeMismatchError(returnType, expressionType)
-                                ));
-                            }
-                        }
-                    });
+            result = result.withErrorsFrom(returnTypeResult);
+            if (bodyTypeResult.hasValue() && returnTypeResult.hasValue()) {
+                Type bodyType = bodyTypeResult.get();
+                Type returnType = returnTypeResult.get();
+                if (!bodyType.equals(returnType)) {
+                    result = result.withErrorsFrom(failure(error(
+                        lambdaExpression.getBody(),
+                        new TypeMismatchError(returnType, bodyType)
+                    )));
                 }
-            }));
+            }
         }
         
-        if (expressionTypeResult.hasValue()) {
-            return result.ifValueThen(buildFunctionType(expressionTypeResult.get())).ifValueThen(toValueInfo());            
+        if (bodyTypeResult.hasValue()) {
+            return result.ifValueThen(buildFunctionType(bodyTypeResult.get())).ifValueThen(toValueInfo());            
         } else {
             return TypeResult.<ValueInfo>failure(result.getErrors());
         }
