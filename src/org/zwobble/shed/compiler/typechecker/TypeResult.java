@@ -102,6 +102,14 @@ public class TypeResult<T> implements HasErrors {
         }
     }
     
+    public TypeResult<T> orElse(T elseValue) {
+        if (hasValue) {
+            return this;
+        } else {
+            return new TypeResult<T>(success, true, elseValue, errors);
+        }
+    }
+    
     public <R> TypeResult<R> ifValueThen(Function<T, TypeResult<R>> function) {
         if (hasValue()) {
             TypeResult<R> result = function.apply(value);

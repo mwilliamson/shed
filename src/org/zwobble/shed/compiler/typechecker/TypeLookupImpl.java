@@ -4,6 +4,7 @@ import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.types.Type;
+import org.zwobble.shed.compiler.types.Types;
 
 import com.google.common.base.Function;
 
@@ -22,7 +23,7 @@ public class TypeLookupImpl implements TypeLookup {
     }
     
     public TypeResult<Type> lookupTypeReference(ExpressionNode typeReference) {
-        return typeInferer.inferType(typeReference).ifValueThen(extractType(typeReference));
+        return typeInferer.inferType(typeReference).ifValueThen(extractType(typeReference)).orElse(Types.newUnknown());
     }
 
     private Function<Type, TypeResult<Type>> extractType(final ExpressionNode expression) {

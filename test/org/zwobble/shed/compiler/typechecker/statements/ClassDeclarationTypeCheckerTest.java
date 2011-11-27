@@ -161,6 +161,19 @@ public class ClassDeclarationTypeCheckerTest {
     }
     
     @Test public void
+    errorIfTypeOfFormalArgumentCannotBeFound() {
+        FormalArgumentNode formalArgument = Nodes.formalArgument("initialAge", Nodes.id("Age"));
+        VariableIdentifierNode argumentReference = Nodes.id("initialAge");
+        ClassDeclarationNode declaration = Nodes.clazz("Person", asList(formalArgument), Nodes.block());
+        fixture.addType(declaration, type);
+        fixture.addReference(argumentReference, formalArgument);
+        forwardDeclare(declaration);
+        TypeResult<?> result = typeCheck(declaration);
+        
+        assertThat(result, isFailureWithErrors(new UntypedReferenceError("Age")));
+    }
+    
+    @Test public void
     superTypesOfClassAreChecked() {
         InterfaceType interfaceType = new InterfaceType(fullyQualifiedName("Store"));
         VariableIdentifierNode interfaceReference = Nodes.id("Store");

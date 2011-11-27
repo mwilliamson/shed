@@ -1,5 +1,7 @@
 package org.zwobble.shed.compiler.typechecker.statements;
 
+import java.util.List;
+
 import javax.inject.Inject;
 
 import org.zwobble.shed.compiler.Option;
@@ -24,6 +26,8 @@ import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.base.Function;
+
+import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
@@ -67,9 +71,10 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
 
         argumentTypeInferer.inferArgumentTypesAndAddToContext(classDeclaration.getFormalArguments());
         resultBuilder.addErrors(blockTypeChecker.typeCheck(classDeclaration.getBody(), returnType));
-        ClassType type = buildClassType(classDeclaration);
+        TypeResult<ClassType> typeResult = buildClassType(classDeclaration);
+        resultBuilder.addErrors(typeResult);
         
-        resultBuilder.addErrors(interfaceImplementationChecker.checkInterfaces(classDeclaration, type));
+        resultBuilder.addErrors(interfaceImplementationChecker.checkInterfaces(classDeclaration, typeResult.get()));
         
         return resultBuilder.build();
     }
@@ -78,14 +83,14 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
         return blockTypeChecker.forwardDeclare(classDeclaration.getBody());
     }
 
-    private ClassType buildClassType(ClassDeclarationNode classDeclaration) {
+    private TypeResult<ClassType> buildClassType(ClassDeclarationNode classDeclaration) {
         Members members = buildMembers(classDeclaration);
         Interfaces interfaces = dereferenceInterfaces(classDeclaration);
         ClassType type = (ClassType)typeStore.typeDeclaredBy(classDeclaration);
-        Iterable<Type> classParameters = transform(classDeclaration.getFormalArguments(), toType());
+        TypeResult<List<Type>> classParameters = TypeResult.combine(transform(classDeclaration.getFormalArguments(), toType()));
         ScalarTypeInfo classTypeInfo = new ScalarTypeInfo(interfaces, members);
-        context.addClass(classDeclaration, type, classParameters, classTypeInfo);
-        return type;
+        context.addClass(classDeclaration, type, classParameters.get(), classTypeInfo);
+        return success(type).withErrorsFrom(classParameters);
     }
 
     private Members buildMembers(ClassDeclarationNode classDeclaration) {
@@ -107,16 +112,11 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
         };
     }
 
-    private Function<FormalArgumentNode, Type> toType() {
-        return new Function<FormalArgumentNode, Type>() {
+    private Function<FormalArgumentNode, TypeResult<Type>> toType() {
+        return new Function<FormalArgumentNode, TypeResult<Type>>() {
             @Override
-            public Type apply(FormalArgumentNode input) {
-                TypeResult<Type> lookupResult = typeLookup.lookupTypeReference(input.getType());
-                if (!lookupResult.isSuccess()) {
-                    // TODO:
-                    throw new RuntimeException("Failed type lookup");
-                }
-                return lookupResult.get();
+            public TypeResult<Type> apply(FormalArgumentNode input) {
+                return typeLookup.lookupTypeReference(input.getType());
             }
         };
     }

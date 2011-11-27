@@ -35,6 +35,8 @@ import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
+import static org.hamcrest.Matchers.hasItem;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -154,6 +156,7 @@ public class TypeInfererTest {
         assertThat(result, isFailureWithErrors(new UntypedReferenceError("Name"), new UntypedReferenceError("Address")));
     }
     
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test public void
     errorIfCannotFindReturnType() {
         StaticContext context = standardContext();
@@ -163,8 +166,7 @@ public class TypeInfererTest {
             new NumberLiteralNode("42")
         );
         TypeResult<Type> result = inferType(functionExpression, context);
-        CompilerErrorDescription[] errorsArray = { new UntypedReferenceError("String") };
-        assertThat(result, isFailureWithErrors(errorsArray));
+        assertThat(result, isFailureWithErrors((Matcher)hasItem((CompilerErrorDescription)new UntypedReferenceError("String"))));
     }
     
     @Test public void
