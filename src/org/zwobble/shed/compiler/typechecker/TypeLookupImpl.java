@@ -22,7 +22,7 @@ public class TypeLookupImpl implements TypeLookup {
         this.context = context;
     }
     
-    public TypeResult<Type> lookupTypeReference(ExpressionNode typeReference) {
+    public TypeResultWithValue<Type> lookupTypeReference(ExpressionNode typeReference) {
         return typeInferer.inferType(typeReference).ifValueThen(extractType(typeReference)).orElse(Types.newUnknown());
     }
 

@@ -4,5 +4,5 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.types.Type;
 
 public interface TypeLookup {
-    TypeResult<Type> lookupTypeReference(ExpressionNode typeReference);
+    TypeResultWithValue<Type> lookupTypeReference(ExpressionNode typeReference);
 }

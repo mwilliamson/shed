@@ -31,12 +31,26 @@ public class TypeResultWithValue<T> implements TypeResult<T> {
     public static <T> TypeResultWithValue<T> failure(T value, CompilerError error) {
         return failure(value, asList(error));
     }
+
+    public static <T> TypeResultWithValue<List<T>> combine(Iterable<? extends TypeResultWithValue<? extends T>> results) {
+        List<T> values = new ArrayList<T>();
+        List<CompilerError> errors = new ArrayList<CompilerError>();
+        for (TypeResultWithValue<? extends T> result : results) {
+            values.add(result.get());
+            errors.addAll(result.getErrors());
+        }
+        return typeResultWithValue(values, errors);
+    }
     
     private final T value;
     private final List<CompilerError> errors;
     
     @Override
     public T getOrThrow() {
+        return value;
+    }
+
+    public T get() {
         return value;
     }
     
@@ -74,5 +88,4 @@ public class TypeResultWithValue<T> implements TypeResult<T> {
         }
         return new TypeResultWithValue<T>(value, newErrors);
     }
-
 }

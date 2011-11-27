@@ -136,11 +136,9 @@ public class TypeInfererImpl implements TypeInferer {
         
         Option<? extends ExpressionNode> returnTypeReference = lambdaExpression.getReturnType();
         if (returnTypeReference.hasValue()) {
-            TypeResult<Type> returnTypeResult = typeLookup.lookupTypeReference(returnTypeReference.get());
+            TypeResultWithValue<Type> returnTypeResult = typeLookup.lookupTypeReference(returnTypeReference.get());
             result = result.withErrorsFrom(returnTypeResult);
-            if (returnTypeResult.hasValue()) {
-                returnTypeOption = returnTypeResult.asOption();
-            }
+            returnTypeOption = returnTypeResult.asOption();
             if (bodyTypeResult.hasValue() && returnTypeResult.hasValue()) {
                 Type bodyType = bodyTypeResult.getOrThrow();
                 Type returnType = returnTypeResult.getOrThrow();
@@ -168,7 +166,7 @@ public class TypeInfererImpl implements TypeInferer {
     
     public TypeResult<ValueInfo> inferFunctionType(final FunctionNode function) {
         final TypeResult<List<Type>> argumentTypeResults = argumentTypeInferer.inferArgumentTypesAndAddToContext(function.getFormalArguments());
-        TypeResult<Type> returnTypeResult = typeLookup.lookupTypeReference(function.getReturnType());
+        TypeResultWithValue<Type> returnTypeResult = typeLookup.lookupTypeReference(function.getReturnType());
         
         return returnTypeResult.ifValueThen(new Function<Type, TypeResult<Type>>() {
             @Override

@@ -10,6 +10,7 @@ import org.zwobble.shed.compiler.typechecker.TypeInferer;
 import org.zwobble.shed.compiler.typechecker.TypeLookup;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.TypeResultBuilder;
+import org.zwobble.shed.compiler.typechecker.TypeResultWithValue;
 import org.zwobble.shed.compiler.typechecker.TypeResults;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
@@ -37,12 +38,10 @@ public class VariableDeclarationTypeChecker implements DeclarationTypeChecker<Va
     @Override
     public TypeResult<?> forwardDeclare(VariableDeclarationNode variableDeclaration) {
         if (isForwardDeclarable(variableDeclaration)) {
-            TypeResult<Type> typeResult = typeLookup.lookupTypeReference(variableDeclaration.getTypeReference().get());
-            if (typeResult.hasValue()) {
-                Type type = typeResult.getOrThrow();
-                ValueInfo valueInfo = toValueInfo(variableDeclaration, type);
-                context.add(variableDeclaration, valueInfo);
-            }
+            TypeResultWithValue<Type> typeResult = typeLookup.lookupTypeReference(variableDeclaration.getTypeReference().get());
+            Type type = typeResult.get();
+            ValueInfo valueInfo = toValueInfo(variableDeclaration, type);
+            context.add(variableDeclaration, valueInfo);
             return typeResult;
         } else {
             context.add(variableDeclaration, toValueInfo(variableDeclaration, Types.newUnknown()));

@@ -17,7 +17,7 @@ import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeLookup;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.TypeResultBuilder;
-import org.zwobble.shed.compiler.typechecker.TypeResults;
+import org.zwobble.shed.compiler.typechecker.TypeResultWithValue;
 import org.zwobble.shed.compiler.typegeneration.TypeStore;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.Interfaces;
@@ -27,11 +27,10 @@ import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.base.Function;
 
-import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
-
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
 import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
+import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
 import static org.zwobble.shed.compiler.typechecker.statements.StatementTypeCheckResult.noReturn;
 
 public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<ClassDeclarationNode> {
@@ -88,9 +87,9 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
         Members members = buildMembers(classDeclaration);
         TypeResult<Interfaces> interfacesResult = interfaceDereferencer.dereferenceInterfaces(classDeclaration.getSuperTypes());
         ClassType type = (ClassType)typeStore.typeDeclaredBy(classDeclaration);
-        TypeResult<List<Type>> classParameters = TypeResults.combine(transform(classDeclaration.getFormalArguments(), toType()));
+        TypeResultWithValue<List<Type>> classParameters = TypeResultWithValue.combine(transform(classDeclaration.getFormalArguments(), toType()));
         ScalarTypeInfo classTypeInfo = new ScalarTypeInfo(interfacesResult.getOrThrow(), members);
-        context.addClass(classDeclaration, type, classParameters.getOrThrow(), classTypeInfo);
+        context.addClass(classDeclaration, type, classParameters.get(), classTypeInfo);
         return success(type).withErrorsFrom(classParameters, interfacesResult);
     }
 
@@ -109,10 +108,10 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
         };
     }
 
-    private Function<FormalArgumentNode, TypeResult<Type>> toType() {
-        return new Function<FormalArgumentNode, TypeResult<Type>>() {
+    private Function<FormalArgumentNode, TypeResultWithValue<Type>> toType() {
+        return new Function<FormalArgumentNode, TypeResultWithValue<Type>>() {
             @Override
-            public TypeResult<Type> apply(FormalArgumentNode input) {
+            public TypeResultWithValue<Type> apply(FormalArgumentNode input) {
                 return typeLookup.lookupTypeReference(input.getType());
             }
         };

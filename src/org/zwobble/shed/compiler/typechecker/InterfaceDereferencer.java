@@ -47,10 +47,10 @@ public class InterfaceDereferencer {
         return new Function<ExpressionNode, TypeResult<ScalarType>>() {
             @Override
             public TypeResult<ScalarType> apply(ExpressionNode input) {
-                TypeResult<Type> lookupResult = typeLookup.lookupTypeReference(input);
-                // We should always get a result -- if we fail, we get unknown type
-                Type type = lookupResult.getOrThrow();
+                TypeResultWithValue<Type> lookupResult = typeLookup.lookupTypeReference(input);
+                Type type = lookupResult.get();
                 if (Types.isInterface(type)) {
+                    // TODO: what if we get an error?
                     return TypeResults.success((ScalarType)type);
                 } else if (isSuccess(lookupResult)) {
                     return TypeResults.failure(new CompilerErrorWithSyntaxNode(input, new NotAnInterfaceError(type)));

@@ -55,7 +55,7 @@ public class TypeLookupTest {
         );
     }
     
-    private TypeResult<Type> lookupTypeReference(ExpressionNode typeReference, StaticContext context) {
+    private TypeResultWithValue<Type> lookupTypeReference(ExpressionNode typeReference, StaticContext context) {
         TypeLookup typeLookup = fixture.get(TypeLookup.class);
         return typeLookup.lookupTypeReference(typeReference);
     }
