@@ -19,13 +19,14 @@ import org.zwobble.shed.compiler.typechecker.statements.StatementTypeCheckResult
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
 
+import static org.zwobble.shed.compiler.typechecker.TypeResultMatchers.isSuccessWithValue;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.Option.some;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.typechecker.VariableLookupResult.success;
 
@@ -82,7 +83,7 @@ public class TypeCheckerTest {
             );
         TypeResult<StatementTypeCheckResult> result = 
             typeCheckStatement(ifThenElseNode, staticContext(), some((Type)CoreTypes.STRING));
-        assertThat(result, is(success(StatementTypeCheckResult.noReturn())));
+        assertThat(result, isSuccessWithValue(StatementTypeCheckResult.noReturn()));
     }
     
     @Test public void
@@ -95,7 +96,7 @@ public class TypeCheckerTest {
             );
         TypeResult<StatementTypeCheckResult> result = 
             typeCheckStatement(ifThenElseNode, staticContext(), some((Type)CoreTypes.STRING));
-        assertThat(result, is(success(StatementTypeCheckResult.noReturn())));
+        assertThat(result, isSuccessWithValue(StatementTypeCheckResult.noReturn()));
     }
     
     @Test public void
@@ -108,7 +109,7 @@ public class TypeCheckerTest {
             );
         TypeResult<StatementTypeCheckResult> result = 
             typeCheckStatement(ifThenElseNode, staticContext(), some((Type)CoreTypes.STRING));
-        assertThat(result, is(success(StatementTypeCheckResult.alwaysReturns())));
+        assertThat(result, isSuccessWithValue(StatementTypeCheckResult.alwaysReturns()));
     }
     
     @Test public void
@@ -116,7 +117,7 @@ public class TypeCheckerTest {
         WhileStatementNode loop = Nodes.whileLoop(Nodes.bool(true), Nodes.block());
         TypeResult<StatementTypeCheckResult> result = 
             typeCheckStatement(loop, staticContext(), some((Type)CoreTypes.STRING));
-        assertThat(result, is(success(StatementTypeCheckResult.noReturn())));
+        assertThat(result, isSuccessWithValue(StatementTypeCheckResult.noReturn()));
     }
     
     @Test public void
@@ -145,7 +146,7 @@ public class TypeCheckerTest {
         );
         StaticContext staticContext = staticContext();
         TypeResult<StatementTypeCheckResult> result = typeCheckStatement(functionDeclaration, staticContext, Option.<Type>none());
-        assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
+        assertThat(result, isSuccessWithValue(StatementTypeCheckResult.noReturn()));
         assertThat(staticContext.get(functionDeclaration), is(success(unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING)))));
     }
     
@@ -173,7 +174,7 @@ public class TypeCheckerTest {
         fixture.addReference(functionReference, functionDeclaration);
         StaticContext context = staticContext();
         TypeResult<StatementTypeCheckResult> result = typeCheckStatement(functionDeclaration, context, Option.<Type>none());
-        assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
+        assertThat(result, isSuccessWithValue(StatementTypeCheckResult.noReturn()));
         assertThat(context.get(functionDeclaration), is(success(unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING)))));
     }
     
@@ -202,7 +203,7 @@ public class TypeCheckerTest {
         StaticContext staticContext = staticContext();
         BlockNode block = Nodes.block(firstFunctionDeclaration, secondFunctionDeclaration, thirdFunctionDeclaration);
         TypeResult<StatementTypeCheckResult> result = typeCheckBlock(block, staticContext, Option.<Type>none());
-        assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
+        assertThat(result, isSuccessWithValue(StatementTypeCheckResult.noReturn()));
         assertThat(staticContext.get(firstFunctionDeclaration), is(success(unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING)))));
     }
     

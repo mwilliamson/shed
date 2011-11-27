@@ -21,10 +21,9 @@ public class ArgumentTypeInfererImpl implements ArgumentTypeInferer {
     }
     
     @Override
-    public TypeResult<List<Type>>
-    inferArgumentTypesAndAddToContext(List<FormalArgumentNode> formalArguments) {
+    public TypeResult<List<Type>> inferArgumentTypesAndAddToContext(List<FormalArgumentNode> formalArguments) {
         List<TypeResult<Type>> results = Lists.transform(formalArguments, inferArgumentType());
-        return TypeResult.combine(results);
+        return TypeResults.combine(results);
     }
 
     private Function<FormalArgumentNode, TypeResult<Type>> inferArgumentType() {

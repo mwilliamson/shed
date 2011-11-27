@@ -14,7 +14,7 @@ import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.typechecker.TypeResultMatchers.isSuccessWithValue;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 public class TypeLookupTest {
@@ -23,7 +23,7 @@ public class TypeLookupTest {
     @Test public void
     canLookupTypesFromContext() {
         TypeResult<Type> result = lookupTypeReference(fixture.stringTypeReference(), standardContext());
-        assertThat(result, is(success((Type)CoreTypes.STRING)));
+        assertThat(result, isSuccessWithValue((Type)CoreTypes.STRING));
     }
     
     @Test public void

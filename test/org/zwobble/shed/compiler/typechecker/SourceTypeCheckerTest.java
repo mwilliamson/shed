@@ -21,6 +21,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
+import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 
 public class SourceTypeCheckerTest {
@@ -33,7 +34,7 @@ public class SourceTypeCheckerTest {
             Collections.<ImportNode>emptyList(),
             asList((StatementNode)Nodes.immutableVar("x", new BooleanLiteralNode(true)))
         );
-        assertThat(typeCheck(source).isSuccess(), is(true));
+        assertThat(typeCheck(source), isSuccess());
     }
     
     @Test public void

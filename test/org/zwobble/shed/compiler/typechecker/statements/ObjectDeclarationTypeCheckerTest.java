@@ -25,6 +25,7 @@ import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
+import static org.zwobble.shed.compiler.typechecker.TypeResultMatchers.isSuccessWithValue;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.types.CoreTypes.functionTypeOf;
 import static org.zwobble.shed.compiler.types.Members.members;
@@ -48,7 +49,7 @@ public class ObjectDeclarationTypeCheckerTest {
     objectDeclarationDoesNotReturnFromScope() {
         ObjectDeclarationNode objectDeclarationNode = Nodes.object("browser", Nodes.block());
         TypeResult<StatementTypeCheckResult> result = typeCheckObjectDeclaration(objectDeclarationNode);
-        assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
+        assertThat(result, isSuccessWithValue(StatementTypeCheckResult.noReturn()));
     }
     
     @Test public void
@@ -72,7 +73,7 @@ public class ObjectDeclarationTypeCheckerTest {
         fixture.addType(objectDeclarationNode, type);
         StaticContext staticContext = fixture.context();
         TypeResult<StatementTypeCheckResult> result = typeCheckObjectDeclaration(objectDeclarationNode);
-        assertThat(result, is(TypeResult.success(StatementTypeCheckResult.noReturn())));
+        assertThat(result, isSuccessWithValue(StatementTypeCheckResult.noReturn()));
         assertThat(staticContext.get(objectDeclarationNode).getType(), is((Type)type));
         ScalarTypeInfo browserTypeInfo = staticContext.getInfo(type);
         assertThat(browserTypeInfo.getMembers(), is(members("name", ValueInfo.unassignableValue(CoreTypes.STRING))));

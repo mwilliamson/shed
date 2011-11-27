@@ -8,6 +8,7 @@ import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.typechecker.BlockTypeChecker;
 import org.zwobble.shed.compiler.typechecker.ConditionTypeChecker;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
+import org.zwobble.shed.compiler.typechecker.TypeResults;
 import org.zwobble.shed.compiler.types.Type;
 
 public class IfThenElseTypeChecker implements StatementTypeChecker<IfThenElseStatementNode> {
@@ -31,7 +32,7 @@ public class IfThenElseTypeChecker implements StatementTypeChecker<IfThenElseSta
             ifTrueResult.hasValue() && ifTrueResult.getOrThrow().hasReturned() && 
             ifFalseResult.hasValue() && ifFalseResult.getOrThrow().hasReturned();
         
-        return TypeResult.success(StatementTypeCheckResult.doesReturn(returns))
+        return TypeResults.success(StatementTypeCheckResult.doesReturn(returns))
             .withErrorsFrom(conditionResult)
             .withErrorsFrom(ifTrueResult)
             .withErrorsFrom(ifFalseResult);

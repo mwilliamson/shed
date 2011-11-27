@@ -55,7 +55,7 @@ public class CompilerTesting {
 
             @Override
             protected boolean matchesSafely(HasErrors item, Description mismatchDescription) {
-                if (item.isSuccess()) {
+                if (Results.isSuccess(item)) {
                     mismatchDescription.appendText("was success");
                     return false;
                 } else {

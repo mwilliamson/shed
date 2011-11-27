@@ -29,6 +29,7 @@ import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
+import static org.zwobble.shed.compiler.typechecker.TypeResultMatchers.isSuccessWithValue;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
@@ -65,7 +66,7 @@ public class VariableDeclarationTypeCheckerTest {
         
         assertThat(
             typeCheckVariableDeclaration(variableNode, staticContext),
-            is(TypeResult.success(StatementTypeCheckResult.noReturn()))
+            isSuccessWithValue(StatementTypeCheckResult.noReturn())
         );
         assertThat(staticContext.get(variableNode), is(VariableLookupResult.success(unassignableValue(CoreTypes.BOOLEAN))));
     }
@@ -77,7 +78,7 @@ public class VariableDeclarationTypeCheckerTest {
         
         assertThat(
             typeCheckVariableDeclaration(variableNode, staticContext),
-            is(TypeResult.success(StatementTypeCheckResult.noReturn()))
+            isSuccessWithValue(StatementTypeCheckResult.noReturn())
         );
         assertThat(staticContext.get(variableNode), is(VariableLookupResult.notDeclared()));
     }
@@ -89,7 +90,7 @@ public class VariableDeclarationTypeCheckerTest {
         
         assertThat(
             typeCheckVariableDeclaration(variableNode, staticContext),
-            is(TypeResult.success(StatementTypeCheckResult.noReturn()))
+            isSuccessWithValue(StatementTypeCheckResult.noReturn())
         );
         assertThat(staticContext.get(variableNode), is(VariableLookupResult.success(assignableValue(CoreTypes.BOOLEAN))));
     }
@@ -128,7 +129,7 @@ public class VariableDeclarationTypeCheckerTest {
         
         assertThat(
             typeCheckVariableDeclaration(variableNode, staticContext),
-            is(TypeResult.success(StatementTypeCheckResult.noReturn()))
+            isSuccessWithValue(StatementTypeCheckResult.noReturn())
         );
     }
     

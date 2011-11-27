@@ -17,6 +17,7 @@ import org.zwobble.shed.compiler.types.Types;
 import com.google.common.base.Function;
 
 import static com.google.common.collect.Iterables.transform;
+import static org.zwobble.shed.compiler.Results.isSuccess;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 
 public class InterfaceDereferencer {
@@ -30,7 +31,7 @@ public class InterfaceDereferencer {
     public TypeResult<Interfaces> dereferenceInterfaces(List<ExpressionNode> interfaces) {
         Iterable<TypeResult<ScalarType>> results = transform(interfaces, lookupType());
         List<ScalarType> dereferencedInterfaces = Options.flatten(transform(results, toOption()));
-        return TypeResult.success(interfaces(dereferencedInterfaces)).withErrorsFrom(TypeResult.combine(results));
+        return TypeResults.success(interfaces(dereferencedInterfaces)).withErrorsFrom(TypeResults.combine(results));
     }
 
     private Function<TypeResult<ScalarType>, Option<ScalarType>> toOption() {
@@ -50,11 +51,11 @@ public class InterfaceDereferencer {
                 // We should always get a result -- if we fail, we get unknown type
                 Type type = lookupResult.getOrThrow();
                 if (Types.isInterface(type)) {
-                    return TypeResult.success((ScalarType)type);
-                } else if (lookupResult.isSuccess()) {
-                    return TypeResult.failure(new CompilerErrorWithSyntaxNode(input, new NotAnInterfaceError(type)));
+                    return TypeResults.success((ScalarType)type);
+                } else if (isSuccess(lookupResult)) {
+                    return TypeResults.failure(new CompilerErrorWithSyntaxNode(input, new NotAnInterfaceError(type)));
                 } else {
-                    return TypeResult.failure(lookupResult.getErrors());
+                    return TypeResults.failure(lookupResult.getErrors());
                 }
             }
         };

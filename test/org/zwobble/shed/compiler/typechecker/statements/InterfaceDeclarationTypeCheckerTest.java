@@ -18,10 +18,9 @@ import org.zwobble.shed.compiler.types.Type;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.typechecker.TypeResultMatchers.isSuccessWithValue;
 import static org.zwobble.shed.compiler.types.Member.member;
 
 public class InterfaceDeclarationTypeCheckerTest {
@@ -55,7 +54,7 @@ public class InterfaceDeclarationTypeCheckerTest {
         
         TypeResult<StatementTypeCheckResult> result = typeCheck(declaration);
         
-        assertThat(result, is(success(StatementTypeCheckResult.noReturn())));
+        assertThat(result, isSuccessWithValue(StatementTypeCheckResult.noReturn()));
     }
     
     private TypeResult<?> forwardDeclare(InterfaceDeclarationNode interfaceDeclaration) {

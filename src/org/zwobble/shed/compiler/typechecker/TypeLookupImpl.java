@@ -9,8 +9,8 @@ import org.zwobble.shed.compiler.types.Types;
 import com.google.common.base.Function;
 
 import static org.zwobble.shed.compiler.CompilerErrors.error;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.typechecker.TypeResults.failure;
+import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
 
 public class TypeLookupImpl implements TypeLookup {
     private final TypeInferer typeInferer;

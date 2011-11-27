@@ -13,7 +13,7 @@ import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.base.Function;
 
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
 
 public class FunctionSignatureDeclarationTypeChecker implements DeclarationTypeChecker<FunctionSignatureDeclarationNode> {
     private final TypeInferer typeInferer;

@@ -45,11 +45,11 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
-import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.Option.some;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.Results.isSuccess;
+import static org.zwobble.shed.compiler.typechecker.TypeResults.failure;
+import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
 
@@ -157,7 +157,7 @@ public class TypeInfererImpl implements TypeInferer {
         if (returnTypeOption.hasValue()) {
             return result.ifValueThen(buildFunctionType(returnTypeOption.get())).ifValueThen(toValueInfo());            
         } else {
-            return TypeResult.<ValueInfo>failure(result.getErrors());
+            return TypeResults.<ValueInfo>failure(result.getErrors());
         }
     }
 
@@ -190,7 +190,7 @@ public class TypeInfererImpl implements TypeInferer {
                 result = result.withErrorsFrom(blockResult);
                 
                 if (!blockResult.getOrThrow().hasReturned()) {
-                    result = result.withErrorsFrom(TypeResult.<Type>failure(error(
+                    result = result.withErrorsFrom(TypeResults.<Type>failure(error(
                         function,
                         new MissingReturnStatementError()
                     )));
@@ -206,7 +206,7 @@ public class TypeInfererImpl implements TypeInferer {
             @Override
             public TypeResult<Type> apply(Type calledType) {
                 if (!functionTyping.isFunction(calledType)) {
-                    return TypeResult.failure(error(expression, new NotCallableError(calledType)));
+                    return failure(error(expression, new NotCallableError(calledType)));
                 }
                 final List<? extends Type> typeParameters = functionTyping.extractFunctionTypeParameters(calledType).get();
                 
@@ -215,7 +215,7 @@ public class TypeInfererImpl implements TypeInferer {
                 if (numberOfFormalAguments != numberOfActualArguments) {
                     String errorMessage = "Function requires " + numberOfFormalAguments + " argument(s), but is called with " + numberOfActualArguments;
                     CompilerError error = CompilerErrors.error(expression, errorMessage);
-                    return TypeResult.failure(asList(error));
+                    return failure(error);
                 }
                 Type returnType = typeParameters.get(numberOfFormalAguments);
                 TypeResult<Type> result = success(returnType);
@@ -249,9 +249,9 @@ public class TypeInfererImpl implements TypeInferer {
                 Option<Member> member = members.lookup(name);
                 
                 if (member.hasValue()) {
-                    return TypeResult.success(member.get().getValueInfo());
+                    return success(member.get().getValueInfo());
                 } else {
-                    return TypeResult.failure(error(memberAccess, ("No such member: " + name)));
+                    return failure(error(memberAccess, ("No such member: " + name)));
                 }
             }
         });
@@ -269,9 +269,9 @@ public class TypeInfererImpl implements TypeInferer {
                     for (int i = 0; i < functionType.getFormalTypeParameters().size(); i += 1) {
                         replacements.put(functionType.getFormalTypeParameters().get(i), parameterTypes.get(i));
                     }
-                    return TypeResult.success((Type)CoreTypes.functionTypeOf(Eager.transform(functionType.getFunctionTypeParameters(), toReplacement(replacements.build()))));
+                    return success((Type)CoreTypes.functionTypeOf(Eager.transform(functionType.getFunctionTypeParameters(), toReplacement(replacements.build()))));
                 } else if (baseType instanceof ParameterisedType) {
-                    return TypeResult.success((Type)context.getMetaClass(applyTypes((ParameterisedType)baseType, parameterTypes)));   
+                    return success((Type)context.getMetaClass(applyTypes((ParameterisedType)baseType, parameterTypes)));   
                 } else {
                     throw new RuntimeException("Don't know how to apply types " + parameterTypes + " to " + baseType);
                 }
@@ -309,9 +309,9 @@ public class TypeInfererImpl implements TypeInferer {
             @Override
             public TypeResult<ValueInfo> apply(ValueInfo input) {
                 if (input.isAssignable()) {
-                    return TypeResult.success(input);
+                    return success(input);
                 } else {
-                    return TypeResult.failure(input, error(expression, new InvalidAssignmentError()));
+                    return failure(input, error(expression, new InvalidAssignmentError()));
                 }
             }
         };
@@ -322,7 +322,7 @@ public class TypeInfererImpl implements TypeInferer {
             @Override
             public Type apply(ExpressionNode expression) {
                 TypeResult<Type> result = typeLookup.lookupTypeReference(expression);
-                if (!result.isSuccess()) {
+                if (!isSuccess(result)) {
                     // TODO: handle failure
                     throw new RuntimeException(result.getErrors().toString());
                 }

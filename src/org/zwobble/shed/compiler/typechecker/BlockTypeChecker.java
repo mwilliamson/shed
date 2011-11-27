@@ -8,7 +8,7 @@ import org.zwobble.shed.compiler.typechecker.statements.AllStatementsTypeChecker
 import org.zwobble.shed.compiler.typechecker.statements.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.types.Type;
 
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
 
 
 public class BlockTypeChecker {
@@ -28,7 +28,7 @@ public class BlockTypeChecker {
     }
 
     public TypeResult<?> forwardDeclare(Iterable<? extends StatementNode> statements) {
-        TypeResult<Void> result = TypeResult.success();
+        TypeResult<Void> result = success();
         for (StatementNode statement : statements) {
             TypeResult<?> statementResult = statementsTypeChecker.forwardDeclare(statement);
             result = result.withErrorsFrom(statementResult);

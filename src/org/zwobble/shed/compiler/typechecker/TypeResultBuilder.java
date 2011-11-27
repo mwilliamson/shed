@@ -33,9 +33,9 @@ public class TypeResultBuilder<T> {
     
     public TypeResult<T> build() {
         if (errors.isEmpty()) {
-            return TypeResult.success(value);
+            return TypeResults.success(value);
         } else {
-            return TypeResult.failure(value, errors);
+            return TypeResults.failure(value, errors);
         }
     }
 }

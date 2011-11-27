@@ -17,8 +17,7 @@ import org.zwobble.shed.compiler.types.Type;
 import com.google.common.base.Function;
 
 import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
-
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
 
 public class FunctionDeclarationTypeChecker implements DeclarationTypeChecker<FunctionDeclarationNode> {
     private final TypeInferer typeInferer;

@@ -14,7 +14,7 @@ import org.zwobble.shed.compiler.types.Members;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
 
 public class InterfaceDeclarationTypeChecker implements DeclarationTypeChecker<InterfaceDeclarationNode> {
     private final BlockTypeChecker blockTypeChecker;

@@ -9,6 +9,7 @@ import org.zwobble.shed.compiler.parsing.nodes.HoistableStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
+import org.zwobble.shed.compiler.typechecker.TypeResults;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -45,7 +46,7 @@ public class DependencyGraphChecker {
     private static class Visitor {
         private final Set<Identity<StatementNode>> declared = Sets.newHashSet();
         private final Queue<Identity<DeclarationNode>> dependents = Lists.newLinkedList();
-        private TypeResult<Void> result = TypeResult.success();
+        private TypeResult<Void> result = TypeResults.success();
         private final Iterable<? extends StatementNode> fixedStatements;
         private final DependencyGraph graph;
         
@@ -92,7 +93,7 @@ public class DependencyGraphChecker {
         }
 
         private void addDependencyError(StatementNode statement) {
-            result = result.withErrorsFrom(TypeResult.failure(error(
+            result = result.withErrorsFrom(TypeResults.failure(error(
                 statement,
                 new UndeclaredDependenciesError(transform(dependents, toIdentifier()))
             )));

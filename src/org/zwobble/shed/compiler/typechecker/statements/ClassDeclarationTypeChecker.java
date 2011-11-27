@@ -17,6 +17,7 @@ import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeLookup;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.TypeResultBuilder;
+import org.zwobble.shed.compiler.typechecker.TypeResults;
 import org.zwobble.shed.compiler.typegeneration.TypeStore;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.Interfaces;
@@ -26,9 +27,10 @@ import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.base.Function;
 
+import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
+
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
 import static org.zwobble.shed.compiler.typechecker.statements.StatementTypeCheckResult.noReturn;
 
@@ -86,7 +88,7 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
         Members members = buildMembers(classDeclaration);
         TypeResult<Interfaces> interfacesResult = interfaceDereferencer.dereferenceInterfaces(classDeclaration.getSuperTypes());
         ClassType type = (ClassType)typeStore.typeDeclaredBy(classDeclaration);
-        TypeResult<List<Type>> classParameters = TypeResult.combine(transform(classDeclaration.getFormalArguments(), toType()));
+        TypeResult<List<Type>> classParameters = TypeResults.combine(transform(classDeclaration.getFormalArguments(), toType()));
         ScalarTypeInfo classTypeInfo = new ScalarTypeInfo(interfacesResult.getOrThrow(), members);
         context.addClass(classDeclaration, type, classParameters.getOrThrow(), classTypeInfo);
         return success(type).withErrorsFrom(classParameters, interfacesResult);

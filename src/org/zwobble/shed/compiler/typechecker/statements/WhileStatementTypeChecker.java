@@ -9,7 +9,7 @@ import org.zwobble.shed.compiler.typechecker.ConditionTypeChecker;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.types.Type;
 
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
 
 public class WhileStatementTypeChecker implements StatementTypeChecker<WhileStatementNode> {
     private final ConditionTypeChecker conditionTypeChecker;

@@ -23,6 +23,7 @@ import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
+import static org.zwobble.shed.compiler.typechecker.TypeResultMatchers.isSuccessWithValue;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
@@ -64,7 +65,7 @@ public class ReturnStatementTypeCheckerTest {
         ReturnNode returnStatement = new ReturnNode(reference);
         assertThat(
             typeCheck(returnStatement, context, Option.<Type>some(iterableType)),
-            is(TypeResult.success(StatementTypeCheckResult.alwaysReturns()))
+            isSuccessWithValue(StatementTypeCheckResult.alwaysReturns())
         );
     }
     

@@ -13,7 +13,7 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.typechecker.TypeResultMatchers.isSuccessWithValue;
 
 public class FunctionSignatureDeclarationTypeCheckerTest {
     private final TypeCheckerTestFixture fixture = TypeCheckerTestFixture.build();
@@ -33,7 +33,7 @@ public class FunctionSignatureDeclarationTypeCheckerTest {
     functionSignatureDoesNotReturn() {
         TypeResult<StatementTypeCheckResult> result = typeCheck(funcSignature);
         
-        assertThat(result, is(success(StatementTypeCheckResult.noReturn())));
+        assertThat(result, isSuccessWithValue(StatementTypeCheckResult.noReturn()));
     }
     
     private TypeResult<?> forwardDeclare(FunctionSignatureDeclarationNode declaration) {

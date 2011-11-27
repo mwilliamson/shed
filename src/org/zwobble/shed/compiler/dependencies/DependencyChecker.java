@@ -12,6 +12,7 @@ import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.referenceresolution.References;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
+import org.zwobble.shed.compiler.typechecker.TypeResults;
 import org.zwobble.shed.compiler.util.ShedIterables;
 
 import com.google.common.base.Function;
@@ -36,7 +37,7 @@ public class DependencyChecker {
         }
         
         public TypeResult<Void> check(SyntaxNode node) {
-            TypeResult<Void> result = TypeResult.success();
+            TypeResult<Void> result = TypeResults.success();
             if (node instanceof SourceNode) {
                 result = result.withErrorsFrom(checkSourceNode((SourceNode)node));
             }
@@ -45,7 +46,7 @@ public class DependencyChecker {
         }
 
         private TypeResult<?> checkBlocksInNode(SyntaxNode node) {
-            return TypeResult.combine(transform(findAllBlocks(node), checkBlock()));
+            return TypeResults.combine(transform(findAllBlocks(node), checkBlock()));
         }
 
         private Iterable<BlockNode> findAllBlocks(SyntaxNode node) {

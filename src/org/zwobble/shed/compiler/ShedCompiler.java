@@ -29,6 +29,8 @@ import org.zwobble.shed.compiler.typegeneration.TypeStore;
 
 import com.google.inject.Injector;
 
+import static org.zwobble.shed.compiler.Results.isSuccess;
+
 public class ShedCompiler {
     public static ShedCompiler forBrowser(OptimisationLevel optimisationLevel) {
         return new ShedCompiler(new BrowserModuleWrapper(), optimiserFor(optimisationLevel));
@@ -84,7 +86,7 @@ public class ShedCompiler {
                 TypeResult<Void> dependencyCheckResult = new DependencyChecker().check(sourceNode, references);
                 errors.addAll(dependencyCheckResult.getErrors());
                 
-                if (typeCheckResult.isSuccess()) {
+                if (isSuccess(typeCheckResult)) {
                     JavaScriptNode javaScript = javaScriptGenerator(references).generate(sourceNode, context.getBuiltIns().keySet());
                     javaScriptOutput = javaScriptOptimiser.optimise(javaScriptWriter.write(javaScript));
                 }   

@@ -21,6 +21,7 @@ import org.zwobble.shed.compiler.types.MembersBuilder;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
+import static org.zwobble.shed.compiler.Results.isSuccess;
 import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
@@ -49,7 +50,7 @@ public class ObjectDeclarationTypeChecker implements StatementTypeChecker<Object
             blockTypeChecker.forwardDeclareAndTypeCheck(objectDeclaration.getStatements(), Option.<Type>none());
         result.addErrors(blockResult);
         
-        if (blockResult.isSuccess()) {
+        if (isSuccess(blockResult)) {
             Interfaces interfaces = interfaceDereferencer.dereferenceInterfaces(objectDeclaration.getSuperTypes()).getOrThrow();
             Members members = buildMembers(objectDeclaration);
             

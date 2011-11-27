@@ -45,15 +45,15 @@ public class InterfaceImplementationChecker {
         Members classMembers = typeInfo.getMembers();
         Option<Member> actualMemberOption = classMembers.lookup(memberName);
         if (!actualMemberOption.hasValue()) {
-            return TypeResult.failure(new CompilerErrorWithSyntaxNode(declaration, new MissingMemberError(superType, memberName)));
+            return TypeResults.failure(new CompilerErrorWithSyntaxNode(declaration, new MissingMemberError(superType, memberName)));
         }
         Type expectedMemberType = member.getType();
         Type actualMemberType = actualMemberOption.get().getType();
         if (!subTyping.isSubType(actualMemberType, expectedMemberType)) {
             CompilerErrorDescription description = new WrongMemberTypeError(superType, memberName, expectedMemberType, actualMemberType);
-            return TypeResult.failure(new CompilerErrorWithSyntaxNode(declaration, description));
+            return TypeResults.failure(new CompilerErrorWithSyntaxNode(declaration, description));
         }
         
-        return TypeResult.success();
+        return TypeResults.success();
     }
 }

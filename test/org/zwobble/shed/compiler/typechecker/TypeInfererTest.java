@@ -3,7 +3,6 @@ package org.zwobble.shed.compiler.typechecker;
 import java.util.Collections;
 
 import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerErrorDescription;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
@@ -35,10 +34,9 @@ import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
-import static org.hamcrest.Matchers.hasItem;
-
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
@@ -48,8 +46,8 @@ import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.typechecker.TypeResultMatchers.isSuccessWithValue;
+import static org.zwobble.shed.compiler.typechecker.TypeResults.failure;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
@@ -112,7 +110,7 @@ public class TypeInfererTest {
             new NumberLiteralNode("42")
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, is(success((Type)CoreTypes.functionTypeOf(CoreTypes.DOUBLE))));
+        assertThat(result, isSuccessWithValue((Type)CoreTypes.functionTypeOf(CoreTypes.DOUBLE)));
     }
     
     @Test public void
@@ -152,7 +150,7 @@ public class TypeInfererTest {
             body
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, is(success((Type)CoreTypes.functionTypeOf(fixture.implementingClassType(), fixture.interfaceType()))));
+        assertThat(result, isSuccessWithValue((Type)CoreTypes.functionTypeOf(fixture.implementingClassType(), fixture.interfaceType())));
     }
     
     @Test public void
@@ -193,7 +191,7 @@ public class TypeInfererTest {
             new BooleanLiteralNode(true)
         );
         TypeResult<Type> result = inferType(functionExpression, context);
-        assertThat(result, is(success((Type)CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.BOOLEAN))));
+        assertThat(result, isSuccessWithValue((Type)CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.BOOLEAN)));
     }
     
     @Test public void
@@ -207,7 +205,7 @@ public class TypeInfererTest {
             Nodes.block(new ReturnNode(new BooleanLiteralNode(true)))
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, is(success((Type)CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.BOOLEAN))));
+        assertThat(result, isSuccessWithValue((Type)CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.BOOLEAN)));
     }
     
     @Test public void
@@ -252,7 +250,7 @@ public class TypeInfererTest {
             Nodes.block(new ReturnNode(ageReference))
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, is(success((Type)CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.DOUBLE))));
+        assertThat(result, isSuccessWithValue((Type)CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.DOUBLE)));
     }
     
     @Test public void
@@ -284,7 +282,7 @@ public class TypeInfererTest {
             ageReference
         );
         TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, is(success((Type)CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.DOUBLE))));
+        assertThat(result, isSuccessWithValue((Type)CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.DOUBLE)));
     }
     
     @Test public void
@@ -434,7 +432,7 @@ public class TypeInfererTest {
         
         MemberAccessNode memberAccess = Nodes.member(reference, "age");
         TypeResult<ValueInfo> result = inferValueInfo(memberAccess, context);
-        assertThat(result, is(success(unassignableValue(CoreTypes.DOUBLE))));
+        assertThat(result, isSuccessWithValue(unassignableValue(CoreTypes.DOUBLE)));
     }
     
     @Test public void
@@ -450,7 +448,7 @@ public class TypeInfererTest {
         
         MemberAccessNode memberAccess = Nodes.member(reference, "age");
         TypeResult<ValueInfo> result = inferValueInfo(memberAccess, context);
-        assertThat(result, is(success(assignableValue(CoreTypes.DOUBLE))));
+        assertThat(result, isSuccessWithValue(assignableValue(CoreTypes.DOUBLE)));
     }
     
     @Test public void
@@ -492,9 +490,9 @@ public class TypeInfererTest {
             new NumberLiteralNode("42")
         );
         TypeResult<Type> result = inferType(functionExpression, context);
-        assertThat(result, is(success(
+        assertThat(result, isSuccessWithValue(
             (Type)CoreTypes.functionTypeOf(applyTypes(listTypeFunction, asList((Type)CoreTypes.DOUBLE)), CoreTypes.DOUBLE)
-        )));
+        ));
     }
     
     @Test public void
@@ -601,7 +599,7 @@ public class TypeInfererTest {
         context.addInfo(classType, new ScalarTypeInfo(Interfaces.interfaces(interfaceType), members()));
         
         TypeResult<Type> result = inferType(Nodes.assign(interfaceReference, classReference), context);
-        assertThat(result, is(success((Type)classType)));
+        assertThat(result, isSuccessWithValue((Type)classType));
     }
     
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
@@ -621,6 +619,6 @@ public class TypeInfererTest {
     }
     
     private Matcher<TypeResult<Type>> isType(Type type) {
-        return Matchers.is(TypeResult.success(type));
+        return isSuccessWithValue(type);
     }
 }

@@ -7,9 +7,11 @@ import org.zwobble.shed.compiler.referenceresolution.References;
 import org.zwobble.shed.compiler.typechecker.VariableLookupResult.Status;
 import org.zwobble.shed.compiler.typechecker.errors.UntypedReferenceError;
 
+import static org.zwobble.shed.compiler.typechecker.TypeResults.failure;
+
+import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
+
 import static org.zwobble.shed.compiler.CompilerErrors.error;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 
 public class VariableLookup {
     private final References references;

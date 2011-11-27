@@ -9,6 +9,10 @@ import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.base.Function;
 
+import static org.zwobble.shed.compiler.typechecker.TypeResults.failure;
+
+import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
+
 import static org.zwobble.shed.compiler.CompilerErrors.error;
 
 public class ConditionTypeChecker {
@@ -31,9 +35,9 @@ public class ConditionTypeChecker {
             @Override
             public TypeResult<Void> apply(Type input) {
                 if (subTyping.isSubType(input, CoreTypes.BOOLEAN)) {
-                    return TypeResult.success();
+                    return success();
                 } else {
-                    return TypeResult.failure(error(condition, new ConditionNotBooleanError(input)));
+                    return failure(error(condition, new ConditionNotBooleanError(input)));
                 }
             }
         };

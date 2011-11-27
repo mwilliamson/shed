@@ -8,9 +8,8 @@ import org.zwobble.shed.compiler.typechecker.errors.UntypedReferenceError;
 import org.zwobble.shed.compiler.types.CoreTypes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.typechecker.TypeResultMatchers.isSuccessWithValue;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 public class VariableLookupTest {
@@ -27,7 +26,7 @@ public class VariableLookupTest {
     looksUpValueInfoUsingStaticContext() {
         fixture.addReference(reference, declaration);
         fixture.context().add(declaration, unassignableValue(CoreTypes.STRING));
-        assertThat(lookup(reference), is(success(unassignableValue(CoreTypes.STRING))));
+        assertThat(lookup(reference), isSuccessWithValue(unassignableValue(CoreTypes.STRING)));
     }
     
     private TypeResult<ValueInfo> lookup(VariableIdentifierNode reference) {

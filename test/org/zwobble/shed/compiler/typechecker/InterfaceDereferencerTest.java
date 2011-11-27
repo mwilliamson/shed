@@ -9,11 +9,12 @@ import org.zwobble.shed.compiler.typechecker.errors.NotAnInterfaceError;
 import org.zwobble.shed.compiler.typechecker.errors.UntypedReferenceError;
 import org.zwobble.shed.compiler.types.Interfaces;
 
+import static org.zwobble.shed.compiler.typechecker.TypeResultMatchers.isSuccessWithValue;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 
 public class InterfaceDereferencerTest {
@@ -22,7 +23,7 @@ public class InterfaceDereferencerTest {
     @Test public void
     interfacesAreDeferenced() {
         TypeResult<Interfaces> result = dereference(asList((ExpressionNode)fixture.interfaceTypeReference()));
-        assertThat(result, is(success(interfaces(fixture.interfaceType()))));
+        assertThat(result, isSuccessWithValue(interfaces(fixture.interfaceType())));
     }
     
     @Test public void
