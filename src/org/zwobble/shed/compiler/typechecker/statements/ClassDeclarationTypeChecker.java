@@ -11,6 +11,7 @@ import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.typechecker.ArgumentTypeInferer;
 import org.zwobble.shed.compiler.typechecker.BlockTypeChecker;
+import org.zwobble.shed.compiler.typechecker.InterfaceDereferencer;
 import org.zwobble.shed.compiler.typechecker.InterfaceImplementationChecker;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeLookup;
@@ -34,6 +35,7 @@ import static org.zwobble.shed.compiler.typechecker.statements.StatementTypeChec
 public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<ClassDeclarationNode> {
     private final BlockTypeChecker blockTypeChecker;
     private final ArgumentTypeInferer argumentTypeInferer;
+    private final InterfaceDereferencer interfaceDereferencer;
     private final InterfaceImplementationChecker interfaceImplementationChecker; 
     private final MembersBuilder membersBuilder;
     private final TypeLookup typeLookup;
@@ -43,11 +45,12 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
     @Inject
     public ClassDeclarationTypeChecker(
         BlockTypeChecker blockTypeChecker, ArgumentTypeInferer argumentTypeInferer, InterfaceImplementationChecker interfaceImplementationChecker, 
-        MembersBuilder membersBuilder, TypeLookup typeLookup, TypeStore typeStore, StaticContext context
+        InterfaceDereferencer interfaceDereferencer, MembersBuilder membersBuilder, TypeLookup typeLookup, TypeStore typeStore, StaticContext context
     ) {
         this.blockTypeChecker = blockTypeChecker;
         this.argumentTypeInferer = argumentTypeInferer;
         this.interfaceImplementationChecker = interfaceImplementationChecker;
+        this.interfaceDereferencer = interfaceDereferencer;
         this.membersBuilder = membersBuilder;
         this.typeLookup = typeLookup;
         this.typeStore = typeStore;
@@ -81,7 +84,7 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
 
     private TypeResult<ClassType> buildClassType(ClassDeclarationNode classDeclaration) {
         Members members = buildMembers(classDeclaration);
-        Interfaces interfaces = interfaceImplementationChecker.dereferenceInterfaces(classDeclaration.getSuperTypes());
+        Interfaces interfaces = interfaceDereferencer.dereferenceInterfaces(classDeclaration.getSuperTypes());
         ClassType type = (ClassType)typeStore.typeDeclaredBy(classDeclaration);
         TypeResult<List<Type>> classParameters = TypeResult.combine(transform(classDeclaration.getFormalArguments(), toType()));
         ScalarTypeInfo classTypeInfo = new ScalarTypeInfo(interfaces, members);

@@ -8,6 +8,7 @@ import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.typechecker.BlockTypeChecker;
+import org.zwobble.shed.compiler.typechecker.InterfaceDereferencer;
 import org.zwobble.shed.compiler.typechecker.InterfaceImplementationChecker;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
@@ -26,14 +27,16 @@ import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 public class ObjectDeclarationTypeChecker implements StatementTypeChecker<ObjectDeclarationNode> {
     private final BlockTypeChecker blockTypeChecker;
     private final InterfaceImplementationChecker interfaceImplementationChecker;
+    private final InterfaceDereferencer interfaceDereferencer;
     private final TypeStore typeStore;
     private final StaticContext context;
 
     @Inject
     public ObjectDeclarationTypeChecker(BlockTypeChecker blockTypeChecker, InterfaceImplementationChecker interfaceImplementationChecker,
-        TypeStore typeStore, StaticContext context) {
+        InterfaceDereferencer interfaceDereferencer, TypeStore typeStore, StaticContext context) {
         this.blockTypeChecker = blockTypeChecker;
         this.interfaceImplementationChecker = interfaceImplementationChecker;
+        this.interfaceDereferencer = interfaceDereferencer;
         this.typeStore = typeStore;
         this.context = context;
     }
@@ -47,7 +50,7 @@ public class ObjectDeclarationTypeChecker implements StatementTypeChecker<Object
         result.addErrors(blockResult);
         
         if (blockResult.isSuccess()) {
-            Interfaces interfaces = interfaceImplementationChecker.dereferenceInterfaces(objectDeclaration.getSuperTypes());
+            Interfaces interfaces = interfaceDereferencer.dereferenceInterfaces(objectDeclaration.getSuperTypes());
             Members members = buildMembers(objectDeclaration);
             
             InterfaceType type = (InterfaceType) typeStore.typeDeclaredBy(objectDeclaration);
