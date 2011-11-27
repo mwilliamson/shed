@@ -1,11 +1,9 @@
 package org.zwobble.shed.compiler.typechecker;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
 
-import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
@@ -20,8 +18,7 @@ import static com.google.common.collect.Iterables.concat;
 import static java.util.Collections.singleton;
 import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.failure;
-import static org.zwobble.shed.compiler.typechecker.TypeResult.success;
+import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
 
 public class SourceTypeChecker {
     private final BlockTypeChecker blockTypeChecker;
@@ -40,21 +37,21 @@ public class SourceTypeChecker {
     }
     
     public TypeResult<Void> typeCheck(SourceNode source) {
-        List<CompilerError> errors = new ArrayList<CompilerError>();
+        TypeResultBuilder<Void> result = typeResultBuilder();
         
         for (ImportNode importNode : source.getImports()) {
             TypeResult<Void> importTypeCheckResult = importStatementTypeChecker.typeCheck(importNode);
-            errors.addAll(importTypeCheckResult.getErrors());
+            result.addErrors(importTypeCheckResult);
         }
 
         TypeResult<?> blockResult = blockTypeChecker.forwardDeclareAndTypeCheck(source.getStatements(), Option.<Type>none());
-        errors.addAll(blockResult.getErrors());
+        result.addErrors(blockResult);
         
         boolean seenPublicStatement = false;
         for (StatementNode statement : source.getStatements()) {
             if (statement instanceof PublicDeclarationNode) {
                 if (seenPublicStatement) {
-                    errors.add(error(statement, "A module may have no more than one public value"));
+                    result.addError(error(statement, "A module may have no more than one public value"));
                 }
                 seenPublicStatement = true;
                 DeclarationNode declaration = ((PublicDeclarationNode) statement).getDeclaration();
@@ -64,10 +61,6 @@ public class SourceTypeChecker {
             }
         }
         
-        if (errors.isEmpty()) {
-            return success();
-        } else {
-            return failure(errors);
-        }
+        return result.build();
     }
 }
