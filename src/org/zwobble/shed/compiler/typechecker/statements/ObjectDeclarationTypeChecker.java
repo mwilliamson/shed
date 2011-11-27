@@ -51,7 +51,8 @@ public class ObjectDeclarationTypeChecker implements StatementTypeChecker<Object
         result.addErrors(blockResult);
         
         if (isSuccess(blockResult)) {
-            Interfaces interfaces = interfaceDereferencer.dereferenceInterfaces(objectDeclaration.getSuperTypes()).getOrThrow();
+            // TODO: don't throw away errors
+            Interfaces interfaces = interfaceDereferencer.dereferenceInterfaces(objectDeclaration.getSuperTypes()).get();
             Members members = buildMembers(objectDeclaration);
             
             InterfaceType type = (InterfaceType) typeStore.typeDeclaredBy(objectDeclaration);

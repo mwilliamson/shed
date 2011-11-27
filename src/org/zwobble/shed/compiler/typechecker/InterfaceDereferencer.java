@@ -28,7 +28,7 @@ public class InterfaceDereferencer {
         this.typeLookup = typeLookup;
     }
     
-    public TypeResult<Interfaces> dereferenceInterfaces(List<ExpressionNode> interfaces) {
+    public TypeResultWithValue<Interfaces> dereferenceInterfaces(List<ExpressionNode> interfaces) {
         Iterable<TypeResult<ScalarType>> results = transform(interfaces, lookupType());
         List<ScalarType> dereferencedInterfaces = Options.flatten(transform(results, toOption()));
         return TypeResults.success(interfaces(dereferencedInterfaces)).withErrorsFrom(TypeResults.combine(results));

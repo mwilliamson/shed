@@ -19,7 +19,7 @@ public class BlockTypeChecker {
         this.statementsTypeChecker = statementsTypeChecker;
     }
     
-    public TypeResult<StatementTypeCheckResult> forwardDeclareAndTypeCheck(
+    public TypeResultWithValue<StatementTypeCheckResult> forwardDeclareAndTypeCheck(
         Iterable<StatementNode> statements,
         Option<Type> returnType
     ) {
@@ -36,7 +36,7 @@ public class BlockTypeChecker {
         return result;
     }
 
-    public TypeResult<StatementTypeCheckResult> typeCheck(Iterable<StatementNode> statements, Option<Type> returnType) {
+    public TypeResultWithValue<StatementTypeCheckResult> typeCheck(Iterable<StatementNode> statements, Option<Type> returnType) {
         TypeResult<Void> result = success();
         boolean hasReturnedYet = false;
         for (StatementNode statement : statements) {

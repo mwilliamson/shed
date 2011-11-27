@@ -71,10 +71,10 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
 
         argumentTypeInferer.inferArgumentTypesAndAddToContext(classDeclaration.getFormalArguments());
         resultBuilder.addErrors(blockTypeChecker.typeCheck(classDeclaration.getBody(), returnType));
-        TypeResult<ClassType> typeResult = buildClassType(classDeclaration);
+        TypeResultWithValue<ClassType> typeResult = buildClassType(classDeclaration);
         resultBuilder.addErrors(typeResult);
         
-        resultBuilder.addErrors(interfaceImplementationChecker.checkInterfaces(classDeclaration, typeResult.getOrThrow()));
+        resultBuilder.addErrors(interfaceImplementationChecker.checkInterfaces(classDeclaration, typeResult.get()));
         
         return resultBuilder.build();
     }
@@ -83,12 +83,12 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
         return blockTypeChecker.forwardDeclare(classDeclaration.getBody());
     }
 
-    private TypeResult<ClassType> buildClassType(ClassDeclarationNode classDeclaration) {
+    private TypeResultWithValue<ClassType> buildClassType(ClassDeclarationNode classDeclaration) {
         Members members = buildMembers(classDeclaration);
-        TypeResult<Interfaces> interfacesResult = interfaceDereferencer.dereferenceInterfaces(classDeclaration.getSuperTypes());
+        TypeResultWithValue<Interfaces> interfacesResult = interfaceDereferencer.dereferenceInterfaces(classDeclaration.getSuperTypes());
         ClassType type = (ClassType)typeStore.typeDeclaredBy(classDeclaration);
         TypeResultWithValue<List<Type>> classParameters = TypeResultWithValue.combine(transform(classDeclaration.getFormalArguments(), toType()));
-        ScalarTypeInfo classTypeInfo = new ScalarTypeInfo(interfacesResult.getOrThrow(), members);
+        ScalarTypeInfo classTypeInfo = new ScalarTypeInfo(interfacesResult.get(), members);
         context.addClass(classDeclaration, type, classParameters.get(), classTypeInfo);
         return success(type).withErrorsFrom(classParameters, interfacesResult);
     }

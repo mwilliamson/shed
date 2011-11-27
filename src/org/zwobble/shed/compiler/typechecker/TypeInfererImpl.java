@@ -184,10 +184,10 @@ public class TypeInfererImpl implements TypeInferer {
                 Type returnType = functionTypeParameters.get(functionTypeParameters.size() - 1);
                 TypeResult<ValueInfo> result = success(returnTypeInfo);
 
-                TypeResult<StatementTypeCheckResult> blockResult = typeCheckBlock(function.getBody(), some(returnType));
+                TypeResultWithValue<StatementTypeCheckResult> blockResult = typeCheckBlock(function.getBody(), some(returnType));
                 result = result.withErrorsFrom(blockResult);
                 
-                if (!blockResult.getOrThrow().hasReturned()) {
+                if (!blockResult.get().hasReturned()) {
                     result = result.withErrorsFrom(TypeResults.<Type>failure(error(
                         function,
                         new MissingReturnStatementError()
@@ -319,12 +319,12 @@ public class TypeInfererImpl implements TypeInferer {
         return new Function<ExpressionNode, Type>() {
             @Override
             public Type apply(ExpressionNode expression) {
-                TypeResult<Type> result = typeLookup.lookupTypeReference(expression);
+                TypeResultWithValue<Type> result = typeLookup.lookupTypeReference(expression);
                 if (!isSuccess(result)) {
                     // TODO: handle failure
                     throw new RuntimeException(result.getErrors().toString());
                 }
-                return result.getOrThrow();
+                return result.get();
             }
         };
     }
@@ -349,7 +349,7 @@ public class TypeInfererImpl implements TypeInferer {
         };
     }
 
-    private TypeResult<StatementTypeCheckResult> typeCheckBlock(BlockNode block, Option<Type> returnType) {
+    private TypeResultWithValue<StatementTypeCheckResult> typeCheckBlock(BlockNode block, Option<Type> returnType) {
         return blockTypeChecker.forwardDeclareAndTypeCheck(block, returnType);
     }
 
