@@ -2,6 +2,7 @@ package org.zwobble.shed.compiler.typechecker;
 
 import javax.inject.Inject;
 
+import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.Types;
@@ -14,12 +15,12 @@ import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
 
 public class TypeLookupImpl implements TypeLookup {
     private final TypeInferer typeInferer;
-    private final StaticContext context;
+    private final MetaClasses metaClasses;
 
     @Inject
-    public TypeLookupImpl(TypeInferer typeInferer, StaticContext context) {
+    public TypeLookupImpl(TypeInferer typeInferer, MetaClasses metaClasses) {
         this.typeInferer = typeInferer;
-        this.context = context;
+        this.metaClasses = metaClasses;
     }
     
     public TypeResultWithValue<Type> lookupTypeReference(ExpressionNode typeReference) {
@@ -30,11 +31,11 @@ public class TypeLookupImpl implements TypeLookup {
         return new Function<Type, TypeResult<Type>>() {
             @Override
             public TypeResult<Type> apply(Type variableType) {
-                if (!context.isMetaClass(variableType)) {
+                if (!metaClasses.isMetaClass(variableType)) {
                     return failure(error(expression, ("Not a type but an instance of \"" + variableType.shortName() + "\"")));
                 }
                 
-                return success(context.getTypeFromMetaClass(variableType));
+                return success(metaClasses.getTypeFromMetaClass(variableType));
             }
         };
     }

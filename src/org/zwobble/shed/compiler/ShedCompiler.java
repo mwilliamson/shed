@@ -9,6 +9,7 @@ import org.zwobble.shed.compiler.codegenerator.JavaScriptModuleWrapper;
 import org.zwobble.shed.compiler.codegenerator.JavaScriptWriter;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.dependencies.DependencyChecker;
+import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.naming.FullyQualifiedNames;
 import org.zwobble.shed.compiler.naming.TypeNamer;
 import org.zwobble.shed.compiler.parsing.ParseResult;
@@ -63,7 +64,7 @@ public class ShedCompiler {
         this.javaScriptOptimiser = javaScriptOptimiser;
     }
     
-    public CompilationResult compile(String source, StaticContext context) {
+    public CompilationResult compile(String source, StaticContext context, MetaClasses metaClasses) {
         List<TokenPosition> tokens = tokeniser.tokenise(source);
         ParseResult<SourceNode> parseResult = parser.parse(new TokenNavigator(tokens));
         List<CompilerError> errors = new ArrayList<CompilerError>();
@@ -78,7 +79,7 @@ public class ShedCompiler {
                 FullyQualifiedNames fullNames = new TypeNamer().generateFullyQualifiedNames(sourceNode);
                 TypeStore types = new TypeGenerator(fullNames).generateTypes(sourceNode);
                 References references = referencesResult.getReferences();
-                Injector typeCheckerInjector = TypeCheckerInjector.build(types, context, references);
+                Injector typeCheckerInjector = TypeCheckerInjector.build(types, metaClasses, context, references);
                 SourceTypeChecker sourceTypeChecker = typeCheckerInjector.getInstance(SourceTypeChecker.class);
                 TypeResult<Void> typeCheckResult = sourceTypeChecker.typeCheck(sourceNode);
                 errors.addAll(typeCheckResult.getErrors());

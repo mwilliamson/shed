@@ -3,6 +3,7 @@ package org.zwobble.shed.compiler.files;
 import java.util.regex.Pattern;
 
 import org.zwobble.shed.compiler.ShedCompiler;
+import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 
 import com.google.common.base.Predicate;
@@ -17,12 +18,12 @@ public class RuntimeImporter {
         this.compiler = compiler;
     }
     
-    public void importRuntime(StaticContext context, Iterable<RuntimeFile> files) {
+    public void importRuntime(StaticContext context, Iterable<RuntimeFile> files, MetaClasses metaClasses) {
         Iterable<RuntimeFile> nodeSpecificFiles = filter(files, isNodeFile());
         Iterable<RuntimeFile> generalFiles = filter(files, isGeneralFile());
         
         for (RuntimeFile file : concat(nodeSpecificFiles, generalFiles)) {
-            compiler.compile(file.readAll(), context);
+            compiler.compile(file.readAll(), context, metaClasses);
         }
     }
 

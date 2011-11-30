@@ -2,6 +2,7 @@ package org.zwobble.shed.compiler.nodejs;
 
 import java.util.Collections;
 
+import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.typechecker.DefaultContext;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
@@ -22,13 +23,13 @@ import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 
 public class DefaultNodeJsContext {
-    public static StaticContext defaultNodeJsContext() {
-        StaticContext context = DefaultContext.defaultContext();
-        addNodeJavaScriptImporter(context);
+    public static StaticContext defaultNodeJsContext(MetaClasses metaClasses) {
+        StaticContext context = DefaultContext.defaultContext(metaClasses);
+        addNodeJavaScriptImporter(context, metaClasses);
         return context;
     }
 
-    private static void addNodeJavaScriptImporter(StaticContext context) {
+    private static void addNodeJavaScriptImporter(StaticContext context, MetaClasses metaClasses) {
         FormalTypeParameter formalTypeParameter = invariantFormalTypeParameter("T");
         Type importValueFromModuleType = new ParameterisedFunctionType(
             asList(CoreTypes.STRING, CoreTypes.STRING, formalTypeParameter),
@@ -42,6 +43,6 @@ public class DefaultNodeJsContext {
         );
 
         context.addClass(globalDeclaration(importerName), importerType, Collections.<Type>emptyList(), javaScriptImporterTypeInfo);
-        context.addGlobal(importerName, context.getMetaClass(importerType));
+        context.addGlobal(importerName, metaClasses.metaClassOf(importerType));
     }
 }

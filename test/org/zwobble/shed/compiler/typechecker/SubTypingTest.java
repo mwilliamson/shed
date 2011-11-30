@@ -1,6 +1,7 @@
 package org.zwobble.shed.compiler.typechecker;
 
 import org.junit.Test;
+import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
@@ -30,7 +31,8 @@ import static org.zwobble.shed.compiler.types.Types.typeParameters;
 
 @SuppressWarnings("unchecked")
 public class SubTypingTest {
-    private final StaticContext context = new StaticContext();
+    private final MetaClasses metaClasses = MetaClasses.create();
+    private final StaticContext context = new StaticContext(metaClasses);
     private final FormalTypeParameter invariantTypeParameter = invariantFormalTypeParameter("TInvariant");
     private final FormalTypeParameter covariantTypeParameter = covariantFormalTypeParameter("TCovariant");
     private final FormalTypeParameter contravariantTypeParameter = contravariantFormalTypeParameter("TContravariant");

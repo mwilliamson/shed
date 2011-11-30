@@ -2,6 +2,7 @@ package org.zwobble.shed.compiler.typechecker;
 
 import java.util.Map;
 
+import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.parsing.nodes.Declaration;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
@@ -30,6 +31,7 @@ public class TypeCheckerTestFixture {
     }
     
     private final TypeStore.Builder typeStoreBuilder = TypeStore.builder();
+    private final MetaClasses metaClasses = MetaClasses.create();
     private final StaticContext context;
     private final ReferencesBuilder references = new ReferencesBuilder();
     
@@ -46,7 +48,7 @@ public class TypeCheckerTestFixture {
     private final VariableIdentifierNode implementingClassTypeReference = Nodes.id("Song");
     
     private TypeCheckerTestFixture() {
-        context = DefaultContext.defaultContext();
+        context = DefaultContext.defaultContext(metaClasses);
         
         Map<String, GlobalDeclaration> builtIns = context.getBuiltIns();
         stringTypeDeclaration = builtIns.get("String");
@@ -66,11 +68,15 @@ public class TypeCheckerTestFixture {
     }
 
     public <T> T get(Class<T> clazz) {
-        return TypeCheckerInjector.build(typeStoreBuilder.build(), context, references.build()).getInstance(clazz);
+        return TypeCheckerInjector.build(typeStoreBuilder.build(), metaClasses, context, references.build()).getInstance(clazz);
     }
     
     public StaticContext context() {
         return context;
+    }
+    
+    public MetaClasses metaClasses() {
+        return metaClasses;
     }
     
     public void addType(TypeDeclarationNode node, Type type) {

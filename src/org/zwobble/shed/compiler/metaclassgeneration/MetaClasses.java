@@ -20,15 +20,15 @@ public class MetaClasses {
         return typesToMetaClasses.get(type);
     }
     
-    public ScalarType getTypeFromMetaClass(Type metaClass) {
+    public Type getTypeFromMetaClass(Type metaClass) {
         return typesToMetaClasses.inverse().get(metaClass);
-    }
-    
-    private ClassType createMetaClass(ScalarType type) {
-        return new ClassType(type.getFullyQualifiedName().extend("$Meta"));
     }
     
     public boolean isMetaClass(Type type) {
         return typesToMetaClasses.containsValue(type);
+    }
+    
+    private ClassType createMetaClass(ScalarType type) {
+        return new ClassType(type.getFullyQualifiedName().extend("$Meta"));
     }
 }

@@ -2,6 +2,7 @@ package org.zwobble.shed.compiler.typechecker;
 
 import java.util.Collections;
 
+import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -20,8 +21,8 @@ import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 
 public class DefaultBrowserContext {
-    public static StaticContext defaultBrowserContext() {
-        StaticContext context = DefaultContext.defaultContext();
+    public static StaticContext defaultBrowserContext(MetaClasses metaClasses) {
+        StaticContext context = DefaultContext.defaultContext(metaClasses);
         
         FormalTypeParameter formalTypeParameter = invariantFormalTypeParameter("T");
         Type importValueType = new ParameterisedFunctionType(
@@ -36,7 +37,7 @@ public class DefaultBrowserContext {
         );
         
         context.addClass(globalDeclaration(javaScriptImporterName), javaScriptImporterType, Collections.<Type>emptyList(), javaScriptImporterTypeInfo);
-        context.addGlobal(javaScriptImporterName, context.getMetaClass(javaScriptImporterType));
+        context.addGlobal(javaScriptImporterName, metaClasses.metaClassOf(javaScriptImporterType));
         
         ClassType browserType = new ClassType(fullyQualifiedName("shed", "browser"));
         ScalarTypeInfo browserTypeInfo = new ScalarTypeInfo(

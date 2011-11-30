@@ -9,6 +9,7 @@ import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.CompilerErrors;
 import org.zwobble.shed.compiler.Eager;
 import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.parsing.nodes.AssignmentExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
@@ -60,6 +61,7 @@ public class TypeInfererImpl implements TypeInferer {
     private final VariableLookup variableLookup;
     private final FunctionTyping functionTyping;
     private final SubTyping subTyping;
+    private final MetaClasses metaClasses;
     private final StaticContext context;
 
     @Inject
@@ -70,6 +72,7 @@ public class TypeInfererImpl implements TypeInferer {
         VariableLookup variableLookup,
         FunctionTyping functionTyping,
         SubTyping subTyping,
+        MetaClasses metaClasses,
         StaticContext context
     ) {
         this.argumentTypeInferer = argumentTypeInferer;
@@ -78,6 +81,7 @@ public class TypeInfererImpl implements TypeInferer {
         this.variableLookup = variableLookup;
         this.functionTyping = functionTyping;
         this.subTyping = subTyping;
+        this.metaClasses = metaClasses;
         this.context = context;
     }
     
@@ -269,7 +273,7 @@ public class TypeInfererImpl implements TypeInferer {
                     }
                     return success((Type)CoreTypes.functionTypeOf(Eager.transform(functionType.getFunctionTypeParameters(), toReplacement(replacements.build()))));
                 } else if (baseType instanceof ParameterisedType) {
-                    return success((Type)context.getMetaClass(applyTypes((ParameterisedType)baseType, parameterTypes)));   
+                    return success((Type)metaClasses.metaClassOf(applyTypes((ParameterisedType)baseType, parameterTypes)));   
                 } else {
                     throw new RuntimeException("Don't know how to apply types " + parameterTypes + " to " + baseType);
                 }

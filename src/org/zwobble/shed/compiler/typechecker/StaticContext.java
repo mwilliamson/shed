@@ -35,8 +35,12 @@ public class StaticContext {
     private final Map<FullyQualifiedName, Type> global = new HashMap<FullyQualifiedName, Type>();
     private final Map<Identity<Declaration>, ValueInfo> types = new HashMap<Identity<Declaration>, ValueInfo>();
     private final Map<ScalarType, ScalarTypeInfo> scalarTypeInfo = new HashMap<ScalarType, ScalarTypeInfo>();
-    private final MetaClasses metaClasses = MetaClasses.create();
     private final Map<String, GlobalDeclaration> builtIns = new HashMap<String, GlobalDeclaration>();
+    private final MetaClasses metaClasses;
+    
+    public StaticContext(MetaClasses metaClasses) {
+        this.metaClasses = metaClasses;
+    }
     
     public void add(Declaration declaration, ValueInfo type) {
         types.put(new Identity<Declaration>(declaration), type);
@@ -112,18 +116,6 @@ public class StaticContext {
         add(declaration, ValueInfo.unassignableValue(metaClass, shedTypeValue(type)));
         addInfo(type, typeInfo);
         addInfo(metaClass, metaClassTypeInfo);
-    }
-    
-    public Type getMetaClass(ScalarType type) {
-        return metaClasses.metaClassOf(type);
-    }
-    
-    public Type getTypeFromMetaClass(Type type) {
-        return metaClasses.getTypeFromMetaClass(type);
-    }
-    
-    public boolean isMetaClass(Type type) {
-        return metaClasses.isMetaClass(type);
     }
     
     public void addBuiltIn(String name, GlobalDeclaration declaration) {

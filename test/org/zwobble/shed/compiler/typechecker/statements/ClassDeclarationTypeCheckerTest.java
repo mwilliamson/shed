@@ -186,7 +186,7 @@ public class ClassDeclarationTypeCheckerTest {
         ScalarType interfaceFunctionType = functionTypeOf(fixture.implementingClassType(), CoreTypes.UNIT);
         ScalarTypeInfo interfaceTypeInfo = new ScalarTypeInfo(interfaces(), members("add", unassignableValue(interfaceFunctionType)));
         context.addInterface(interfaceDeclaration, interfaceType, interfaceTypeInfo);
-        context.add(interfaceDeclaration, ValueInfo.unassignableValue(context.getMetaClass(interfaceType)));
+        context.add(interfaceDeclaration, ValueInfo.unassignableValue(fixture.metaClasses().metaClassOf(interfaceType)));
         
         forwardDeclareSuccessfully(declaration);
         TypeResult<?> result = typeCheck(declaration);

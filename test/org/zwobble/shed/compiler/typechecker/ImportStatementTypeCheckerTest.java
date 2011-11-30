@@ -1,6 +1,7 @@
 package org.zwobble.shed.compiler.typechecker;
 
 import org.junit.Test;
+import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.typechecker.errors.UnresolvedImportError;
@@ -18,7 +19,8 @@ import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDe
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 public class ImportStatementTypeCheckerTest {
-    private final StaticContext staticContext = new StaticContext();
+    private final MetaClasses metaClasses = MetaClasses.create();
+    private final StaticContext staticContext = new StaticContext(metaClasses);
     
     @Test public void
     importingValuesAssignsTypeToImportStatement() {
@@ -27,7 +29,7 @@ public class ImportStatementTypeCheckerTest {
         FullyQualifiedName dateTimeName = fullyQualifiedName("shed", "time", "DateTime");
         ClassType dateTime = new ClassType(dateTimeName);
         staticContext.addClass(globalDeclaration(dateTimeName), dateTime, ScalarTypeInfo.EMPTY);
-        Type dateTimeMetaClass = staticContext.getMetaClass(dateTime);
+        Type dateTimeMetaClass = metaClasses.metaClassOf(dateTime);
         staticContext.addGlobal(dateTimeName, dateTimeMetaClass);
         
         assertThat(typeCheckImportStatement(importStatement), is(isSuccess()));

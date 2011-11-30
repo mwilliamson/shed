@@ -1,6 +1,7 @@
 package org.zwobble.shed.compiler.typechecker;
 
 import org.junit.Test;
+import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.InterfaceType;
@@ -20,7 +21,8 @@ import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
 import static org.zwobble.shed.compiler.types.Types.typeParameters;
 
 public class FunctionTypingTest {
-    private final StaticContext context = new StaticContext();
+    private final MetaClasses metaClasses = MetaClasses.create();
+    private final StaticContext context = new StaticContext(metaClasses);
     
     @Test public void
     typeApplicationsWithFunctionAsBaseTypeAreConsideredFunctions() {

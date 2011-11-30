@@ -3,6 +3,7 @@ package org.zwobble.shed.compiler.metaclassgeneration;
 import org.junit.Test;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.ScalarType;
+import org.zwobble.shed.compiler.types.Type;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -22,7 +23,7 @@ public class MetaClassesTest {
     typeCanBeRetrivedByMetaClass() {
         ScalarType type = new ClassType(fullyQualifiedName("shed", "Song"));
         ClassType metaClass = metaClasses.metaClassOf(type);
-        assertThat(metaClasses.getTypeFromMetaClass(metaClass), is(type));
+        assertThat(metaClasses.getTypeFromMetaClass(metaClass), is((Type)type));
     }
     
     @Test public void
