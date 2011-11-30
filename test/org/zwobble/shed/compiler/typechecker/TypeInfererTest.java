@@ -513,7 +513,7 @@ public class TypeInfererTest {
         TypeResult<Type> result = inferType(typeApplication, context);
         assertThat(result, isSuccess());
         Type metaClass = result.getOrThrow();
-        ScalarType type = (ScalarType) context.getTypeFromMetaClass(metaClass);
+        ScalarType type = (ScalarType) context.getTypeFromMetaClass((ClassType)metaClass);
         ScalarTypeInfo typeInfo = context.getInfo(type);
         assertThat(typeInfo.getMembers(), is(members("get", unassignableValue(CoreTypes.DOUBLE))));
     }

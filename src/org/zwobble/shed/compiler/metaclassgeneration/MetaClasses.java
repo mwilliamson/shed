@@ -4,11 +4,12 @@ import lombok.RequiredArgsConstructor;
 
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.ScalarType;
+import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
-@RequiredArgsConstructor(staticName="metaClasses")
+@RequiredArgsConstructor(staticName="create")
 public class MetaClasses {
     private final BiMap<ScalarType, ClassType> typesToMetaClasses = HashBiMap.<ScalarType, ClassType>create();
     
@@ -19,11 +20,15 @@ public class MetaClasses {
         return typesToMetaClasses.get(type);
     }
     
-    public ScalarType getTypeFromMetaClass(ClassType metaClass) {
+    public ScalarType getTypeFromMetaClass(Type metaClass) {
         return typesToMetaClasses.inverse().get(metaClass);
     }
     
     private ClassType createMetaClass(ScalarType type) {
         return new ClassType(type.getFullyQualifiedName().extend("$Meta"));
+    }
+    
+    public boolean isMetaClass(Type type) {
+        return typesToMetaClasses.containsValue(type);
     }
 }

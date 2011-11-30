@@ -10,7 +10,7 @@ import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualified
 import static org.zwobble.shed.compiler.types.TypeMatchers.classTypeWithName;
 
 public class MetaClassesTest {
-    private final MetaClasses metaClasses = MetaClasses.metaClasses();
+    private final MetaClasses metaClasses = MetaClasses.create();
     
     @Test public void
     metaClassesAreGeneratedForEachType() {
@@ -23,5 +23,13 @@ public class MetaClassesTest {
         ScalarType type = new ClassType(fullyQualifiedName("shed", "Song"));
         ClassType metaClass = metaClasses.metaClassOf(type);
         assertThat(metaClasses.getTypeFromMetaClass(metaClass), is(type));
+    }
+    
+    @Test public void
+    canDetermineIfATypeIsAMetaClass() {
+        ScalarType type = new ClassType(fullyQualifiedName("shed", "Song"));
+        ClassType metaClass = metaClasses.metaClassOf(type);
+        assertThat(metaClasses.isMetaClass(type), is(false));
+        assertThat(metaClasses.isMetaClass(metaClass), is(true));
     }
 }

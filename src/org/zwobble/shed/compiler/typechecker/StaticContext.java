@@ -7,6 +7,7 @@ import java.util.Map;
 import lombok.ToString;
 
 import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.parsing.nodes.Declaration;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
@@ -22,13 +23,9 @@ import org.zwobble.shed.compiler.types.TypeApplication;
 import org.zwobble.shed.compiler.types.TypeInfoTypeReplacer;
 import org.zwobble.shed.compiler.types.TypeReplacer;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-
 import static com.google.common.collect.Lists.newArrayList;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
-import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.typechecker.ShedTypeValue.shedTypeValue;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
@@ -38,7 +35,7 @@ public class StaticContext {
     private final Map<FullyQualifiedName, Type> global = new HashMap<FullyQualifiedName, Type>();
     private final Map<Identity<Declaration>, ValueInfo> types = new HashMap<Identity<Declaration>, ValueInfo>();
     private final Map<ScalarType, ScalarTypeInfo> scalarTypeInfo = new HashMap<ScalarType, ScalarTypeInfo>();
-    private final BiMap<Type, Type> metaClasses = HashBiMap.create();
+    private final MetaClasses metaClasses = MetaClasses.create();
     private final Map<String, GlobalDeclaration> builtIns = new HashMap<String, GlobalDeclaration>();
     
     public void add(Declaration declaration, ValueInfo type) {
@@ -109,39 +106,24 @@ public class StaticContext {
     }
     
     private void addScalarType(Declaration declaration, ScalarType type, ScalarTypeInfo typeInfo, Interfaces interfaces) {
-        // TODO: forbid user-declared members called Meta 
-        FullyQualifiedName metaClassName = type.getFullyQualifiedName().extend("Meta");
-        ClassType metaClass = new ClassType(metaClassName);
+        ClassType metaClass = metaClasses.metaClassOf(type);
         ScalarTypeInfo metaClassTypeInfo = new ScalarTypeInfo(interfaces, members());
         
         add(declaration, ValueInfo.unassignableValue(metaClass, shedTypeValue(type)));
         addInfo(type, typeInfo);
         addInfo(metaClass, metaClassTypeInfo);
-        metaClasses.put(type, metaClass);
     }
     
-    public Type getMetaClass(Type type) {
-        if (!metaClasses.containsKey(type)) {
-            if (type instanceof TypeApplication) {
-                // TODO: construct metaclass type info
-                metaClasses.put(type, new ClassType(fullyQualifiedName()));
-            } else {
-                throw new RuntimeException("Cannot find metaclass for: " + type);
-            }
-        }
-        return metaClasses.get(type);
+    public Type getMetaClass(ScalarType type) {
+        return metaClasses.metaClassOf(type);
     }
     
     public Type getTypeFromMetaClass(Type type) {
-        BiMap<Type, Type> metaClassToClass = metaClasses.inverse();
-        if (!metaClassToClass.containsKey(type)) {
-            throw new RuntimeException();
-        }
-        return metaClassToClass.get(type);
+        return metaClasses.getTypeFromMetaClass(type);
     }
     
     public boolean isMetaClass(Type type) {
-        return metaClasses.containsValue(type);
+        return metaClasses.isMetaClass(type);
     }
     
     public void addBuiltIn(String name, GlobalDeclaration declaration) {
