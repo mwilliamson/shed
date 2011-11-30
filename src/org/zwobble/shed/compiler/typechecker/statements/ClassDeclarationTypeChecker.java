@@ -60,6 +60,7 @@ public class ClassDeclarationTypeChecker implements DeclarationTypeChecker<Class
     
     @Override
     public TypeResult<?> forwardDeclare(ClassDeclarationNode classDeclaration) {
+//        buildClassType(classDeclaration);
         TypeResult<?> result = forwardDeclareBody(classDeclaration);
         buildClassType(classDeclaration);
         return result;
