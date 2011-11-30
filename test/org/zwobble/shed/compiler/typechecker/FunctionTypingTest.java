@@ -20,14 +20,15 @@ import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
 import static org.zwobble.shed.compiler.types.Types.typeParameters;
 
 public class FunctionTypingTest {
+    private final StaticContext context = new StaticContext();
+    
     @Test public void
     typeApplicationsWithFunctionAsBaseTypeAreConsideredFunctions() {
-        assertThat(isFunction(CoreTypes.functionTypeOf(CoreTypes.STRING), new StaticContext()), is(true));
+        assertThat(isFunction(CoreTypes.functionTypeOf(CoreTypes.STRING), context), is(true));
     }
 
     @Test public void
     typeApplicationsWithoutFunctionAsBaseTypeIsNotFunction() {
-        StaticContext context = new StaticContext();
         ClassType classType = new ClassType(fullyQualifiedName());
         context.addInfo(classType, ScalarTypeInfo.EMPTY);
         ParameterisedType parameterisedType = parameterisedType(classType, asList(invariantFormalTypeParameter("T")));
@@ -38,7 +39,6 @@ public class FunctionTypingTest {
     typeIsFunctionIfItDirectlyImplementsFunctionInterface() {
         ClassType classType = new ClassType(fullyQualifiedName());
         ScalarTypeInfo typeInfo = new ScalarTypeInfo(interfaces(CoreTypes.functionTypeOf(CoreTypes.STRING)), members());
-        StaticContext context = new StaticContext();
         context.addInfo(classType, typeInfo);
         assertThat(isFunction(classType, context), is(true));
     }
@@ -49,7 +49,6 @@ public class FunctionTypingTest {
         ScalarTypeInfo interfaceTypeInfo = new ScalarTypeInfo(interfaces(CoreTypes.functionTypeOf(CoreTypes.STRING)), members());
         ClassType classType = new ClassType(fullyQualifiedName());
         ScalarTypeInfo classTypeInfo = new ScalarTypeInfo(interfaces(interfaceType), members());
-        StaticContext context = new StaticContext();
         context.addInfo(classType, classTypeInfo);
         context.addInfo(interfaceType, interfaceTypeInfo);
         assertThat(isFunction(classType, context), is(true));
@@ -58,7 +57,6 @@ public class FunctionTypingTest {
     @Test public void
     typeFunctionsAreNotFunctions() {
         InterfaceType interfaceType = new InterfaceType(fullyQualifiedName());
-        StaticContext context = new StaticContext();
         assertThat(isFunction(ParameterisedType.parameterisedType(interfaceType, asList(invariantFormalTypeParameter("T"))), context), is(false));
     }
     

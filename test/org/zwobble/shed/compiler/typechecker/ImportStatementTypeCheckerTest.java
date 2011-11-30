@@ -18,10 +18,11 @@ import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDe
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 public class ImportStatementTypeCheckerTest {
+    private final StaticContext staticContext = new StaticContext();
+    
     @Test public void
     importingValuesAssignsTypeToImportStatement() {
         ImportNode importStatement = new ImportNode(asList("shed", "time", "DateTime"));
-        StaticContext staticContext = new StaticContext();
         
         FullyQualifiedName dateTimeName = fullyQualifiedName("shed", "time", "DateTime");
         ClassType dateTime = new ClassType(dateTimeName);
@@ -29,7 +30,7 @@ public class ImportStatementTypeCheckerTest {
         Type dateTimeMetaClass = staticContext.getMetaClass(dateTime);
         staticContext.addGlobal(dateTimeName, dateTimeMetaClass);
         
-        assertThat(typeCheckImportStatement(importStatement, staticContext), is(isSuccess()));
+        assertThat(typeCheckImportStatement(importStatement), is(isSuccess()));
         assertThat(staticContext.get(importStatement), is(VariableLookupResult.success(unassignableValue(dateTimeMetaClass))));
     }
 
@@ -37,12 +38,12 @@ public class ImportStatementTypeCheckerTest {
     errorIfTryingToImportNonExistentGlobal() {
         ImportNode importStatement = new ImportNode(asList("shed", "time", "DateTime"));
         assertThat(
-            typeCheckImportStatement(importStatement, new StaticContext()),
+            typeCheckImportStatement(importStatement),
             isFailureWithErrors(new UnresolvedImportError(asList("shed", "time", "DateTime")))
         );
     }
     
-    private TypeResult<Void> typeCheckImportStatement(ImportNode importStatement, StaticContext staticContext) {
+    private TypeResult<Void> typeCheckImportStatement(ImportNode importStatement) {
         return new ImportStatementTypeChecker(staticContext).typeCheck(importStatement);
     }
 }
