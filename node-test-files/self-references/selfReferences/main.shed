@@ -1,0 +1,19 @@
+package selfReferences;
+
+import shed.sys;
+
+class Empty() {
+    public fun another() : Empty {
+        return Empty();
+    }
+    
+    public fun toString() : String {
+        return "nothing to see here";
+    }
+}
+
+// TODO: how to allow
+//     return this;
+// while retaining explicit references?
+
+sys.print(Empty().toString());

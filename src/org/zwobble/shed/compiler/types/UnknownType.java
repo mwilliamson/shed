@@ -5,4 +5,9 @@ public class UnknownType implements Type {
     public String shortName() {
         return "<unknown>";
     }
+    
+    @Override
+    public String toString() {
+        return shortName();
+    }
 }
