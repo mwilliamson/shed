@@ -2,6 +2,7 @@ package org.zwobble.shed.compiler.typechecker;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -29,6 +30,8 @@ import org.zwobble.shed.compiler.typechecker.errors.InvalidAssignmentError;
 import org.zwobble.shed.compiler.typechecker.errors.MissingReturnStatementError;
 import org.zwobble.shed.compiler.typechecker.errors.NotCallableError;
 import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
+import org.zwobble.shed.compiler.typechecker.expressions.ExpressionTypeInferer;
+import org.zwobble.shed.compiler.typechecker.expressions.LiteralExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.statements.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
@@ -45,6 +48,7 @@ import org.zwobble.shed.compiler.types.TypeReplacer;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.Option.some;
@@ -63,6 +67,8 @@ public class TypeInfererImpl implements TypeInferer {
     private final SubTyping subTyping;
     private final MetaClasses metaClasses;
     private final StaticContext context;
+    
+    private final Map<Class<? extends ExpressionNode>, ExpressionTypeInferer<? extends ExpressionNode>> typeInferers = Maps.newHashMap();
 
     @Inject
     public TypeInfererImpl(
@@ -83,21 +89,24 @@ public class TypeInfererImpl implements TypeInferer {
         this.subTyping = subTyping;
         this.metaClasses = metaClasses;
         this.context = context;
+
+        typeInferers.put(BooleanLiteralNode.class, new LiteralExpressionTypeInferer<BooleanLiteralNode>(CoreTypes.BOOLEAN));
+        typeInferers.put(NumberLiteralNode.class, new LiteralExpressionTypeInferer<NumberLiteralNode>(CoreTypes.DOUBLE));
+        typeInferers.put(StringLiteralNode.class, new LiteralExpressionTypeInferer<StringLiteralNode>(CoreTypes.STRING));
+        typeInferers.put(UnitLiteralNode.class, new LiteralExpressionTypeInferer<StringLiteralNode>(CoreTypes.UNIT));
+    }
+    
+    @SuppressWarnings("unchecked")
+    private <T extends ExpressionNode> ExpressionTypeInferer<T> getTypeInferer(T expression) {
+        return (ExpressionTypeInferer<T>) typeInferers.get(expression.getClass());
     }
     
     public TypeResult<ValueInfo> inferValueInfo(ExpressionNode expression) {
-        if (expression instanceof BooleanLiteralNode) {
-            return success(ValueInfo.unassignableValue(CoreTypes.BOOLEAN));            
+        
+        if (typeInferers.containsKey(expression.getClass())) {
+            return getTypeInferer(expression).inferValueInfo(expression);
         }
-        if (expression instanceof NumberLiteralNode) {
-            return success(ValueInfo.unassignableValue(CoreTypes.DOUBLE));
-        }
-        if (expression instanceof StringLiteralNode) {
-            return success(ValueInfo.unassignableValue(CoreTypes.STRING));
-        }
-        if (expression instanceof UnitLiteralNode) {
-            return success(ValueInfo.unassignableValue(CoreTypes.UNIT));
-        }
+        
         if (expression instanceof VariableIdentifierNode) {
             return variableLookup.lookupVariableReference((VariableIdentifierNode)expression);
         }
