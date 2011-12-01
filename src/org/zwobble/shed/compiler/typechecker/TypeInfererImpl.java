@@ -32,6 +32,7 @@ import org.zwobble.shed.compiler.typechecker.errors.NotCallableError;
 import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.typechecker.expressions.ExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.LiteralExpressionTypeInferer;
+import org.zwobble.shed.compiler.typechecker.expressions.VariableLookup;
 import org.zwobble.shed.compiler.typechecker.statements.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
@@ -49,6 +50,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.inject.Injector;
 
 import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.Option.some;
@@ -62,7 +64,6 @@ public class TypeInfererImpl implements TypeInferer {
     private final ArgumentTypeInferer argumentTypeInferer;
     private final BlockTypeChecker blockTypeChecker;
     private final TypeLookup typeLookup;
-    private final VariableLookup variableLookup;
     private final FunctionTyping functionTyping;
     private final SubTyping subTyping;
     private final MetaClasses metaClasses;
@@ -75,16 +76,15 @@ public class TypeInfererImpl implements TypeInferer {
         ArgumentTypeInferer argumentTypeInferer,
         BlockTypeChecker blockTypeChecker, 
         TypeLookup typeLookup, 
-        VariableLookup variableLookup,
         FunctionTyping functionTyping,
         SubTyping subTyping,
         MetaClasses metaClasses,
-        StaticContext context
+        StaticContext context,
+        Injector injector
     ) {
         this.argumentTypeInferer = argumentTypeInferer;
         this.blockTypeChecker = blockTypeChecker;
         this.typeLookup = typeLookup;
-        this.variableLookup = variableLookup;
         this.functionTyping = functionTyping;
         this.subTyping = subTyping;
         this.metaClasses = metaClasses;
@@ -94,6 +94,7 @@ public class TypeInfererImpl implements TypeInferer {
         typeInferers.put(NumberLiteralNode.class, new LiteralExpressionTypeInferer<NumberLiteralNode>(CoreTypes.DOUBLE));
         typeInferers.put(StringLiteralNode.class, new LiteralExpressionTypeInferer<StringLiteralNode>(CoreTypes.STRING));
         typeInferers.put(UnitLiteralNode.class, new LiteralExpressionTypeInferer<StringLiteralNode>(CoreTypes.UNIT));
+        typeInferers.put(VariableIdentifierNode.class, injector.getInstance(VariableLookup.class));
     }
     
     @SuppressWarnings("unchecked")
@@ -107,9 +108,6 @@ public class TypeInfererImpl implements TypeInferer {
             return getTypeInferer(expression).inferValueInfo(expression);
         }
         
-        if (expression instanceof VariableIdentifierNode) {
-            return variableLookup.lookupVariableReference((VariableIdentifierNode)expression);
-        }
         if (expression instanceof ShortLambdaExpressionNode) {
             return inferType((ShortLambdaExpressionNode)expression);
         }

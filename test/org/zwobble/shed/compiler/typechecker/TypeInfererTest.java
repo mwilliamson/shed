@@ -47,7 +47,6 @@ import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
 import static org.zwobble.shed.compiler.typechecker.TypeResultMatchers.isSuccessWithValue;
-import static org.zwobble.shed.compiler.typechecker.TypeResults.failure;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
@@ -83,23 +82,6 @@ public class TypeInfererTest {
     @Test public void
     canInferTypeOfUnitLiteralsAsUnit() {
         assertThat(inferType(Nodes.unit(), standardContext()), isType(CoreTypes.UNIT));
-    }
-    
-    @Test public void
-    variableReferencesHaveTypeOfVariable() {
-        VariableIdentifierNode reference = new VariableIdentifierNode("value");
-        GlobalDeclaration declaration = globalDeclaration("value");
-        fixture.addReference(reference, declaration);
-        StaticContext context = standardContext();
-        context.add(declaration, unassignableValue(CoreTypes.STRING));
-        assertThat(inferType(reference, context), isType(CoreTypes.STRING));
-    }
-    
-    @Test public void
-    cannotReferToVariableNotInContext() {
-        VariableIdentifierNode node = new VariableIdentifierNode("value");
-        TypeResult<Type> result = inferType(node, standardContext());
-        assertThat(result, is((Object)failure(error(node, new UntypedReferenceError("value")))));
     }
     
     @Test public void

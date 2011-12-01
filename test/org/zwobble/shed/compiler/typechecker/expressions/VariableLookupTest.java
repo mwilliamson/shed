@@ -1,9 +1,12 @@
-package org.zwobble.shed.compiler.typechecker;
+package org.zwobble.shed.compiler.typechecker.expressions;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.VariableDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
+import org.zwobble.shed.compiler.typechecker.TypeCheckerTestFixture;
+import org.zwobble.shed.compiler.typechecker.TypeResult;
+import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typechecker.errors.UntypedReferenceError;
 import org.zwobble.shed.compiler.types.CoreTypes;
 
@@ -30,6 +33,6 @@ public class VariableLookupTest {
     }
     
     private TypeResult<ValueInfo> lookup(VariableIdentifierNode reference) {
-        return fixture.get(VariableLookup.class).lookupVariableReference(reference);
+        return fixture.get(VariableLookup.class).inferValueInfo(reference);
     }
 }
