@@ -26,10 +26,10 @@ import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
-import org.zwobble.shed.compiler.typechecker.errors.InvalidAssignmentError;
 import org.zwobble.shed.compiler.typechecker.errors.MissingReturnStatementError;
 import org.zwobble.shed.compiler.typechecker.errors.NotCallableError;
 import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
+import org.zwobble.shed.compiler.typechecker.expressions.AssignmentExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.ExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.LiteralExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.VariableLookup;
@@ -57,7 +57,7 @@ import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.Results.isSuccess;
 import static org.zwobble.shed.compiler.typechecker.TypeResults.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
-import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+import static org.zwobble.shed.compiler.typechecker.ValueInfos.toUnassignableValueInfo;
 import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
 
 public class TypeInfererImpl implements TypeInferer {
@@ -95,6 +95,7 @@ public class TypeInfererImpl implements TypeInferer {
         typeInferers.put(StringLiteralNode.class, new LiteralExpressionTypeInferer<StringLiteralNode>(CoreTypes.STRING));
         typeInferers.put(UnitLiteralNode.class, new LiteralExpressionTypeInferer<StringLiteralNode>(CoreTypes.UNIT));
         typeInferers.put(VariableIdentifierNode.class, injector.getInstance(VariableLookup.class));
+        typeInferers.put(AssignmentExpressionNode.class, injector.getInstance(AssignmentExpressionTypeInferer.class));
     }
     
     @SuppressWarnings("unchecked")
@@ -122,9 +123,6 @@ public class TypeInfererImpl implements TypeInferer {
         }
         if (expression instanceof TypeApplicationNode) {
             return inferTypeApplicationType((TypeApplicationNode)expression);
-        }
-        if (expression instanceof AssignmentExpressionNode) {
-            return inferAssignmentType((AssignmentExpressionNode)expression);
         }
         throw new RuntimeException("Cannot infer type of expression: " + expression);
     }
@@ -164,7 +162,7 @@ public class TypeInfererImpl implements TypeInferer {
         
         
         if (returnTypeOption.hasValue()) {
-            return result.ifValueThen(buildFunctionType(returnTypeOption.get())).ifValueThen(toValueInfo());            
+            return result.ifValueThen(buildFunctionType(returnTypeOption.get())).ifValueThen(toUnassignableValueInfo());            
         } else {
             return TypeResults.<ValueInfo>failure(result.getErrors());
         }
@@ -184,7 +182,7 @@ public class TypeInfererImpl implements TypeInferer {
             public TypeResult<Type> apply(Type returnType) {
                 return argumentTypeResults.ifValueThen(buildFunctionType(returnType));
             }
-        }).ifValueThen(toValueInfo());
+        }).ifValueThen(toUnassignableValueInfo());
     }
 
     public Function<ValueInfo, TypeResult<ValueInfo>> typeCheckBody(final FunctionWithBodyNode function) {
@@ -245,7 +243,7 @@ public class TypeInfererImpl implements TypeInferer {
                 }
                 return result;
             }
-        }).ifValueThen(toValueInfo());
+        }).ifValueThen(toUnassignableValueInfo());
     }
 
     private TypeResult<ValueInfo> inferMemberAccessType(final MemberAccessNode memberAccess) {
@@ -285,7 +283,7 @@ public class TypeInfererImpl implements TypeInferer {
                     throw new RuntimeException("Don't know how to apply types " + parameterTypes + " to " + baseType);
                 }
             }
-        }).ifValueThen(toValueInfo());
+        }).ifValueThen(toUnassignableValueInfo());
     }
 
     private Function<Type, Type> toReplacement(final ImmutableMap<FormalTypeParameter, Type> replacements) {
@@ -293,35 +291,6 @@ public class TypeInfererImpl implements TypeInferer {
             @Override
             public Type apply(Type input) {
                 return new TypeReplacer().replaceTypes(input, replacements);
-            }
-        };
-    }
-
-    private TypeResult<ValueInfo> inferAssignmentType(AssignmentExpressionNode expression) {
-        TypeResult<Type> valueTypeResult = inferType(expression.getValue());
-        TypeResult<ValueInfo> targetInfo = inferValueInfo(expression.getTarget())
-            .ifValueThen(checkIsAssignable(expression));
-        
-        TypeResult<ValueInfo> result = valueTypeResult.withErrorsFrom(targetInfo).ifValueThen(toValueInfo());
-        if (valueTypeResult.hasValue() && targetInfo.hasValue()) {
-            Type valueType = valueTypeResult.getOrThrow();
-            Type targetType = targetInfo.getOrThrow().getType();
-            if (!subTyping.isSubType(valueType, targetType)) {
-                result = result.withErrorsFrom(failure(error(expression, new TypeMismatchError(targetType, valueType))));
-            }
-        }
-        return result;
-    }
-    
-    private static Function<ValueInfo, TypeResult<ValueInfo>> checkIsAssignable(final AssignmentExpressionNode expression) {
-        return new Function<ValueInfo, TypeResult<ValueInfo>>() {
-            @Override
-            public TypeResult<ValueInfo> apply(ValueInfo input) {
-                if (input.isAssignable()) {
-                    return success(input);
-                } else {
-                    return failure(input, error(expression, new InvalidAssignmentError()));
-                }
             }
         };
     }
@@ -347,15 +316,6 @@ public class TypeInfererImpl implements TypeInferer {
                 List<Type> typeParameters = new ArrayList<Type>(argumentTypes);
                 typeParameters.add(returnType);
                 return success((Type)CoreTypes.functionTypeOf(typeParameters));
-            }
-        };
-    }
-
-    private static Function<Type, TypeResult<ValueInfo>> toValueInfo() {
-        return new Function<Type, TypeResult<ValueInfo>>() {
-            @Override
-            public TypeResult<ValueInfo> apply(Type input) {
-                return success(unassignableValue(input));
             }
         };
     }
