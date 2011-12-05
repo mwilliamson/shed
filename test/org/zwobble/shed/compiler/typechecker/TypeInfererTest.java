@@ -36,9 +36,7 @@ import org.zwobble.shed.compiler.types.Type;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
-import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
@@ -82,98 +80,6 @@ public class TypeInfererTest {
     @Test public void
     canInferTypeOfUnitLiteralsAsUnit() {
         assertThat(inferType(Nodes.unit(), standardContext()), isType(CoreTypes.UNIT));
-    }
-    
-    @Test public void
-    canInferTypeOfShortLambdaExpressionWithoutArgumentsNorExplicitReturnType() {
-        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
-            Collections.<FormalArgumentNode>emptyList(),
-            none(ExpressionNode.class),
-            new NumberLiteralNode("42")
-        );
-        TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, isSuccessWithValue((Type)CoreTypes.functionTypeOf(CoreTypes.DOUBLE)));
-    }
-    
-    @Test public void
-    errorIfCannotTypeBodyOfShortLambdaExpression() {
-        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
-            Collections.<FormalArgumentNode>emptyList(),
-            none(ExpressionNode.class),
-            new VariableIdentifierNode("blah")
-        );
-        TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(errorStrings(result), is(asList("Could not determine type of reference: blah")));
-    }
-    
-    @Test public void
-    errorIfTypeSpecifierAndTypeBodyOfShortLambdaExpressionDoNotAgree() {
-        NumberLiteralNode body = new NumberLiteralNode("42");
-        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
-            Collections.<FormalArgumentNode>emptyList(),
-            some(stringReference),
-            body
-        );
-        TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(
-            result.getErrors(),
-            is(asList(error(body, new TypeMismatchError(CoreTypes.STRING, CoreTypes.DOUBLE))))
-        );
-    }
-    
-    @Test public void
-    bodyOfShortLambdaExpressionCanBeSubTypeOfExplicitReturnType() {
-        FormalArgumentNode argument = Nodes.formalArgument("value", fixture.implementingClassTypeReference());
-        VariableIdentifierNode body = Nodes.id("value");
-        fixture.addReference(body, argument);
-        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
-            asList(argument),
-            some(fixture.interfaceTypeReference()),
-            body
-        );
-        TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, isSuccessWithValue((Type)CoreTypes.functionTypeOf(fixture.implementingClassType(), fixture.interfaceType())));
-    }
-    
-    @Test public void
-    errorIfCannotFindArgumentType() {
-        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
-            asList(
-                new FormalArgumentNode("name", new VariableIdentifierNode("Name")),
-                new FormalArgumentNode("age", doubleReference),
-                new FormalArgumentNode("address", new VariableIdentifierNode("Address"))
-            ),
-            none(ExpressionNode.class),
-            new BooleanLiteralNode(true)
-        );
-        TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, isFailureWithErrors(new UntypedReferenceError("Name"), new UntypedReferenceError("Address")));
-    }
-    
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    @Test public void
-    errorIfCannotFindReturnType() {
-        StaticContext context = standardContext();
-        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
-            Collections.<FormalArgumentNode>emptyList(),
-            some(new VariableIdentifierNode("String")),
-            new NumberLiteralNode("42")
-        );
-        TypeResult<Type> result = inferType(functionExpression, context);
-        assertThat(result, isFailureWithErrors((Matcher)hasItem((CompilerErrorDescription)new UntypedReferenceError("String"))));
-    }
-    
-    @Test public void
-    canInferTypesOfArgumentsOfShortLambdaExpression() {
-        StaticContext context = standardContext();
-        
-        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
-            asList(new FormalArgumentNode("name", stringReference), new FormalArgumentNode("age", doubleReference)),
-            none(ExpressionNode.class),
-            new BooleanLiteralNode(true)
-        );
-        TypeResult<Type> result = inferType(functionExpression, context);
-        assertThat(result, isSuccessWithValue((Type)CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.BOOLEAN)));
     }
     
     @Test public void

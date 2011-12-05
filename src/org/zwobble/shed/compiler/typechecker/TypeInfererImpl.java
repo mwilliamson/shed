@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.CompilerErrors;
@@ -69,7 +70,8 @@ public class TypeInfererImpl implements TypeInferer {
     private final MetaClasses metaClasses;
     private final StaticContext context;
     
-    private final Map<Class<? extends ExpressionNode>, ExpressionTypeInferer<? extends ExpressionNode>> typeInferers = Maps.newHashMap();
+    private final Map<Class<? extends ExpressionNode>, Provider<ExpressionTypeInferer<? extends ExpressionNode>>> typeInferers = Maps.newHashMap();
+    private final Injector injector;
 
     @Inject
     public TypeInfererImpl(
@@ -89,23 +91,38 @@ public class TypeInfererImpl implements TypeInferer {
         this.subTyping = subTyping;
         this.metaClasses = metaClasses;
         this.context = context;
+        this.injector = injector;
 
         putTypeInferer(BooleanLiteralNode.class, new LiteralExpressionTypeInferer<BooleanLiteralNode>(CoreTypes.BOOLEAN));
         putTypeInferer(NumberLiteralNode.class, new LiteralExpressionTypeInferer<NumberLiteralNode>(CoreTypes.DOUBLE));
         putTypeInferer(StringLiteralNode.class, new LiteralExpressionTypeInferer<StringLiteralNode>(CoreTypes.STRING));
         putTypeInferer(UnitLiteralNode.class, new LiteralExpressionTypeInferer<UnitLiteralNode>(CoreTypes.UNIT));
-        putTypeInferer(VariableIdentifierNode.class, injector.getInstance(VariableLookup.class));
-        putTypeInferer(AssignmentExpressionNode.class, injector.getInstance(AssignmentExpressionTypeInferer.class));
-        putTypeInferer(ShortLambdaExpressionNode.class, injector.getInstance(ShortLambdaExpressionTypeInferer.class));
+        putTypeInferer(VariableIdentifierNode.class, VariableLookup.class);
+        putTypeInferer(AssignmentExpressionNode.class, AssignmentExpressionTypeInferer.class);
+        putTypeInferer(ShortLambdaExpressionNode.class, ShortLambdaExpressionTypeInferer.class);
     }
     
+    private <T extends ExpressionNode> void putTypeInferer(Class<T> expressionType, final ExpressionTypeInferer<T> typeInferer) {
+        typeInferers.put(expressionType, new Provider<ExpressionTypeInferer<? extends ExpressionNode>>() {
+            @Override
+            public ExpressionTypeInferer<? extends ExpressionNode> get() {
+                return typeInferer;
+            }
+        });
+    }
+    
+    private <T extends ExpressionNode> void putTypeInferer(Class<T> expressionType, final Class<? extends ExpressionTypeInferer<T>> typeInfererType) {
+        typeInferers.put(expressionType, new Provider<ExpressionTypeInferer<? extends ExpressionNode>>() {
+            @Override
+            public ExpressionTypeInferer<? extends ExpressionNode> get() {
+                return injector.getInstance(typeInfererType);
+            }
+        });
+    }
+
     @SuppressWarnings("unchecked")
     private <T extends ExpressionNode> ExpressionTypeInferer<T> getTypeInferer(T expression) {
-        return (ExpressionTypeInferer<T>) typeInferers.get(expression.getClass());
-    }
-    
-    private <T extends ExpressionNode> void putTypeInferer(Class<T> expressionType, ExpressionTypeInferer<T> typeInferer) {
-        typeInferers.put(expressionType, typeInferer);
+        return (ExpressionTypeInferer<T>) typeInferers.get(expression.getClass()).get();
     }
     
     public TypeResult<ValueInfo> inferValueInfo(ExpressionNode expression) {
