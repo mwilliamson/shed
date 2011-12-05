@@ -90,17 +90,21 @@ public class TypeInfererImpl implements TypeInferer {
         this.metaClasses = metaClasses;
         this.context = context;
 
-        typeInferers.put(BooleanLiteralNode.class, new LiteralExpressionTypeInferer<BooleanLiteralNode>(CoreTypes.BOOLEAN));
-        typeInferers.put(NumberLiteralNode.class, new LiteralExpressionTypeInferer<NumberLiteralNode>(CoreTypes.DOUBLE));
-        typeInferers.put(StringLiteralNode.class, new LiteralExpressionTypeInferer<StringLiteralNode>(CoreTypes.STRING));
-        typeInferers.put(UnitLiteralNode.class, new LiteralExpressionTypeInferer<StringLiteralNode>(CoreTypes.UNIT));
-        typeInferers.put(VariableIdentifierNode.class, injector.getInstance(VariableLookup.class));
-        typeInferers.put(AssignmentExpressionNode.class, injector.getInstance(AssignmentExpressionTypeInferer.class));
+        putTypeInferer(BooleanLiteralNode.class, new LiteralExpressionTypeInferer<BooleanLiteralNode>(CoreTypes.BOOLEAN));
+        putTypeInferer(NumberLiteralNode.class, new LiteralExpressionTypeInferer<NumberLiteralNode>(CoreTypes.DOUBLE));
+        putTypeInferer(StringLiteralNode.class, new LiteralExpressionTypeInferer<StringLiteralNode>(CoreTypes.STRING));
+        putTypeInferer(UnitLiteralNode.class, new LiteralExpressionTypeInferer<UnitLiteralNode>(CoreTypes.UNIT));
+        putTypeInferer(VariableIdentifierNode.class, injector.getInstance(VariableLookup.class));
+        putTypeInferer(AssignmentExpressionNode.class, injector.getInstance(AssignmentExpressionTypeInferer.class));
     }
     
     @SuppressWarnings("unchecked")
     private <T extends ExpressionNode> ExpressionTypeInferer<T> getTypeInferer(T expression) {
         return (ExpressionTypeInferer<T>) typeInferers.get(expression.getClass());
+    }
+    
+    private <T extends ExpressionNode> void putTypeInferer(Class<T> expressionType, ExpressionTypeInferer<T> typeInferer) {
+        typeInferers.put(expressionType, typeInferer);
     }
     
     public TypeResult<ValueInfo> inferValueInfo(ExpressionNode expression) {
