@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
 
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
@@ -48,6 +49,10 @@ public class CoreTypes {
     
     public static ScalarType functionTypeOf(Type... types) {
         return functionTypeOf(asList(types));
+    }
+    
+    public static ScalarType functionTypeOf(Iterable<Type> types) {
+        return functionTypeOf(ImmutableList.copyOf(types));
     }
     
     public static ScalarType functionTypeOf(List<Type> types) {

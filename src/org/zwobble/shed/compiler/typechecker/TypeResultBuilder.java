@@ -17,10 +17,15 @@ public class TypeResultBuilder<T> {
     }
     
     private final T value;
-    private final List<CompilerError> errors = new ArrayList<CompilerError>();
+    private final List<CompilerError> errors;
     
     private TypeResultBuilder(T value) {
+        this(value, new ArrayList<CompilerError>());
+    }
+    
+    private TypeResultBuilder(T value, List<CompilerError> errors) {
         this.value = value;
+        this.errors = errors;
     }
     
     public void addError(CompilerError error) {
@@ -32,6 +37,14 @@ public class TypeResultBuilder<T> {
     }
     
     public TypeResult<T> build() {
+        if (errors.isEmpty()) {
+            return TypeResults.success(value);
+        } else {
+            return TypeResults.failure(value, errors);
+        }
+    }
+    
+    public <R> TypeResult<R> buildWithValue(R value) {
         if (errors.isEmpty()) {
             return TypeResults.success(value);
         } else {

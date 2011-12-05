@@ -28,10 +28,10 @@ import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.typechecker.errors.MissingReturnStatementError;
 import org.zwobble.shed.compiler.typechecker.errors.NotCallableError;
-import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.typechecker.expressions.AssignmentExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.ExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.LiteralExpressionTypeInferer;
+import org.zwobble.shed.compiler.typechecker.expressions.ShortLambdaExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.VariableLookup;
 import org.zwobble.shed.compiler.typechecker.statements.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -96,6 +96,7 @@ public class TypeInfererImpl implements TypeInferer {
         putTypeInferer(UnitLiteralNode.class, new LiteralExpressionTypeInferer<UnitLiteralNode>(CoreTypes.UNIT));
         putTypeInferer(VariableIdentifierNode.class, injector.getInstance(VariableLookup.class));
         putTypeInferer(AssignmentExpressionNode.class, injector.getInstance(AssignmentExpressionTypeInferer.class));
+        putTypeInferer(ShortLambdaExpressionNode.class, injector.getInstance(ShortLambdaExpressionTypeInferer.class));
     }
     
     @SuppressWarnings("unchecked")
@@ -108,13 +109,8 @@ public class TypeInfererImpl implements TypeInferer {
     }
     
     public TypeResult<ValueInfo> inferValueInfo(ExpressionNode expression) {
-        
         if (typeInferers.containsKey(expression.getClass())) {
             return getTypeInferer(expression).inferValueInfo(expression);
-        }
-        
-        if (expression instanceof ShortLambdaExpressionNode) {
-            return inferType((ShortLambdaExpressionNode)expression);
         }
         if (expression instanceof LongLambdaExpressionNode) {
             return inferFunctionTypeAndTypeCheckBody((LongLambdaExpressionNode)expression);
@@ -140,37 +136,6 @@ public class TypeInfererImpl implements TypeInferer {
         });
     }
 
-    private TypeResult<ValueInfo> inferType(final ShortLambdaExpressionNode lambdaExpression) {
-        TypeResult<List<Type>> result = argumentTypeInferer.inferArgumentTypesAndAddToContext(lambdaExpression.getFormalArguments());
-        
-        final TypeResult<Type> bodyTypeResult = inferType(lambdaExpression.getBody());
-        result = result.withErrorsFrom(bodyTypeResult);
-        Option<Type> returnTypeOption = bodyTypeResult.asOption();
-        
-        Option<? extends ExpressionNode> returnTypeReference = lambdaExpression.getReturnType();
-        if (returnTypeReference.hasValue()) {
-            TypeResultWithValue<Type> returnTypeResult = typeLookup.lookupTypeReference(returnTypeReference.get());
-            result = result.withErrorsFrom(returnTypeResult);
-            returnTypeOption = returnTypeResult.asOption();
-            if (bodyTypeResult.hasValue() && returnTypeResult.hasValue()) {
-                Type bodyType = bodyTypeResult.getOrThrow();
-                Type returnType = returnTypeResult.getOrThrow();
-                if (!subTyping.isSubType(bodyType, returnType)) {
-                    result = result.withErrorsFrom(failure(error(
-                        lambdaExpression.getBody(),
-                        new TypeMismatchError(returnType, bodyType)
-                    )));
-                }
-            }
-        }
-        
-        
-        if (returnTypeOption.hasValue()) {
-            return result.ifValueThen(buildFunctionType(returnTypeOption.get())).ifValueThen(toUnassignableValueInfo());            
-        } else {
-            return TypeResults.<ValueInfo>failure(result.getErrors());
-        }
-    }
 
     public TypeResult<ValueInfo> inferFunctionTypeAndTypeCheckBody(final FunctionWithBodyNode function) {
         TypeResult<ValueInfo> typeResult = inferFunctionType(function);
