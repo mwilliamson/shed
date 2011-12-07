@@ -37,6 +37,7 @@ public class StaticContext {
     private final Map<FullyQualifiedName, Type> global = new HashMap<FullyQualifiedName, Type>();
     private final Map<Identity<Declaration>, ValueInfo> types = new HashMap<Identity<Declaration>, ValueInfo>();
     private final Map<ScalarType, ScalarTypeInfo> scalarTypeInfo = new HashMap<ScalarType, ScalarTypeInfo>();
+    // TODO: move builtins into a separate class
     private final Map<String, GlobalDeclaration> builtIns = new HashMap<String, GlobalDeclaration>();
     private final MetaClasses metaClasses;
     
