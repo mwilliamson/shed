@@ -16,14 +16,13 @@ import org.zwobble.shed.compiler.typechecker.StaticContext;
 
 import com.google.common.io.CharStreams;
 
-import static org.zwobble.shed.compiler.nodejs.DefaultNodeJsContext.defaultNodeJsContext;
-
 public class ShedToNodeJsCompiler {
     private static final ShedCompiler compiler = ShedCompiler.build(new BrowserModuleWrapper(), OptimisationLevel.SIMPLE);
     
     public static ShedToNodeJsCompilationResult compile(File sourceDirectory, String target, Writer writer) {
         MetaClasses metaClasses = MetaClasses.create();
-        StaticContext context = defaultNodeJsContext(metaClasses);
+        StaticContext context = new StaticContext(metaClasses);
+        DefaultNodeJsContext.defaultNodeJsContext(context, metaClasses);
         try {
             RuntimeImporter runtimeImporter = new RuntimeImporter(compiler);
             runtimeImporter.importRuntime(context, ResourceRuntimeFileReader.build().listFiles(), metaClasses);

@@ -32,7 +32,7 @@ public class TypeCheckerTestFixture {
     
     private final TypeStore.Builder typeStoreBuilder = TypeStore.builder();
     private final MetaClasses metaClasses = MetaClasses.create();
-    private final StaticContext context;
+    private final StaticContext context = new StaticContext(metaClasses);
     private final ReferencesBuilder references = new ReferencesBuilder();
     
     private final Declaration stringTypeDeclaration;
@@ -48,7 +48,7 @@ public class TypeCheckerTestFixture {
     private final VariableIdentifierNode implementingClassTypeReference = Nodes.id("Song");
     
     private TypeCheckerTestFixture() {
-        context = DefaultContext.defaultContext(metaClasses);
+        DefaultContext.defaultContext(context);
         
         Map<String, GlobalDeclaration> builtIns = context.getBuiltIns();
         stringTypeDeclaration = builtIns.get("String");

@@ -21,8 +21,8 @@ import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 
 public class DefaultBrowserContext {
-    public static StaticContext defaultBrowserContext(MetaClasses metaClasses) {
-        StaticContext context = DefaultContext.defaultContext(metaClasses);
+    public static void defaultBrowserContext(StaticContext context, MetaClasses metaClasses) {
+        DefaultContext.defaultContext(context);
         
         FormalTypeParameter formalTypeParameter = invariantFormalTypeParameter("T");
         Type importValueType = new ParameterisedFunctionType(
@@ -47,7 +47,5 @@ public class DefaultBrowserContext {
         
         context.addGlobal(fullyQualifiedName("shed", "browser"), browserType);
         context.addInfo(browserType, browserTypeInfo);
-        
-        return context;
     }
 }

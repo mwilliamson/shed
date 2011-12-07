@@ -21,7 +21,8 @@ import static org.zwobble.shed.compiler.types.TypeMaker.interfaces;
 @SuppressWarnings("unchecked")
 public class CoreTypesTest {
     private final MetaClasses metaClasses = MetaClasses.create();
-    private final StaticContext context = DefaultContext.defaultContext(metaClasses);
+    private final StaticContext context = new StaticContext(metaClasses);
+    { DefaultContext.defaultContext(context); }
     private final InterfaceType interfaceType = make(an(interfaceType()));
     private final ClassType implementingClassType = make(a(classType(), with(interfaces, interfaces(interfaceType))));    
     
