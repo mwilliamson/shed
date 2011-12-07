@@ -204,6 +204,27 @@ public class ClassDeclarationTypeCheckerTest {
         assertThat(result, isFailureWithErrors(new UntypedReferenceError("Data")));
     }
     
+    @Test public void
+    classCanReferenceItself() {
+        VariableIdentifierNode classReference = Nodes.id("Empty");
+        ClassDeclarationNode declaration = Nodes.clazz(
+            "Empty",
+            Nodes.noFormalArguments(),
+            Nodes.block(
+                Nodes.publik(Nodes.func(
+                    "another",
+                    Nodes.noFormalArguments(),
+                    classReference,
+                    Nodes.block(Nodes.returnStatement(Nodes.call(classReference)))
+                ))
+            )
+        );
+        fixture.addType(declaration, type);
+        fixture.addReference(classReference, declaration);
+        TypeResult<?> result = forwardDeclare(declaration);
+        assertThat(result, isSuccess());
+    }
+    
     private void forwardDeclareSuccessfully(ClassDeclarationNode classDeclaration) {
         assertThat(typeChecker().forwardDeclare(classDeclaration), isSuccess());
     }
