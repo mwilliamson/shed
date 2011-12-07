@@ -7,7 +7,6 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 import org.zwobble.shed.compiler.Eager;
-import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.parsing.nodes.AssignmentExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
@@ -26,16 +25,13 @@ import org.zwobble.shed.compiler.typechecker.expressions.CallExpressionTypeInfer
 import org.zwobble.shed.compiler.typechecker.expressions.ExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.LiteralExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.LongLambdaExpressionTypeInferer;
+import org.zwobble.shed.compiler.typechecker.expressions.MemberAccessTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.ShortLambdaExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.VariableLookup;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
-import org.zwobble.shed.compiler.types.Member;
-import org.zwobble.shed.compiler.types.Members;
 import org.zwobble.shed.compiler.types.ParameterisedFunctionType;
 import org.zwobble.shed.compiler.types.ParameterisedType;
-import org.zwobble.shed.compiler.types.ScalarType;
-import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeReplacer;
 
@@ -45,9 +41,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Injector;
 
-import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.Results.isSuccess;
-import static org.zwobble.shed.compiler.typechecker.TypeResults.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
 import static org.zwobble.shed.compiler.typechecker.ValueInfos.toUnassignableValueInfo;
 import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
@@ -55,7 +49,6 @@ import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
 public class TypeInfererImpl implements TypeInferer {
     private final TypeLookup typeLookup;
     private final MetaClasses metaClasses;
-    private final StaticContext context;
     
     private final Map<Class<? extends ExpressionNode>, Provider<ExpressionTypeInferer<? extends ExpressionNode>>> typeInferers = Maps.newHashMap();
     private final Injector injector;
@@ -64,12 +57,10 @@ public class TypeInfererImpl implements TypeInferer {
     public TypeInfererImpl(
         TypeLookup typeLookup, 
         MetaClasses metaClasses,
-        StaticContext context,
         Injector injector
     ) {
         this.typeLookup = typeLookup;
         this.metaClasses = metaClasses;
-        this.context = context;
         this.injector = injector;
 
         putTypeInferer(BooleanLiteralNode.class, new LiteralExpressionTypeInferer<BooleanLiteralNode>(CoreTypes.BOOLEAN));
@@ -81,6 +72,7 @@ public class TypeInfererImpl implements TypeInferer {
         putTypeInferer(ShortLambdaExpressionNode.class, ShortLambdaExpressionTypeInferer.class);
         putTypeInferer(LongLambdaExpressionNode.class, LongLambdaExpressionTypeInferer.class);
         putTypeInferer(CallNode.class, CallExpressionTypeInferer.class);
+        putTypeInferer(MemberAccessNode.class, MemberAccessTypeInferer.class);
     }
     
     private <T extends ExpressionNode> void putTypeInferer(Class<T> expressionType, final ExpressionTypeInferer<T> typeInferer) {
@@ -110,9 +102,6 @@ public class TypeInfererImpl implements TypeInferer {
         if (typeInferers.containsKey(expression.getClass())) {
             return getTypeInferer(expression).inferValueInfo(expression);
         }
-        if (expression instanceof MemberAccessNode) {
-            return inferMemberAccessType((MemberAccessNode)expression);
-        }
         if (expression instanceof TypeApplicationNode) {
             return inferTypeApplicationType((TypeApplicationNode)expression);
         }
@@ -124,24 +113,6 @@ public class TypeInfererImpl implements TypeInferer {
             @Override
             public TypeResult<Type> apply(ValueInfo input) {
                 return success(input.getType());
-            }
-        });
-    }
-
-    private TypeResult<ValueInfo> inferMemberAccessType(final MemberAccessNode memberAccess) {
-        return inferType(memberAccess.getExpression()).ifValueThen(new Function<Type, TypeResult<ValueInfo>>() {
-            @Override
-            public TypeResult<ValueInfo> apply(Type leftType) {
-                String name = memberAccess.getMemberName();
-                ScalarTypeInfo leftTypeInfo = context.getInfo((ScalarType)leftType);
-                Members members = leftTypeInfo.getMembers();
-                Option<Member> member = members.lookup(name);
-                
-                if (member.hasValue()) {
-                    return success(member.get().getValueInfo());
-                } else {
-                    return failure(error(memberAccess, ("No such member: " + name)));
-                }
             }
         });
     }
