@@ -16,7 +16,6 @@ import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.typechecker.errors.InvalidAssignmentError;
-import org.zwobble.shed.compiler.typechecker.errors.NotCallableError;
 import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -74,99 +73,6 @@ public class TypeInfererTest {
         assertThat(inferType(Nodes.unit(), standardContext()), isType(CoreTypes.UNIT));
     }
     
-    @Test public void
-    functionCallsHaveTypeOfReturnTypeOfFunctionWithNoArguments() {
-        VariableIdentifierNode reference = Nodes.id("magic");
-        GlobalDeclaration declaration = globalDeclaration("magic");
-        fixture.addReference(reference, declaration);
-        
-        StaticContext context = standardContext();
-        context.add(declaration, unassignableValue(CoreTypes.functionTypeOf(CoreTypes.DOUBLE)));
-        
-        CallNode call = Nodes.call(reference);
-        TypeResult<Type> result = inferType(call, context);
-        assertThat(result, isType(CoreTypes.DOUBLE));
-    }
-    
-    @Test public void
-    functionCallsHaveTypeOfReturnTypeOfFunctionWithCorrectArguments() {
-        VariableIdentifierNode reference = Nodes.id("isLength");
-        GlobalDeclaration declaration = globalDeclaration("isLength");
-        fixture.addReference(reference, declaration);
-        
-        StaticContext context = standardContext();
-        // isLength: (String, Double) -> Boolean 
-        context.add(declaration, unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.BOOLEAN)));
-        CallNode call = Nodes.call(reference, Nodes.string("Blah"), Nodes.number("4"));
-        TypeResult<Type> result = inferType(call, context);
-        assertThat(result, isType(CoreTypes.BOOLEAN));
-    }
-    
-    @Test public void
-    errorIfActualArgumentsAreNotAssignableToFormalArguments() {
-        VariableIdentifierNode reference = Nodes.id("isLength");
-        GlobalDeclaration declaration = globalDeclaration("isLength");
-        fixture.addReference(reference, declaration);
-        
-        StaticContext context = standardContext();
-        // isLength: (String, Double) -> Boolean 
-        context.add(declaration, unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.BOOLEAN)));
-        CallNode call = Nodes.call(reference, Nodes.number("4"), Nodes.string("Blah"));
-        TypeResult<Type> result = inferType(call, context);
-        assertThat(
-            errorStrings(result),
-            is(asList(
-                "Expected expression of type String as argument 1, but got expression of type Double",
-                "Expected expression of type Double as argument 2, but got expression of type String"
-            ))
-        );
-    }
-    
-    @Test public void
-    cannotCallTypesThatArentFunctions() {
-        VariableIdentifierNode reference = Nodes.id("isLength");
-        GlobalDeclaration declaration = globalDeclaration("isLength");
-        fixture.addReference(reference, declaration);
-        
-        StaticContext context = standardContext();
-        context.add(declaration, unassignableValue(CoreTypes.BOOLEAN));
-        CallNode call = Nodes.call(reference);
-        TypeResult<Type> result = inferType(call, context);
-        assertThat(result, isFailureWithErrors(new NotCallableError(CoreTypes.BOOLEAN)));
-    }
-    
-    @Test public void
-    errorIfCallingFunctionWithWrongNumberOfArguments() {
-        VariableIdentifierNode reference = Nodes.id("isLength");
-        GlobalDeclaration declaration = globalDeclaration("isLength");
-        fixture.addReference(reference, declaration);
-        
-        StaticContext context = standardContext();
-        // isLength: (String, Double) -> Boolean 
-        context.add(declaration, unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.BOOLEAN)));
-        
-        CallNode call = Nodes.call(reference, Nodes.number("4"));
-        TypeResult<Type> result = inferType(call, context);
-        assertThat(
-            errorStrings(result),
-            is(asList("Function requires 2 argument(s), but is called with 1"))
-        );
-    }
-    
-    @Test public void
-    canCallClassConstructor() {
-        VariableIdentifierNode reference = Nodes.id("Person");
-        GlobalDeclaration declaration = globalDeclaration("Person");
-        fixture.addReference(reference, declaration);
-        
-        StaticContext context = standardContext();
-        ClassType type = new ClassType(fullyQualifiedName("Person"));
-        context.addClass(declaration, type, typeParameters(), ScalarTypeInfo.EMPTY);
-        
-        CallNode call = Nodes.call(reference);
-        TypeResult<Type> result = inferType(call, context);
-        assertThat(result, isType(type));
-    }
     
     @Test public void
     memberAccessHasTypeOfMember() {
