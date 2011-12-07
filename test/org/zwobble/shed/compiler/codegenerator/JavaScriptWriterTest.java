@@ -129,8 +129,11 @@ public class JavaScriptWriterTest {
     @Test public void
     objectIsCommaSeparatedPropertiesSurroundedByBraces() {
         assertThat(
-            writer.write(js.object(ImmutableMap.<String, JavaScriptExpressionNode>of("name", js.id("name")))),
-            is("{\n    \"name\": name\n}")
+            writer.write(js.object(ImmutableMap.<String, JavaScriptExpressionNode>of(
+                "name", js.id("name"),
+                "job", js.undefined()
+            ))),
+            is("{\n    \"name\": name,\n    \"job\": undefined\n}")
         );
     }
     

@@ -111,7 +111,13 @@ public class JavaScriptWriter {
             if (properties.size() == 0) {
                 builder.append("}");
             } else {
+                boolean first = true;
                 for (Map.Entry<String, JavaScriptExpressionNode> property : properties.entrySet()) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        builder.append(",");
+                    }
                     builder.append("\n");
                     builder.append(indentationAtLevel(indentationLevel + 1));
                     writeJavaScriptString(property.getKey(), builder);
