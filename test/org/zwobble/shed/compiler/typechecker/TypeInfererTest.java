@@ -1,7 +1,5 @@
 package org.zwobble.shed.compiler.typechecker;
 
-import java.util.Collections;
-
 import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerErrorDescription;
@@ -10,11 +8,9 @@ import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
-import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
-import org.zwobble.shed.compiler.parsing.nodes.ReturnNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
@@ -22,7 +18,6 @@ import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.typechecker.errors.InvalidAssignmentError;
 import org.zwobble.shed.compiler.typechecker.errors.NotCallableError;
 import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
-import org.zwobble.shed.compiler.typechecker.errors.UntypedReferenceError;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
@@ -41,7 +36,6 @@ import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 import static org.zwobble.shed.compiler.Option.none;
-import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
 import static org.zwobble.shed.compiler.typechecker.TypeResultMatchers.isSuccessWithValue;
@@ -58,8 +52,6 @@ public class TypeInfererTest {
     private final TypeCheckerTestFixture fixture = TypeCheckerTestFixture.build();
 
     private final VariableIdentifierNode doubleReference = fixture.doubleTypeReference();
-    private final VariableIdentifierNode stringReference = fixture.stringTypeReference();
-    private final VariableIdentifierNode booleanReference = fixture.booleanTypeReference();
     
     @Test public void
     canInferTypeOfBooleanLiteralsAsBoolean() {
@@ -80,137 +72,6 @@ public class TypeInfererTest {
     @Test public void
     canInferTypeOfUnitLiteralsAsUnit() {
         assertThat(inferType(Nodes.unit(), standardContext()), isType(CoreTypes.UNIT));
-    }
-    
-    @Test public void
-    canFindTypeOfLongLambdaExpression() {
-        LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
-            asList(
-                new FormalArgumentNode("name", stringReference),
-                new FormalArgumentNode("age", doubleReference)
-            ),
-            booleanReference,
-            Nodes.block(new ReturnNode(new BooleanLiteralNode(true)))
-        );
-        TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, isSuccessWithValue((Type)CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.BOOLEAN)));
-    }
-    
-    @Test public void
-    bodyOfLongLambdaExpressionIsTypeChecked() {
-        LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
-            Collections.<FormalArgumentNode>emptyList(),
-            booleanReference,
-            Nodes.block(
-                Nodes.immutableVar("x", stringReference, Nodes.bool(true)),
-                new ReturnNode(new BooleanLiteralNode(true))
-            )
-        );
-        TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, isFailureWithErrors(new TypeMismatchError(CoreTypes.STRING, CoreTypes.BOOLEAN)));
-    }
-    
-    @Test public void
-    bodyOfLongLambdaExpressionMustReturnExpressionOfTypeSpecifiedInSignature() {
-        LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
-            Collections.<FormalArgumentNode>emptyList(),
-            booleanReference,
-            Nodes.block(
-                new ReturnNode(new NumberLiteralNode("4.2"))
-            )
-        );
-        TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(errorStrings(result), is(asList("Expected return expression of type \"Boolean\" but was of type \"Double\"")));
-    }
-    
-    @Test public void
-    longLambdaExpressionAddsArgumentsToFunctionScope() {
-        FormalArgumentNode ageArgument = new FormalArgumentNode("age", doubleReference);
-        VariableIdentifierNode ageReference = new VariableIdentifierNode("age");
-        fixture.addReference(ageReference, ageArgument);
-        
-        LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
-            asList(
-                new FormalArgumentNode("name", stringReference),
-                ageArgument
-            ),
-            doubleReference,
-            Nodes.block(new ReturnNode(ageReference))
-        );
-        TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, isSuccessWithValue((Type)CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.DOUBLE)));
-    }
-    
-    @Test public void
-    longLambdaExpressionHandlesUnrecognisedArgumentTypes() {
-        LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
-            asList(
-                new FormalArgumentNode("name", new VariableIdentifierNode("Strink"))
-            ),
-            doubleReference,
-            Nodes.block(new ReturnNode(new NumberLiteralNode("4")))
-        );
-        TypeResult<Type> result = inferType(functionExpression, standardContext());
-        CompilerErrorDescription[] errorsArray = { new UntypedReferenceError("Strink") };
-        assertThat(result, isFailureWithErrors(errorsArray));
-    }
-    
-    @Test public void
-    shortLambdaExpressionAddsArgumentsToFunctionScope() {
-        FormalArgumentNode ageArgument = new FormalArgumentNode("age", doubleReference);
-        VariableIdentifierNode ageReference = new VariableIdentifierNode("age");
-        fixture.addReference(ageReference, ageArgument);
-        
-        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
-            asList(
-                new FormalArgumentNode("name", stringReference),
-                ageArgument
-            ),
-            none(ExpressionNode.class),
-            ageReference
-        );
-        TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(result, isSuccessWithValue((Type)CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.DOUBLE)));
-    }
-    
-    @Test public void
-    shortLambdaExpressionHandlesUnrecognisedArgumentTypes() {
-        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
-            asList(
-                new FormalArgumentNode("name", new VariableIdentifierNode("Strink")),
-                new FormalArgumentNode("age", new VariableIdentifierNode("Numer"))
-            ),
-            none(ExpressionNode.class),
-            new NumberLiteralNode("4")
-        );
-        TypeResult<Type> result = inferType(functionExpression, standardContext());
-        CompilerErrorDescription[] errorsArray = { new UntypedReferenceError("Strink"), new UntypedReferenceError("Numer") };
-        assertThat(result, isFailureWithErrors(errorsArray));
-    }
-    
-    @Test public void
-    shortLambdaExpressionHandlesUnrecognisedUntypeableBodyWhenReturnTypeIsExplicit() {
-        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
-            asList(
-                new FormalArgumentNode("age", doubleReference)
-            ),
-            some(doubleReference),
-            new VariableIdentifierNode("blah")
-        );
-        TypeResult<Type> result = inferType(functionExpression, standardContext());
-        CompilerErrorDescription[] errorsArray = { new UntypedReferenceError("blah") };
-        assertThat(result, isFailureWithErrors(errorsArray));
-    }
-    
-    @Test public void
-    bodyOfLongLambdaExpressionMustReturn() {
-        LongLambdaExpressionNode functionExpression = new LongLambdaExpressionNode(
-            Collections.<FormalArgumentNode>emptyList(),
-            booleanReference,
-            Nodes.block()
-        );
-        TypeResult<Type> result = inferType(functionExpression, standardContext());
-        assertThat(errorStrings(result), is(asList("Expected return statement")));
     }
     
     @Test public void

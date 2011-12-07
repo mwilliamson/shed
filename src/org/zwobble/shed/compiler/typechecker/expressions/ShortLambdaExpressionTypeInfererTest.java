@@ -128,6 +128,54 @@ public class ShortLambdaExpressionTypeInfererTest {
         assertThat(result, isSuccessWithValue(ValueInfo.unassignableValue(expectedType)));
     }
     
+    @Test public void
+    shortLambdaExpressionAddsArgumentsToFunctionScope() {
+        FormalArgumentNode ageArgument = new FormalArgumentNode("age", doubleReference);
+        VariableIdentifierNode ageReference = new VariableIdentifierNode("age");
+        fixture.addReference(ageReference, ageArgument);
+        
+        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
+            asList(
+                new FormalArgumentNode("name", stringReference),
+                ageArgument
+            ),
+            none(ExpressionNode.class),
+            ageReference
+        );
+        TypeResult<ValueInfo> result = inferType(functionExpression);
+        ScalarType expectedFunctionType = CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.DOUBLE, CoreTypes.DOUBLE);
+        assertThat(result, isSuccessWithValue(ValueInfo.unassignableValue(expectedFunctionType)));
+    }
+    
+    @Test public void
+    shortLambdaExpressionHandlesUnrecognisedArgumentTypes() {
+        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
+            asList(
+                new FormalArgumentNode("name", new VariableIdentifierNode("Strink")),
+                new FormalArgumentNode("age", new VariableIdentifierNode("Numer"))
+            ),
+            none(ExpressionNode.class),
+            new NumberLiteralNode("4")
+        );
+        TypeResult<ValueInfo> result = inferType(functionExpression);
+        CompilerErrorDescription[] errorsArray = { new UntypedReferenceError("Strink"), new UntypedReferenceError("Numer") };
+        assertThat(result, isFailureWithErrors(errorsArray));
+    }
+    
+    @Test public void
+    shortLambdaExpressionHandlesUnrecognisedUntypeableBodyWhenReturnTypeIsExplicit() {
+        ShortLambdaExpressionNode functionExpression = new ShortLambdaExpressionNode(
+            asList(
+                new FormalArgumentNode("age", doubleReference)
+            ),
+            some(doubleReference),
+            new VariableIdentifierNode("blah")
+        );
+        TypeResult<ValueInfo> result = inferType(functionExpression);
+        CompilerErrorDescription[] errorsArray = { new UntypedReferenceError("blah") };
+        assertThat(result, isFailureWithErrors(errorsArray));
+    }
+    
     private TypeResult<ValueInfo> inferType(ShortLambdaExpressionNode expression) {
         return fixture.get(ShortLambdaExpressionTypeInferer.class).inferValueInfo(expression);
     }
