@@ -1,0 +1,25 @@
+package circularDependencies;
+
+import shed.sys;
+
+class Yes() {
+    public fun invert() : No {
+        return No();
+    }
+    
+    public fun toString() : String {
+        return "Yes";
+    }
+}
+
+class No() {
+    public fun invert() : Yes {
+        return Yes();
+    }
+    
+    public fun toString() : String {
+        return "No";
+    }
+}
+
+sys.print(Yes().invert().invert().invert().toString());

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Writer;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.zwobble.shed.compiler.GoogleClosureJavaScriptOptimiser;
 import org.zwobble.shed.compiler.nodejs.ShedToNodeJsCompiler;
@@ -33,6 +34,7 @@ public class NodeTests {
         assertThat(compileAndExecute("self-references", "main"), isSuccessWithOutput("nothing to see here"));
     }
     
+    @Ignore
     @Test
     public void classesCanHaveCircularDependencies() {
         assertThat(compileAndExecute("circular-dependencies", "main"), isSuccessWithOutput("No"));
