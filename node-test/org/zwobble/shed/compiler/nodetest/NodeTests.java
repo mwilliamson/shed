@@ -33,6 +33,11 @@ public class NodeTests {
         assertThat(compileAndExecute("self-references", "main"), isSuccessWithOutput("nothing to see here"));
     }
     
+    @Test
+    public void classesCanHaveCircularDependencies() {
+        assertThat(compileAndExecute("circular-dependencies", "main"), isSuccessWithOutput("No"));
+    }
+    
     private NodeExecutionResult compileAndExecute(String directory, String main) {
         try {
             File compiledFile = compile(directory, main);

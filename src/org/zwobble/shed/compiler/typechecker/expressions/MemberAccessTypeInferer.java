@@ -2,12 +2,14 @@ package org.zwobble.shed.compiler.typechecker.expressions;
 
 import javax.inject.Inject;
 
+import org.zwobble.shed.compiler.CompilerErrorWithSyntaxNode;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeInferer;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
+import org.zwobble.shed.compiler.typechecker.errors.NotScalarTypeError;
 import org.zwobble.shed.compiler.types.Member;
 import org.zwobble.shed.compiler.types.Members;
 import org.zwobble.shed.compiler.types.ScalarType;
@@ -36,6 +38,9 @@ public class MemberAccessTypeInferer implements ExpressionTypeInferer<MemberAcce
             @Override
             public TypeResult<ValueInfo> apply(Type leftType) {
                 String name = memberAccess.getMemberName();
+                if (!(leftType instanceof ScalarType)) {
+                    return failure(new CompilerErrorWithSyntaxNode(memberAccess, new NotScalarTypeError(leftType)));
+                }
                 ScalarTypeInfo leftTypeInfo = context.getInfo((ScalarType)leftType);
                 Members members = leftTypeInfo.getMembers();
                 Option<Member> member = members.lookup(name);
