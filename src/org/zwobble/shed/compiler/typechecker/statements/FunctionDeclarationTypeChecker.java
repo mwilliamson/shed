@@ -5,8 +5,8 @@ import javax.inject.Inject;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
+import org.zwobble.shed.compiler.typechecker.FunctionTypeChecker;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
-import org.zwobble.shed.compiler.typechecker.TypeInferer;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.TypeResultBuilder;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
@@ -20,18 +20,18 @@ import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResult
 import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
 
 public class FunctionDeclarationTypeChecker implements DeclarationTypeChecker<FunctionDeclarationNode> {
-    private final TypeInferer typeInferer;
+    private final FunctionTypeChecker functionTypeChecker;
     private final StaticContext context;
 
     @Inject
-    public FunctionDeclarationTypeChecker(TypeInferer typeInferer, StaticContext context) {
-        this.typeInferer = typeInferer;
+    public FunctionDeclarationTypeChecker(FunctionTypeChecker functionTypeChecker, StaticContext context) {
+        this.functionTypeChecker = functionTypeChecker;
         this.context = context;
     }
     
     @Override
     public TypeResult<?> forwardDeclare(FunctionDeclarationNode functionDeclaration) {
-        TypeResult<ValueInfo> typeResult = typeInferer.inferFunctionType(functionDeclaration);
+        TypeResult<ValueInfo> typeResult = functionTypeChecker.inferFunctionType(functionDeclaration);
         typeResult.ifValueThen(addToContext(functionDeclaration));
         return typeResult;
     }
@@ -42,7 +42,7 @@ public class FunctionDeclarationTypeChecker implements DeclarationTypeChecker<Fu
         TypeResultBuilder<StatementTypeCheckResult> result = typeResultBuilder(StatementTypeCheckResult.noReturn());
         if (functionLookupResult.getStatus() == Status.SUCCESS) {
             TypeResult<ValueInfo> bodyResult = 
-                typeInferer.typeCheckBody(functionDeclaration).apply(functionLookupResult.getValueInfo());
+                functionTypeChecker.typeCheckBody(functionDeclaration).apply(functionLookupResult.getValueInfo());
             result.addErrors(bodyResult);
         }
         return result.build();

@@ -1,6 +1,5 @@
 package org.zwobble.shed.compiler.typechecker;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -13,12 +12,9 @@ import org.zwobble.shed.compiler.Eager;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.parsing.nodes.AssignmentExpressionNode;
-import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
-import org.zwobble.shed.compiler.parsing.nodes.FunctionNode;
-import org.zwobble.shed.compiler.parsing.nodes.FunctionWithBodyNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
@@ -27,7 +23,6 @@ import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
-import org.zwobble.shed.compiler.typechecker.errors.MissingReturnStatementError;
 import org.zwobble.shed.compiler.typechecker.errors.NotCallableError;
 import org.zwobble.shed.compiler.typechecker.expressions.AssignmentExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.ExpressionTypeInferer;
@@ -35,7 +30,6 @@ import org.zwobble.shed.compiler.typechecker.expressions.LiteralExpressionTypeIn
 import org.zwobble.shed.compiler.typechecker.expressions.LongLambdaExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.ShortLambdaExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.VariableLookup;
-import org.zwobble.shed.compiler.typechecker.statements.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
 import org.zwobble.shed.compiler.types.Member;
@@ -45,7 +39,6 @@ import org.zwobble.shed.compiler.types.ParameterisedType;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
-import org.zwobble.shed.compiler.types.TypeApplication;
 import org.zwobble.shed.compiler.types.TypeReplacer;
 
 import com.google.common.base.Function;
@@ -55,7 +48,6 @@ import com.google.common.collect.Maps;
 import com.google.inject.Injector;
 
 import static org.zwobble.shed.compiler.CompilerErrors.error;
-import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.Results.isSuccess;
 import static org.zwobble.shed.compiler.typechecker.TypeResults.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
@@ -63,8 +55,6 @@ import static org.zwobble.shed.compiler.typechecker.ValueInfos.toUnassignableVal
 import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
 
 public class TypeInfererImpl implements TypeInferer {
-    private final ArgumentTypeInferer argumentTypeInferer;
-    private final BlockTypeChecker blockTypeChecker;
     private final TypeLookup typeLookup;
     private final FunctionTyping functionTyping;
     private final SubTyping subTyping;
@@ -76,8 +66,6 @@ public class TypeInfererImpl implements TypeInferer {
 
     @Inject
     public TypeInfererImpl(
-        ArgumentTypeInferer argumentTypeInferer,
-        BlockTypeChecker blockTypeChecker, 
         TypeLookup typeLookup, 
         FunctionTyping functionTyping,
         SubTyping subTyping,
@@ -85,8 +73,6 @@ public class TypeInfererImpl implements TypeInferer {
         StaticContext context,
         Injector injector
     ) {
-        this.argumentTypeInferer = argumentTypeInferer;
-        this.blockTypeChecker = blockTypeChecker;
         this.typeLookup = typeLookup;
         this.functionTyping = functionTyping;
         this.subTyping = subTyping;
@@ -150,40 +136,6 @@ public class TypeInfererImpl implements TypeInferer {
                 return success(input.getType());
             }
         });
-    }
-    
-    public TypeResult<ValueInfo> inferFunctionType(final FunctionNode function) {
-        final TypeResult<List<Type>> argumentTypeResults = argumentTypeInferer.inferArgumentTypesAndAddToContext(function.getFormalArguments());
-        TypeResultWithValue<Type> returnTypeResult = typeLookup.lookupTypeReference(function.getReturnType());
-        
-        return returnTypeResult.ifValueThen(new Function<Type, TypeResult<Type>>() {
-            @Override
-            public TypeResult<Type> apply(Type returnType) {
-                return argumentTypeResults.ifValueThen(buildFunctionType(returnType));
-            }
-        }).ifValueThen(toUnassignableValueInfo());
-    }
-
-    public Function<ValueInfo, TypeResult<ValueInfo>> typeCheckBody(final FunctionWithBodyNode function) {
-        return new Function<ValueInfo, TypeResult<ValueInfo>>() {
-            @Override
-            public TypeResult<ValueInfo> apply(ValueInfo returnTypeInfo) {
-                List<? extends Type> functionTypeParameters = ((TypeApplication)returnTypeInfo.getType()).getTypeParameters();
-                Type returnType = functionTypeParameters.get(functionTypeParameters.size() - 1);
-                TypeResult<ValueInfo> result = success(returnTypeInfo);
-
-                TypeResultWithValue<StatementTypeCheckResult> blockResult = typeCheckBlock(function.getBody(), some(returnType));
-                result = result.withErrorsFrom(blockResult);
-                
-                if (!blockResult.get().hasReturned()) {
-                    result = result.withErrorsFrom(TypeResults.<Type>failure(error(
-                        function,
-                        new MissingReturnStatementError()
-                    )));
-                }
-                return result;
-            }
-        };
     }
 
     private TypeResult<ValueInfo> inferCallType(final CallNode expression) {
@@ -286,21 +238,6 @@ public class TypeInfererImpl implements TypeInferer {
                 return result.get();
             }
         };
-    }
-
-    private static Function<List<Type>, TypeResult<Type>> buildFunctionType(final Type returnType) {
-        return new Function<List<Type>, TypeResult<Type>>() {
-            @Override
-            public TypeResult<Type> apply(List<Type> argumentTypes) {
-                List<Type> typeParameters = new ArrayList<Type>(argumentTypes);
-                typeParameters.add(returnType);
-                return success((Type)CoreTypes.functionTypeOf(typeParameters));
-            }
-        };
-    }
-
-    private TypeResultWithValue<StatementTypeCheckResult> typeCheckBlock(BlockNode block, Option<Type> returnType) {
-        return blockTypeChecker.forwardDeclareAndTypeCheck(block, returnType);
     }
 
 }

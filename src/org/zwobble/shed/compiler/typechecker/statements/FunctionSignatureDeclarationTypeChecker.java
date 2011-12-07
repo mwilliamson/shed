@@ -5,8 +5,8 @@ import javax.inject.Inject;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionSignatureDeclarationNode;
+import org.zwobble.shed.compiler.typechecker.FunctionTypeChecker;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
-import org.zwobble.shed.compiler.typechecker.TypeInferer;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.types.Type;
@@ -16,18 +16,18 @@ import com.google.common.base.Function;
 import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
 
 public class FunctionSignatureDeclarationTypeChecker implements DeclarationTypeChecker<FunctionSignatureDeclarationNode> {
-    private final TypeInferer typeInferer;
+    private final FunctionTypeChecker functionTypeChecker;
     private final StaticContext context;
 
     @Inject
-    public FunctionSignatureDeclarationTypeChecker(TypeInferer typeInferer, StaticContext context) {
-        this.typeInferer = typeInferer;
+    public FunctionSignatureDeclarationTypeChecker(FunctionTypeChecker functionTypeChecker, StaticContext context) {
+        this.functionTypeChecker = functionTypeChecker;
         this.context = context;
     }
     
     @Override
     public TypeResult<?> forwardDeclare(FunctionSignatureDeclarationNode declaration) {
-        TypeResult<ValueInfo> typeResult = typeInferer.inferFunctionType(declaration);
+        TypeResult<ValueInfo> typeResult = functionTypeChecker.inferFunctionType(declaration);
         typeResult.ifValueThen(addToContext(declaration));
         return typeResult;
     }
