@@ -2,7 +2,6 @@ package org.zwobble.shed.compiler.typechecker;
 
 import org.hamcrest.Matcher;
 import org.junit.Test;
-import org.zwobble.shed.compiler.CompilerErrorDescription;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
@@ -14,13 +13,10 @@ import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
-import org.zwobble.shed.compiler.typechecker.errors.InvalidAssignmentError;
-import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
 import org.zwobble.shed.compiler.types.InterfaceType;
-import org.zwobble.shed.compiler.types.Interfaces;
 import org.zwobble.shed.compiler.types.ParameterisedFunctionType;
 import org.zwobble.shed.compiler.types.ParameterisedType;
 import org.zwobble.shed.compiler.types.ScalarType;
@@ -30,13 +26,11 @@ import org.zwobble.shed.compiler.types.Type;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
 import static org.zwobble.shed.compiler.typechecker.TypeResultMatchers.isSuccessWithValue;
-import static org.zwobble.shed.compiler.typechecker.ValueInfo.assignableValue;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
@@ -138,72 +132,6 @@ public class TypeInfererTest {
         CallNode call = Nodes.call(Nodes.typeApply(identityReference, doubleReference), Nodes.number("2"));
         TypeResult<Type> result = inferType(call, context);
         assertThat(result, isType(CoreTypes.DOUBLE));
-    }
-    
-    @Test public void
-    assignmentHasTypeOfAssignedValue() {
-        VariableIdentifierNode reference = Nodes.id("x");
-        GlobalDeclaration declaration = globalDeclaration("x");
-        fixture.addReference(reference, declaration);
-        
-        StaticContext context = standardContext();
-        
-        context.add(declaration, assignableValue(CoreTypes.DOUBLE));
-        
-        TypeResult<Type> result = inferType(Nodes.assign(reference, Nodes.number("4")), context);
-        assertThat(result, isType(CoreTypes.DOUBLE));
-    }
-    
-    @Test public void
-    cannotAssignToUnassignableValue() {
-        VariableIdentifierNode reference = Nodes.id("x");
-        GlobalDeclaration declaration = globalDeclaration("x");
-        fixture.addReference(reference, declaration);
-        
-        StaticContext context = standardContext();
-        
-        context.add(declaration, unassignableValue(CoreTypes.DOUBLE));
-        
-        TypeResult<Type> result = inferType(Nodes.assign(reference, Nodes.number("4")), context);
-        CompilerErrorDescription[] errorsArray = { new InvalidAssignmentError() };
-        assertThat(result, isFailureWithErrors(errorsArray));
-    }
-    
-    @Test public void
-    cannotAssignValueIfNotSubTypeOfVariableType() {
-        VariableIdentifierNode reference = Nodes.id("x");
-        GlobalDeclaration declaration = globalDeclaration("x");
-        fixture.addReference(reference, declaration);
-        
-        StaticContext context = standardContext();
-        
-        context.add(declaration, assignableValue(CoreTypes.DOUBLE));
-        
-        TypeResult<Type> result = inferType(Nodes.assign(reference, Nodes.bool(true)), context);
-        CompilerErrorDescription[] errorsArray = { new TypeMismatchError(CoreTypes.DOUBLE, CoreTypes.BOOLEAN) };
-        assertThat(result, isFailureWithErrors(errorsArray));
-    }
-    
-    @Test public void
-    canAssignValueIfSubTypeOfVariableType() {
-        VariableIdentifierNode interfaceReference = Nodes.id("iterable");
-        GlobalDeclaration interfaceDeclaration = globalDeclaration("iterable");
-        fixture.addReference(interfaceReference, interfaceDeclaration);
-
-        VariableIdentifierNode classReference = Nodes.id("iterable");
-        GlobalDeclaration classDeclaration = globalDeclaration("iterable");
-        fixture.addReference(classReference, classDeclaration);
-        
-        StaticContext context = standardContext();
-        
-        InterfaceType interfaceType = new InterfaceType(fullyQualifiedName("shed", "Iterable"));
-        ClassType classType = new ClassType(fullyQualifiedName("shed", "List"));
-        context.add(interfaceDeclaration, assignableValue(interfaceType));
-        context.add(classDeclaration, assignableValue(classType));
-        context.addInfo(classType, new ScalarTypeInfo(Interfaces.interfaces(interfaceType), members()));
-        
-        TypeResult<Type> result = inferType(Nodes.assign(interfaceReference, classReference), context);
-        assertThat(result, isSuccessWithValue((Type)classType));
     }
     
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
