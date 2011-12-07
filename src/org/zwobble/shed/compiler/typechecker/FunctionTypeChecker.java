@@ -1,6 +1,5 @@
 package org.zwobble.shed.compiler.typechecker;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -17,11 +16,10 @@ import org.zwobble.shed.compiler.types.TypeApplication;
 
 import com.google.common.base.Function;
 
-import static org.zwobble.shed.compiler.typechecker.ValueInfos.toUnassignableValueInfo;
-
 import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
+import static org.zwobble.shed.compiler.typechecker.ValueInfos.toUnassignableValueInfo;
 
 public class FunctionTypeChecker {
     private final ArgumentTypeInferer argumentTypeInferer;
@@ -73,9 +71,7 @@ public class FunctionTypeChecker {
         return new Function<List<Type>, TypeResult<Type>>() {
             @Override
             public TypeResult<Type> apply(List<Type> argumentTypes) {
-                List<Type> typeParameters = new ArrayList<Type>(argumentTypes);
-                typeParameters.add(returnType);
-                return success((Type)CoreTypes.functionTypeOf(typeParameters));
+                return success((Type)CoreTypes.functionTypeOf(argumentTypes, returnType));
             }
         };
     }

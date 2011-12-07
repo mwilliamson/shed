@@ -20,8 +20,6 @@ import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.Types;
 
-import static com.google.common.collect.Iterables.concat;
-import static java.util.Collections.singleton;
 import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
 
@@ -72,7 +70,7 @@ public class ShortLambdaExpressionTypeInferer implements ExpressionTypeInferer<S
         
         Type type;
         if (argumentTypesResult.hasValue() && returnTypeOption.hasValue()) {
-            type = CoreTypes.functionTypeOf(concat(argumentTypesResult.getOrThrow(), singleton(returnTypeOption.get())));
+            type = CoreTypes.functionTypeOf(argumentTypesResult.getOrThrow(), returnTypeOption.get());
         } else {
             type = Types.newUnknown();
         }
