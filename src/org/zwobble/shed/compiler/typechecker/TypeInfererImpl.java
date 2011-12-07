@@ -40,9 +40,7 @@ public class TypeInfererImpl implements TypeInferer {
     private final Injector injector;
 
     @Inject
-    public TypeInfererImpl(
-        Injector injector
-    ) {
+    public TypeInfererImpl(Injector injector) {
         this.injector = injector;
 
         putTypeInferer(BooleanLiteralNode.class, new LiteralExpressionTypeInferer<BooleanLiteralNode>(CoreTypes.BOOLEAN));
