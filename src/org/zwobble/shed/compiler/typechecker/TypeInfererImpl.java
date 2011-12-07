@@ -1,13 +1,10 @@
 package org.zwobble.shed.compiler.typechecker;
 
-import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import org.zwobble.shed.compiler.Eager;
-import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.parsing.nodes.AssignmentExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
@@ -27,40 +24,25 @@ import org.zwobble.shed.compiler.typechecker.expressions.LiteralExpressionTypeIn
 import org.zwobble.shed.compiler.typechecker.expressions.LongLambdaExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.MemberAccessTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.ShortLambdaExpressionTypeInferer;
+import org.zwobble.shed.compiler.typechecker.expressions.TypeApplicationTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.VariableLookup;
 import org.zwobble.shed.compiler.types.CoreTypes;
-import org.zwobble.shed.compiler.types.FormalTypeParameter;
-import org.zwobble.shed.compiler.types.ParameterisedFunctionType;
-import org.zwobble.shed.compiler.types.ParameterisedType;
 import org.zwobble.shed.compiler.types.Type;
-import org.zwobble.shed.compiler.types.TypeReplacer;
 
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Injector;
 
-import static org.zwobble.shed.compiler.Results.isSuccess;
 import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
-import static org.zwobble.shed.compiler.typechecker.ValueInfos.toUnassignableValueInfo;
-import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
 
 public class TypeInfererImpl implements TypeInferer {
-    private final TypeLookup typeLookup;
-    private final MetaClasses metaClasses;
-    
     private final Map<Class<? extends ExpressionNode>, Provider<ExpressionTypeInferer<? extends ExpressionNode>>> typeInferers = Maps.newHashMap();
     private final Injector injector;
 
     @Inject
     public TypeInfererImpl(
-        TypeLookup typeLookup, 
-        MetaClasses metaClasses,
         Injector injector
     ) {
-        this.typeLookup = typeLookup;
-        this.metaClasses = metaClasses;
         this.injector = injector;
 
         putTypeInferer(BooleanLiteralNode.class, new LiteralExpressionTypeInferer<BooleanLiteralNode>(CoreTypes.BOOLEAN));
@@ -73,6 +55,7 @@ public class TypeInfererImpl implements TypeInferer {
         putTypeInferer(LongLambdaExpressionNode.class, LongLambdaExpressionTypeInferer.class);
         putTypeInferer(CallNode.class, CallExpressionTypeInferer.class);
         putTypeInferer(MemberAccessNode.class, MemberAccessTypeInferer.class);
+        putTypeInferer(TypeApplicationNode.class, TypeApplicationTypeInferer.class);
     }
     
     private <T extends ExpressionNode> void putTypeInferer(Class<T> expressionType, final ExpressionTypeInferer<T> typeInferer) {
@@ -102,9 +85,6 @@ public class TypeInfererImpl implements TypeInferer {
         if (typeInferers.containsKey(expression.getClass())) {
             return getTypeInferer(expression).inferValueInfo(expression);
         }
-        if (expression instanceof TypeApplicationNode) {
-            return inferTypeApplicationType((TypeApplicationNode)expression);
-        }
         throw new RuntimeException("Cannot infer type of expression: " + expression);
     }
     
@@ -115,51 +95,6 @@ public class TypeInfererImpl implements TypeInferer {
                 return success(input.getType());
             }
         });
-    }
-
-    private TypeResult<ValueInfo> inferTypeApplicationType(final TypeApplicationNode typeApplication) {
-        return inferType(typeApplication.getBaseValue()).ifValueThen(new Function<Type, TypeResult<Type>>() {
-            @Override
-            public TypeResult<Type> apply(Type baseType) {
-                List<Type> parameterTypes = Lists.transform(typeApplication.getParameters(), toParameterType());
-                
-                if (baseType instanceof ParameterisedFunctionType) {
-                    ParameterisedFunctionType functionType = (ParameterisedFunctionType)baseType;
-                    ImmutableMap.Builder<FormalTypeParameter, Type> replacements = ImmutableMap.builder();
-                    for (int i = 0; i < functionType.getFormalTypeParameters().size(); i += 1) {
-                        replacements.put(functionType.getFormalTypeParameters().get(i), parameterTypes.get(i));
-                    }
-                    return success((Type)CoreTypes.functionTypeOf(Eager.transform(functionType.getFunctionTypeParameters(), toReplacement(replacements.build()))));
-                } else if (baseType instanceof ParameterisedType) {
-                    return success((Type)metaClasses.metaClassOf(applyTypes((ParameterisedType)baseType, parameterTypes)));   
-                } else {
-                    throw new RuntimeException("Don't know how to apply types " + parameterTypes + " to " + baseType);
-                }
-            }
-        }).ifValueThen(toUnassignableValueInfo());
-    }
-
-    private Function<Type, Type> toReplacement(final ImmutableMap<FormalTypeParameter, Type> replacements) {
-        return new Function<Type, Type>() {
-            @Override
-            public Type apply(Type input) {
-                return new TypeReplacer().replaceTypes(input, replacements);
-            }
-        };
-    }
-
-    private Function<ExpressionNode, Type> toParameterType() {
-        return new Function<ExpressionNode, Type>() {
-            @Override
-            public Type apply(ExpressionNode expression) {
-                TypeResultWithValue<Type> result = typeLookup.lookupTypeReference(expression);
-                if (!isSuccess(result)) {
-                    // TODO: handle failure
-                    throw new RuntimeException(result.getErrors().toString());
-                }
-                return result.get();
-            }
-        };
     }
 
 }
