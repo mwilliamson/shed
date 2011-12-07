@@ -5,7 +5,6 @@ import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.parsing.nodes.InterfaceDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
-import org.zwobble.shed.compiler.typechecker.ShedTypeValue;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeCheckerTestFixture;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
@@ -39,8 +38,6 @@ public class InterfaceDeclarationTypeCheckerTest {
         TypeResult<?> result = forwardDeclare(declaration);
         
         assertThat(result, isSuccess());
-        ShedTypeValue value = (ShedTypeValue) context.get(declaration).getValue().get();
-        InterfaceType type = (InterfaceType)value.getType();
         ScalarTypeInfo typeInfo = context.getInfo(type);
         assertThat(typeInfo.getMembers(), contains(
             member("alert", ValueInfo.unassignableValue(CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.UNIT)))

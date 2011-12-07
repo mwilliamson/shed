@@ -74,7 +74,7 @@ public class ObjectDeclarationTypeCheckerTest {
         StaticContext staticContext = fixture.context();
         TypeResult<StatementTypeCheckResult> result = typeCheckObjectDeclaration(objectDeclarationNode);
         assertThat(result, isSuccessWithValue(StatementTypeCheckResult.noReturn()));
-        assertThat(staticContext.get(objectDeclarationNode).getType(), is((Type)type));
+        assertThat(staticContext.getTypeOf(objectDeclarationNode).get(), is((Type)type));
         ScalarTypeInfo browserTypeInfo = staticContext.getInfo(type);
         assertThat(browserTypeInfo.getMembers(), is(members("name", ValueInfo.unassignableValue(CoreTypes.STRING))));
     }

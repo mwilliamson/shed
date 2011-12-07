@@ -13,7 +13,6 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
-import org.zwobble.shed.compiler.typechecker.ShedTypeValue;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeCheckerTestFixture;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
@@ -58,7 +57,7 @@ public class ClassDeclarationTypeCheckerTest {
         TypeResult<?> result = forwardDeclare(declaration);
         
         assertThat(result, isSuccess());
-        ScalarType metaClass = (ScalarType) context.get(declaration).getType();
+        ScalarType metaClass = (ScalarType) context.getTypeOf(declaration).get();
         ScalarTypeInfo metaClassInfo = context.getInfo(metaClass);
         assertThat(metaClassInfo.getInterfaces(), hasItem(CoreTypes.functionTypeOf(CoreTypes.STRING, type)));
     }
@@ -72,7 +71,7 @@ public class ClassDeclarationTypeCheckerTest {
         TypeResult<?> result = forwardDeclare(declaration);
         
         assertThat(result, isSuccess());
-        ScalarType metaClass = (ScalarType) context.get(declaration).getType();
+        ScalarType metaClass = (ScalarType) context.getTypeOf(declaration).get();
         ScalarTypeInfo metaClassInfo = context.getInfo(metaClass);
         assertThat(metaClassInfo.getInterfaces(), hasItem(CoreTypes.CLASS));
     }
@@ -91,8 +90,6 @@ public class ClassDeclarationTypeCheckerTest {
         TypeResult<?> result = forwardDeclare(declaration);
         
         assertThat(result, isSuccess());
-        ShedTypeValue value = (ShedTypeValue) context.get(declaration).getValue().get();
-        ClassType type = (ClassType)value.getType();
         ScalarTypeInfo typeInfo = context.getInfo(type);
         assertThat(typeInfo.getMembers(), contains(
             member("firstName", ValueInfo.unassignableValue(CoreTypes.STRING)),
@@ -112,8 +109,6 @@ public class ClassDeclarationTypeCheckerTest {
         TypeResult<?> result = forwardDeclare(declaration);
         
         assertThat(result, isSuccess());
-        ShedTypeValue value = (ShedTypeValue) context.get(declaration).getValue().get();
-        ClassType type = (ClassType)value.getType();
         ScalarTypeInfo typeInfo = context.getInfo(type);
         assertThat(typeInfo.getMembers(), contains(memberOfUnknownType("firstName")));
     }

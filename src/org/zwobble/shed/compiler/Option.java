@@ -1,5 +1,7 @@
 package org.zwobble.shed.compiler;
 
+import com.google.common.base.Function;
+
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
@@ -34,6 +36,14 @@ public class Option<T> {
             throw new RuntimeException("Option has no value");
         }
         return value;
+    }
+    
+    public <R> Option<R> map(Function<T, R> function) {
+        if (hasValue) {
+            return some(function.apply(value));
+        } else {
+            return none();
+        }
     }
     
     private Option(boolean hasValue, T value) {

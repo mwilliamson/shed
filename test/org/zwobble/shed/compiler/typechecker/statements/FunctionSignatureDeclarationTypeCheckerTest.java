@@ -25,7 +25,7 @@ public class FunctionSignatureDeclarationTypeCheckerTest {
         TypeResult<?> result = forwardDeclare(funcSignature);
         
         assertThat(result, isSuccess());
-        Type functionType = fixture.context().get(funcSignature).getType();
+        Type functionType = fixture.context().getTypeOf(funcSignature).get();
         assertThat(functionType, is((Type)CoreTypes.functionTypeOf(CoreTypes.STRING, CoreTypes.UNIT)));
     }
     

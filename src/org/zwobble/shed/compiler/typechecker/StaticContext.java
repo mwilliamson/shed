@@ -23,6 +23,8 @@ import org.zwobble.shed.compiler.types.TypeApplication;
 import org.zwobble.shed.compiler.types.TypeInfoTypeReplacer;
 import org.zwobble.shed.compiler.types.TypeReplacer;
 
+import com.google.common.base.Function;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
@@ -46,22 +48,17 @@ public class StaticContext {
         types.put(new Identity<Declaration>(declaration), type);
     }
 
-    public VariableLookupResult get(Declaration declaration) {
+    public Option<ValueInfo> getValueInfoFor(Declaration declaration) {
         Identity<Declaration> key = new Identity<Declaration>(declaration);
         if (types.containsKey(key)) {
-            return VariableLookupResult.success(types.get(key));
+            return Option.some(types.get(key));
         } else {
-            return VariableLookupResult.notDeclared();            
+            return Option.none();
         }
     }
     
     public Option<Type> getTypeOf(Declaration declaration) {
-        Identity<Declaration> key = new Identity<Declaration>(declaration);
-        if (types.containsKey(key)) {
-            return Option.some(types.get(key).getType());
-        } else {
-            return Option.none();
-        }
+        return getValueInfoFor(declaration).map(toType());
     }
 
     public void addGlobal(FullyQualifiedName name, Type type) {
@@ -124,5 +121,14 @@ public class StaticContext {
 
     public Map<String, GlobalDeclaration> getBuiltIns() {
         return builtIns;
+    }
+
+    private Function<ValueInfo, Type> toType() {
+        return new Function<ValueInfo, Type>() {
+            @Override
+            public Type apply(ValueInfo input) {
+                return input.getType();
+            }
+        };
     }
 }

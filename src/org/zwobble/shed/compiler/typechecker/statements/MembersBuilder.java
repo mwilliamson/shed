@@ -6,14 +6,10 @@ import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
-import org.zwobble.shed.compiler.typechecker.VariableLookupResult;
-import org.zwobble.shed.compiler.typechecker.VariableLookupResult.Status;
 import org.zwobble.shed.compiler.types.Members;
 
 import com.google.common.collect.ImmutableMap;
 
-import static org.zwobble.shed.compiler.Option.none;
-import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.types.Members.members;
 
 public class MembersBuilder {
@@ -37,11 +33,6 @@ public class MembersBuilder {
     }
 
     private Option<ValueInfo> findMemberType(DeclarationNode memberDeclaration) {
-        VariableLookupResult result = context.get(memberDeclaration);
-        if (result.getStatus() == Status.SUCCESS) {
-            return some(result.getValueInfo());
-        } else {
-            return none();
-        }
+        return context.getValueInfoFor(memberDeclaration);
     }
 }

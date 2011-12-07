@@ -14,6 +14,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
+import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
@@ -33,7 +34,7 @@ public class ImportStatementTypeCheckerTest {
         staticContext.addGlobal(dateTimeName, dateTimeMetaClass);
         
         assertThat(typeCheckImportStatement(importStatement), is(isSuccess()));
-        assertThat(staticContext.get(importStatement), is(VariableLookupResult.success(unassignableValue(dateTimeMetaClass))));
+        assertThat(staticContext.getValueInfoFor(importStatement), is(some(unassignableValue(dateTimeMetaClass))));
     }
 
     @Test public void

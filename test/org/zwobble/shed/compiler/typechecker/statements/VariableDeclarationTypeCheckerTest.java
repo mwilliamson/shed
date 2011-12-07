@@ -13,7 +13,6 @@ import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeCheckerTestFixture;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
-import org.zwobble.shed.compiler.typechecker.VariableLookupResult;
 import org.zwobble.shed.compiler.typechecker.errors.TypeMismatchError;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -27,6 +26,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
+import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
 import static org.zwobble.shed.compiler.typechecker.TypeResultMatchers.isSuccessWithValue;
@@ -45,9 +45,7 @@ public class VariableDeclarationTypeCheckerTest {
         VariableDeclarationNode variableNode = Nodes.immutableVar("dontFeelLike", Nodes.string("dancing"));
         
         assertThat(forwardDeclare(variableNode, staticContext), isSuccess());
-        VariableLookupResult lookupResult = staticContext.get(variableNode);
-        assertThat(lookupResult.getStatus(), is(VariableLookupResult.Status.SUCCESS));
-        assertThat(lookupResult.getType(), instanceOf(UnknownType.class));
+        assertThat(staticContext.getTypeOf(variableNode).get(), instanceOf(UnknownType.class));
     }
     
     @Test public void
@@ -56,7 +54,7 @@ public class VariableDeclarationTypeCheckerTest {
         VariableDeclarationNode variableNode = Nodes.immutableVar("dontFeelLike", stringReference, Nodes.string("dancing"));
         
         assertThat(forwardDeclare(variableNode, staticContext), isSuccess());
-        assertThat(staticContext.get(variableNode), is(VariableLookupResult.success(ValueInfo.unassignableValue(CoreTypes.STRING))));
+        assertThat(staticContext.getValueInfoFor(variableNode), is(some(ValueInfo.unassignableValue(CoreTypes.STRING))));
     }
     
     @Test public void
@@ -68,7 +66,7 @@ public class VariableDeclarationTypeCheckerTest {
             typeCheckVariableDeclaration(variableNode, staticContext),
             isSuccessWithValue(StatementTypeCheckResult.noReturn())
         );
-        assertThat(staticContext.get(variableNode), is(VariableLookupResult.success(unassignableValue(CoreTypes.BOOLEAN))));
+        assertThat(staticContext.getValueInfoFor(variableNode), is(some(unassignableValue(CoreTypes.BOOLEAN))));
     }
     
     @Test public void
@@ -80,7 +78,7 @@ public class VariableDeclarationTypeCheckerTest {
             typeCheckVariableDeclaration(variableNode, staticContext),
             isSuccessWithValue(StatementTypeCheckResult.noReturn())
         );
-        assertThat(staticContext.get(variableNode), is(VariableLookupResult.notDeclared()));
+        assertThat(staticContext.getValueInfoFor(variableNode), is(Option.<ValueInfo>none()));
     }
     
     @Test public void
@@ -92,7 +90,7 @@ public class VariableDeclarationTypeCheckerTest {
             typeCheckVariableDeclaration(variableNode, staticContext),
             isSuccessWithValue(StatementTypeCheckResult.noReturn())
         );
-        assertThat(staticContext.get(variableNode), is(VariableLookupResult.success(assignableValue(CoreTypes.BOOLEAN))));
+        assertThat(staticContext.getValueInfoFor(variableNode), is(some(assignableValue(CoreTypes.BOOLEAN))));
     }
     
     @Test public void

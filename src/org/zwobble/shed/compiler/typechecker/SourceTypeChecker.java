@@ -57,7 +57,7 @@ public class SourceTypeChecker {
                 DeclarationNode declaration = ((PublicDeclarationNode) statement).getDeclaration();
                 List<String> packageNames = source.getPackageDeclaration().getPackageNames();
                 FullyQualifiedName name = fullyQualifiedName(copyOf(concat(packageNames, singleton(declaration.getIdentifier()))));
-                context.addGlobal(name, context.get(declaration).getType());
+                context.addGlobal(name, context.getTypeOf(declaration).get());
             }
         }
         

@@ -71,7 +71,7 @@ public class ObjectDeclarationTypeChecker implements StatementTypeChecker<Object
         for (StatementNode statement : objectDeclaration.getStatements()) {
             if (statement instanceof PublicDeclarationNode) {
                 DeclarationNode declaration = ((PublicDeclarationNode) statement).getDeclaration();
-                membersBuilder.add(declaration.getIdentifier(), context.get(declaration).getValueInfo());
+                membersBuilder.add(declaration.getIdentifier(), context.getValueInfoFor(declaration).get());
             }
         }
         return membersBuilder.build();

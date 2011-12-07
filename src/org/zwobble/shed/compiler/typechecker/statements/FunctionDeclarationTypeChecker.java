@@ -10,8 +10,6 @@ import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.TypeResultBuilder;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
-import org.zwobble.shed.compiler.typechecker.VariableLookupResult;
-import org.zwobble.shed.compiler.typechecker.VariableLookupResult.Status;
 import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.base.Function;
@@ -38,11 +36,10 @@ public class FunctionDeclarationTypeChecker implements DeclarationTypeChecker<Fu
     
     @Override
     public TypeResult<StatementTypeCheckResult> typeCheck(FunctionDeclarationNode functionDeclaration, Option<Type> returnType) {
-        VariableLookupResult functionLookupResult = context.get(functionDeclaration);
+        Option<ValueInfo> functionLookupResult = context.getValueInfoFor(functionDeclaration);
         TypeResultBuilder<StatementTypeCheckResult> result = typeResultBuilder(StatementTypeCheckResult.noReturn());
-        if (functionLookupResult.getStatus() == Status.SUCCESS) {
-            TypeResult<ValueInfo> bodyResult = 
-                functionTypeChecker.typeCheckBody(functionDeclaration).apply(functionLookupResult.getValueInfo());
+        if (functionLookupResult.hasValue()) {
+            TypeResult<ValueInfo> bodyResult = functionTypeChecker.typeCheckBody(functionDeclaration).apply(functionLookupResult.get());
             result.addErrors(bodyResult);
         }
         return result.build();
