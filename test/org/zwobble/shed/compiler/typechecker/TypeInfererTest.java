@@ -8,7 +8,6 @@ import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
-import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.NumberLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ShortLambdaExpressionNode;
@@ -31,7 +30,6 @@ import org.zwobble.shed.compiler.types.Type;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
 import static org.zwobble.shed.compiler.Option.none;
@@ -74,55 +72,6 @@ public class TypeInfererTest {
     }
     
     
-    @Test public void
-    memberAccessHasTypeOfMember() {
-        VariableIdentifierNode reference = Nodes.id("heAintHeavy");
-        GlobalDeclaration declaration = globalDeclaration("heAintHeavy");
-        fixture.addReference(reference, declaration);
-        
-        StaticContext context = standardContext();
-        InterfaceType interfaceType = new InterfaceType(fullyQualifiedName("shed", "example", "Brother"));
-        context.add(declaration, unassignableValue(interfaceType));
-        context.addInfo(interfaceType, new ScalarTypeInfo(interfaces(), members("age", unassignableValue(CoreTypes.DOUBLE))));
-        
-        MemberAccessNode memberAccess = Nodes.member(reference, "age");
-        TypeResult<ValueInfo> result = inferValueInfo(memberAccess, context);
-        assertThat(result, isSuccessWithValue(unassignableValue(CoreTypes.DOUBLE)));
-    }
-    
-    @Test public void
-    memberAccessIsAssignableIfMemberIsAssignable() {
-        VariableIdentifierNode reference = Nodes.id("heAintHeavy");
-        GlobalDeclaration declaration = globalDeclaration("heAintHeavy");
-        fixture.addReference(reference, declaration);
-        
-        StaticContext context = standardContext();
-        InterfaceType interfaceType = new InterfaceType(fullyQualifiedName("shed", "example", "Brother"));
-        context.add(declaration, unassignableValue(interfaceType));
-        context.addInfo(interfaceType, new ScalarTypeInfo(interfaces(), members("age", assignableValue(CoreTypes.DOUBLE))));
-        
-        MemberAccessNode memberAccess = Nodes.member(reference, "age");
-        TypeResult<ValueInfo> result = inferValueInfo(memberAccess, context);
-        assertThat(result, isSuccessWithValue(assignableValue(CoreTypes.DOUBLE)));
-    }
-    
-    @Test public void
-    memberAccessFailsIfInterfaceDoesNotHaveSpecifiedMember() {
-        VariableIdentifierNode reference = Nodes.id("heAintHeavy");
-        GlobalDeclaration declaration = globalDeclaration("heAintHeavy");
-        fixture.addReference(reference, declaration);
-        
-        StaticContext context = standardContext();
-        InterfaceType interfaceType = new InterfaceType(fullyQualifiedName("shed", "example", "Brother"));
-        context.add(declaration, unassignableValue(interfaceType));
-        context.addInfo(interfaceType, new ScalarTypeInfo(interfaces(), members("age", unassignableValue(CoreTypes.DOUBLE))));
-        MemberAccessNode memberAccess = Nodes.member(reference, "height");
-        TypeResult<Type> result = inferType(memberAccess, context);
-        assertThat(
-            errorStrings(result),
-            is(asList("No such member: height"))
-        );
-    }
     
     @Test public void
     applyingTypeUpdatesParameterisedTypeWithType() {
@@ -259,10 +208,6 @@ public class TypeInfererTest {
     
     private TypeResult<Type> inferType(ExpressionNode expression, StaticContext context) {
         return typeInferer(context).inferType(expression);
-    }
-    
-    private TypeResult<ValueInfo> inferValueInfo(ExpressionNode expression, StaticContext context) {
-        return typeInferer(context).inferValueInfo(expression);
     }
 
     private TypeInferer typeInferer(StaticContext context) {
