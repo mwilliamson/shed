@@ -8,7 +8,7 @@ import org.zwobble.shed.compiler.typechecker.statements.AllStatementsTypeChecker
 import org.zwobble.shed.compiler.typechecker.statements.StatementTypeCheckResult;
 import org.zwobble.shed.compiler.types.Type;
 
-import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
+import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
 
 
 public class BlockTypeChecker {
@@ -28,25 +28,25 @@ public class BlockTypeChecker {
     }
 
     public TypeResult<?> forwardDeclare(Iterable<? extends StatementNode> statements) {
-        TypeResult<Void> result = success();
+        TypeResultBuilder<Void> result = typeResultBuilder();
         for (StatementNode statement : statements) {
             TypeResult<?> statementResult = statementsTypeChecker.forwardDeclare(statement);
-            result = result.withErrorsFrom(statementResult);
+            result.addErrors(statementResult);
         }
-        return result;
+        return result.build();
     }
 
     public TypeResultWithValue<StatementTypeCheckResult> typeCheck(Iterable<StatementNode> statements, Option<Type> returnType) {
-        TypeResult<Void> result = success();
+        TypeResultBuilder<Void> result = typeResultBuilder();
         boolean hasReturnedYet = false;
         for (StatementNode statement : statements) {
             TypeResult<StatementTypeCheckResult> statementResult = statementsTypeChecker.typeCheck(statement, returnType);
-            result = result.withErrorsFrom(statementResult);
+            result.addErrors(statementResult);
             if (statementResult.hasValue()) {
                 hasReturnedYet |= statementResult.getOrThrow().hasReturned();   
             }
         }
         final boolean hasReturned = hasReturnedYet;
-        return success(new StatementTypeCheckResult(hasReturned)).withErrorsFrom(result);
+        return result.buildWithValue(new StatementTypeCheckResult(hasReturned));
     }
 }

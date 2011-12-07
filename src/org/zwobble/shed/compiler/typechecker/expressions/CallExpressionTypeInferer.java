@@ -12,11 +12,14 @@ import org.zwobble.shed.compiler.typechecker.FunctionTyping;
 import org.zwobble.shed.compiler.typechecker.SubTyping;
 import org.zwobble.shed.compiler.typechecker.TypeInferer;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
+import org.zwobble.shed.compiler.typechecker.TypeResultBuilder;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typechecker.errors.NotCallableError;
 import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.base.Function;
+
+import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
 
 import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.typechecker.TypeResults.failure;
@@ -54,11 +57,11 @@ public class CallExpressionTypeInferer implements ExpressionTypeInferer<CallNode
                     return failure(error);
                 }
                 Type returnType = typeParameters.get(numberOfFormalAguments);
-                TypeResult<Type> result = success(returnType);
+                TypeResultBuilder<Type> result = typeResultBuilder(returnType);
                 for (int i = 0; i < numberOfFormalAguments; i++) {
                     final int index = i;
                     final ExpressionNode argument = expression.getArguments().get(i);
-                    result = result.withErrorsFrom(typeInferer.inferType(argument).ifValueThen(new Function<Type, TypeResult<Void>>() {
+                    result.addErrors(typeInferer.inferType(argument).ifValueThen(new Function<Type, TypeResult<Void>>() {
                         @Override
                         public TypeResult<Void> apply(Type actualArgumentType) {
                             if (subTyping.isSubType(actualArgumentType, typeParameters.get(index))) {
@@ -70,7 +73,7 @@ public class CallExpressionTypeInferer implements ExpressionTypeInferer<CallNode
                         }
                     }));
                 }
-                return result;
+                return result.build();
             }
         }).ifValueThen(toUnassignableValueInfo());
     }

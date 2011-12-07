@@ -16,6 +16,8 @@ import org.zwobble.shed.compiler.types.TypeApplication;
 
 import com.google.common.base.Function;
 
+import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
+
 import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
@@ -51,18 +53,18 @@ public class FunctionTypeChecker {
             public TypeResult<ValueInfo> apply(ValueInfo returnTypeInfo) {
                 List<? extends Type> functionTypeParameters = ((TypeApplication)returnTypeInfo.getType()).getTypeParameters();
                 Type returnType = functionTypeParameters.get(functionTypeParameters.size() - 1);
-                TypeResult<ValueInfo> result = success(returnTypeInfo);
+                TypeResultBuilder<ValueInfo> result = typeResultBuilder(returnTypeInfo);
 
                 TypeResultWithValue<StatementTypeCheckResult> blockResult = typeCheckBlock(function.getBody(), some(returnType));
-                result = result.withErrorsFrom(blockResult);
+                result.addErrors(blockResult);
                 
                 if (!blockResult.get().hasReturned()) {
-                    result = result.withErrorsFrom(TypeResults.<Type>failure(error(
+                    result.addErrors(TypeResults.<Type>failure(error(
                         function,
                         new MissingReturnStatementError()
                     )));
                 }
-                return result;
+                return result.build();
             }
         };
     }

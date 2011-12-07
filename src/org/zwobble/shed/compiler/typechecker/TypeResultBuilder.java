@@ -44,7 +44,7 @@ public class TypeResultBuilder<T> {
         }
     }
     
-    public <R> TypeResult<R> buildWithValue(R value) {
+    public <R> TypeResultWithValue<R> buildWithValue(R value) {
         if (errors.isEmpty()) {
             return TypeResults.success(value);
         } else {
