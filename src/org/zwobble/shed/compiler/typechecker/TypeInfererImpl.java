@@ -32,6 +32,7 @@ import org.zwobble.shed.compiler.typechecker.errors.NotCallableError;
 import org.zwobble.shed.compiler.typechecker.expressions.AssignmentExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.ExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.LiteralExpressionTypeInferer;
+import org.zwobble.shed.compiler.typechecker.expressions.LongLambdaExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.ShortLambdaExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.VariableLookup;
 import org.zwobble.shed.compiler.typechecker.statements.StatementTypeCheckResult;
@@ -100,6 +101,7 @@ public class TypeInfererImpl implements TypeInferer {
         putTypeInferer(VariableIdentifierNode.class, VariableLookup.class);
         putTypeInferer(AssignmentExpressionNode.class, AssignmentExpressionTypeInferer.class);
         putTypeInferer(ShortLambdaExpressionNode.class, ShortLambdaExpressionTypeInferer.class);
+        putTypeInferer(LongLambdaExpressionNode.class, LongLambdaExpressionTypeInferer.class);
     }
     
     private <T extends ExpressionNode> void putTypeInferer(Class<T> expressionType, final ExpressionTypeInferer<T> typeInferer) {
@@ -129,9 +131,6 @@ public class TypeInfererImpl implements TypeInferer {
         if (typeInferers.containsKey(expression.getClass())) {
             return getTypeInferer(expression).inferValueInfo(expression);
         }
-        if (expression instanceof LongLambdaExpressionNode) {
-            return inferFunctionTypeAndTypeCheckBody((LongLambdaExpressionNode)expression);
-        }
         if (expression instanceof CallNode) {
             return inferCallType((CallNode)expression);
         }
@@ -151,12 +150,6 @@ public class TypeInfererImpl implements TypeInferer {
                 return success(input.getType());
             }
         });
-    }
-
-
-    public TypeResult<ValueInfo> inferFunctionTypeAndTypeCheckBody(final FunctionWithBodyNode function) {
-        TypeResult<ValueInfo> typeResult = inferFunctionType(function);
-        return typeResult.ifValueThen(typeCheckBody(function));
     }
     
     public TypeResult<ValueInfo> inferFunctionType(final FunctionNode function) {
