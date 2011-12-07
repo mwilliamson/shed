@@ -6,8 +6,6 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import org.zwobble.shed.compiler.CompilerError;
-import org.zwobble.shed.compiler.CompilerErrors;
 import org.zwobble.shed.compiler.Eager;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
@@ -23,8 +21,8 @@ import org.zwobble.shed.compiler.parsing.nodes.StringLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
 import org.zwobble.shed.compiler.parsing.nodes.UnitLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
-import org.zwobble.shed.compiler.typechecker.errors.NotCallableError;
 import org.zwobble.shed.compiler.typechecker.expressions.AssignmentExpressionTypeInferer;
+import org.zwobble.shed.compiler.typechecker.expressions.CallExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.ExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.LiteralExpressionTypeInferer;
 import org.zwobble.shed.compiler.typechecker.expressions.LongLambdaExpressionTypeInferer;
@@ -56,8 +54,6 @@ import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
 
 public class TypeInfererImpl implements TypeInferer {
     private final TypeLookup typeLookup;
-    private final FunctionTyping functionTyping;
-    private final SubTyping subTyping;
     private final MetaClasses metaClasses;
     private final StaticContext context;
     
@@ -67,15 +63,11 @@ public class TypeInfererImpl implements TypeInferer {
     @Inject
     public TypeInfererImpl(
         TypeLookup typeLookup, 
-        FunctionTyping functionTyping,
-        SubTyping subTyping,
         MetaClasses metaClasses,
         StaticContext context,
         Injector injector
     ) {
         this.typeLookup = typeLookup;
-        this.functionTyping = functionTyping;
-        this.subTyping = subTyping;
         this.metaClasses = metaClasses;
         this.context = context;
         this.injector = injector;
@@ -88,6 +80,7 @@ public class TypeInfererImpl implements TypeInferer {
         putTypeInferer(AssignmentExpressionNode.class, AssignmentExpressionTypeInferer.class);
         putTypeInferer(ShortLambdaExpressionNode.class, ShortLambdaExpressionTypeInferer.class);
         putTypeInferer(LongLambdaExpressionNode.class, LongLambdaExpressionTypeInferer.class);
+        putTypeInferer(CallNode.class, CallExpressionTypeInferer.class);
     }
     
     private <T extends ExpressionNode> void putTypeInferer(Class<T> expressionType, final ExpressionTypeInferer<T> typeInferer) {
@@ -117,9 +110,6 @@ public class TypeInfererImpl implements TypeInferer {
         if (typeInferers.containsKey(expression.getClass())) {
             return getTypeInferer(expression).inferValueInfo(expression);
         }
-        if (expression instanceof CallNode) {
-            return inferCallType((CallNode)expression);
-        }
         if (expression instanceof MemberAccessNode) {
             return inferMemberAccessType((MemberAccessNode)expression);
         }
@@ -136,45 +126,6 @@ public class TypeInfererImpl implements TypeInferer {
                 return success(input.getType());
             }
         });
-    }
-
-    private TypeResult<ValueInfo> inferCallType(final CallNode expression) {
-        TypeResult<Type> calledTypeResult = inferType(expression.getFunction());
-        return calledTypeResult.ifValueThen(new Function<Type, TypeResult<Type>>() {
-            @Override
-            public TypeResult<Type> apply(Type calledType) {
-                if (!functionTyping.isFunction(calledType)) {
-                    return failure(error(expression, new NotCallableError(calledType)));
-                }
-                final List<? extends Type> typeParameters = functionTyping.extractFunctionTypeParameters(calledType).get();
-                
-                int numberOfFormalAguments = typeParameters.size() - 1;
-                int numberOfActualArguments = expression.getArguments().size();
-                if (numberOfFormalAguments != numberOfActualArguments) {
-                    String errorMessage = "Function requires " + numberOfFormalAguments + " argument(s), but is called with " + numberOfActualArguments;
-                    CompilerError error = CompilerErrors.error(expression, errorMessage);
-                    return failure(error);
-                }
-                Type returnType = typeParameters.get(numberOfFormalAguments);
-                TypeResult<Type> result = success(returnType);
-                for (int i = 0; i < numberOfFormalAguments; i++) {
-                    final int index = i;
-                    final ExpressionNode argument = expression.getArguments().get(i);
-                    result = result.withErrorsFrom(inferType(argument).ifValueThen(new Function<Type, TypeResult<Void>>() {
-                        @Override
-                        public TypeResult<Void> apply(Type actualArgumentType) {
-                            if (subTyping.isSubType(actualArgumentType, typeParameters.get(index))) {
-                                return success();
-                            } else {
-                                return failure(error(argument, ("Expected expression of type " + typeParameters.get(index).shortName() +
-                                " as argument " + (index + 1) + ", but got expression of type " + actualArgumentType.shortName())));
-                            }
-                        }
-                    }));
-                }
-                return result;
-            }
-        }).ifValueThen(toUnassignableValueInfo());
     }
 
     private TypeResult<ValueInfo> inferMemberAccessType(final MemberAccessNode memberAccess) {
