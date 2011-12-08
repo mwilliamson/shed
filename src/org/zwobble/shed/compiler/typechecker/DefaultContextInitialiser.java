@@ -1,5 +1,6 @@
 package org.zwobble.shed.compiler.typechecker;
 
+import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.types.ClassType;
@@ -17,8 +18,9 @@ import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 
-public class DefaultContext {
-    public static void defaultContext(StaticContext staticContext) {
+public class DefaultContextInitialiser implements StaticContextInitialiser {
+    @Override
+    public void initialise(StaticContext staticContext, MetaClasses metaClasses) {
         addCore(staticContext, CoreTypes.STRING, new ScalarTypeInfo(interfaces(), members()));
         addCore(staticContext, CoreTypes.BOOLEAN, new ScalarTypeInfo(interfaces(), members()));
         addCore(staticContext, CoreTypes.DOUBLE, numberTypeInfo(CoreTypes.DOUBLE));

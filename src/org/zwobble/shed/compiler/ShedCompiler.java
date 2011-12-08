@@ -24,8 +24,11 @@ import org.zwobble.shed.compiler.referenceresolution.ReferenceResolverResult;
 import org.zwobble.shed.compiler.referenceresolution.References;
 import org.zwobble.shed.compiler.tokeniser.TokenPosition;
 import org.zwobble.shed.compiler.tokeniser.Tokeniser;
+import org.zwobble.shed.compiler.typechecker.BrowserContextInitialiser;
+import org.zwobble.shed.compiler.typechecker.DefaultContextInitialiser;
 import org.zwobble.shed.compiler.typechecker.SourceTypeChecker;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
+import org.zwobble.shed.compiler.typechecker.StaticContextInitialiser;
 import org.zwobble.shed.compiler.typechecker.TypeCheckerInjector;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typegeneration.TypeGenerator;
@@ -38,11 +41,21 @@ import static org.zwobble.shed.compiler.Results.isSuccess;
 
 public class ShedCompiler {
     public static ShedCompiler forBrowser(OptimisationLevel optimisationLevel) {
-        return new ShedCompiler(new BrowserModuleWrapper(), optimiserFor(optimisationLevel), "browser");
+        return new ShedCompiler(
+            new BrowserModuleWrapper(),
+            optimiserFor(optimisationLevel),
+            new BrowserContextInitialiser(new DefaultContextInitialiser()),
+            "browser"
+        );
     }
     
-    public static ShedCompiler build(JavaScriptModuleWrapper moduleWrapper, OptimisationLevel optimisationLevel, String platformSlug) {
-        return new ShedCompiler(moduleWrapper, optimiserFor(optimisationLevel), platformSlug);
+    public static ShedCompiler build(
+        JavaScriptModuleWrapper moduleWrapper,
+        OptimisationLevel optimisationLevel,
+        StaticContextInitialiser staticContextInitialiser,
+        String platformSlug
+    ) {
+        return new ShedCompiler(moduleWrapper, optimiserFor(optimisationLevel), staticContextInitialiser, platformSlug);
     }
 
     private static JavaScriptOptimiser optimiserFor(OptimisationLevel optimisationLevel) {
@@ -58,19 +71,26 @@ public class ShedCompiler {
     private final JavaScriptWriter javaScriptWriter;
     private final JavaScriptOptimiser javaScriptOptimiser;
     private final JavaScriptModuleWrapper moduleWrapper;
+    private final StaticContextInitialiser staticContextInitialiser;
     private final String platformSlug;
     
-    private ShedCompiler(JavaScriptModuleWrapper moduleWrapper, JavaScriptOptimiser javaScriptOptimiser, String platformSlug) {
+    private ShedCompiler(JavaScriptModuleWrapper moduleWrapper, JavaScriptOptimiser javaScriptOptimiser, 
+            StaticContextInitialiser staticContextInitialiser, String platformSlug) {
         this.moduleWrapper = moduleWrapper;
         this.tokeniser = new Tokeniser();
         this.parser = new Parser();
         this.referenceResolver = new ReferenceResolver();
         this.javaScriptWriter = new JavaScriptWriter();
         this.javaScriptOptimiser = javaScriptOptimiser;
+        this.staticContextInitialiser = staticContextInitialiser;
         this.platformSlug = platformSlug;
     }
     
-    public CompilationResult compile(FileSource fileSource, StaticContext context, MetaClasses metaClasses) {
+    public CompilationResult compile(FileSource fileSource) {
+        MetaClasses metaClasses = MetaClasses.create();
+        StaticContext context = new StaticContext(metaClasses);
+        staticContextInitialiser.initialise(context, metaClasses);
+        
         StringBuilder output = new StringBuilder();
         List<SourceFileCompilationResult> results = Lists.newArrayList();
         for (RuntimeFile file : fileSource) {
@@ -110,7 +130,7 @@ public class ShedCompiler {
         return file.path().endsWith("." + platformSlug + ".js");
     }
 
-    public SourceFileCompilationResult compile(String source, StaticContext context, MetaClasses metaClasses) {
+    private SourceFileCompilationResult compile(String source, StaticContext context, MetaClasses metaClasses) {
         List<TokenPosition> tokens = tokeniser.tokenise(source);
         ParseResult<SourceNode> parseResult = parser.parse(new TokenNavigator(tokens));
         List<CompilerError> errors = new ArrayList<CompilerError>();

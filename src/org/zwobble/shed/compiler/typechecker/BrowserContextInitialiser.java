@@ -2,6 +2,8 @@ package org.zwobble.shed.compiler.typechecker;
 
 import java.util.Collections;
 
+import javax.inject.Inject;
+
 import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.types.ClassType;
@@ -20,9 +22,17 @@ import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 
-public class DefaultBrowserContext {
-    public static void defaultBrowserContext(StaticContext context, MetaClasses metaClasses) {
-        DefaultContext.defaultContext(context);
+public class BrowserContextInitialiser implements StaticContextInitialiser {
+    private final DefaultContextInitialiser defaultInitialiser;
+
+    @Inject
+    public BrowserContextInitialiser(DefaultContextInitialiser defaultInitialiser) {
+        this.defaultInitialiser = defaultInitialiser;
+    }
+
+    @Override
+    public void initialise(StaticContext context, MetaClasses metaClasses) {
+        defaultInitialiser.initialise(context, metaClasses);
         
         FormalTypeParameter formalTypeParameter = invariantFormalTypeParameter("T");
         Type importValueType = new ParameterisedFunctionType(
@@ -48,4 +58,6 @@ public class DefaultBrowserContext {
         context.addGlobal(fullyQualifiedName("shed", "browser"), browserType);
         context.addInfo(browserType, browserTypeInfo);
     }
+
+
 }

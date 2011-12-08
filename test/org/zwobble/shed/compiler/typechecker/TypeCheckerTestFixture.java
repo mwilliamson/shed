@@ -48,7 +48,7 @@ public class TypeCheckerTestFixture {
     private final VariableIdentifierNode implementingClassTypeReference = Nodes.id("Song");
     
     private TypeCheckerTestFixture() {
-        DefaultContext.defaultContext(context);
+        new DefaultContextInitialiser().initialise(context, metaClasses);
         
         Map<String, GlobalDeclaration> builtIns = context.getBuiltIns();
         stringTypeDeclaration = builtIns.get("String");

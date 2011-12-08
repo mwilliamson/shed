@@ -2,7 +2,7 @@ package org.zwobble.shed.compiler.types;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
-import org.zwobble.shed.compiler.typechecker.DefaultContext;
+import org.zwobble.shed.compiler.typechecker.DefaultContextInitialiser;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.SubTyping;
 
@@ -22,7 +22,7 @@ import static org.zwobble.shed.compiler.types.TypeMaker.interfaces;
 public class CoreTypesTest {
     private final MetaClasses metaClasses = MetaClasses.create();
     private final StaticContext context = new StaticContext(metaClasses);
-    { DefaultContext.defaultContext(context); }
+    { new DefaultContextInitialiser().initialise(context, metaClasses); }
     private final InterfaceType interfaceType = make(an(interfaceType()));
     private final ClassType implementingClassType = make(a(classType(), with(interfaces, interfaces(interfaceType))));    
     

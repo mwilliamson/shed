@@ -4,8 +4,9 @@ import java.util.Collections;
 
 import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
-import org.zwobble.shed.compiler.typechecker.DefaultContext;
+import org.zwobble.shed.compiler.typechecker.DefaultContextInitialiser;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
+import org.zwobble.shed.compiler.typechecker.StaticContextInitialiser;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
@@ -21,9 +22,16 @@ import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantForma
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 
-public class DefaultNodeJsContext {
-    public static void defaultNodeJsContext(StaticContext context, MetaClasses metaClasses) {
-        DefaultContext.defaultContext(context);
+public class NodeJsContextInitialiser implements StaticContextInitialiser {
+    private final DefaultContextInitialiser defaultContextInitialiser;
+
+    public NodeJsContextInitialiser(DefaultContextInitialiser defaultContextInitialiser) {
+        this.defaultContextInitialiser = defaultContextInitialiser;
+    }
+    
+    @Override
+    public void initialise(StaticContext context, MetaClasses metaClasses) {
+        defaultContextInitialiser.initialise(context, metaClasses);
         FormalTypeParameter formalTypeParameter = invariantFormalTypeParameter("T");
         Type importValueFromModuleType = new ParameterisedFunctionType(
             asList(CoreTypes.STRING, CoreTypes.STRING, formalTypeParameter),
