@@ -4,19 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.zwobble.shed.compiler.PsychicIterator;
 import org.zwobble.shed.compiler.parsing.SourcePosition;
+import org.zwobble.shed.compiler.util.PsychicIterator;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.PeekingIterator;
 
+import static org.zwobble.shed.compiler.util.PsychicIterators.psychicIterator;
+
 import static com.google.common.base.Predicates.not;
 import static com.google.common.base.Predicates.or;
 import static com.google.common.collect.Lists.charactersOf;
 import static java.util.Arrays.asList;
-import static org.zwobble.shed.compiler.PsychicIterators.psychicIterator;
 import static org.zwobble.shed.compiler.parsing.SourceRange.range;
 import static org.zwobble.shed.compiler.tokeniser.Token.token;
 

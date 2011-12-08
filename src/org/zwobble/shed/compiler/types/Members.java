@@ -7,8 +7,8 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import org.zwobble.shed.compiler.Option;
-import org.zwobble.shed.compiler.ShedMaps;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
+import org.zwobble.shed.compiler.util.ShedMaps;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;

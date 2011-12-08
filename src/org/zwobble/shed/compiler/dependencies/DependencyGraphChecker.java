@@ -16,10 +16,11 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import static org.zwobble.shed.compiler.util.Eager.transform;
+
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.filter;
 import static org.zwobble.shed.compiler.CompilerErrors.error;
-import static org.zwobble.shed.compiler.Eager.transform;
 
 public class DependencyGraphChecker {
     public TypeResult<Void> check(Iterable<? extends StatementNode> statements, DependencyGraph graph) {

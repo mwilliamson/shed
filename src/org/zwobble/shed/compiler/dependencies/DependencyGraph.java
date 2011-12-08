@@ -8,7 +8,8 @@ import com.google.common.base.Function;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
-import static org.zwobble.shed.compiler.Eager.transform;
+import static org.zwobble.shed.compiler.util.Eager.transform;
+
 
 public class DependencyGraph {
     private final Multimap<Identity<StatementNode>, Identity<DeclarationNode>> dependencies = HashMultimap.create();

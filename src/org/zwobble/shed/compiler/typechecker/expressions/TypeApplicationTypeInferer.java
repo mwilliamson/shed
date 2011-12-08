@@ -4,7 +4,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import org.zwobble.shed.compiler.Eager;
 import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeApplicationNode;
@@ -19,6 +18,7 @@ import org.zwobble.shed.compiler.types.ParameterisedFunctionType;
 import org.zwobble.shed.compiler.types.ParameterisedType;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeReplacer;
+import org.zwobble.shed.compiler.util.Eager;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;

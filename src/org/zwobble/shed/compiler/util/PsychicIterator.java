@@ -1,4 +1,4 @@
-package org.zwobble.shed.compiler;
+package org.zwobble.shed.compiler.util;
 
 import com.google.common.collect.PeekingIterator;
 

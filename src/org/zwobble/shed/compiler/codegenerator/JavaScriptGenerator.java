@@ -51,12 +51,13 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 
+import static org.zwobble.shed.compiler.util.Eager.transform;
+
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
-import static org.zwobble.shed.compiler.Eager.transform;
 
 public class JavaScriptGenerator {
     public static final String CORE_VALUES_OBJECT_NAME = ShedSymbols.INTERNAL_PREFIX + "core";

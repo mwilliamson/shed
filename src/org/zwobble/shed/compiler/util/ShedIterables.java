@@ -2,7 +2,6 @@ package org.zwobble.shed.compiler.util;
 
 import java.util.Iterator;
 
-import org.zwobble.shed.compiler.Function2;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.UnmodifiableIterator;
