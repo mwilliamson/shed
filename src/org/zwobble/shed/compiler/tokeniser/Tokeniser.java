@@ -40,7 +40,7 @@ public class Tokeniser {
         .put('\\', '\\')
         .build();
     
-    public List<TokenPosition> tokenise(String inputString) {
+    public TokenisedSource tokenise(String inputString) {
         List<TokenPosition> tokens = new ArrayList<TokenPosition>();
         TokenType previousTokenType = null;
         InputStringIterator characters = new InputStringIterator(inputString);
@@ -53,7 +53,7 @@ public class Tokeniser {
         }
         SourcePosition endPosition = new SourcePosition(characters.currentLineNumber(), characters.currentCharacterNumber());
         tokens.add(new TokenPosition(range(endPosition, endPosition), Token.end()));
-        return tokens;
+        return TokenisedSource.create(tokens);
     }
     
     private Token nextToken(PsychicIterator<Character> characters, TokenType previousTokenType) {

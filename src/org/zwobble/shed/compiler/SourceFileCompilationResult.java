@@ -10,7 +10,7 @@ import org.zwobble.shed.compiler.tokeniser.TokenPosition;
 
 @Data
 public class SourceFileCompilationResult {
-    private final List<TokenPosition> tokens;
+    private final Iterable<TokenPosition> tokens;
     private final NodeLocations nodeLocations;
     private final List<CompilerError> errors;
     private final String javaScript;

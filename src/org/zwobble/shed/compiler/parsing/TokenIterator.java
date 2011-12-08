@@ -12,7 +12,7 @@ import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
 
 public class TokenIterator implements PeekingIterator<TokenPosition> {
-    public static TokenIterator semanticallySignificantIterator(List<TokenPosition> tokens) {
+    public static TokenIterator semanticallySignificantIterator(Iterable<TokenPosition> tokens) {
         return new TokenIterator(newArrayList(filter(tokens, isSemanticallySignificantToken())), 0);
     }
     

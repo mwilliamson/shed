@@ -16,7 +16,7 @@ public class TokenNavigator {
     private final TokenIterator tokens;
     private final List<ScopeType> scopes;
 
-    public TokenNavigator(List<TokenPosition> tokens) {
+    public TokenNavigator(Iterable<TokenPosition> tokens) {
         this.tokens = TokenIterator.semanticallySignificantIterator(tokens);
         this.scopes = new ArrayList<ScopeType>();
     }
