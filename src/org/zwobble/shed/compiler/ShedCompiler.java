@@ -103,7 +103,8 @@ public class ShedCompiler {
             }
             output.append("\n\n");
         }
-        return new CompilationResult(results, output.toString());
+        String optimisedJavaScript = javaScriptOptimiser.optimise(output.toString());
+        return new CompilationResult(results, optimisedJavaScript);
     }
 
     private boolean isShedFile(RuntimeFile file) {
@@ -155,7 +156,7 @@ public class ShedCompiler {
                 
                 if (isSuccess(typeCheckResult)) {
                     JavaScriptNode javaScript = javaScriptGenerator(references).generate(sourceNode, context.getBuiltIns().keySet());
-                    javaScriptOutput = javaScriptOptimiser.optimise(javaScriptWriter.write(javaScript));
+                    javaScriptOutput = javaScriptWriter.write(javaScript);
                 }   
             }
         }
