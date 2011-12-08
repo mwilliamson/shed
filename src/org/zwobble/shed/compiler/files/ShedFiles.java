@@ -1,6 +1,9 @@
 package org.zwobble.shed.compiler.files;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import com.google.common.base.Function;
 
@@ -14,10 +17,27 @@ public class ShedFiles {
         if (file.isFile()) {
             return singleton(file);
         } else if (file.isDirectory()) {
-            return concat(transform(asList(file.listFiles()), toRecursiveFileList()));
+            List<File> files = asList(file.listFiles());
+            Collections.sort(files, directoriesFirst());
+            return concat(transform(files, toRecursiveFileList()));
         } else {
             throw new RuntimeException("file is neither a file nor a directory");
         }
+    }
+
+    private static Comparator<File> directoriesFirst() {
+        return new Comparator<File>() {
+            @Override
+            public int compare(File first, File second) {
+                if (first.isDirectory() && !second.isDirectory()) {
+                    return 1;
+                }
+                if (!first.isDirectory() && second.isDirectory()) {
+                    return -1;
+                }
+                return first.getName().compareTo(second.getName());
+            }
+        };
     }
 
     private static Function<File, Iterable<File>> toRecursiveFileList() {
@@ -25,6 +45,15 @@ public class ShedFiles {
             @Override
             public Iterable<File> apply(File input) {
                 return listFilesRecursively(input);
+            }
+        };
+    }
+    
+    public static Function<File, RuntimeFile> toRuntimeFile() {
+        return new Function<File, RuntimeFile>() {
+            @Override
+            public RuntimeFile apply(File input) {
+                return new RuntimeFile(input);
             }
         };
     }

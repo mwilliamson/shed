@@ -2,7 +2,6 @@ package org.zwobble.shed.compiler.nodetest;
 
 import java.io.CharArrayWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -10,6 +9,7 @@ import java.io.Writer;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.zwobble.shed.compiler.CompilationResult;
 import org.zwobble.shed.compiler.GoogleClosureJavaScriptOptimiser;
 import org.zwobble.shed.compiler.nodejs.ShedToNodeJsCompiler;
 
@@ -55,10 +55,12 @@ public class NodeTests {
     private File compile(String directory, String main) throws IOException {
         File compiledFile = File.createTempFile(main, ".js");
 
+        CompilationResult result = ShedToNodeJsCompiler.compile(new File("node-test-files", directory), main);
+        if (!result.isSuccess()) {
+            throw new RuntimeException("Errors while compiling: " + result.errors());
+        }
         Writer writer = new CharArrayWriter();
-        writer.write(CharStreams.toString(new FileReader(new File("src/org/zwobble/shed/runtime/shed.node.js"))));
-        ShedToNodeJsCompiler.compile(new File("src/org/zwobble/shed/runtime/stdlib"), main, writer);
-        ShedToNodeJsCompiler.compile(new File("node-test-files", directory), main, writer);
+        writer.append(result.output());
         writer.flush();
         FileWriter fileWriter = new FileWriter(compiledFile);
         String optimised = new GoogleClosureJavaScriptOptimiser().optimise(writer.toString());

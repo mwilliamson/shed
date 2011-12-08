@@ -4,6 +4,7 @@ import java.util.Collections;
 
 import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
+import org.zwobble.shed.compiler.typechecker.DefaultContext;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -22,6 +23,7 @@ import static org.zwobble.shed.compiler.types.Members.members;
 
 public class DefaultNodeJsContext {
     public static void defaultNodeJsContext(StaticContext context, MetaClasses metaClasses) {
+        DefaultContext.defaultContext(context);
         FormalTypeParameter formalTypeParameter = invariantFormalTypeParameter("T");
         Type importValueFromModuleType = new ParameterisedFunctionType(
             asList(CoreTypes.STRING, CoreTypes.STRING, formalTypeParameter),

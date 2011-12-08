@@ -2,6 +2,7 @@ package org.zwobble.shed.compiler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.zwobble.shed.compiler.codegenerator.BrowserModuleWrapper;
 import org.zwobble.shed.compiler.codegenerator.JavaScriptGenerator;
@@ -9,6 +10,8 @@ import org.zwobble.shed.compiler.codegenerator.JavaScriptModuleWrapper;
 import org.zwobble.shed.compiler.codegenerator.JavaScriptWriter;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.dependencies.DependencyChecker;
+import org.zwobble.shed.compiler.files.FileSource;
+import org.zwobble.shed.compiler.files.RuntimeFile;
 import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.naming.FullyQualifiedNames;
 import org.zwobble.shed.compiler.naming.TypeNamer;
@@ -28,6 +31,7 @@ import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typegeneration.TypeGenerator;
 import org.zwobble.shed.compiler.typegeneration.TypeStore;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Injector;
 
 import static org.zwobble.shed.compiler.Results.isSuccess;
@@ -64,7 +68,47 @@ public class ShedCompiler {
         this.javaScriptOptimiser = javaScriptOptimiser;
     }
     
-    public CompilationResult compile(String source, StaticContext context, MetaClasses metaClasses) {
+    public CompilationResult compile(FileSource fileSource, StaticContext context, MetaClasses metaClasses) {
+        StringBuilder output = new StringBuilder();
+        List<SourceFileCompilationResult> results = Lists.newArrayList();
+        for (RuntimeFile file : fileSource) {
+            if (isShedFile(file)) {
+                SourceFileCompilationResult result = compile(file.readAll(), context, metaClasses);
+                results.add(result);
+                output.append(result.getJavaScript());
+            } else if (isJavaScriptFile(file)) {
+                output.append(file.readAll());
+            }
+            output.append("\n\n");
+        }
+        return new CompilationResult(results, output.toString());
+    }
+
+    private boolean isShedFile(RuntimeFile file) {
+        return isGeneralShedFile(file) || isNodeSpecificShedFile(file);
+    }
+
+    private boolean isGeneralShedFile(RuntimeFile file) {
+        return Pattern.compile("^([^.]+)\\.shed$").matcher(file.path()).matches();
+    }
+
+    private boolean isNodeSpecificShedFile(RuntimeFile file) {
+        return file.path().endsWith(".node.shed");
+    }
+    
+    private boolean isJavaScriptFile(RuntimeFile file) {
+        return isGeneralJavaScriptFile(file) || isNodeSpecificJavaScriptFile(file);
+    }
+
+    private boolean isGeneralJavaScriptFile(RuntimeFile file) {
+        return Pattern.compile("^([^.]+)\\.js$").matcher(file.path()).matches();
+    }
+
+    private boolean isNodeSpecificJavaScriptFile(RuntimeFile file) {
+        return file.path().endsWith(".node.js");
+    }
+
+    public SourceFileCompilationResult compile(String source, StaticContext context, MetaClasses metaClasses) {
         List<TokenPosition> tokens = tokeniser.tokenise(source);
         ParseResult<SourceNode> parseResult = parser.parse(new TokenNavigator(tokens));
         List<CompilerError> errors = new ArrayList<CompilerError>();
@@ -93,7 +137,7 @@ public class ShedCompiler {
                 }   
             }
         }
-        return new CompilationResult(tokens, parseResult, errors, javaScriptOutput);
+        return new SourceFileCompilationResult(tokens, parseResult, errors, javaScriptOutput);
     }
 
     private JavaScriptGenerator javaScriptGenerator(References references) {

@@ -1,20 +1,42 @@
 package org.zwobble.shed.compiler;
 
-import java.util.List;
+import com.google.common.base.Function;
 
-import lombok.Data;
+import static com.google.common.collect.Iterables.concat;
+import static com.google.common.collect.Iterables.transform;
 
-import org.zwobble.shed.compiler.parsing.NodeLocations;
-import org.zwobble.shed.compiler.tokeniser.TokenPosition;
-
-@Data
 public class CompilationResult {
-    private final List<TokenPosition> tokens;
-    private final NodeLocations nodeLocations;
-    private final List<CompilerError> errors;
-    private final String javaScript;
+    private final Iterable<SourceFileCompilationResult> results;
+    private final String output;
+
+    public CompilationResult(Iterable<SourceFileCompilationResult> results, String output) {
+        this.results = results;
+        this.output = output;
+    }
     
     public boolean isSuccess() {
-        return javaScript != null;
+        for (SourceFileCompilationResult result : results) {
+            if (!result.isSuccess()) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public Iterable<CompilerError> errors() {
+        return concat(transform(results, toErrors()));
+    }
+    
+    public String output() {
+        return output;
+    }
+
+    private Function<SourceFileCompilationResult, Iterable<CompilerError>> toErrors() {
+        return new Function<SourceFileCompilationResult, Iterable<CompilerError>>() {
+            @Override
+            public Iterable<CompilerError> apply(SourceFileCompilationResult input) {
+                return input.getErrors();
+            }
+        };
     }
 }
