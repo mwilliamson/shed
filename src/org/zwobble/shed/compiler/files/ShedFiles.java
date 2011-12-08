@@ -53,7 +53,7 @@ public class ShedFiles {
         return new Function<File, RuntimeFile>() {
             @Override
             public RuntimeFile apply(File input) {
-                return new RuntimeFile(input);
+                return new PhysicalRuntimeFile(input);
             }
         };
     }

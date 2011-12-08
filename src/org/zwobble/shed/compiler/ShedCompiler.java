@@ -38,11 +38,11 @@ import static org.zwobble.shed.compiler.Results.isSuccess;
 
 public class ShedCompiler {
     public static ShedCompiler forBrowser(OptimisationLevel optimisationLevel) {
-        return new ShedCompiler(new BrowserModuleWrapper(), optimiserFor(optimisationLevel));
+        return new ShedCompiler(new BrowserModuleWrapper(), optimiserFor(optimisationLevel), "browser");
     }
     
-    public static ShedCompiler build(JavaScriptModuleWrapper moduleWrapper, OptimisationLevel optimisationLevel) {
-        return new ShedCompiler(moduleWrapper, optimiserFor(optimisationLevel));
+    public static ShedCompiler build(JavaScriptModuleWrapper moduleWrapper, OptimisationLevel optimisationLevel, String platformSlug) {
+        return new ShedCompiler(moduleWrapper, optimiserFor(optimisationLevel), platformSlug);
     }
 
     private static JavaScriptOptimiser optimiserFor(OptimisationLevel optimisationLevel) {
@@ -58,14 +58,16 @@ public class ShedCompiler {
     private final JavaScriptWriter javaScriptWriter;
     private final JavaScriptOptimiser javaScriptOptimiser;
     private final JavaScriptModuleWrapper moduleWrapper;
+    private final String platformSlug;
     
-    private ShedCompiler(JavaScriptModuleWrapper moduleWrapper, JavaScriptOptimiser javaScriptOptimiser) {
+    private ShedCompiler(JavaScriptModuleWrapper moduleWrapper, JavaScriptOptimiser javaScriptOptimiser, String platformSlug) {
         this.moduleWrapper = moduleWrapper;
         this.tokeniser = new Tokeniser();
         this.parser = new Parser();
         this.referenceResolver = new ReferenceResolver();
         this.javaScriptWriter = new JavaScriptWriter();
         this.javaScriptOptimiser = javaScriptOptimiser;
+        this.platformSlug = platformSlug;
     }
     
     public CompilationResult compile(FileSource fileSource, StaticContext context, MetaClasses metaClasses) {
@@ -93,7 +95,7 @@ public class ShedCompiler {
     }
 
     private boolean isNodeSpecificShedFile(RuntimeFile file) {
-        return file.path().endsWith(".node.shed");
+        return file.path().endsWith("." + platformSlug + ".shed");
     }
     
     private boolean isJavaScriptFile(RuntimeFile file) {
@@ -105,7 +107,7 @@ public class ShedCompiler {
     }
 
     private boolean isNodeSpecificJavaScriptFile(RuntimeFile file) {
-        return file.path().endsWith(".node.js");
+        return file.path().endsWith("." + platformSlug + ".js");
     }
 
     public SourceFileCompilationResult compile(String source, StaticContext context, MetaClasses metaClasses) {

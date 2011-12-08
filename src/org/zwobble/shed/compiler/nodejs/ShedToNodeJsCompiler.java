@@ -20,7 +20,7 @@ import org.zwobble.shed.compiler.typechecker.StaticContext;
 import com.google.common.io.CharStreams;
 
 public class ShedToNodeJsCompiler {
-    private static final ShedCompiler compiler = ShedCompiler.build(new BrowserModuleWrapper(), OptimisationLevel.SIMPLE);
+    private static final ShedCompiler compiler = ShedCompiler.build(new BrowserModuleWrapper(), OptimisationLevel.SIMPLE, "node");
     
     public static CompilationResult compile(File sourceDirectory, String target) {
         MetaClasses metaClasses = MetaClasses.create();
