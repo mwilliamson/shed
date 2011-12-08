@@ -140,6 +140,7 @@ public class ShedCompiler {
             new ReferenceResolutionStage(),
             new NameGenerationStage(),
             new TypeGenerationStage(),
+            new TypeBindingStage(),
             new TypeCheckingStage(),
             new DependencyCheckingStage(),
             new JavaScriptGenerationStage(moduleWrapper),
