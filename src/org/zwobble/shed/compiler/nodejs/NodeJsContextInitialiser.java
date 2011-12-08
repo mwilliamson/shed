@@ -4,6 +4,7 @@ import java.util.Collections;
 
 import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
+import org.zwobble.shed.compiler.typechecker.BuiltIns;
 import org.zwobble.shed.compiler.typechecker.DefaultContextInitialiser;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.StaticContextInitialiser;
@@ -30,8 +31,8 @@ public class NodeJsContextInitialiser implements StaticContextInitialiser {
     }
     
     @Override
-    public void initialise(StaticContext context, MetaClasses metaClasses) {
-        defaultContextInitialiser.initialise(context, metaClasses);
+    public void initialise(StaticContext context, BuiltIns builtIns, MetaClasses metaClasses) {
+        defaultContextInitialiser.initialise(context, builtIns, metaClasses);
         FormalTypeParameter formalTypeParameter = invariantFormalTypeParameter("T");
         Type importValueFromModuleType = new ParameterisedFunctionType(
             asList(CoreTypes.STRING, CoreTypes.STRING, formalTypeParameter),

@@ -5,7 +5,7 @@ import org.zwobble.shed.compiler.codegenerator.JavaScriptModuleWrapper;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.referenceresolution.References;
-import org.zwobble.shed.compiler.typechecker.StaticContext;
+import org.zwobble.shed.compiler.typechecker.BuiltIns;
 
 public class JavaScriptGenerationStage implements CompilerStage {
     private final JavaScriptModuleWrapper moduleWrapper;
@@ -19,8 +19,8 @@ public class JavaScriptGenerationStage implements CompilerStage {
         References references = data.get(CompilationDataKeys.references);
         JavaScriptGenerator generator = new JavaScriptGenerator(moduleWrapper, references);
         SourceNode node = data.get(CompilationDataKeys.sourceNode);
-        StaticContext context = data.get(CompilationDataKeys.staticContext);
-        JavaScriptNode generatedJavaScript = generator.generate(node, context.getBuiltIns().keySet());
+        BuiltIns builtIns = data.get(CompilationDataKeys.builtIns);
+        JavaScriptNode generatedJavaScript = generator.generate(node, builtIns.allNames());
         CompilerStageResult result = CompilerStageResult.create();
         result.add(CompilationDataKeys.generatedJavaScript, generatedJavaScript);
         return result;

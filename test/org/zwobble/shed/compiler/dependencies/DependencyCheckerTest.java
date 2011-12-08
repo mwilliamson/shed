@@ -3,12 +3,10 @@ package org.zwobble.shed.compiler.dependencies;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.dependencies.errors.UndeclaredDependenciesError;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
-import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
@@ -17,9 +15,8 @@ import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferenceResolver;
 import org.zwobble.shed.compiler.referenceresolution.ReferenceResolverResult;
 import org.zwobble.shed.compiler.referenceresolution.References;
+import org.zwobble.shed.compiler.typechecker.BuiltIns;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
-
-import com.google.common.collect.ImmutableMap;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -94,8 +91,7 @@ public class DependencyCheckerTest {
 
     private References resolveReferences(SyntaxNode node) {
         ReferenceResolver resolver = new ReferenceResolver();
-        Map<String, GlobalDeclaration> globalDeclarations = ImmutableMap.of();
-        ReferenceResolverResult result = resolver.resolveReferences(node, globalDeclarations);
+        ReferenceResolverResult result = resolver.resolveReferences(node, new BuiltIns());
         if (!result.isSuccess()) {
             throw new RuntimeException("Unsuccessful reference resolution: " + result.getErrors());
         }

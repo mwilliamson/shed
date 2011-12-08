@@ -20,24 +20,24 @@ import static org.zwobble.shed.compiler.types.Members.members;
 
 public class DefaultContextInitialiser implements StaticContextInitialiser {
     @Override
-    public void initialise(StaticContext staticContext, MetaClasses metaClasses) {
-        addCore(staticContext, CoreTypes.STRING, new ScalarTypeInfo(interfaces(), members()));
-        addCore(staticContext, CoreTypes.BOOLEAN, new ScalarTypeInfo(interfaces(), members()));
-        addCore(staticContext, CoreTypes.DOUBLE, numberTypeInfo(CoreTypes.DOUBLE));
-        addCore(staticContext, CoreTypes.UNIT, new ScalarTypeInfo(interfaces(), members()));
-        addCore(staticContext, CoreTypes.CLASS, new ScalarTypeInfo(interfaces(), members()));
+    public void initialise(StaticContext staticContext, BuiltIns builtIns, MetaClasses metaClasses) {
+        addCore(staticContext, builtIns, CoreTypes.STRING, new ScalarTypeInfo(interfaces(), members()));
+        addCore(staticContext, builtIns, CoreTypes.BOOLEAN, new ScalarTypeInfo(interfaces(), members()));
+        addCore(staticContext, builtIns, CoreTypes.DOUBLE, numberTypeInfo(CoreTypes.DOUBLE));
+        addCore(staticContext, builtIns, CoreTypes.UNIT, new ScalarTypeInfo(interfaces(), members()));
+        addCore(staticContext, builtIns, CoreTypes.CLASS, new ScalarTypeInfo(interfaces(), members()));
         
         for (int i = 0; i < 20; i += 1) {
             ParameterisedType functionType = CoreTypes.functionType(i);
             FullyQualifiedName name = functionType.getBaseType().getFullyQualifiedName();
             GlobalDeclaration declaration = globalDeclaration(name);
             staticContext.add(declaration, ValueInfo.unassignableValue(functionType));
-            staticContext.addBuiltIn(name.last(), declaration);
+            builtIns.add(name.last(), declaration);
             staticContext.addInfo(functionType.getBaseType(), ScalarTypeInfo.EMPTY);
         }
     }
 
-    private static void addCore(StaticContext staticContext, ScalarType type, ScalarTypeInfo typeInfo) {
+    private static void addCore(StaticContext staticContext, BuiltIns builtIns, ScalarType type, ScalarTypeInfo typeInfo) {
         FullyQualifiedName name = type.getFullyQualifiedName();
         GlobalDeclaration declaration = globalDeclaration(name);
         if (type instanceof ClassType) {
@@ -45,7 +45,7 @@ public class DefaultContextInitialiser implements StaticContextInitialiser {
         } else {
             staticContext.addInterface(declaration, (InterfaceType)type, typeInfo);
         }
-        staticContext.addBuiltIn(name.last(), declaration);
+        builtIns.add(name.last(), declaration);
     }
     
     private static ScalarTypeInfo numberTypeInfo(Type numberType) {

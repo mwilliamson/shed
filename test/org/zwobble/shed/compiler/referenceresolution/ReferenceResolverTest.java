@@ -37,6 +37,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
+import static org.zwobble.shed.compiler.typechecker.BuiltIns.builtIns;
 
 public class ReferenceResolverTest {
     private static final GlobalDeclaration STRING_DECLARATION = GlobalDeclaration.globalDeclaration("String");
@@ -405,7 +406,7 @@ public class ReferenceResolverTest {
     }
 
     private ReferenceResolverResult resolveReferences(SyntaxNode node) {
-        return resolver.resolveReferences(node, ImmutableMap.of(
+        return resolver.resolveReferences(node, builtIns(
             "Double", DOUBLE_DECLARATION,
             "String", STRING_DECLARATION
         ));

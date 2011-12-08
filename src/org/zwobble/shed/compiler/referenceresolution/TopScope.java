@@ -1,20 +1,21 @@
 package org.zwobble.shed.compiler.referenceresolution;
 
-import java.util.Map;
-
+import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
+import org.zwobble.shed.compiler.typechecker.BuiltIns;
 
 public class TopScope implements Scope {
-    private final Map<String, GlobalDeclaration> globalDeclarations;
+    private final BuiltIns builtIns;
     
-    public TopScope(Map<String, GlobalDeclaration> globalDeclarations) {
-        this.globalDeclarations = globalDeclarations;
+    public TopScope(BuiltIns builtIns) {
+        this.builtIns = builtIns;
     }
     
     @Override
     public Result lookup(String identifier) {
-        if (globalDeclarations.containsKey(identifier)) {
-            return new Success(globalDeclarations.get(identifier));
+        Option<GlobalDeclaration> declarationOption = builtIns.get(identifier);
+        if (declarationOption.hasValue()) {
+            return new Success(declarationOption.get());
         } else {
             return new NotInScope();
         }

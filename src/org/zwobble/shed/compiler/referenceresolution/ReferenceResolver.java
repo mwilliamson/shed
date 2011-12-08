@@ -2,27 +2,25 @@ package org.zwobble.shed.compiler.referenceresolution;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.zwobble.shed.compiler.errors.CompilerError;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
-import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.parsing.nodes.structure.ScopedNodes;
 import org.zwobble.shed.compiler.referenceresolution.Scope.NotInScope;
 import org.zwobble.shed.compiler.referenceresolution.Scope.Result;
 import org.zwobble.shed.compiler.referenceresolution.Scope.Success;
-
-import static org.zwobble.shed.compiler.errors.CompilerErrors.error;
+import org.zwobble.shed.compiler.typechecker.BuiltIns;
 
 import static java.util.Arrays.asList;
+import static org.zwobble.shed.compiler.errors.CompilerErrors.error;
 
 public class ReferenceResolver {
-    public ReferenceResolverResult resolveReferences(SyntaxNode node, Map<String, GlobalDeclaration> globalDeclarations) {
+    public ReferenceResolverResult resolveReferences(SyntaxNode node, BuiltIns builtIns) {
         ReferencesBuilder references = new ReferencesBuilder();
         List<CompilerError> errors = new ArrayList<CompilerError>();
-        SubScope scope = scopeFor(ScopedNodes.subScope(asList(node)), new SubScope(new TopScope(globalDeclarations)), errors);
+        SubScope scope = scopeFor(ScopedNodes.subScope(asList(node)), new SubScope(new TopScope(builtIns)), errors);
         resolveReferences(node, references, scope, errors);
         return ReferenceResolverResult.build(references.build(), errors);
     }

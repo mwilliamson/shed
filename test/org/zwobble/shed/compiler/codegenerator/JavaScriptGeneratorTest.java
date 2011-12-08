@@ -18,7 +18,6 @@ import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
-import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.InterfaceDeclarationNode;
@@ -43,6 +42,7 @@ import org.zwobble.shed.compiler.parsing.nodes.WhileStatementNode;
 import org.zwobble.shed.compiler.referenceresolution.ReferenceResolver;
 import org.zwobble.shed.compiler.referenceresolution.References;
 import org.zwobble.shed.compiler.referenceresolution.ReferencesBuilder;
+import org.zwobble.shed.compiler.typechecker.BuiltIns;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -509,7 +509,7 @@ public class JavaScriptGeneratorTest {
     
     private References resolveReferences(SyntaxNode source) {
         return referenceResolver
-            .resolveReferences(source, Collections.<String, GlobalDeclaration>emptyMap())
+            .resolveReferences(source, new BuiltIns())
             .getReferences();
     }
     

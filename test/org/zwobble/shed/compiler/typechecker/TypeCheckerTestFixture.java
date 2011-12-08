@@ -1,10 +1,7 @@
 package org.zwobble.shed.compiler.typechecker;
 
-import java.util.Map;
-
 import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.parsing.nodes.Declaration;
-import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.TypeDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
@@ -32,6 +29,7 @@ public class TypeCheckerTestFixture {
     
     private final TypeStore.Builder typeStoreBuilder = TypeStore.builder();
     private final MetaClasses metaClasses = MetaClasses.create();
+    private final BuiltIns builtIns = new BuiltIns();
     private final StaticContext context = new StaticContext(metaClasses);
     private final ReferencesBuilder references = new ReferencesBuilder();
     
@@ -48,13 +46,12 @@ public class TypeCheckerTestFixture {
     private final VariableIdentifierNode implementingClassTypeReference = Nodes.id("Song");
     
     private TypeCheckerTestFixture() {
-        new DefaultContextInitialiser().initialise(context, metaClasses);
+        new DefaultContextInitialiser().initialise(context, builtIns, metaClasses);
         
-        Map<String, GlobalDeclaration> builtIns = context.getBuiltIns();
-        stringTypeDeclaration = builtIns.get("String");
-        unitTypeDeclaration = builtIns.get("Unit");
-        booleanTypeDeclaration = builtIns.get("Boolean");
-        doubleTypeDeclaration = builtIns.get("Double");
+        stringTypeDeclaration = builtIns.get("String").get();
+        unitTypeDeclaration = builtIns.get("Unit").get();
+        booleanTypeDeclaration = builtIns.get("Boolean").get();
+        doubleTypeDeclaration = builtIns.get("Double").get();
         
         references.addReference(STRING_TYPE_REFERENCE, stringTypeDeclaration);
         references.addReference(UNIT_TYPE_REFERENCE, unitTypeDeclaration);

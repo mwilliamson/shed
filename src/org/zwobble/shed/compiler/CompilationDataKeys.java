@@ -7,6 +7,7 @@ import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.referenceresolution.References;
 import org.zwobble.shed.compiler.tokeniser.TokenisedSource;
+import org.zwobble.shed.compiler.typechecker.BuiltIns;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typegeneration.TypeStore;
 
@@ -15,6 +16,7 @@ public class CompilationDataKeys {
     public static final CompilationDataKey<TokenisedSource> tokenisedSource = CompilationDataKey.key();
     public static final CompilationDataKey<NodeLocations> nodeLocations = CompilationDataKey.key();
     public static final CompilationDataKey<SourceNode> sourceNode = CompilationDataKey.key();
+    public static final CompilationDataKey<BuiltIns> builtIns = CompilationDataKey.key();
     public static final CompilationDataKey<StaticContext> staticContext = CompilationDataKey.key();
     public static final CompilationDataKey<References> references = CompilationDataKey.key();
     public static final CompilationDataKey<TypeStore> generatedTypes = CompilationDataKey.key();

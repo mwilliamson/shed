@@ -31,8 +31,8 @@ public class BrowserContextInitialiser implements StaticContextInitialiser {
     }
 
     @Override
-    public void initialise(StaticContext context, MetaClasses metaClasses) {
-        defaultInitialiser.initialise(context, metaClasses);
+    public void initialise(StaticContext context, BuiltIns builtIns, MetaClasses metaClasses) {
+        defaultInitialiser.initialise(context, builtIns, metaClasses);
         
         FormalTypeParameter formalTypeParameter = invariantFormalTypeParameter("T");
         Type importValueType = new ParameterisedFunctionType(

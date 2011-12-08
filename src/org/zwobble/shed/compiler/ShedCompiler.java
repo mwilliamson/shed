@@ -13,6 +13,7 @@ import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.tokeniser.TokenPosition;
 import org.zwobble.shed.compiler.typechecker.BrowserContextInitialiser;
+import org.zwobble.shed.compiler.typechecker.BuiltIns;
 import org.zwobble.shed.compiler.typechecker.DefaultContextInitialiser;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.StaticContextInitialiser;
@@ -62,14 +63,15 @@ public class ShedCompiler {
     
     public CompilationResult compile(FileSource fileSource) {
         MetaClasses metaClasses = MetaClasses.create();
+        BuiltIns builtIns = new BuiltIns();
         StaticContext context = new StaticContext(metaClasses);
-        staticContextInitialiser.initialise(context, metaClasses);
+        staticContextInitialiser.initialise(context, builtIns, metaClasses);
         
         StringBuilder output = new StringBuilder();
         List<SourceFileCompilationResult> results = Lists.newArrayList();
         for (RuntimeFile file : fileSource) {
             if (isShedFile(file)) {
-                SourceFileCompilationResult result = compile(file.readAll(), context, metaClasses);
+                SourceFileCompilationResult result = compile(file.readAll(), context, builtIns, metaClasses);
                 results.add(result);
                 output.append(result.getJavaScript());
             } else if (isJavaScriptFile(file)) {
@@ -105,11 +107,12 @@ public class ShedCompiler {
         return file.path().endsWith("." + platformSlug + ".js");
     }
 
-    private SourceFileCompilationResult compile(String source, StaticContext context, MetaClasses metaClasses) {
+    private SourceFileCompilationResult compile(String source, StaticContext context, BuiltIns builtIns, MetaClasses metaClasses) {
         CompilationData compilationData = new CompilationData();
         compilationData.add(CompilationDataKeys.sourceString, source);
         compilationData.add(CompilationDataKeys.metaClasses, metaClasses);
         compilationData.add(CompilationDataKeys.staticContext, context);
+        compilationData.add(CompilationDataKeys.builtIns, builtIns);
         
         List<CompilerError> errors = executeStages(compilationData);
         

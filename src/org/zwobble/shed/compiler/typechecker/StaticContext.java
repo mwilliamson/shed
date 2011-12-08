@@ -10,7 +10,6 @@ import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.parsing.nodes.Declaration;
-import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
@@ -37,8 +36,6 @@ public class StaticContext {
     private final Map<FullyQualifiedName, Type> global = new HashMap<FullyQualifiedName, Type>();
     private final Map<Identity<Declaration>, ValueInfo> types = new HashMap<Identity<Declaration>, ValueInfo>();
     private final Map<ScalarType, ScalarTypeInfo> scalarTypeInfo = new HashMap<ScalarType, ScalarTypeInfo>();
-    // TODO: move builtins into a separate class
-    private final Map<String, GlobalDeclaration> builtIns = new HashMap<String, GlobalDeclaration>();
     private final MetaClasses metaClasses;
     
     public StaticContext(MetaClasses metaClasses) {
@@ -114,14 +111,6 @@ public class StaticContext {
         add(declaration, ValueInfo.unassignableValue(metaClass, shedTypeValue(type)));
         addInfo(type, typeInfo);
         addInfo(metaClass, metaClassTypeInfo);
-    }
-    
-    public void addBuiltIn(String name, GlobalDeclaration declaration) {
-        builtIns.put(name, declaration);
-    }
-
-    public Map<String, GlobalDeclaration> getBuiltIns() {
-        return builtIns;
     }
 
     private Function<ValueInfo, Type> toType() {
