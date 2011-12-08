@@ -1,15 +1,12 @@
 package org.zwobble.shed.compiler.nodetest;
 
-import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Writer;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilationResult;
-import org.zwobble.shed.compiler.GoogleClosureJavaScriptOptimiser;
 import org.zwobble.shed.compiler.nodejs.ShedToNodeJsCompiler;
 
 import com.google.common.io.CharStreams;
@@ -57,12 +54,8 @@ public class NodeTests {
         if (!result.isSuccess()) {
             throw new RuntimeException("Errors while compiling: " + result.errors());
         }
-        Writer writer = new CharArrayWriter();
-        writer.append(result.output());
-        writer.flush();
         FileWriter fileWriter = new FileWriter(compiledFile);
-        String optimised = new GoogleClosureJavaScriptOptimiser().optimise(writer.toString());
-        fileWriter.write(optimised);
+        fileWriter.write(result.output());
         fileWriter.flush();
         return compiledFile;
     }
