@@ -1,7 +1,7 @@
 package org.zwobble.shed.compiler.typechecker;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.HasErrors;
+import org.zwobble.shed.compiler.errors.HasErrors;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Declaration;

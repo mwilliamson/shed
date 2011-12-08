@@ -9,11 +9,12 @@ import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.typechecker.errors.UnresolvedImportError;
 import org.zwobble.shed.compiler.types.Type;
 
+import static org.zwobble.shed.compiler.errors.CompilerErrors.error;
+
 import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
 
 import static org.zwobble.shed.compiler.typechecker.TypeResults.failure;
 
-import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 

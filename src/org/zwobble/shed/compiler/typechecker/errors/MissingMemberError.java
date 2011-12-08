@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import org.zwobble.shed.compiler.CompilerErrorDescription;
+import org.zwobble.shed.compiler.errors.CompilerErrorDescription;
 import org.zwobble.shed.compiler.types.Type;
 
 @AllArgsConstructor

@@ -9,8 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import org.zwobble.shed.compiler.CompilerError;
-import org.zwobble.shed.compiler.HasErrors;
+import org.zwobble.shed.compiler.errors.CompilerError;
+import org.zwobble.shed.compiler.errors.HasErrors;
 import org.zwobble.shed.compiler.parsing.nodes.Node;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
 

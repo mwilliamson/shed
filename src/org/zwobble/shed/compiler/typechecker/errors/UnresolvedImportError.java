@@ -4,7 +4,7 @@ import java.util.List;
 
 import lombok.Data;
 
-import org.zwobble.shed.compiler.CompilerErrorDescription;
+import org.zwobble.shed.compiler.errors.CompilerErrorDescription;
 
 import com.google.common.base.Joiner;
 

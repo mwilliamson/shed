@@ -1,4 +1,4 @@
-package org.zwobble.shed.compiler;
+package org.zwobble.shed.compiler.errors;
 
 import org.zwobble.shed.compiler.parsing.SourceRange;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;

@@ -3,9 +3,9 @@ package org.zwobble.shed.compiler.typechecker;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.zwobble.shed.compiler.CompilerError;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.Options;
+import org.zwobble.shed.compiler.errors.CompilerError;
 
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.typechecker.TypeResultWithValue.typeResultWithValue;

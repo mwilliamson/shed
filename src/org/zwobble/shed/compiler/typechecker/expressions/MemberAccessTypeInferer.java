@@ -2,8 +2,8 @@ package org.zwobble.shed.compiler.typechecker.expressions;
 
 import javax.inject.Inject;
 
-import org.zwobble.shed.compiler.CompilerErrorWithSyntaxNode;
 import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.errors.CompilerErrorWithSyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.MemberAccessNode;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.TypeInferer;
@@ -18,7 +18,8 @@ import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.base.Function;
 
-import static org.zwobble.shed.compiler.CompilerErrors.error;
+import static org.zwobble.shed.compiler.errors.CompilerErrors.error;
+
 import static org.zwobble.shed.compiler.typechecker.TypeResults.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
 

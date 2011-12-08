@@ -5,9 +5,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.zwobble.shed.compiler.CompilerError;
-import org.zwobble.shed.compiler.CompilerErrors;
 import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.errors.CompilerError;
+import org.zwobble.shed.compiler.errors.CompilerErrors;
 import org.zwobble.shed.compiler.parsing.Separator.Type;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
 import org.zwobble.shed.compiler.parsing.nodes.Node;

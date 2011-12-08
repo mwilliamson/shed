@@ -16,9 +16,10 @@ import org.zwobble.shed.compiler.types.TypeApplication;
 
 import com.google.common.base.Function;
 
+import static org.zwobble.shed.compiler.errors.CompilerErrors.error;
+
 import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
 
-import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
 import static org.zwobble.shed.compiler.typechecker.ValueInfos.toUnassignableValueInfo;

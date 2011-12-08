@@ -7,6 +7,9 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.StringDescription;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
+import org.zwobble.shed.compiler.errors.CompilerError;
+import org.zwobble.shed.compiler.errors.CompilerErrorDescription;
+import org.zwobble.shed.compiler.errors.HasErrors;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;

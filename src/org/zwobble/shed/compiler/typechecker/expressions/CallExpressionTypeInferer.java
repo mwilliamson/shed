@@ -4,8 +4,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import org.zwobble.shed.compiler.CompilerError;
-import org.zwobble.shed.compiler.CompilerErrors;
+import org.zwobble.shed.compiler.errors.CompilerError;
+import org.zwobble.shed.compiler.errors.CompilerErrors;
 import org.zwobble.shed.compiler.parsing.nodes.CallNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.typechecker.FunctionTyping;
@@ -19,9 +19,10 @@ import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.base.Function;
 
+import static org.zwobble.shed.compiler.errors.CompilerErrors.error;
+
 import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
 
-import static org.zwobble.shed.compiler.CompilerErrors.error;
 import static org.zwobble.shed.compiler.typechecker.TypeResults.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
 import static org.zwobble.shed.compiler.typechecker.ValueInfos.toUnassignableValueInfo;

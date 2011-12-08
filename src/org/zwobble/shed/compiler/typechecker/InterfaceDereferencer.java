@@ -4,9 +4,9 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import org.zwobble.shed.compiler.CompilerErrorWithSyntaxNode;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.Options;
+import org.zwobble.shed.compiler.errors.CompilerErrorWithSyntaxNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.typechecker.errors.NotAnInterfaceError;
 import org.zwobble.shed.compiler.types.Interfaces;

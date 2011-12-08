@@ -3,7 +3,7 @@ package org.zwobble.shed.compiler.typechecker.expressions;
 import java.util.Collections;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.CompilerErrorDescription;
+import org.zwobble.shed.compiler.errors.CompilerErrorDescription;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.LongLambdaExpressionNode;

@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.HasErrors;
 import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.errors.HasErrors;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;

@@ -2,7 +2,7 @@ package org.zwobble.shed.compiler.typechecker.expressions;
 
 import org.hamcrest.Matcher;
 import org.junit.Test;
-import org.zwobble.shed.compiler.CompilerErrorDescription;
+import org.zwobble.shed.compiler.errors.CompilerErrorDescription;
 import org.zwobble.shed.compiler.parsing.nodes.AssignmentExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;

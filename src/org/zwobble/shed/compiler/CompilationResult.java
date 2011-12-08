@@ -1,5 +1,7 @@
 package org.zwobble.shed.compiler;
 
+import org.zwobble.shed.compiler.errors.CompilerError;
+
 import com.google.common.base.Function;
 
 import static com.google.common.collect.Iterables.concat;

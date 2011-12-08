@@ -10,7 +10,8 @@ import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typechecker.errors.UntypedReferenceError;
 
-import static org.zwobble.shed.compiler.CompilerErrors.error;
+import static org.zwobble.shed.compiler.errors.CompilerErrors.error;
+
 import static org.zwobble.shed.compiler.typechecker.TypeResults.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
 

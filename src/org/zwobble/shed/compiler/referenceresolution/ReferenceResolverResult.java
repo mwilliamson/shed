@@ -4,8 +4,8 @@ import java.util.List;
 
 import lombok.Data;
 
-import org.zwobble.shed.compiler.CompilerError;
-import org.zwobble.shed.compiler.HasErrors;
+import org.zwobble.shed.compiler.errors.CompilerError;
+import org.zwobble.shed.compiler.errors.HasErrors;
 
 @Data(staticConstructor="build")
 public class ReferenceResolverResult implements HasErrors{

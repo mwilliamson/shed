@@ -1,6 +1,6 @@
 package org.zwobble.shed.compiler.typechecker.errors;
 
-import org.zwobble.shed.compiler.CompilerErrorDescription;
+import org.zwobble.shed.compiler.errors.CompilerErrorDescription;
 import org.zwobble.shed.compiler.types.Type;
 
 import lombok.Data;

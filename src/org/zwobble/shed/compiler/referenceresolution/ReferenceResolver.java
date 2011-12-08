@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.zwobble.shed.compiler.CompilerError;
+import org.zwobble.shed.compiler.errors.CompilerError;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
@@ -14,8 +14,9 @@ import org.zwobble.shed.compiler.referenceresolution.Scope.NotInScope;
 import org.zwobble.shed.compiler.referenceresolution.Scope.Result;
 import org.zwobble.shed.compiler.referenceresolution.Scope.Success;
 
+import static org.zwobble.shed.compiler.errors.CompilerErrors.error;
+
 import static java.util.Arrays.asList;
-import static org.zwobble.shed.compiler.CompilerErrors.error;
 
 public class ReferenceResolver {
     public ReferenceResolverResult resolveReferences(SyntaxNode node, Map<String, GlobalDeclaration> globalDeclarations) {

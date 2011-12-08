@@ -13,7 +13,8 @@ import org.zwobble.shed.compiler.types.Type;
 
 import com.google.common.base.Function;
 
-import static org.zwobble.shed.compiler.CompilerErrors.error;
+import static org.zwobble.shed.compiler.errors.CompilerErrors.error;
+
 import static org.zwobble.shed.compiler.typechecker.TypeResults.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
 import static org.zwobble.shed.compiler.typechecker.ValueInfos.toUnassignableValueInfo;

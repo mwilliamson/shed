@@ -10,6 +10,7 @@ import org.zwobble.shed.compiler.codegenerator.JavaScriptModuleWrapper;
 import org.zwobble.shed.compiler.codegenerator.JavaScriptWriter;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.dependencies.DependencyChecker;
+import org.zwobble.shed.compiler.errors.CompilerError;
 import org.zwobble.shed.compiler.files.FileSource;
 import org.zwobble.shed.compiler.files.RuntimeFile;
 import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;

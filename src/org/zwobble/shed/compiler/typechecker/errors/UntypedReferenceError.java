@@ -6,7 +6,7 @@ import lombok.ToString;
 
 import lombok.AllArgsConstructor;
 
-import org.zwobble.shed.compiler.CompilerErrorDescription;
+import org.zwobble.shed.compiler.errors.CompilerErrorDescription;
 
 @AllArgsConstructor
 @ToString

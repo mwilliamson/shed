@@ -2,10 +2,10 @@ package org.zwobble.shed.compiler.typechecker;
 
 import javax.inject.Inject;
 
-import org.zwobble.shed.compiler.CompilerErrorDescription;
-import org.zwobble.shed.compiler.CompilerErrorWithSyntaxNode;
-import org.zwobble.shed.compiler.HasErrors;
 import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.errors.CompilerErrorDescription;
+import org.zwobble.shed.compiler.errors.CompilerErrorWithSyntaxNode;
+import org.zwobble.shed.compiler.errors.HasErrors;
 import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 import org.zwobble.shed.compiler.typechecker.errors.MissingMemberError;
 import org.zwobble.shed.compiler.typechecker.errors.WrongMemberTypeError;

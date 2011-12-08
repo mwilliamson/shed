@@ -3,8 +3,8 @@ package org.zwobble.shed.compiler.typechecker;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.zwobble.shed.compiler.CompilerError;
-import org.zwobble.shed.compiler.HasErrors;
+import org.zwobble.shed.compiler.errors.CompilerError;
+import org.zwobble.shed.compiler.errors.HasErrors;
 
 
 public class TypeResultBuilder<T> {

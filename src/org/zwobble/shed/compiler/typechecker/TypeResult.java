@@ -1,10 +1,10 @@
 package org.zwobble.shed.compiler.typechecker;
 
-import org.zwobble.shed.compiler.CompilerError;
 import java.util.List;
 
-import org.zwobble.shed.compiler.HasErrors;
 import org.zwobble.shed.compiler.Option;
+import org.zwobble.shed.compiler.errors.CompilerError;
+import org.zwobble.shed.compiler.errors.HasErrors;
 
 import com.google.common.base.Function;
 
