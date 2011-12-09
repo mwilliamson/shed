@@ -38,7 +38,6 @@ public class CoreTypes {
     public static final Type ANY = AnyType.ANY;
     
     private static Map<Integer, ParameterisedType> functionTypes = new HashMap<Integer, ParameterisedType>();
-    private static Set<ParameterisedType> baseFunctionTypes = new HashSet<ParameterisedType>();
     
     public static ParameterisedType functionType(int arguments) {
         if (!functionTypes.containsKey(arguments)) {
@@ -47,7 +46,6 @@ public class CoreTypes {
             formalTypeParameters.add(covariantFormalTypeParameter("TResult"));
             ParameterisedType functionType = parameterisedType(baseType, formalTypeParameters(formalTypeParameters));
             functionTypes.put(arguments, functionType);
-            baseFunctionTypes.add(functionType);
         }
         return functionTypes.get(arguments);
     }
