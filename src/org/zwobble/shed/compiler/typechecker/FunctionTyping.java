@@ -61,7 +61,7 @@ public class FunctionTyping {
     private static boolean isFunctionType(Type type) {
         if (type instanceof TypeApplication) {
             TypeApplication typeApplication = (TypeApplication)type;
-            return CoreTypes.functionType(typeApplication.getTypeParameters().size() - 1).equals(typeApplication.getParameterisedType());
+            return CoreTypes.FUNCTION.equals(typeApplication.getParameterisedType());
         } else {
             return false;
         }

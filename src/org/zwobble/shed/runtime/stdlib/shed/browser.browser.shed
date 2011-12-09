@@ -5,5 +5,5 @@ import shed.javascript.JavaScriptImporter;
 public object browser {
     val importer = JavaScriptImporter();
     
-    public val alert = importer.importValue[Function1[String, Unit]]("SHED.alert");
+    public val alert = importer.importValue[Function[String, Unit]]("SHED.alert");
 }

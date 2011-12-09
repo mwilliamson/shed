@@ -16,7 +16,7 @@ public class ParameterisedFunctionType implements TypeFunction {
     
     @Override
     public String shortName() {
-        return buildTypeList(formalTypeParameters) + " -> Function" + buildTypeList(functionTypeParameters);
+        return formalTypeParameters.describe() + " -> Function" + buildTypeList(functionTypeParameters);
     }
     
     private String buildTypeList(Iterable<? extends Type> types) {

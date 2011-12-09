@@ -1,27 +1,16 @@
 package org.zwobble.shed.compiler.types;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 
-import static org.zwobble.shed.compiler.types.FormalTypeParameters.formalTypeParameters;
-
 import static com.google.common.collect.Iterables.concat;
-import static java.util.Collections.singleton;
-
-import static com.google.common.collect.Iterables.transform;
-import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
-import static org.zwobble.shed.compiler.IntRange.range;
+import static java.util.Collections.singleton;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
-import static org.zwobble.shed.compiler.types.ScalarFormalTypeParameter.contravariantFormalTypeParameter;
-import static org.zwobble.shed.compiler.types.ScalarFormalTypeParameter.covariantFormalTypeParameter;
+import static org.zwobble.shed.compiler.types.FormalTypeParameters.formalTypeParameters;
 import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedType;
+import static org.zwobble.shed.compiler.types.ScalarFormalTypeParameter.covariantFormalTypeParameter;
 import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
 
 public class CoreTypes {
@@ -36,19 +25,24 @@ public class CoreTypes {
     
     public static final InterfaceType CLASS = new InterfaceType(fullyQualifiedName("Class"));
     public static final Type ANY = AnyType.ANY;
-    
-    private static Map<Integer, ParameterisedType> functionTypes = new HashMap<Integer, ParameterisedType>();
-    
-    public static ParameterisedType functionType(int arguments) {
-        if (!functionTypes.containsKey(arguments)) {
-            InterfaceType baseType = new InterfaceType(fullyQualifiedName("Function" + arguments));
-            List<FormalTypeParameter> formalTypeParameters = newArrayList(transform(range(arguments), toContravariantFormalTypeParameter()));
-            formalTypeParameters.add(covariantFormalTypeParameter("TResult"));
-            ParameterisedType functionType = parameterisedType(baseType, formalTypeParameters(formalTypeParameters));
-            functionTypes.put(arguments, functionType);
-        }
-        return functionTypes.get(arguments);
+
+    public static final ParameterisedType TUPLE = parameterisedType(
+        new InterfaceType(fullyQualifiedName("Tuple")),
+        formalTypeParameters(VariadicFormalTypeParameter.covariant("T"))
+    );
+
+    public static Type tupleOf(Type... types) {
+        return tupleOf(asList(types));
     }
+    
+    public static Type tupleOf(Iterable<Type> types) {
+        return applyTypes(TUPLE, ImmutableList.copyOf(types));
+    }
+    
+    public static final ParameterisedType FUNCTION = parameterisedType(
+        new InterfaceType(fullyQualifiedName("Function")),
+        formalTypeParameters(VariadicFormalTypeParameter.contravariant("T"), covariantFormalTypeParameter("TResult"))
+    );
     
     public static ScalarType functionTypeOf(Type... types) {
         return functionTypeOf(asList(types));
@@ -63,15 +57,6 @@ public class CoreTypes {
     }
     
     public static ScalarType functionTypeOf(List<Type> types) {
-        return applyTypes(functionType(types.size() - 1), types);
-    }
-
-    private static Function<Integer, FormalTypeParameter> toContravariantFormalTypeParameter() {
-        return new Function<Integer, FormalTypeParameter>() {
-            @Override
-            public FormalTypeParameter apply(Integer input) {
-                return contravariantFormalTypeParameter("T" + (input + 1));
-            }
-        };
+        return applyTypes(FUNCTION, types);
     }
 }

@@ -9,4 +9,9 @@ public class AnyType implements Type {
     public String shortName() {
         return "<any type>";
     }
+    
+    @Override
+    public String toString() {
+        return shortName();
+    }
 }

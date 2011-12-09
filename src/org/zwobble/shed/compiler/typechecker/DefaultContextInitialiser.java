@@ -27,14 +27,8 @@ public class DefaultContextInitialiser implements StaticContextInitialiser {
         addCore(staticContext, builtIns, CoreTypes.UNIT, new ScalarTypeInfo(interfaces(), members()));
         addCore(staticContext, builtIns, CoreTypes.CLASS, new ScalarTypeInfo(interfaces(), members()));
         
-        for (int i = 0; i < 20; i += 1) {
-            ParameterisedType functionType = CoreTypes.functionType(i);
-            FullyQualifiedName name = functionType.getBaseType().getFullyQualifiedName();
-            GlobalDeclaration declaration = globalDeclaration(name);
-            staticContext.add(declaration, ValueInfo.unassignableValue(functionType));
-            builtIns.add(name.last(), declaration);
-            staticContext.addInfo(functionType.getBaseType(), ScalarTypeInfo.EMPTY);
-        }
+        addCoreParameterisedType(staticContext, builtIns, CoreTypes.FUNCTION);
+        addCoreParameterisedType(staticContext, builtIns, CoreTypes.TUPLE);
     }
 
     private static void addCore(StaticContext staticContext, BuiltIns builtIns, ScalarType type, ScalarTypeInfo typeInfo) {
@@ -46,6 +40,14 @@ public class DefaultContextInitialiser implements StaticContextInitialiser {
             staticContext.addInterface(declaration, (InterfaceType)type, typeInfo);
         }
         builtIns.add(name.last(), declaration);
+    }
+
+    private void addCoreParameterisedType(StaticContext staticContext, BuiltIns builtIns, ParameterisedType type) {
+        FullyQualifiedName name = type.getBaseType().getFullyQualifiedName();
+        GlobalDeclaration declaration = globalDeclaration(name);
+        staticContext.add(declaration, ValueInfo.unassignableValue(type));
+        builtIns.add(name.last(), declaration);
+        staticContext.addInfo(type.getBaseType(), ScalarTypeInfo.EMPTY);
     }
     
     private static ScalarTypeInfo numberTypeInfo(Type numberType) {

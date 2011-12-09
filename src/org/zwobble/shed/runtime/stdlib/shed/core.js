@@ -29,10 +29,8 @@
     exports.Unit = function() {
         return unit;
     };
-    for (var i = 0; i < 20; i += 1) {
-        exports["Function" + i] = function() {
-            return {};
-        };
-    }
+    exports["Function"] = function() {
+        return {};
+    };
     SHED.exportValue("shed.core", exports);
 })();

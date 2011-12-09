@@ -1,23 +1,23 @@
 package org.zwobble.shed.compiler.types;
 
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.zwobble.shed.compiler.util.Eager;
-import org.zwobble.shed.compiler.util.Function2;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
-
-import static org.zwobble.shed.compiler.util.ShedIterables.unpack;
-import static org.zwobble.shed.compiler.util.ShedIterables.zip;
-
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+
+import static com.google.common.collect.Iterables.transform;
 import static java.util.Arrays.asList;
 
 @RequiredArgsConstructor(staticName="formalTypeParameters")
+@ToString
 public class FormalTypeParameters implements Iterable<FormalTypeParameter> {
     public static FormalTypeParameters formalTypeParameters(FormalTypeParameter... formalTypeParameters) {
         return formalTypeParameters(asList(formalTypeParameters));
@@ -30,18 +30,40 @@ public class FormalTypeParameters implements Iterable<FormalTypeParameter> {
         return formalTypeParameters.iterator();
     }
     
+    public String describe() {
+        return "[" + Joiner.on(", ").join(transform(formalTypeParameters, toName())) + "]";
+    }
+    
     public Map<FormalTypeParameter, Type> replacementMap(Iterable<Type> actualTypeParameters) {
         ImmutableMap.Builder<FormalTypeParameter, Type> replacements = ImmutableMap.builder();
-        Eager.transform(zip(formalTypeParameters, actualTypeParameters), unpack(putReplacement(replacements)));
+        
+        Deque<FormalTypeParameter> remainingFormalTypeParameters = Lists.newLinkedList(formalTypeParameters);
+        Deque<Type> remainingActualTypeParameters = Lists.newLinkedList(actualTypeParameters);
+        
+        while (!remainingFormalTypeParameters.isEmpty() && !isVariadic(remainingFormalTypeParameters.peekFirst())) {
+            replacements.put(remainingFormalTypeParameters.removeFirst(), remainingActualTypeParameters.removeFirst());
+        }
+        
+        while (!remainingFormalTypeParameters.isEmpty() && !isVariadic(remainingFormalTypeParameters.peekLast())) {
+            replacements.put(remainingFormalTypeParameters.removeLast(), remainingActualTypeParameters.removeLast());
+        }
+        
+        if (!remainingFormalTypeParameters.isEmpty()) {
+            replacements.put(remainingFormalTypeParameters.removeFirst(), CoreTypes.tupleOf(remainingActualTypeParameters));
+        }
+        
         return replacements.build();
     }
+    
+    private boolean isVariadic(FormalTypeParameter formalTypeParameter) {
+        return formalTypeParameter instanceof VariadicFormalTypeParameter;
+    }
 
-    private Function2<FormalTypeParameter, Type, Void> putReplacement(final Builder<FormalTypeParameter, Type> replacements) {
-        return new Function2<FormalTypeParameter, Type, Void>() {
+    private Function<Type, String> toName() {
+        return new Function<Type, String>() {
             @Override
-            public Void apply(FormalTypeParameter first, Type second) {
-                replacements.put(first, second);
-                return null;
+            public String apply(Type input) {
+                return input.shortName();
             }
         };
     }
