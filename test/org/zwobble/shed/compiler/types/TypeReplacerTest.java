@@ -4,6 +4,8 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
 
+import static org.zwobble.shed.compiler.types.FormalTypeParameters.formalTypeParameters;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -51,7 +53,7 @@ public class TypeReplacerTest {
         FormalTypeParameter listFormalTypeParameter = invariantFormalTypeParameter("E");
         FormalTypeParameter functionFormalTypeParameter = invariantFormalTypeParameter("T");
         ClassType scalarType = new ClassType(fullyQualifiedName("shed", "example", "List"));
-        ParameterisedType parameterisedType = parameterisedType(scalarType, asList(listFormalTypeParameter));
+        ParameterisedType parameterisedType = parameterisedType(scalarType, formalTypeParameters(listFormalTypeParameter));
         Type typeApplication = applyTypes(parameterisedType, asList((Type)functionFormalTypeParameter));
         
         Type replacement = typeReplacer.replaceTypes(

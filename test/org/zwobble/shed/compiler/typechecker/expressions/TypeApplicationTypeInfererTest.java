@@ -35,6 +35,7 @@ import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDe
 import static org.zwobble.shed.compiler.typechecker.TypeResultMatchers.isSuccessWithValue;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
+import static org.zwobble.shed.compiler.types.FormalTypeParameters.formalTypeParameters;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedType;
@@ -56,7 +57,7 @@ public class TypeApplicationTypeInfererTest {
         FormalTypeParameter typeParameter = invariantFormalTypeParameter("T");
         ParameterisedType listTypeFunction = parameterisedType(
             new InterfaceType(fullyQualifiedName("shed", "List")),
-            asList(typeParameter)
+            formalTypeParameters(typeParameter)
         );
         context.add(listDeclaration, unassignableValue(listTypeFunction));
         TypeApplicationNode typeApplication = Nodes.typeApply(listReference, doubleReference);
@@ -82,7 +83,7 @@ public class TypeApplicationTypeInfererTest {
         FormalTypeParameter typeParameter = invariantFormalTypeParameter("T");
         ScalarTypeInfo listTypeInfo = new ScalarTypeInfo(interfaces(), members("get", unassignableValue(typeParameter)));
         InterfaceType baseListType = new InterfaceType(fullyQualifiedName("shed", "List"));
-        ParameterisedType listTypeFunction = parameterisedType(baseListType, asList(typeParameter));
+        ParameterisedType listTypeFunction = parameterisedType(baseListType, formalTypeParameters(typeParameter));
         context.add(listDeclaration, unassignableValue(listTypeFunction));
         context.addInfo(baseListType, listTypeInfo);
         TypeApplicationNode typeApplication = Nodes.typeApply(listReference, doubleReference);
@@ -106,7 +107,7 @@ public class TypeApplicationTypeInfererTest {
         FormalTypeParameter typeParameter = invariantFormalTypeParameter("T");
         context.add(identityDeclaration, unassignableValue(new ParameterisedFunctionType(
             typeParameters(typeParameter, typeParameter),
-            asList(typeParameter)
+            formalTypeParameters(typeParameter)
         )));
         CallNode call = Nodes.call(Nodes.typeApply(identityReference, doubleReference), Nodes.number("2"));
         TypeResult<Type> result = inferType(call);

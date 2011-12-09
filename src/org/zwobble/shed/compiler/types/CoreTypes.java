@@ -9,6 +9,8 @@ import java.util.Set;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 
+import static org.zwobble.shed.compiler.types.FormalTypeParameters.formalTypeParameters;
+
 import static com.google.common.collect.Iterables.concat;
 import static java.util.Collections.singleton;
 
@@ -43,7 +45,7 @@ public class CoreTypes {
             InterfaceType baseType = new InterfaceType(fullyQualifiedName("Function" + arguments));
             List<FormalTypeParameter> formalTypeParameters = newArrayList(transform(range(arguments), toContravariantFormalTypeParameter()));
             formalTypeParameters.add(covariantFormalTypeParameter("TResult"));
-            ParameterisedType functionType = parameterisedType(baseType, formalTypeParameters);
+            ParameterisedType functionType = parameterisedType(baseType, formalTypeParameters(formalTypeParameters));
             functionTypes.put(arguments, functionType);
             baseFunctionTypes.add(functionType);
         }

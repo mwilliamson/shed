@@ -12,14 +12,14 @@ import lombok.Data;
 @Data
 public class ParameterisedFunctionType implements TypeFunction {
     private final List<Type> functionTypeParameters;
-    private final List<FormalTypeParameter> formalTypeParameters;
+    private final FormalTypeParameters formalTypeParameters;
     
     @Override
     public String shortName() {
         return buildTypeList(formalTypeParameters) + " -> Function" + buildTypeList(functionTypeParameters);
     }
     
-    private String buildTypeList(List<? extends Type> types) {
+    private String buildTypeList(Iterable<? extends Type> types) {
         return "[" + Joiner.on(", ").join(transform(types, toName())) + "]";
     }
     

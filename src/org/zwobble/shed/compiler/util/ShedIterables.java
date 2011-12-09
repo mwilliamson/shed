@@ -3,6 +3,7 @@ package org.zwobble.shed.compiler.util;
 import java.util.Iterator;
 
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.UnmodifiableIterator;
 
@@ -98,6 +99,15 @@ public class ShedIterables {
             @Override
             public boolean apply(Triple<T, U, V> input) {
                 return predicate.apply(input.getFirst(), input.getSecond(), input.getThird());
+            }
+        };
+    }
+    
+    public static <T, U, R> Function<Pair<T, U>, R> unpack(final Function2<T, U, R> function) {
+        return new Function<Pair<T,U>, R>() {
+            @Override
+            public R apply(Pair<T, U> input) {
+                return function.apply(input.getFirst(), input.getSecond());
             }
         };
     }

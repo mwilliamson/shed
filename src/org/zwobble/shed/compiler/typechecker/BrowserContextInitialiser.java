@@ -13,12 +13,12 @@ import org.zwobble.shed.compiler.types.ParameterisedFunctionType;
 import org.zwobble.shed.compiler.types.ScalarTypeInfo;
 import org.zwobble.shed.compiler.types.Type;
 
-import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
-
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
+import static org.zwobble.shed.compiler.types.FormalTypeParameters.formalTypeParameters;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 
@@ -37,7 +37,7 @@ public class BrowserContextInitialiser implements StaticContextInitialiser {
         FormalTypeParameter formalTypeParameter = invariantFormalTypeParameter("T");
         Type importValueType = new ParameterisedFunctionType(
             asList(CoreTypes.STRING, formalTypeParameter),
-            asList(formalTypeParameter)
+            formalTypeParameters(formalTypeParameter)
         );
         FullyQualifiedName javaScriptImporterName = fullyQualifiedName("shed", "javascript", "JavaScriptImporter");
         ClassType javaScriptImporterType = new ClassType(javaScriptImporterName);

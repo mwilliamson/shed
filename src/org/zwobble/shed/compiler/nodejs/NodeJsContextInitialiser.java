@@ -20,6 +20,7 @@ import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualified
 import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
+import static org.zwobble.shed.compiler.types.FormalTypeParameters.formalTypeParameters;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
 
@@ -36,7 +37,7 @@ public class NodeJsContextInitialiser implements StaticContextInitialiser {
         FormalTypeParameter formalTypeParameter = invariantFormalTypeParameter("T");
         Type importValueFromModuleType = new ParameterisedFunctionType(
             asList(CoreTypes.STRING, CoreTypes.STRING, formalTypeParameter),
-            asList(formalTypeParameter)
+            formalTypeParameters(formalTypeParameter)
         );
         FullyQualifiedName importerName = fullyQualifiedName("shed", "javascript", "NodeJavaScriptImporter");
         ClassType importerType = new ClassType(importerName);

@@ -1,7 +1,5 @@
 package org.zwobble.shed.compiler.types;
 
-import java.util.List;
-
 import lombok.Data;
 
 import com.google.common.base.Function;
@@ -12,7 +10,7 @@ import static com.google.common.collect.Iterables.transform;
 @Data(staticConstructor="parameterisedType")
 public class ParameterisedType implements TypeFunction {
     private final ScalarType baseType;
-    private final List<FormalTypeParameter> formalTypeParameters;
+    private final FormalTypeParameters formalTypeParameters;
     
     @Override
     public String shortName() {

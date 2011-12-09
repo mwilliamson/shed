@@ -6,7 +6,6 @@ import java.util.Map;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableMap;
 
 import static com.google.common.collect.Iterables.transform;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
@@ -21,15 +20,9 @@ public class TypeInfoTypeReplacer {
     }
     
     public ScalarTypeInfo buildTypeInfo(TypeApplication typeApplication, ScalarTypeInfo info) {
-        ImmutableMap.Builder<FormalTypeParameter, Type> replacements = ImmutableMap.builder();
-        
         List<Type> actualTypeParameters = typeApplication.getTypeParameters();
-        List<FormalTypeParameter> formalTypeParameters = typeApplication.getParameterisedType().getFormalTypeParameters();
-        for (int i = 0; i < actualTypeParameters.size(); i += 1) {
-            replacements.put(formalTypeParameters.get(i), actualTypeParameters.get(i));
-        }
-        
-        return buildTypeInfo(info, replacements.build());
+        FormalTypeParameters formalTypeParameters = typeApplication.getParameterisedType().getFormalTypeParameters();
+        return buildTypeInfo(info, formalTypeParameters.replacementMap(actualTypeParameters));
     }
     
     private ScalarTypeInfo buildTypeInfo(ScalarTypeInfo info, Map<FormalTypeParameter, Type> replacements) {

@@ -2,10 +2,10 @@ package org.zwobble.shed.compiler.types;
 
 import org.junit.Test;
 
-import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
+import static org.zwobble.shed.compiler.types.FormalTypeParameters.formalTypeParameters;
 import static org.zwobble.shed.compiler.types.Types.typeParameters;
 
 public class ParameterisedFunctionTypeTest {
@@ -14,7 +14,7 @@ public class ParameterisedFunctionTypeTest {
         FormalTypeParameter typeParameter = invariantFormalTypeParameter("T");
         ParameterisedFunctionType function = new ParameterisedFunctionType(
             typeParameters(typeParameter, typeParameter),
-            asList(typeParameter)
+            formalTypeParameters(typeParameter)
         );
         
         assertThat(function.shortName(), is("[T] -> Function[T, T]"));
