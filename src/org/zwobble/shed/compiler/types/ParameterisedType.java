@@ -22,7 +22,7 @@ public class ParameterisedType implements TypeFunction {
         return new Function<FormalTypeParameter, String>() {
             @Override
             public String apply(FormalTypeParameter input) {
-                return input.getName();
+                return input.shortName();
             }
         };
     }

@@ -19,8 +19,8 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.IntRange.range;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
-import static org.zwobble.shed.compiler.types.FormalTypeParameter.contravariantFormalTypeParameter;
-import static org.zwobble.shed.compiler.types.FormalTypeParameter.covariantFormalTypeParameter;
+import static org.zwobble.shed.compiler.types.ScalarFormalTypeParameter.contravariantFormalTypeParameter;
+import static org.zwobble.shed.compiler.types.ScalarFormalTypeParameter.covariantFormalTypeParameter;
 import static org.zwobble.shed.compiler.types.ParameterisedType.parameterisedType;
 import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
 

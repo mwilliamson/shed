@@ -2,10 +2,10 @@ package org.zwobble.shed.compiler.typechecker;
 
 import javax.inject.Inject;
 
-import org.zwobble.shed.compiler.types.FormalTypeParameter;
-import org.zwobble.shed.compiler.types.FormalTypeParameter.Variance;
 import org.zwobble.shed.compiler.types.CoreTypes;
+import org.zwobble.shed.compiler.types.FormalTypeParameter;
 import org.zwobble.shed.compiler.types.ParameterisedType;
+import org.zwobble.shed.compiler.types.ScalarFormalTypeParameter.Variance;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;

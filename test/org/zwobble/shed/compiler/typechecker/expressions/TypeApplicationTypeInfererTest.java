@@ -18,6 +18,7 @@ import org.zwobble.shed.compiler.typechecker.TypeResult;
 import org.zwobble.shed.compiler.types.ClassType;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
+import org.zwobble.shed.compiler.types.ScalarFormalTypeParameter;
 import org.zwobble.shed.compiler.types.InterfaceType;
 import org.zwobble.shed.compiler.types.ParameterisedFunctionType;
 import org.zwobble.shed.compiler.types.ParameterisedType;
@@ -34,7 +35,7 @@ import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualified
 import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
 import static org.zwobble.shed.compiler.typechecker.TypeResultMatchers.isSuccessWithValue;
 import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
-import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
+import static org.zwobble.shed.compiler.types.ScalarFormalTypeParameter.invariantFormalTypeParameter;
 import static org.zwobble.shed.compiler.types.FormalTypeParameters.formalTypeParameters;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
@@ -80,7 +81,7 @@ public class TypeApplicationTypeInfererTest {
         fixture.addReference(listReference, listDeclaration);
         
         StaticContext context = fixture.context();
-        FormalTypeParameter typeParameter = invariantFormalTypeParameter("T");
+        FormalTypeParameter typeParameter = ScalarFormalTypeParameter.invariantFormalTypeParameter("T");
         ScalarTypeInfo listTypeInfo = new ScalarTypeInfo(interfaces(), members("get", unassignableValue(typeParameter)));
         InterfaceType baseListType = new InterfaceType(fullyQualifiedName("shed", "List"));
         ParameterisedType listTypeFunction = parameterisedType(baseListType, formalTypeParameters(typeParameter));

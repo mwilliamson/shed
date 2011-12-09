@@ -12,7 +12,7 @@ import org.zwobble.shed.compiler.types.Type;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
-import static org.zwobble.shed.compiler.types.FormalTypeParameter.invariantFormalTypeParameter;
+import static org.zwobble.shed.compiler.types.ScalarFormalTypeParameter.invariantFormalTypeParameter;
 import static org.zwobble.shed.compiler.types.FormalTypeParameters.formalTypeParameters;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;

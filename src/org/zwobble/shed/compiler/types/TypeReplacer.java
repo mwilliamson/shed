@@ -11,7 +11,7 @@ import static com.google.common.collect.Lists.transform;
 
 public class TypeReplacer {
     public Type replaceTypes(Type type, Map<FormalTypeParameter, Type> replacements) {
-        if (type instanceof FormalTypeParameter) {
+        if (type instanceof ScalarFormalTypeParameter) {
             return replaceFormalTypeParameter(type, replacements);
         }
         
