@@ -63,7 +63,7 @@ public class ObjectDeclarationTypeCheckerTest {
     }
 
     @Test public void
-    objectDeclarationCreatesNewTypeWithPublicMembers() {
+    objectDeclarationAddsTypeInfoWithPublicMembers() {
         ObjectDeclarationNode objectDeclarationNode = 
             Nodes.object("browser", Nodes.block(
                 Nodes.immutableVar("version", Nodes.number("1.2")),
@@ -74,7 +74,6 @@ public class ObjectDeclarationTypeCheckerTest {
         StaticContext staticContext = fixture.context();
         TypeResult<StatementTypeCheckResult> result = typeCheckObjectDeclaration(objectDeclarationNode);
         assertThat(result, isSuccessWithValue(StatementTypeCheckResult.noReturn()));
-        assertThat(staticContext.getTypeOf(objectDeclarationNode).get(), is((Type)type));
         ScalarTypeInfo browserTypeInfo = staticContext.getInfo(type);
         assertThat(browserTypeInfo.getMembers(), is(members("name", ValueInfo.unassignableValue(CoreTypes.STRING))));
     }

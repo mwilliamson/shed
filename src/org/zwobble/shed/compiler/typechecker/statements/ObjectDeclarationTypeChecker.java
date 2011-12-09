@@ -23,7 +23,6 @@ import org.zwobble.shed.compiler.types.Type;
 
 import static org.zwobble.shed.compiler.Results.isSuccess;
 import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
-import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 
 public class ObjectDeclarationTypeChecker implements StatementTypeChecker<ObjectDeclarationNode> {
     private final BlockTypeChecker blockTypeChecker;
@@ -56,7 +55,6 @@ public class ObjectDeclarationTypeChecker implements StatementTypeChecker<Object
             Members members = buildMembers(objectDeclaration);
             
             InterfaceType type = (InterfaceType) typeStore.typeDeclaredBy(objectDeclaration);
-            context.add(objectDeclaration, unassignableValue(type));
             context.addInfo(type, new ScalarTypeInfo(interfaces, members));
             
             result.addErrors(interfaceImplementationChecker.checkInterfaces(objectDeclaration, type));

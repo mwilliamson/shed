@@ -1,6 +1,7 @@
 package org.zwobble.shed.compiler.typebinding;
 
 import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
+import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.TypeDeclarationNode;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
@@ -24,11 +25,18 @@ public class TypeBinder {
         }
     }
 
-    private void bindGeneratedType(StaticContext context,
-        Pair<TypeDeclarationNode, Type> generatedType) {
+    private void bindGeneratedType(StaticContext context, Pair<TypeDeclarationNode, Type> generatedType) {
         TypeDeclarationNode declaration = generatedType.getFirst();
         ScalarType type = (ScalarType) generatedType.getSecond();
-        Type metaClass = metaClasses.metaClassOf(type);
-        context.add(declaration, ValueInfo.unassignableValue(metaClass, shedTypeValue(type)));
+        if (isSingletonType(declaration)) {
+            context.add(declaration, ValueInfo.unassignableValue(type));
+        } else {
+            Type metaClass = metaClasses.metaClassOf(type);
+            context.add(declaration, ValueInfo.unassignableValue(metaClass, shedTypeValue(type)));
+        }
+    }
+
+    private boolean isSingletonType(TypeDeclarationNode declaration) {
+        return declaration instanceof ObjectDeclarationNode;
     }
 }
