@@ -1,0 +1,8 @@
+package multipleFiles;
+
+import shed.sys;
+
+val b = ContrivedClassB();
+val a = b.giveMeAnA();
+
+sys.print(a.toString());

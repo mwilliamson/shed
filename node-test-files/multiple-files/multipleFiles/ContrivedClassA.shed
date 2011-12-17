@@ -1,0 +1,7 @@
+package multipleFiles;
+
+public class ContrivedClassA() {
+    public fun toString() : String {
+        return "A";
+    }    
+}

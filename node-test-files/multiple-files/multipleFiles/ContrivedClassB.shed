@@ -1,0 +1,9 @@
+package multipleFiles;
+
+import multipleFiles.ContrivedClassA;
+
+public class ContrivedClassB() {
+    public fun giveMeAnA() : ContrivedClassA {
+        return ContrivedClassA();
+    }
+}
