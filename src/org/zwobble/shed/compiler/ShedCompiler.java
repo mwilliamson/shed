@@ -68,19 +68,34 @@ public class ShedCompiler {
         staticContextInitialiser.initialise(context, builtIns, metaClasses);
         
         StringBuilder output = new StringBuilder();
+        
+        appendJavaScriptFiles(fileSource, output);
+        
+        List<SourceFileCompilationResult> results = compileShedFiles(fileSource, metaClasses, builtIns, context, output);
+        String optimisedJavaScript = javaScriptOptimiser.optimise(output.toString());
+        return new CompilationResult(results, optimisedJavaScript);
+    }
+
+    private void appendJavaScriptFiles(FileSource fileSource, StringBuilder output) {
+        for (RuntimeFile file : fileSource) {
+            if (isJavaScriptFile(file)) {
+                output.append(file.readAll());
+                output.append("\n\n");
+            }
+        }
+    }
+
+    private List<SourceFileCompilationResult> compileShedFiles(FileSource fileSource, MetaClasses metaClasses,
+        BuiltIns builtIns, StaticContext context, StringBuilder output) {
         List<SourceFileCompilationResult> results = Lists.newArrayList();
         for (RuntimeFile file : fileSource) {
             if (isShedFile(file)) {
                 SourceFileCompilationResult result = compile(file.readAll(), context, builtIns, metaClasses);
                 results.add(result);
                 output.append(result.getJavaScript());
-            } else if (isJavaScriptFile(file)) {
-                output.append(file.readAll());
             }
-            output.append("\n\n");
         }
-        String optimisedJavaScript = javaScriptOptimiser.optimise(output.toString());
-        return new CompilationResult(results, optimisedJavaScript);
+        return results;
     }
 
     private boolean isShedFile(RuntimeFile file) {
