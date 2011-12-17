@@ -92,6 +92,15 @@ public class SubTypingTest {
     }
     
     @Test public void
+    appliedTypesAreNotSubTypesIfTypeFunctionsDiffer() {
+        ParameterisedType firstParameterisedType = parameterisedType(interfaceType, formalTypeParameters(invariantTypeParameter));
+        ParameterisedType secondParameterisedType = parameterisedType(make(an(interfaceType())), formalTypeParameters(invariantTypeParameter));
+        TypeApplication firstType = applyTypes(firstParameterisedType, typeParameters(CoreTypes.BOOLEAN));
+        TypeApplication secondType = applyTypes(secondParameterisedType, typeParameters(CoreTypes.BOOLEAN));
+        assertThat(isSubType(firstType, secondType), is(false));
+    }
+    
+    @Test public void
     firstAppliedTypeIsNotSubTypeOfSecondAppliedTypeIfFormalTypeParameterIsInvariantAndTypeParameterOfFirstIsSubTypeOfTypeParameterOfSecond() {
         ParameterisedType parameterisedType = parameterisedType(make(an(interfaceType())), formalTypeParameters(invariantTypeParameter));
         TypeApplication firstType = applyTypes(parameterisedType, typeParameters(implementingClassType));

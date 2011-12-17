@@ -53,12 +53,15 @@ public class SubTyping {
     }
     
     private boolean typeApplicationIsSubType(TypeApplication subType, TypeApplication superType) {
-        ParameterisedType subTypeParameterisedType = subType.getParameterisedType();
-        FormalTypeParameters formalTypeParameters = subTypeParameterisedType.getFormalTypeParameters();
+        if (!subType.getParameterisedType().equals(superType.getParameterisedType())) {
+            return false;
+        }
+        ParameterisedType parameterisedType = subType.getParameterisedType();
+        FormalTypeParameters formalTypeParameters = parameterisedType.getFormalTypeParameters();
         
         // TODO: these two cases aren't tested properly
         // TODO: is special-casing tuple here the right solution, or should the tuple class itself be a unique type in the type system?
-        if (subTypeParameterisedType.equals(CoreTypes.TUPLE)) {
+        if (parameterisedType.equals(CoreTypes.TUPLE)) {
             return all(zip(formalTypeParameters, subType.getTypeParameters(), superType.getTypeParameters()), typeParametersMatch());
         } else {
             Map<FormalTypeParameter, Type> subTypeBindings = formalTypeParameters.replacementMap(subType.getTypeParameters());
