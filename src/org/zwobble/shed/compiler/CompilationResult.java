@@ -1,44 +1,27 @@
 package org.zwobble.shed.compiler;
 
+import java.util.List;
+
 import org.zwobble.shed.compiler.errors.CompilerError;
 
-import com.google.common.base.Function;
-
-import static com.google.common.collect.Iterables.concat;
-import static com.google.common.collect.Iterables.transform;
-
 public class CompilationResult {
-    private final Iterable<SourceFileCompilationResult> results;
+    private final List<CompilerError> errors;
     private final String output;
 
-    public CompilationResult(Iterable<SourceFileCompilationResult> results, String output) {
-        this.results = results;
+    public CompilationResult(List<CompilerError> errors, String output) {
+        this.errors = errors;
         this.output = output;
     }
     
     public boolean isSuccess() {
-        for (SourceFileCompilationResult result : results) {
-            if (!result.isSuccess()) {
-                return false;
-            }
-        }
-        return true;
+        return errors.isEmpty();
     }
     
-    public Iterable<CompilerError> errors() {
-        return concat(transform(results, toErrors()));
+    public List<CompilerError> errors() {
+        return errors;
     }
     
     public String output() {
         return output;
-    }
-
-    private Function<SourceFileCompilationResult, Iterable<CompilerError>> toErrors() {
-        return new Function<SourceFileCompilationResult, Iterable<CompilerError>>() {
-            @Override
-            public Iterable<CompilerError> apply(SourceFileCompilationResult input) {
-                return input.getErrors();
-            }
-        };
     }
 }

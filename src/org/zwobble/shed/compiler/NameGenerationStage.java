@@ -7,7 +7,7 @@ import org.zwobble.shed.compiler.parsing.nodes.SyntaxNode;
 public class NameGenerationStage implements CompilerStage {
     @Override
     public CompilerStageResult execute(CompilationData data) {
-        SyntaxNode node = data.get(CompilationDataKeys.sourceNode);
+        SyntaxNode node = data.get(CompilationDataKeys.sourceNodes);
         FullyQualifiedNames fullyQualifiedNames = new TypeNamer().generateFullyQualifiedNames(node);
         CompilerStageResult result = CompilerStageResult.create();
         result.add(CompilationDataKeys.fullyQualifiedNames, fullyQualifiedNames);

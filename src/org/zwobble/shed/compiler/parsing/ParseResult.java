@@ -11,12 +11,16 @@ import lombok.ToString;
 
 import org.zwobble.shed.compiler.errors.CompilerError;
 import org.zwobble.shed.compiler.errors.HasErrors;
-import org.zwobble.shed.compiler.parsing.nodes.Node;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
+import org.zwobble.shed.compiler.parsing.nodes.Node;
+import org.zwobble.shed.compiler.util.Pair;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 
+import static com.google.common.collect.Iterables.transform;
 import static java.util.Arrays.asList;
+import static org.zwobble.shed.compiler.util.Pair.pair;
 
 @AllArgsConstructor
 @EqualsAndHashCode
@@ -46,8 +50,8 @@ public class ParseResult<T> implements HasErrors, NodeLocations {
         return new ParseResult<T>(value, errors, type, resultsToNodePositions(subResults));
     }
     
-    private static Map<Identity<?>, SourceRange> resultsToNodePositions(Iterable<? extends ParseResult<?>> subResults) {
-        ImmutableMap.Builder<Identity<?>, SourceRange> nodePositions = ImmutableMap.builder();
+    private static Map<Identity<Node>, SourceRange> resultsToNodePositions(Iterable<? extends ParseResult<?>> subResults) {
+        ImmutableMap.Builder<Identity<Node>, SourceRange> nodePositions = ImmutableMap.builder();
         for (ParseResult<?> subResult : subResults) {
             nodePositions.putAll(subResult.nodePositions);            
         }
@@ -57,7 +61,7 @@ public class ParseResult<T> implements HasErrors, NodeLocations {
     private final T value;
     private final List<CompilerError> errors;
     private final Type type;
-    private final Map<Identity<?>, SourceRange> nodePositions;
+    private final Map<Identity<Node>, SourceRange> nodePositions;
     
     public boolean anyErrors() {
         return !errors.isEmpty();
@@ -68,9 +72,9 @@ public class ParseResult<T> implements HasErrors, NodeLocations {
     }
     
     public <U extends Node> ParseResult<U> changeValue(U value, SourceRange position) {
-        Map<Identity<?>, SourceRange> newPositions = new HashMap<Identity<?>, SourceRange>();
+        Map<Identity<Node>, SourceRange> newPositions = new HashMap<Identity<Node>, SourceRange>();
         newPositions.putAll(nodePositions);
-        Identity<?> nodeIdentifier = new Identity<U>(value);
+        Identity<Node> nodeIdentifier = new Identity<Node>(value);
         if (newPositions.containsKey(nodeIdentifier)) {
             if (!position.contains(newPositions.get(nodeIdentifier))) {
                 throw new RuntimeException("The same node cannot appear in two places");
@@ -123,5 +127,19 @@ public class ParseResult<T> implements HasErrors, NodeLocations {
     }
     public boolean isFatal() {
         return type == Type.FATAL;
+    }
+    
+    @Override
+    public Iterable<Pair<Node, SourceRange>> all() {
+        return transform(nodePositions.entrySet(), toPair());
+    }
+    
+    private Function<Map.Entry<Identity<Node>, SourceRange>, Pair<Node, SourceRange>> toPair() {
+        return new Function<Map.Entry<Identity<Node>,SourceRange>, Pair<Node,SourceRange>>() {
+            @Override
+            public Pair<Node, SourceRange> apply(Map.Entry<Identity<Node>, SourceRange> input) {
+                return pair(input.getKey().get(), input.getValue());
+            }
+        };
     }
 }

@@ -8,7 +8,7 @@ import org.zwobble.shed.compiler.typechecker.TypeResult;
 public class DependencyCheckingStage implements CompilerStage {
     @Override
     public CompilerStageResult execute(CompilationData data) {
-        SyntaxNode sourceNode = data.get(CompilationDataKeys.sourceNode);
+        SyntaxNode sourceNode = data.get(CompilationDataKeys.sourceNodes);
         References references = data.get(CompilationDataKeys.references);
         TypeResult<Void> dependencyCheckResult = new DependencyChecker().check(sourceNode, references);
         return CompilerStageResult.create(dependencyCheckResult.getErrors());

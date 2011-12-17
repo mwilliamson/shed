@@ -10,8 +10,6 @@ import org.zwobble.shed.compiler.errors.CompilerError;
 import org.zwobble.shed.compiler.files.FileSource;
 import org.zwobble.shed.compiler.files.RuntimeFile;
 import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
-import org.zwobble.shed.compiler.parsing.NodeLocations;
-import org.zwobble.shed.compiler.tokeniser.TokenPosition;
 import org.zwobble.shed.compiler.typechecker.BrowserContextInitialiser;
 import org.zwobble.shed.compiler.typechecker.BuiltIns;
 import org.zwobble.shed.compiler.typechecker.DefaultContextInitialiser;
@@ -71,9 +69,10 @@ public class ShedCompiler {
         
         appendJavaScriptFiles(fileSource, output);
         
-        List<SourceFileCompilationResult> results = compileShedFiles(fileSource, metaClasses, builtIns, context, output);
+        CompilationResult results = compileShedFiles(fileSource, metaClasses, builtIns, context);
+        output.append(results.output());
         String optimisedJavaScript = javaScriptOptimiser.optimise(output.toString());
-        return new CompilationResult(results, optimisedJavaScript);
+        return new CompilationResult(results.errors(), optimisedJavaScript);
     }
 
     private void appendJavaScriptFiles(FileSource fileSource, StringBuilder output) {
@@ -85,17 +84,27 @@ public class ShedCompiler {
         }
     }
 
-    private List<SourceFileCompilationResult> compileShedFiles(FileSource fileSource, MetaClasses metaClasses,
-        BuiltIns builtIns, StaticContext context, StringBuilder output) {
-        List<SourceFileCompilationResult> results = Lists.newArrayList();
+    private CompilationResult compileShedFiles(FileSource fileSource, MetaClasses metaClasses,
+        BuiltIns builtIns, StaticContext context) {
+        
+        List<String> sourceStrings = Lists.newArrayList();
         for (RuntimeFile file : fileSource) {
             if (isShedFile(file)) {
-                SourceFileCompilationResult result = compile(file.readAll(), context, builtIns, metaClasses);
-                results.add(result);
-                output.append(result.getJavaScript());
+                sourceStrings.add(file.readAll());
             }
         }
-        return results;
+        
+        CompilationData compilationData = new CompilationData();
+        compilationData.add(CompilationDataKeys.sourceStrings, sourceStrings);
+        compilationData.add(CompilationDataKeys.metaClasses, metaClasses);
+        compilationData.add(CompilationDataKeys.staticContext, context);
+        compilationData.add(CompilationDataKeys.builtIns, builtIns);
+        
+        List<CompilerError> errors = executeStages(compilationData);
+        
+        String javaScriptOutput = compilationData.get(CompilationDataKeys.generatedJavaScriptAsString);
+        System.out.println(javaScriptOutput);
+        return new CompilationResult(errors, javaScriptOutput);
     }
 
     private boolean isShedFile(RuntimeFile file) {
@@ -120,21 +129,6 @@ public class ShedCompiler {
 
     private boolean isNodeSpecificJavaScriptFile(RuntimeFile file) {
         return file.path().endsWith("." + platformSlug + ".js");
-    }
-
-    private SourceFileCompilationResult compile(String source, StaticContext context, BuiltIns builtIns, MetaClasses metaClasses) {
-        CompilationData compilationData = new CompilationData();
-        compilationData.add(CompilationDataKeys.sourceString, source);
-        compilationData.add(CompilationDataKeys.metaClasses, metaClasses);
-        compilationData.add(CompilationDataKeys.staticContext, context);
-        compilationData.add(CompilationDataKeys.builtIns, builtIns);
-        
-        List<CompilerError> errors = executeStages(compilationData);
-        
-        Iterable<TokenPosition> tokens = compilationData.get(CompilationDataKeys.tokenisedSource);
-        NodeLocations nodeLocations = compilationData.get(CompilationDataKeys.nodeLocations);
-        String javaScriptOutput = compilationData.get(CompilationDataKeys.generatedJavaScriptAsString);
-        return new SourceFileCompilationResult(tokens, nodeLocations, errors, javaScriptOutput);
     }
 
     private List<CompilerError> executeStages(CompilationData compilationData) {

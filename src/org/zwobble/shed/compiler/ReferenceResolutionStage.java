@@ -14,7 +14,7 @@ public class ReferenceResolutionStage implements CompilerStage {
     
     @Override
     public CompilerStageResult execute(CompilationData data) {
-        SyntaxNode node = data.get(CompilationDataKeys.sourceNode);
+        SyntaxNode node = data.get(CompilationDataKeys.sourceNodes);
         BuiltIns builtIns = data.get(CompilationDataKeys.builtIns);
         ReferenceResolverResult referenceResolverResult = referenceResolver.resolveReferences(node, builtIns);
         CompilerStageResult result = CompilerStageResult.create(referenceResolverResult.getErrors());

@@ -278,7 +278,7 @@ public class Rules {
             null,
             Arrays.<CompilerError>asList(CompilerErrors.error(tokenPosition.getSourceRange(), message)),
             type,
-            ImmutableMap.<Identity<?>, SourceRange>of()
+            ImmutableMap.<Identity<Node>, SourceRange>of()
         );
     }
 }
