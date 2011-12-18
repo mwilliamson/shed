@@ -19,7 +19,7 @@ public class ShedMaps {
         return builder.build();
     }
 
-    public static <K, V> Option<V> getOrNone(Map<K, V> map, K key) {
+    public static <K, V> Option<V> getOrNone(Map<? extends K, V> map, K key) {
         if (map.containsKey(key)) {
             return some(map.get(key));
         } else {

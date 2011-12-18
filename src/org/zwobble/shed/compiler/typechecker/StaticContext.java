@@ -21,12 +21,11 @@ import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.types.TypeApplication;
 import org.zwobble.shed.compiler.types.TypeInfoTypeReplacer;
 import org.zwobble.shed.compiler.types.TypeReplacer;
+import org.zwobble.shed.compiler.util.ShedMaps;
 
 import com.google.common.base.Function;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static org.zwobble.shed.compiler.Option.none;
-import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.typechecker.ShedTypeValue.shedTypeValue;
 import static org.zwobble.shed.compiler.types.Interfaces.interfaces;
 import static org.zwobble.shed.compiler.types.Members.members;
@@ -48,11 +47,7 @@ public class StaticContext {
 
     public Option<ValueInfo> getValueInfoFor(Declaration declaration) {
         Identity<Declaration> key = new Identity<Declaration>(declaration);
-        if (types.containsKey(key)) {
-            return Option.some(types.get(key));
-        } else {
-            return Option.none();
-        }
+        return ShedMaps.getOrNone(types, key);
     }
     
     public Option<Type> getTypeOf(Declaration declaration) {
@@ -65,11 +60,7 @@ public class StaticContext {
     }
     
     public Option<Type> lookupGlobal(FullyQualifiedName name) {
-        if (global.containsKey(name)) {
-            return some(global.get(name));
-        } else {
-            return none();
-        }
+        return ShedMaps.getOrNone(global, name);
     }
     
     public void addInfo(ScalarType type, ScalarTypeInfo typeInfo) {

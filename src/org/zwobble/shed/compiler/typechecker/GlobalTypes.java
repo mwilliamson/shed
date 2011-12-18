@@ -6,9 +6,7 @@ import java.util.Map;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.types.Type;
-
-import static org.zwobble.shed.compiler.Option.none;
-import static org.zwobble.shed.compiler.Option.some;
+import org.zwobble.shed.compiler.util.ShedMaps;
 
 public class GlobalTypes {
     private final Map<FullyQualifiedName, Type> global = new HashMap<FullyQualifiedName, Type>();
@@ -19,10 +17,6 @@ public class GlobalTypes {
     }
     
     public Option<Type> lookupGlobal(FullyQualifiedName name) {
-        if (global.containsKey(name)) {
-            return some(global.get(name));
-        } else {
-            return none();
-        }
+        return ShedMaps.getOrNone(global, name);
     }
 }

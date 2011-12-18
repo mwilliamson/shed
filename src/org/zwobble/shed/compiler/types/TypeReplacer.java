@@ -3,6 +3,8 @@ package org.zwobble.shed.compiler.types;
 import java.util.List;
 import java.util.Map;
 
+import org.zwobble.shed.compiler.util.ShedMaps;
+
 import com.google.common.base.Function;
 
 import static org.zwobble.shed.compiler.types.TypeApplication.applyTypes;
@@ -24,10 +26,7 @@ public class TypeReplacer {
     }
 
     private Type replaceFormalTypeParameter(Type type, Map<FormalTypeParameter, Type> replacements) {
-        if (replacements.containsKey(type)) {
-            return replacements.get(type);
-        }
-        return type;
+        return ShedMaps.getOrNone(replacements, type).orElse(type);
     }
 
     private Function<Type, Type> toReplacement(final Map<FormalTypeParameter, Type> replacements) {

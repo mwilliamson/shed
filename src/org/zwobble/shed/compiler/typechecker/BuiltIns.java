@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
+import org.zwobble.shed.compiler.util.ShedMaps;
 
 public class BuiltIns {
     public static BuiltIns builtIns(String name1, GlobalDeclaration declaration1, String name2, GlobalDeclaration declaration2) {
@@ -21,11 +22,7 @@ public class BuiltIns {
     }
     
     public Option<GlobalDeclaration> get(String name) {
-        if (builtIns.containsKey(name)) {
-            return Option.some(builtIns.get(name));
-        } else {
-            return Option.none();
-        }
+        return ShedMaps.getOrNone(builtIns, name);
     }
 
     public Iterable<String> allNames() {

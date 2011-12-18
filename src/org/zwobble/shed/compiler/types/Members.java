@@ -74,6 +74,6 @@ public class Members implements Iterable<Member> {
     }
     
     public Option<Member> lookup(String name) {
-        return members.containsKey(name) ? Option.some(members.get(name)) : Option.<Member>none();
+        return ShedMaps.getOrNone(members, name);
     }
 }
