@@ -1,6 +1,7 @@
 package org.zwobble.shed.compiler.typechecker;
 
 import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
+import org.zwobble.shed.compiler.modules.Modules;
 import org.zwobble.shed.compiler.parsing.nodes.Declaration;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.TypeDeclarationNode;
@@ -32,6 +33,7 @@ public class TypeCheckerTestFixture {
     private final BuiltIns builtIns = new BuiltIns();
     private final StaticContext context = new StaticContext(metaClasses);
     private final ReferencesBuilder references = new ReferencesBuilder();
+    private final Modules modules = Modules.build();
     
     private final Declaration stringTypeDeclaration;
     private final Declaration unitTypeDeclaration;
@@ -65,7 +67,7 @@ public class TypeCheckerTestFixture {
     }
 
     public <T> T get(Class<T> clazz) {
-        return TypeCheckerInjector.build(typeStoreBuilder.build(), metaClasses, context, references.build()).getInstance(clazz);
+        return TypeCheckerInjector.build(typeStoreBuilder.build(), metaClasses, context, references.build(), modules).getInstance(clazz);
     }
     
     public StaticContext context() {

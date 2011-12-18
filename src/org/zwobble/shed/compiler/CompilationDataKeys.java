@@ -2,6 +2,7 @@ package org.zwobble.shed.compiler;
 
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
+import org.zwobble.shed.compiler.modules.Modules;
 import org.zwobble.shed.compiler.naming.FullyQualifiedNames;
 import org.zwobble.shed.compiler.parsing.NodeLocations;
 import org.zwobble.shed.compiler.parsing.nodes.EntireSourceNode;
@@ -24,4 +25,5 @@ public class CompilationDataKeys {
     public static final CompilationDataKey<FullyQualifiedNames> fullyQualifiedNames = CompilationDataKey.key();
     public static final CompilationDataKey<Iterable<JavaScriptNode>> generatedJavaScript = CompilationDataKey.key();
     public static final CompilationDataKey<String> generatedJavaScriptAsString = CompilationDataKey.key();
+    public static final CompilationDataKey<Modules> modules = CompilationDataKey.key();
 }

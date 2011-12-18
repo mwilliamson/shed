@@ -5,6 +5,8 @@ import java.util.List;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.errors.CompilerError;
 import org.zwobble.shed.compiler.errors.CompilerErrorWithSyntaxNode;
+import org.zwobble.shed.compiler.naming.FullyQualifiedName;
+import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.typechecker.TypeResultWithValue;
@@ -37,8 +39,10 @@ public class ModuleGenerator {
     }
 
     private Module toModule(PublicDeclarationNode publicDeclaration, List<String> packageNames) {
-        String identifier = publicDeclaration.getDeclaration().getIdentifier();
-        return Module.create(fullyQualifiedName(ImmutableList.copyOf(concat(packageNames, singleton(identifier)))));
+        DeclarationNode declaration = publicDeclaration.getDeclaration();
+        String identifier = declaration.getIdentifier();
+        FullyQualifiedName name = fullyQualifiedName(ImmutableList.copyOf(concat(packageNames, singleton(identifier))));
+        return Module.create(name, declaration);
     }
 
     private Function<SourceNode, TypeResultWithValue<Option<Module>>> sourceToModule() {

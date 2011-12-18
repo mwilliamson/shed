@@ -46,6 +46,10 @@ public class FullyQualifiedName {
     
     @Override
     public String toString() {
+        return asString();
+    }
+    
+    public String asString() {
         return Joiner.on(".").join(identifiers);
     }
 }

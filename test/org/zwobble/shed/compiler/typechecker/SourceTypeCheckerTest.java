@@ -1,10 +1,8 @@
 package org.zwobble.shed.compiler.typechecker;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Test;
-import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.errors.HasErrors;
 import org.zwobble.shed.compiler.parsing.nodes.BooleanLiteralNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
@@ -14,15 +12,11 @@ import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.StatementNode;
 import org.zwobble.shed.compiler.typechecker.errors.NotCallableError;
 import org.zwobble.shed.compiler.types.CoreTypes;
-import org.zwobble.shed.compiler.types.Type;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.zwobble.shed.compiler.CompilerTesting.errorStrings;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
-import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 
 public class SourceTypeCheckerTest {
     private final TypeCheckerTestFixture fixture = TypeCheckerTestFixture.build();
@@ -35,30 +29,6 @@ public class SourceTypeCheckerTest {
             asList((StatementNode)Nodes.immutableVar("x", new BooleanLiteralNode(true)))
         );
         assertThat(typeCheck(source), isSuccess());
-    }
-    
-    @Test public void
-    publicStatementIsAddedToGlobal() {
-        SourceNode source = new SourceNode(
-            new PackageDeclarationNode(asList("shed", "example")),
-            Collections.<ImportNode>emptyList(),
-            asList((StatementNode)Nodes.publik(Nodes.immutableVar("x", new BooleanLiteralNode(true))))
-        );
-        typeCheck(source);
-        assertThat(fixture.context().lookupGlobal(fullyQualifiedName("shed", "example", "x")), is(Option.<Type>some(CoreTypes.BOOLEAN)));
-    }
-    
-    @Test public void
-    sourceNodeMayHaveNoMoreThanOnePublicNode() {
-        SourceNode source = new SourceNode(
-            new PackageDeclarationNode(asList("shed", "example")),
-            Collections.<ImportNode>emptyList(),
-            Arrays.<StatementNode>asList(
-                Nodes.publik(Nodes.immutableVar("x", new BooleanLiteralNode(true))),
-                Nodes.publik(Nodes.immutableVar("y", new BooleanLiteralNode(true)))
-            )
-        );
-        assertThat(errorStrings(typeCheck(source)), is(asList("A module may have no more than one public value")));
     }
     
     @Test public void

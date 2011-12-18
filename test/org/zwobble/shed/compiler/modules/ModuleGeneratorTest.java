@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
+import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
@@ -23,6 +24,7 @@ public class ModuleGeneratorTest {
     
     @Test public void
     moduleGeneratedForEachSourceWithPublicNode() {
+        FunctionDeclarationNode declaration = Nodes.func("go", Nodes.noFormalArguments(), Nodes.id("Unit"), Nodes.block());
         assertThat(
             generate(
                 Nodes.source(
@@ -30,11 +32,11 @@ public class ModuleGeneratorTest {
                     noImports,
                     asList(
                         Nodes.immutableVar("x", Nodes.bool(false)),
-                        Nodes.publik(Nodes.func("go", Nodes.noFormalArguments(), Nodes.id("Unit"), Nodes.block()))
+                        Nodes.publik(declaration)
                     )
                 )
             ),
-            isSuccessWithValue(Modules.build(Module.create(fullyQualifiedName("shed", "example", "go"))))
+            isSuccessWithValue(Modules.build(Module.create(fullyQualifiedName("shed", "example", "go"), declaration)))
         );
     }
     

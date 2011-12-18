@@ -1,6 +1,7 @@
 package org.zwobble.shed.compiler;
 
 import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
+import org.zwobble.shed.compiler.modules.Modules;
 import org.zwobble.shed.compiler.parsing.nodes.EntireSourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.referenceresolution.References;
@@ -39,7 +40,8 @@ public class TypeCheckingStage implements CompilerStage {
         MetaClasses metaClasses = data.get(CompilationDataKeys.metaClasses);
         StaticContext context = data.get(CompilationDataKeys.staticContext);
         References references = data.get(CompilationDataKeys.references);
-        Injector typeCheckerInjector = TypeCheckerInjector.build(types, metaClasses, context, references);
+        Modules modules = data.get(CompilationDataKeys.modules);
+        Injector typeCheckerInjector = TypeCheckerInjector.build(types, metaClasses, context, references, modules);
         SourceTypeChecker sourceTypeChecker = typeCheckerInjector.getInstance(SourceTypeChecker.class);
         return sourceTypeChecker;
     }
