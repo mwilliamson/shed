@@ -1,13 +1,16 @@
 package org.zwobble.shed.compiler;
 
+import java.util.Iterator;
+
 import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 @EqualsAndHashCode
 @ToString
-public class Option<T> {
+public class Option<T> implements Iterable<T> {
     private final boolean hasValue;
     private final T value;
 
@@ -43,6 +46,15 @@ public class Option<T> {
             return some(function.apply(value));
         } else {
             return none();
+        }
+    }
+    
+    @Override
+    public Iterator<T> iterator() {
+        if (hasValue) {
+            return Iterators.singletonIterator(value);
+        } else {
+            return Iterators.emptyIterator();
         }
     }
     

@@ -2,10 +2,16 @@ package org.zwobble.shed.compiler.util;
 
 import java.util.Iterator;
 
+import org.zwobble.shed.compiler.Option;
+
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.UnmodifiableIterator;
+
+import static org.zwobble.shed.compiler.Option.none;
+
+import static org.zwobble.shed.compiler.Option.some;
 
 import static org.zwobble.shed.compiler.util.Pair.pair;
 
@@ -21,6 +27,15 @@ public class ShedIterables {
     
     public static <T> T first(Iterable<T> iterable) {
         return iterable.iterator().next();
+    }
+    
+    public static <T> Option<T> firstOrNone(Iterable<T> iterable) {
+        Iterator<T> iterator = iterable.iterator();
+        if (iterator.hasNext()) {
+            return some(iterator.next());
+        } else {
+            return none();
+        }
     }
     
     public static <F, T extends F> Iterable<T> safeCast(final Iterable<F> iterable, final Class<T> to) {
