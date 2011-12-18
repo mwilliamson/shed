@@ -13,6 +13,7 @@ import org.zwobble.shed.compiler.errors.CompilerError;
 import org.zwobble.shed.compiler.errors.HasErrors;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
 
 import static java.util.Arrays.asList;
 
@@ -20,6 +21,10 @@ import static java.util.Arrays.asList;
 @EqualsAndHashCode
 @AllArgsConstructor(staticName="typeResultWithValue")
 public class TypeResultWithValue<T> implements TypeResult<T> {
+    public static <T> TypeResultWithValue<T> build(T value, Iterable<CompilerError> errors) {
+        return new TypeResultWithValue<T>(value, ImmutableList.copyOf(errors));
+    }
+    
     public static <T> TypeResultWithValue<T> success(T value) {
         return new TypeResultWithValue<T>(value, Collections.<CompilerError>emptyList());
     }
@@ -78,6 +83,11 @@ public class TypeResultWithValue<T> implements TypeResult<T> {
     public <R> TypeResult<R> ifValueThen(Function<T, TypeResult<R>> function) {
         TypeResult<R> result = function.apply(value);
         return result.withErrorsFrom(this);
+    }
+    
+    public <R> TypeResultWithValue<R> map(Function<T, R> function) {
+        R result = function.apply(value);
+        return TypeResults.build(result, errors);
     }
     
     @Override

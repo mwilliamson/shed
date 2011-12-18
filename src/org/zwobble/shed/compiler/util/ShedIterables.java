@@ -4,15 +4,12 @@ import java.util.Iterator;
 
 import org.zwobble.shed.compiler.Option;
 
-
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.UnmodifiableIterator;
 
 import static org.zwobble.shed.compiler.Option.none;
-
 import static org.zwobble.shed.compiler.Option.some;
-
 import static org.zwobble.shed.compiler.util.Pair.pair;
 
 

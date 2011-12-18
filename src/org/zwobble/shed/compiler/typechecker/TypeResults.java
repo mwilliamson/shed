@@ -12,6 +12,10 @@ import static org.zwobble.shed.compiler.typechecker.TypeResultWithValue.typeResu
 import static org.zwobble.shed.compiler.typechecker.TypeResultWithoutValue.typeResultWithoutValue;
 
 public class TypeResults {
+    public static <T> TypeResultWithValue<T> build(T value, Iterable<CompilerError> errors) {
+        return TypeResultWithValue.build(value, errors);
+    }
+    
     public static <T> TypeResultWithValue<T> success(T value) {
         return TypeResultWithValue.success(value);
     }

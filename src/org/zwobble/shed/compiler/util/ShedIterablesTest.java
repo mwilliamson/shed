@@ -3,13 +3,12 @@ package org.zwobble.shed.compiler.util;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
-import static org.zwobble.shed.compiler.util.Triple.triple;
-
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.zwobble.shed.compiler.util.Pair.pair;
+import static org.zwobble.shed.compiler.util.Triple.triple;
 
 @SuppressWarnings("unchecked")
 public class ShedIterablesTest {
