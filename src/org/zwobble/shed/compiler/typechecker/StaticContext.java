@@ -59,6 +59,7 @@ public class StaticContext {
         return getValueInfoFor(declaration).map(toType());
     }
 
+    @Deprecated
     public void addGlobal(FullyQualifiedName name, Type type) {
         global.put(name, type);
     }
