@@ -18,7 +18,9 @@ object banana : ToStringable {
     }
 }
 
-sys.print(Person("Bob").toString());
-sys.print("\n");
-sys.print(banana.toString());
-sys.print("\n");
+public fun main() : Unit {
+    sys.print(Person("Bob").toString());
+    sys.print("\n");
+    sys.print(banana.toString());
+    sys.print("\n");
+}

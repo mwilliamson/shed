@@ -59,7 +59,7 @@ public class ShedCompiler {
         this.platformSlug = platformSlug;
     }
     
-    public CompilationResult compile(FileSource fileSource) {
+    public CompilationResult compile(FileSource fileSource, String mainFunction) {
         MetaClasses metaClasses = MetaClasses.create();
         BuiltIns builtIns = new BuiltIns();
         StaticContext context = new StaticContext(metaClasses);
@@ -71,6 +71,7 @@ public class ShedCompiler {
         
         CompilationResult results = compileShedFiles(fileSource, metaClasses, builtIns, context);
         output.append(results.output());
+        output.append("SHED." + mainFunction + "();\n");
         String optimisedJavaScript = javaScriptOptimiser.optimise(output.toString());
         return new CompilationResult(results.errors(), optimisedJavaScript);
     }

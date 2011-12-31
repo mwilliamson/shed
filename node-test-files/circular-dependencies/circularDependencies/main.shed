@@ -22,4 +22,6 @@ class No() {
     }
 }
 
-sys.print(Yes().invert().invert().invert().toString());
+public fun main() : Unit {
+    sys.print(Yes().invert().invert().invert().toString());
+}

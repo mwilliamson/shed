@@ -12,6 +12,6 @@ fun fib(x: Double) : Double {
     return fib(x.subtract(1)).add(fib(x.subtract(2)));
 }
 
-sys.print(fib(10).toString());
-
-
+public fun main() : Unit {
+    sys.print(fib(10).toString());
+}

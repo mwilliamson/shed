@@ -22,6 +22,6 @@ public class ShedToNodeJsCompiler {
     
     public static CompilationResult compile(File sourceDirectory, String target) {
         FileSource fileSource = DelegatingFileSource.create(ResourceFileSource.create(), DirectoryFileSource.create(sourceDirectory));
-        return compiler.compile(fileSource);
+        return compiler.compile(fileSource, target);
     }
 }

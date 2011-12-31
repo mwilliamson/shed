@@ -16,4 +16,6 @@ class Empty() {
 //     return this;
 // while retaining explicit references?
 
-sys.print(Empty().toString());
+public fun main() : Unit {
+    sys.print(Empty().toString());
+}

@@ -17,27 +17,27 @@ import static org.zwobble.shed.compiler.nodetest.NodeTesting.isSuccessWithOutput
 public class NodeTests {
     @Test
     public void canCalculateFibonacciNumbersAndPrintResult() {
-        assertThat(compileAndExecute("fibonacci", "main"), isSuccessWithOutput("55"));
+        assertThat(compileAndExecute("fibonacci", "fib.main"), isSuccessWithOutput("55"));
     }
     
     @Test
     public void classesAndObjectsCanImplementAnInterface() {
-        assertThat(compileAndExecute("interfaces", "main"), isSuccessWithOutput("Bob\nBanana\n"));
+        assertThat(compileAndExecute("interfaces", "interfacesTest.main"), isSuccessWithOutput("Bob\nBanana\n"));
     }
     
     @Test
     public void classesCanReferenceThemselves() {
-        assertThat(compileAndExecute("self-references", "main"), isSuccessWithOutput("nothing to see here"));
+        assertThat(compileAndExecute("self-references", "selfReferences.main"), isSuccessWithOutput("nothing to see here"));
     }
     
     @Test
     public void classesCanHaveCircularDependencies() {
-        assertThat(compileAndExecute("circular-dependencies", "main"), isSuccessWithOutput("No"));
+        assertThat(compileAndExecute("circular-dependencies", "circularDependencies.main"), isSuccessWithOutput("No"));
     }
     
     @Test
     public void filesAreLoadedInDependencyOrder() {
-        assertThat(compileAndExecute("multiple-files", "main"), isSuccessWithOutput("A"));
+        assertThat(compileAndExecute("multiple-files", "multipleFiles.main"), isSuccessWithOutput("A"));
     }
     
     private NodeExecutionResult compileAndExecute(String directory, String main) {

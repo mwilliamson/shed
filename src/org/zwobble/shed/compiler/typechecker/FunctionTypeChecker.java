@@ -59,7 +59,7 @@ public class FunctionTypeChecker {
                 TypeResultWithValue<StatementTypeCheckResult> blockResult = typeCheckBlock(function.getBody(), some(returnType));
                 result.addErrors(blockResult);
                 
-                if (!blockResult.get().hasReturned()) {
+                if (!blockResult.get().hasReturned() && !returnType.equals(CoreTypes.UNIT)) {
                     result.addErrors(TypeResults.<Type>failure(error(
                         function,
                         new MissingReturnStatementError()

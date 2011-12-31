@@ -6,4 +6,6 @@ import multipleFiles.ContrivedClassB;
 val b = ContrivedClassB();
 val a = b.giveMeAnA();
 
-sys.print(a.toString());
+public fun main() : Unit {
+    sys.print(a.toString());
+}
