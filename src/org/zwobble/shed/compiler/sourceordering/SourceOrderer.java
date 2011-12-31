@@ -80,8 +80,7 @@ public class SourceOrderer {
 
     private Option<SourceNode> findSource(EntireSourceNode sourceNodes, ImportNode importNode) {
         Option<Module> module = modules.lookup(fullyQualifiedName(importNode.getNames()));
-        if (module.hasValue()) {
-            // TODO: handle other types of module
+        if (module.hasValue() && module.get() instanceof SourceModule) {
             return some(((SourceModule)module.get()).getSource());
         } else {
             return none();

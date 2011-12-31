@@ -7,8 +7,9 @@ import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.modules.Module;
-import org.zwobble.shed.compiler.modules.SourceModule;
 import org.zwobble.shed.compiler.modules.Modules;
+import org.zwobble.shed.compiler.modules.SimpleModule;
+import org.zwobble.shed.compiler.modules.SourceModule;
 import org.zwobble.shed.compiler.parsing.nodes.EntireSourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
@@ -27,6 +28,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
+import static org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration.globalDeclaration;
 import static org.zwobble.shed.compiler.typechecker.TypeResultMatchers.isSuccessWithValue;
 
 public class SourceOrdererTest {
@@ -61,6 +63,14 @@ public class SourceOrdererTest {
                 ))
             )
         );
+    }
+    
+    @Test public void
+    preCompiledModulesAreTreatedAsSatisfiedDependencies() {
+        SourceNode dependent = source(asList("Song"), noName);
+        SourceNode dependency = source(asList("List"), some("Song"));
+        modules.add(SimpleModule.create(fullyQualifiedName("shed", "example", "List"), globalDeclaration("shed", "example", "List")));
+        assertThat(reorder(Nodes.sources(dependent, dependency)), isOrder(dependency, dependent));
     }
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
