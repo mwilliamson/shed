@@ -25,18 +25,17 @@ public class ModuleGeneratorTest {
     @Test public void
     moduleGeneratedForEachSourceWithPublicNode() {
         FunctionDeclarationNode declaration = Nodes.func("go", Nodes.noFormalArguments(), Nodes.id("Unit"), Nodes.block());
+        SourceNode source = Nodes.source(
+            Nodes.packageDeclaration("shed", "example"),
+            noImports,
+            asList(
+                Nodes.immutableVar("x", Nodes.bool(false)),
+                Nodes.publik(declaration)
+            )
+        );
         assertThat(
-            generate(
-                Nodes.source(
-                    Nodes.packageDeclaration("shed", "example"),
-                    noImports,
-                    asList(
-                        Nodes.immutableVar("x", Nodes.bool(false)),
-                        Nodes.publik(declaration)
-                    )
-                )
-            ),
-            isSuccessWithValue(Modules.build(Module.create(fullyQualifiedName("shed", "example", "go"), declaration)))
+            generate(source),
+            isSuccessWithValue(Modules.build(Module.create(fullyQualifiedName("shed", "example", "go"), declaration, source)))
         );
     }
     

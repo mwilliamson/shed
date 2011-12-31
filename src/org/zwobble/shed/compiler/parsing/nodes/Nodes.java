@@ -1,13 +1,13 @@
 package org.zwobble.shed.compiler.parsing.nodes;
 
-import static java.util.Arrays.asList;
-import static org.zwobble.shed.compiler.Option.none;
-import static org.zwobble.shed.compiler.Option.some;
-
 import java.util.Collections;
 import java.util.List;
 
 import org.zwobble.shed.compiler.Option;
+
+import static java.util.Arrays.asList;
+import static org.zwobble.shed.compiler.Option.none;
+import static org.zwobble.shed.compiler.Option.some;
 
 public class Nodes {
     public static VariableIdentifierNode id(String identifier) {
@@ -144,6 +144,10 @@ public class Nodes {
 
     public static SourceNode source(PackageDeclarationNode packageDeclaration, List<ImportNode> imports, List<StatementNode> statements) {
         return new SourceNode(packageDeclaration, imports, statements);
+    }
+    
+    public static EntireSourceNode sources(SourceNode... sources) {
+        return new EntireSourceNode(asList(sources));
     }
 
     public static FunctionDeclarationNode func(String identifier, List<FormalArgumentNode> formalArguments, ExpressionNode returnType, BlockNode body) {

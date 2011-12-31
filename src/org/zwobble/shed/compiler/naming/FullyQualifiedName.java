@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 
 import lombok.Data;
 
@@ -18,8 +19,8 @@ public class FullyQualifiedName {
         return fullyQualifiedName(asList(identifiers));
     }
     
-    public static FullyQualifiedName fullyQualifiedName(List<String> identifiers) {
-        return new FullyQualifiedName(identifiers);
+    public static FullyQualifiedName fullyQualifiedName(Iterable<String> identifiers) {
+        return new FullyQualifiedName(ImmutableList.copyOf(identifiers));
     }
     
     private final List<String> identifiers;

@@ -50,7 +50,7 @@ public class ImportStatementTypeCheckerTest {
         GlobalDeclaration declaration = globalDeclaration(dateTimeName);
         staticContext.addClass(declaration, dateTime, ScalarTypeInfo.EMPTY);
         Type dateTimeMetaClass = metaClasses.metaClassOf(dateTime);
-        Modules modules = Modules.build(Module.create(dateTimeName, declaration));
+        Modules modules = Modules.build(Module.create(dateTimeName, declaration, null));
         
         assertThat(typeCheckImportStatement(importStatement, modules), is(isSuccess()));
         assertThat(staticContext.getValueInfoFor(importStatement), is(some(unassignableValue(dateTimeMetaClass))));
@@ -71,7 +71,7 @@ public class ImportStatementTypeCheckerTest {
         
         FullyQualifiedName dateTimeName = fullyQualifiedName("shed", "time", "DateTime");
         GlobalDeclaration declaration = globalDeclaration(dateTimeName);
-        Modules modules = Modules.build(Module.create(dateTimeName, declaration));
+        Modules modules = Modules.build(Module.create(dateTimeName, declaration, null));
         
         assertThat(
             typeCheckImportStatement(importStatement, modules),

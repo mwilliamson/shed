@@ -5,12 +5,15 @@ import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.zwobble.shed.compiler.Results;
 
+import static org.hamcrest.Matchers.is;
+
 public class TypeResultMatchers {
-    public static <T> Matcher<TypeResult<T>> isSuccessWithValue(final T value) {
+    public static <T> Matcher<TypeResult<T>> isSuccessWithValue(final Matcher<T> valueMatcher) {
         return new TypeSafeDiagnosingMatcher<TypeResult<T>>() {
             @Override
             public void describeTo(Description description) {
-                description.appendText("Success with value " + value);
+                description.appendText("Success with value ");
+                valueMatcher.describeTo(description);
             }
 
             @Override
@@ -23,12 +26,17 @@ public class TypeResultMatchers {
                     mismatchDescription.appendText("result had no value");
                     return false;
                 }
-                if (!item.getOrThrow().equals(value)) {
-                    mismatchDescription.appendText("value was " + item.getOrThrow());
+                if (!valueMatcher.matches(item.getOrThrow())) {
+                    valueMatcher.describeMismatch(item.getOrThrow(), mismatchDescription);
                     return false;
                 }
                 return true;
             }
         };
+    }
+
+    
+    public static <T> Matcher<TypeResult<T>> isSuccessWithValue(final T value) {
+        return isSuccessWithValue(is(value));
     }
 }

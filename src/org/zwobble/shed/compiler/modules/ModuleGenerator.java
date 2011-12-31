@@ -30,19 +30,19 @@ public class ModuleGenerator {
     }
 
     private TypeResultWithValue<Option<Module>> toModule(SourceNode sourceNode) {
-        List<String> packageNames = sourceNode.getPackageDeclaration().getPackageNames();
         Iterable<PublicDeclarationNode> publicDeclarations = filter(sourceNode.getStatements(), PublicDeclarationNode.class);
         Iterable<CompilerError> errors = transform(skip(publicDeclarations, 1), toError());
         Option<PublicDeclarationNode> publicDeclaration = firstOrNone(publicDeclarations);
-        Option<Module> module = publicDeclaration.map(publicDeclarationToModule(packageNames));
+        Option<Module> module = publicDeclaration.map(publicDeclarationToModule(sourceNode));
         return TypeResults.build(module, errors);
     }
 
-    private Module toModule(PublicDeclarationNode publicDeclaration, List<String> packageNames) {
+    private Module toModule(PublicDeclarationNode publicDeclaration, SourceNode sourceNode) {
+        List<String> packageNames = sourceNode.getPackageDeclaration().getPackageNames();
         DeclarationNode declaration = publicDeclaration.getDeclaration();
         String identifier = declaration.getIdentifier();
         FullyQualifiedName name = fullyQualifiedName(ImmutableList.copyOf(concat(packageNames, singleton(identifier))));
-        return Module.create(name, declaration);
+        return Module.create(name, declaration, sourceNode);
     }
 
     private Function<SourceNode, TypeResultWithValue<Option<Module>>> sourceToModule() {
@@ -54,11 +54,11 @@ public class ModuleGenerator {
         };
     }
 
-    private Function<PublicDeclarationNode, Module> publicDeclarationToModule(final List<String> packageNames) {
+    private Function<PublicDeclarationNode, Module> publicDeclarationToModule(final SourceNode sourceNode) {
         return new Function<PublicDeclarationNode, Module>() {
             @Override
             public Module apply(PublicDeclarationNode input) {
-                return toModule(input, packageNames);
+                return toModule(input, sourceNode);
             }
         };
     }
