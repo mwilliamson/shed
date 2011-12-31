@@ -1,6 +1,7 @@
 package multipleFiles;
 
 import shed.sys;
+import multipleFiles.ContrivedClassB;
 
 val b = ContrivedClassB();
 val a = b.giveMeAnA();

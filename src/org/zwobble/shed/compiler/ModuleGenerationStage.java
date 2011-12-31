@@ -9,7 +9,7 @@ public class ModuleGenerationStage implements CompilerStage {
     @Override
     public CompilerStageResult execute(CompilationData data) {
         ModuleGenerator moduleGenerator = new ModuleGenerator();
-        EntireSourceNode sourceNodes = data.get(CompilationDataKeys.sourceNodes);
+        EntireSourceNode sourceNodes = data.get(CompilationDataKeys.unorderedSourceNodes);
         TypeResultWithValue<Modules> modules = moduleGenerator.generateModules(sourceNodes);
         CompilerStageResult result = CompilerStageResult.create(modules.getErrors());
         result.add(CompilationDataKeys.modules, modules.get());

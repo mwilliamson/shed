@@ -16,6 +16,7 @@ public class CompilationDataKeys {
     public static final CompilationDataKey<Iterable<String>> sourceStrings = CompilationDataKey.key();
     public static final CompilationDataKey<Iterable<TokenisedSource>> tokenisedSources = CompilationDataKey.key();
     public static final CompilationDataKey<NodeLocations> nodeLocations = CompilationDataKey.key();
+    public static final CompilationDataKey<EntireSourceNode> unorderedSourceNodes = CompilationDataKey.key();
     public static final CompilationDataKey<EntireSourceNode> sourceNodes = CompilationDataKey.key();
     public static final CompilationDataKey<BuiltIns> builtIns = CompilationDataKey.key();
     public static final CompilationDataKey<StaticContext> staticContext = CompilationDataKey.key();

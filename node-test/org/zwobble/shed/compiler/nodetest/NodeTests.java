@@ -5,7 +5,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilationResult;
 import org.zwobble.shed.compiler.nodejs.ShedToNodeJsCompiler;
@@ -36,7 +35,6 @@ public class NodeTests {
         assertThat(compileAndExecute("circular-dependencies", "main"), isSuccessWithOutput("No"));
     }
     
-    @Ignore
     @Test
     public void filesAreLoadedInDependencyOrder() {
         assertThat(compileAndExecute("multiple-files", "main"), isSuccessWithOutput("A"));

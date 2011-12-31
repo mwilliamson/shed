@@ -146,11 +146,12 @@ public class ShedCompiler {
         return asList(
             new TokeniserStage(),
             new ParserStage(),
+            new ModuleGenerationStage(),
+            new SourceReorderingStage(),
             new ReferenceResolutionStage(),
             new NameGenerationStage(),
             new TypeGenerationStage(),
             new TypeBindingStage(),
-            new ModuleGenerationStage(),
             new TypeCheckingStage(),
             new DependencyCheckingStage(),
             new JavaScriptGenerationStage(moduleWrapper),

@@ -33,7 +33,7 @@ public class ParserStage implements CompilerStage {
         
         CompilerStageResult result = CompilerStageResult.create(errors(parseResults));
         result.add(CompilationDataKeys.nodeLocations, nodeLocations(parseResults));
-        result.add(CompilationDataKeys.sourceNodes, sourceNodes(parseResults));
+        result.add(CompilationDataKeys.unorderedSourceNodes, sourceNodes(parseResults));
         return result;
     }
 
