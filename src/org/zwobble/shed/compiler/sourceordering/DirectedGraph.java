@@ -53,7 +53,7 @@ public class DirectedGraph<T> {
         }
     }
     
-    public class Visitor {
+    private class Visitor {
         private final Set<T> visited = Sets.newHashSet();
         private final List<T> visiting = Lists.newArrayList();
         private final List<T> ordered = Lists.newArrayList();
