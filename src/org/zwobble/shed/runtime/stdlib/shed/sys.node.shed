@@ -4,5 +4,5 @@ import shed.javascript.NodeJavaScriptImporter;
 
 public object sys {
     val importer = NodeJavaScriptImporter();
-    public val print = importer.importValueFromModule[Function[String, Unit]]("sys", "print");
+    public val print = importer.importValueFromModule[Function[String, Unit]]("util", "print");
 }
