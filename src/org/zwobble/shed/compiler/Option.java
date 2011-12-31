@@ -41,7 +41,7 @@ public class Option<T> implements Iterable<T> {
         return value;
     }
     
-    public <R> Option<R> map(Function<T, R> function) {
+    public <R> Option<R> map(Function<? super T, R> function) {
         if (hasValue) {
             return some(function.apply(value));
         } else {

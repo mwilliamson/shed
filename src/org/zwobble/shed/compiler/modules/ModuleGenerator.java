@@ -5,23 +5,18 @@ import java.util.List;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.errors.CompilerError;
 import org.zwobble.shed.compiler.errors.CompilerErrorWithSyntaxNode;
-import org.zwobble.shed.compiler.naming.FullyQualifiedName;
-import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.typechecker.TypeResultWithValue;
 import org.zwobble.shed.compiler.typechecker.TypeResults;
 
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
 
+import static com.google.common.base.Functions.constant;
 import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.skip;
 import static com.google.common.collect.Iterables.transform;
-import static java.util.Collections.singleton;
-import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
-import static org.zwobble.shed.compiler.util.ShedIterables.firstOrNone;
 
 public class ModuleGenerator {
     public TypeResultWithValue<Modules> generateModules(Iterable<SourceNode> sourceNodes) {
@@ -32,17 +27,8 @@ public class ModuleGenerator {
     private TypeResultWithValue<Option<Module>> toModule(SourceNode sourceNode) {
         Iterable<PublicDeclarationNode> publicDeclarations = filter(sourceNode.getStatements(), PublicDeclarationNode.class);
         Iterable<CompilerError> errors = transform(skip(publicDeclarations, 1), toError());
-        Option<PublicDeclarationNode> publicDeclaration = firstOrNone(publicDeclarations);
-        Option<Module> module = publicDeclaration.map(publicDeclarationToModule(sourceNode));
+        Option<Module> module = sourceNode.getPublicDeclaration().map(constant((Module)SourceModule.create(sourceNode)));
         return TypeResults.build(module, errors);
-    }
-
-    private Module toModule(PublicDeclarationNode publicDeclaration, SourceNode sourceNode) {
-        List<String> packageNames = sourceNode.getPackageDeclaration().getPackageNames();
-        DeclarationNode declaration = publicDeclaration.getDeclaration();
-        String identifier = declaration.getIdentifier();
-        FullyQualifiedName name = fullyQualifiedName(ImmutableList.copyOf(concat(packageNames, singleton(identifier))));
-        return Module.create(name, declaration, sourceNode);
     }
 
     private Function<SourceNode, TypeResultWithValue<Option<Module>>> sourceToModule() {
@@ -50,15 +36,6 @@ public class ModuleGenerator {
             @Override
             public TypeResultWithValue<Option<Module>> apply(SourceNode input) {
                 return toModule(input);
-            }
-        };
-    }
-
-    private Function<PublicDeclarationNode, Module> publicDeclarationToModule(final SourceNode sourceNode) {
-        return new Function<PublicDeclarationNode, Module>() {
-            @Override
-            public Module apply(PublicDeclarationNode input) {
-                return toModule(input, sourceNode);
             }
         };
     }

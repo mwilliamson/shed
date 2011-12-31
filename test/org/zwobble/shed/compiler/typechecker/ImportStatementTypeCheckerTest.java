@@ -2,8 +2,8 @@ package org.zwobble.shed.compiler.typechecker;
 
 import org.junit.Test;
 import org.zwobble.shed.compiler.metaclassgeneration.MetaClasses;
-import org.zwobble.shed.compiler.modules.Module;
 import org.zwobble.shed.compiler.modules.Modules;
+import org.zwobble.shed.compiler.modules.SimpleModule;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
@@ -50,7 +50,7 @@ public class ImportStatementTypeCheckerTest {
         GlobalDeclaration declaration = globalDeclaration(dateTimeName);
         staticContext.addClass(declaration, dateTime, ScalarTypeInfo.EMPTY);
         Type dateTimeMetaClass = metaClasses.metaClassOf(dateTime);
-        Modules modules = Modules.build(Module.create(dateTimeName, declaration, null));
+        Modules modules = Modules.build(SimpleModule.create(dateTimeName, declaration));
         
         assertThat(typeCheckImportStatement(importStatement, modules), is(isSuccess()));
         assertThat(staticContext.getValueInfoFor(importStatement), is(some(unassignableValue(dateTimeMetaClass))));
@@ -71,7 +71,7 @@ public class ImportStatementTypeCheckerTest {
         
         FullyQualifiedName dateTimeName = fullyQualifiedName("shed", "time", "DateTime");
         GlobalDeclaration declaration = globalDeclaration(dateTimeName);
-        Modules modules = Modules.build(Module.create(dateTimeName, declaration, null));
+        Modules modules = Modules.build(SimpleModule.create(dateTimeName, declaration));
         
         assertThat(
             typeCheckImportStatement(importStatement, modules),

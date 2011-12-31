@@ -8,27 +8,23 @@ import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.errors.CompilerError;
 import org.zwobble.shed.compiler.errors.CompilerErrorWithSyntaxNode;
 import org.zwobble.shed.compiler.modules.Module;
+import org.zwobble.shed.compiler.modules.SourceModule;
 import org.zwobble.shed.compiler.modules.Modules;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.parsing.nodes.EntireSourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
-import org.zwobble.shed.compiler.parsing.nodes.PublicDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.SourceNode;
 import org.zwobble.shed.compiler.typechecker.TypeResult;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
-import static com.google.common.collect.Iterables.concat;
-import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.getLast;
-import static java.util.Collections.singleton;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.typechecker.TypeResults.failure;
 import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
-import static org.zwobble.shed.compiler.util.ShedIterables.firstOrNone;
 
 public class SourceOrderer {
     private final Modules modules;
@@ -64,11 +60,7 @@ public class SourceOrderer {
         return new Function<SourceNode, FullyQualifiedName>() {
             @Override
             public FullyQualifiedName apply(SourceNode input) {
-                // TODO: duplicated from ModuleGenerator
-                Iterable<PublicDeclarationNode> publicDeclarations = filter(input.getStatements(), PublicDeclarationNode.class);
-                Option<PublicDeclarationNode> publicDeclaration = firstOrNone(publicDeclarations);
-                String name = publicDeclaration.get().getDeclaration().getIdentifier();
-                return fullyQualifiedName(concat(input.getPackageDeclaration().getPackageNames(), singleton(name)));
+                return input.name();
             }
         };
     }
@@ -89,7 +81,8 @@ public class SourceOrderer {
     private Option<SourceNode> findSource(EntireSourceNode sourceNodes, ImportNode importNode) {
         Option<Module> module = modules.lookup(fullyQualifiedName(importNode.getNames()));
         if (module.hasValue()) {
-            return some(module.get().getSource());
+            // TODO: handle other types of module
+            return some(((SourceModule)module.get()).getSource());
         } else {
             return none();
         }

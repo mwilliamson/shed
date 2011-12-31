@@ -18,20 +18,18 @@ import static org.zwobble.shed.compiler.util.ShedMaps.getOrNone;
 @ToString
 public class Modules {
     public static Modules build(Iterable<Module> modules) {
-        return new Modules(
-            ShedMaps.toMapWithKeys(modules, useIdentifier())
-        );
+        return new Modules(ShedMaps.toMapWithKeys(modules, useName()));
     }
     
     public static Modules build(Module... modules) {
         return build(asList(modules));
     }
     
-    private static Function<Module, FullyQualifiedName> useIdentifier() {
+    private static Function<Module, FullyQualifiedName> useName() {
         return new Function<Module, FullyQualifiedName>() {
             @Override
             public FullyQualifiedName apply(Module input) {
-                return input.getIdentifier();
+                return input.getName();
             }
         };
     }

@@ -15,7 +15,6 @@ import org.zwobble.shed.compiler.typechecker.TypeResult;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.zwobble.shed.compiler.CompilerTesting.isFailureWithErrors;
-import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.typechecker.TypeResultMatchers.isSuccessWithValue;
 
 public class ModuleGeneratorTest {
@@ -35,7 +34,7 @@ public class ModuleGeneratorTest {
         );
         assertThat(
             generate(source),
-            isSuccessWithValue(Modules.build(Module.create(fullyQualifiedName("shed", "example", "go"), declaration, source)))
+            isSuccessWithValue(Modules.build(SourceModule.create(source)))
         );
     }
     

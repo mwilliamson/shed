@@ -7,8 +7,8 @@ import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.modules.Module;
+import org.zwobble.shed.compiler.modules.SourceModule;
 import org.zwobble.shed.compiler.modules.Modules;
-import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.parsing.nodes.EntireSourceNode;
 import org.zwobble.shed.compiler.parsing.nodes.ImportNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
@@ -77,8 +77,7 @@ public class SourceOrdererTest {
             VariableDeclarationNode declaration = Nodes.immutableVar(name.get(), Nodes.unit());
             StatementNode publicDeclaration = Nodes.publik(declaration);
             SourceNode source = Nodes.source(packageDeclaration, Lists.transform(imports, toImportNode()), asList(publicDeclaration));
-            FullyQualifiedName fullName = FullyQualifiedName.fullyQualifiedName("shed", "example", name.get());
-            modules.add(Module.create(fullName, declaration, source));
+            modules.add(SourceModule.create(source));
             return source;
         } else {
             return Nodes.source(packageDeclaration, Lists.transform(imports, toImportNode()), Collections.<StatementNode>emptyList());
