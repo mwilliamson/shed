@@ -29,7 +29,7 @@ public class InterfaceImplementationCheckerTest {
     private final TypeCheckerTestFixture fixture = TypeCheckerTestFixture.build();
     private final FullyQualifiedName fullyQualifiedName = fullyQualifiedName("shed", "Account");
     private final ClassType type = new ClassType(fullyQualifiedName);
-    private final ClassDeclarationNode declaration = Nodes.clazz("Account", Nodes.noFormalArguments(), Nodes.block());
+    private final ClassDeclarationNode declaration = Nodes.clazz("Account", Nodes.formalArguments(), Nodes.block());
     private final InterfaceType interfaceType = new InterfaceType(fullyQualifiedName("Store"));
     private final Declaration interfaceDeclaration = globalDeclaration("Store");
     private final StaticContext context = fixture.context();

@@ -80,10 +80,10 @@ public class ClassDeclarationTypeCheckerTest {
     classTypeIsBuiltInForwardDeclarationWithMembersThatCanBeTypedWithoutTypingEntireBody() {
         BlockNode body = Nodes.block(
             Nodes.publik(Nodes.immutableVar("firstName", fixture.stringTypeReference(), Nodes.string("Bob"))),
-            Nodes.publik(Nodes.func("close", Nodes.noFormalArguments(), fixture.unitTypeReference(), Nodes.block(Nodes.returnStatement(Nodes.unit())))),
+            Nodes.publik(Nodes.func("close", Nodes.formalArguments(), fixture.unitTypeReference(), Nodes.block(Nodes.returnStatement(Nodes.unit())))),
             Nodes.immutableVar("lastName", fixture.stringTypeReference(), Nodes.string("Bobertson"))
         );
-        ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.noFormalArguments(), body);
+        ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.formalArguments(), body);
         fixture.addType(declaration, type);
         StaticContext context = fixture.context();
         
@@ -102,7 +102,7 @@ public class ClassDeclarationTypeCheckerTest {
         BlockNode body = Nodes.block(
             Nodes.publik(Nodes.immutableVar("firstName", Nodes.string("Bob")))
         );
-        ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.noFormalArguments(), body);
+        ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.formalArguments(), body);
         fixture.addType(declaration, type);
         StaticContext context = fixture.context();
         
@@ -118,7 +118,7 @@ public class ClassDeclarationTypeCheckerTest {
         BlockNode body = Nodes.block(
             Nodes.publik(Nodes.immutableVar("firstName", Nodes.id("Blah"), Nodes.string("Bob")))
         );
-        ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.noFormalArguments(), body);
+        ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.formalArguments(), body);
         fixture.addType(declaration, type);
         
         TypeResult<?> result = forwardDeclare(declaration);
@@ -131,7 +131,7 @@ public class ClassDeclarationTypeCheckerTest {
         BlockNode body = Nodes.block(
             Nodes.immutableVar("firstName", fixture.unitTypeReference(), Nodes.string("Bob"))
         );
-        ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.noFormalArguments(), body);
+        ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.formalArguments(), body);
         fixture.addType(declaration, type);
         forwardDeclare(declaration);
         TypeResult<?> result = typeCheck(declaration);
@@ -175,7 +175,7 @@ public class ClassDeclarationTypeCheckerTest {
         Declaration interfaceDeclaration = globalDeclaration("Store");
         fixture.addReference(interfaceReference, interfaceDeclaration);
         
-        ClassDeclarationNode declaration = Nodes.clazz("Account", Nodes.noFormalArguments(), asList((ExpressionNode)interfaceReference), Nodes.block());
+        ClassDeclarationNode declaration = Nodes.clazz("Account", Nodes.formalArguments(), asList((ExpressionNode)interfaceReference), Nodes.block());
         fixture.addType(declaration, type);
         StaticContext context = fixture.context();
         ScalarType interfaceFunctionType = functionTypeOf(fixture.implementingClassType(), CoreTypes.UNIT);
@@ -191,7 +191,7 @@ public class ClassDeclarationTypeCheckerTest {
     
     @Test public void
     errorIfInterfaceCannotBeFound() {
-        ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.noFormalArguments(), asList((ExpressionNode)Nodes.id("Data")), Nodes.block());
+        ClassDeclarationNode declaration = Nodes.clazz("Person", Nodes.formalArguments(), asList((ExpressionNode)Nodes.id("Data")), Nodes.block());
         fixture.addType(declaration, type);
         forwardDeclare(declaration);
         TypeResult<?> result = typeCheck(declaration);

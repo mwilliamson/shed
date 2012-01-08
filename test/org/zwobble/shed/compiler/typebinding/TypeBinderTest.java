@@ -38,7 +38,7 @@ public class TypeBinderTest {
     
     @Test public void
     typeBinderBindsGeneratedMetaClassForClassDeclarations() {
-        ClassDeclarationNode typeDeclaration = Nodes.clazz("Person", Nodes.noFormalArguments(), Nodes.block());
+        ClassDeclarationNode typeDeclaration = Nodes.clazz("Person", Nodes.formalArguments(), Nodes.block());
         ClassType type = new ClassType(fullyQualifiedName("Person"));
         typeStore.add(typeDeclaration, type);
         

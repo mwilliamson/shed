@@ -14,6 +14,7 @@ import static org.zwobble.shed.compiler.parsing.nodes.structure.ScopedNodes.subS
 @Data
 public class FunctionDeclarationNode implements DeclarationNode, FunctionWithBodyNode, HoistableStatementNode {
     private final String identifier;
+    private final FormalTypeParametersNode formalTypeParameters;
     private final List<FormalArgumentNode> formalArguments;
     private final ExpressionNode returnType;
     private final BlockNode body;
@@ -22,7 +23,7 @@ public class FunctionDeclarationNode implements DeclarationNode, FunctionWithBod
     public SyntaxNodeStructure describeStructure() {
         return SyntaxNodeStructure.build(
             sameScope(asList(returnType)),
-            subScope(concat(formalArguments, asList(body))
+            subScope(concat(formalTypeParameters, formalArguments, asList(body))
         ));
     }
 }

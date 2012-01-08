@@ -23,7 +23,7 @@ public class ModuleGeneratorTest {
     
     @Test public void
     moduleGeneratedForEachSourceWithPublicNode() {
-        FunctionDeclarationNode declaration = Nodes.func("go", Nodes.noFormalArguments(), Nodes.id("Unit"), Nodes.block());
+        FunctionDeclarationNode declaration = Nodes.func("go", Nodes.formalArguments(), Nodes.id("Unit"), Nodes.block());
         SourceNode source = Nodes.source(
             Nodes.packageDeclaration("shed", "example"),
             noImports,
@@ -47,7 +47,7 @@ public class ModuleGeneratorTest {
                     noImports,
                     Arrays.<StatementNode>asList(
                         Nodes.immutableVar("x", Nodes.bool(false)),
-                        Nodes.func("go", Nodes.noFormalArguments(), Nodes.id("Unit"), Nodes.block())
+                        Nodes.func("go", Nodes.formalArguments(), Nodes.id("Unit"), Nodes.block())
                     )
                 )
             ),
@@ -64,7 +64,7 @@ public class ModuleGeneratorTest {
                     noImports,
                     Arrays.<StatementNode>asList(
                         Nodes.publik(Nodes.immutableVar("x", Nodes.bool(false))),
-                        Nodes.publik(Nodes.func("go", Nodes.noFormalArguments(), Nodes.id("Unit"), Nodes.block()))
+                        Nodes.publik(Nodes.func("go", Nodes.formalArguments(), Nodes.id("Unit"), Nodes.block()))
                     )
                 )
             ),

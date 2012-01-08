@@ -80,7 +80,7 @@ public class StatementsTest {
     canDeclareAnEmptyClass() {
         assertThat(
             Statements.statement().parse(tokens("class Browser() { }")),
-            isSuccessWithNode(Nodes.clazz("Browser", Nodes.noFormalArguments(), Nodes.block()))
+            isSuccessWithNode(Nodes.clazz("Browser", Nodes.formalArguments(), Nodes.block()))
         );
     }
     
@@ -96,7 +96,7 @@ public class StatementsTest {
     canDeclareClassWithBody() {
         assertThat(
             Statements.statement().parse(tokens("class Browser() { val version = 42; }")),
-            isSuccessWithNode(Nodes.clazz("Browser", Nodes.noFormalArguments(), Nodes.block(Nodes.immutableVar("version", Nodes.number("42")))))
+            isSuccessWithNode(Nodes.clazz("Browser", Nodes.formalArguments(), Nodes.block(Nodes.immutableVar("version", Nodes.number("42")))))
         );
     }
     
@@ -104,7 +104,7 @@ public class StatementsTest {
     canDeclareClassWithSuperTypes() {
         assertThat(
             Statements.statement().parse(tokens("class Mosaic() <: Browser { }")),
-            isSuccessWithNode(Nodes.clazz("Mosaic", Nodes.noFormalArguments(), asList((ExpressionNode)Nodes.id("Browser")), Nodes.block()))
+            isSuccessWithNode(Nodes.clazz("Mosaic", Nodes.formalArguments(), asList((ExpressionNode)Nodes.id("Browser")), Nodes.block()))
         );
     }
     

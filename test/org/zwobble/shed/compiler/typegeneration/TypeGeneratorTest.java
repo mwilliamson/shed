@@ -24,7 +24,7 @@ public class TypeGeneratorTest {
     
     @Test public void
     typesAreGeneratedForClassDeclarations() {
-        ClassDeclarationNode declarationNode = Nodes.clazz("Song", Nodes.noFormalArguments(), Nodes.block());
+        ClassDeclarationNode declarationNode = Nodes.clazz("Song", Nodes.formalArguments(), Nodes.block());
         FullyQualifiedName name = fullyQualifiedName("shed", "music", "Song");
         names.addFullyQualifiedName(declarationNode, name);
         assertThat(generate(declarationNode), isTypeStoreWith(declarationNode, classTypeWithName(name)));

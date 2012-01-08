@@ -369,7 +369,7 @@ public class ReferenceResolverTest {
     functionDeclarationAddsArgumentsToScope() {
         FormalArgumentNode firstArgument = new FormalArgumentNode("first", Nodes.id("String"));
         VariableIdentifierNode reference = Nodes.id("first");
-        SyntaxNode source = new FunctionDeclarationNode(
+        SyntaxNode source = Nodes.func(
             "go",
             asList(firstArgument, new FormalArgumentNode("second", Nodes.id("Double"))),
             Nodes.id("String"),
@@ -381,7 +381,7 @@ public class ReferenceResolverTest {
     @Test public void
     functionDeclarationCanReferToItself() {
         VariableIdentifierNode functionReference = Nodes.id("now");
-        FunctionDeclarationNode functionDeclaration = new FunctionDeclarationNode(
+        FunctionDeclarationNode functionDeclaration = Nodes.func(
             "now",
             Collections.<FormalArgumentNode>emptyList(),
             Nodes.id("Double"),
@@ -393,9 +393,9 @@ public class ReferenceResolverTest {
     @Test public void
     functionDeclarationsArePulledToTheTopOfBlock() {
         ReturnNode returnNode = new ReturnNode(Nodes.number("42"));
-        FunctionDeclarationNode functionDeclaration = new FunctionDeclarationNode(
+        FunctionDeclarationNode functionDeclaration = Nodes.func(
             "magic",
-            Collections.<FormalArgumentNode>emptyList(),
+            Nodes.formalArguments(),
             new VariableIdentifierNode("Double"),
             Nodes.block(returnNode)
         );

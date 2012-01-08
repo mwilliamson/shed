@@ -1,12 +1,9 @@
 package org.zwobble.shed.compiler.typechecker;
 
-import java.util.Collections;
-
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilerTesting;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
-import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
@@ -136,9 +133,9 @@ public class TypeCheckerTest {
     
     @Test public void
     functionDeclarationAddsFunctionTypeToScope() {
-        FunctionDeclarationNode functionDeclaration = new FunctionDeclarationNode(
+        FunctionDeclarationNode functionDeclaration = Nodes.func(
             "now",
-            Collections.<FormalArgumentNode>emptyList(),
+            Nodes.formalArguments(),
             fixture.stringTypeReference(),
             Nodes.block(Nodes.returnStatement(Nodes.string("Hello")))
         );
@@ -150,9 +147,9 @@ public class TypeCheckerTest {
     
     @Test public void
     functionDeclarationBodyIsTypeChecked() {
-        FunctionDeclarationNode functionDeclaration = new FunctionDeclarationNode(
+        FunctionDeclarationNode functionDeclaration = Nodes.func(
             "now",
-            Collections.<FormalArgumentNode>emptyList(),
+            Nodes.formalArguments(),
             fixture.stringTypeReference(),
             Nodes.block(Nodes.returnStatement(Nodes.bool(true)))
         );
@@ -163,9 +160,9 @@ public class TypeCheckerTest {
     @Test public void
     functionDeclarationCanCallItself() {
         VariableIdentifierNode functionReference = Nodes.id("now");
-        FunctionDeclarationNode functionDeclaration = new FunctionDeclarationNode(
+        FunctionDeclarationNode functionDeclaration = Nodes.func(
             "now",
-            Collections.<FormalArgumentNode>emptyList(),
+            Nodes.formalArguments(),
             fixture.stringTypeReference(),
             Nodes.block(Nodes.returnStatement(Nodes.call(functionReference)))
         );
@@ -182,16 +179,16 @@ public class TypeCheckerTest {
         VariableIdentifierNode secondFunctionReference = Nodes.id("second");
         VariableIdentifierNode thirdFunctionReference = Nodes.id("third");
         
-        FunctionDeclarationNode firstFunctionDeclaration = new FunctionDeclarationNode(
-            "first", Collections.<FormalArgumentNode>emptyList(), fixture.stringTypeReference(),
+        FunctionDeclarationNode firstFunctionDeclaration = Nodes.func(
+            "first", Nodes.formalArguments(), fixture.stringTypeReference(),
             Nodes.block(Nodes.returnStatement(Nodes.call(secondFunctionReference)))
         );
-        FunctionDeclarationNode secondFunctionDeclaration = new FunctionDeclarationNode(
-            "second", Collections.<FormalArgumentNode>emptyList(), fixture.stringTypeReference(),
+        FunctionDeclarationNode secondFunctionDeclaration = Nodes.func(
+            "second", Nodes.formalArguments(), fixture.stringTypeReference(),
             Nodes.block(Nodes.returnStatement(Nodes.call(thirdFunctionReference)))
         );
-        FunctionDeclarationNode thirdFunctionDeclaration = new FunctionDeclarationNode(
-            "third", Collections.<FormalArgumentNode>emptyList(), fixture.stringTypeReference(),
+        FunctionDeclarationNode thirdFunctionDeclaration = Nodes.func(
+            "third", Nodes.formalArguments(), fixture.stringTypeReference(),
             Nodes.block(Nodes.returnStatement(Nodes.call(firstFunctionReference)))
         );
         fixture.addReference(firstFunctionReference, firstFunctionDeclaration);

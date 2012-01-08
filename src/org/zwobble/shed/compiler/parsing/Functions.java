@@ -1,5 +1,6 @@
 package org.zwobble.shed.compiler.parsing;
 
+import java.util.Collections;
 import java.util.List;
 
 import lombok.Data;
@@ -7,6 +8,8 @@ import lombok.Data;
 import org.zwobble.shed.compiler.parsing.nodes.BlockNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
+import org.zwobble.shed.compiler.parsing.nodes.FormalTypeParameterNode;
+import org.zwobble.shed.compiler.parsing.nodes.FormalTypeParametersNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionSignatureDeclarationNode;
 import org.zwobble.shed.compiler.tokeniser.Keyword;
@@ -53,6 +56,7 @@ public class Functions {
                     FunctionSignature signature = result.get(signatureRule);
                     return new FunctionDeclarationNode(
                         signature.getIdentifier(),
+                        new FormalTypeParametersNode(Collections.<FormalTypeParameterNode>emptyList()),
                         signature.getFormalArguments(),
                         signature.getReturnType(),
                         result.get(body)

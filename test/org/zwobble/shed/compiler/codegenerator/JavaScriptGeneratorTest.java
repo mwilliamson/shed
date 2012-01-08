@@ -417,7 +417,7 @@ public class JavaScriptGeneratorTest {
     @Test public void
     functionDeclarationIsConvertedIntoJavaScriptAnonymousFunctionAssignedToVariable() {
         ReturnNode returnNode = new ReturnNode(Nodes.number("42"));
-        FunctionDeclarationNode source = new FunctionDeclarationNode(
+        FunctionDeclarationNode source = Nodes.func(
             "rank",
             asList(
                 new FormalArgumentNode("name", new VariableIdentifierNode("String")),
