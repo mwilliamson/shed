@@ -118,6 +118,10 @@ public class Nodes {
         return new FormalTypeParameterNode(identifier);
     }
 
+    public static FormalTypeParametersNode formalTypeParameters(List<FormalTypeParameterNode> formalTypeParameters) {
+        return new FormalTypeParametersNode(formalTypeParameters);
+    }
+
     public static FormalTypeParametersNode formalTypeParameters(FormalTypeParameterNode... formalTypeParameters) {
         return new FormalTypeParametersNode(asList(formalTypeParameters));
     }
@@ -159,7 +163,11 @@ public class Nodes {
     }
 
     public static FunctionDeclarationNode func(String identifier, List<FormalArgumentNode> formalArguments, ExpressionNode returnType, BlockNode body) {
-        return new FunctionDeclarationNode(identifier, formalTypeParameters(), formalArguments, returnType, body);
+        return new FunctionDeclarationNode(identifier, Option.<FormalTypeParametersNode>none(), formalArguments, returnType, body);
+    }
+
+    public static FunctionDeclarationNode func(String identifier, FormalTypeParametersNode formalTypeParameters, List<FormalArgumentNode> formalArguments, ExpressionNode returnType, BlockNode body) {
+        return new FunctionDeclarationNode(identifier, some(formalTypeParameters), formalArguments, returnType, body);
     }
 
     public static FunctionSignatureDeclarationNode funcSignature(String identifier, List<FormalArgumentNode> formalArguments, ExpressionNode returnType) {

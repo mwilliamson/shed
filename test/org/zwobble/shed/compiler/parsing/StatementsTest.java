@@ -172,6 +172,20 @@ public class StatementsTest {
     }
     
     @Test public void
+    canParseFunctionDeclarationsWithTypeParameters() {
+        assertThat(
+            Statements.statement().parse(tokens("fun first[T, U](t: T, u: U) : T { return t; }")),
+            isSuccessWithNode(Nodes.func(
+                "first",
+                Nodes.formalTypeParameters(Nodes.formalTypeParameter("T"), Nodes.formalTypeParameter("U")),
+                asList(Nodes.formalArgument("t", Nodes.id("T")), Nodes.formalArgument("u", Nodes.id("U"))),
+                Nodes.id("T"),
+                Nodes.block(Nodes.returnStatement(Nodes.id("t")))
+            ))
+        );
+    }
+    
+    @Test public void
     canParseEmptyInterfaceDeclarations() {
         assertThat(
             Statements.statement().parse(tokens("interface Instrument { }")),

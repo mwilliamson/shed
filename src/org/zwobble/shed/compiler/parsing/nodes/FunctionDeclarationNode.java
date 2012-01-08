@@ -4,6 +4,7 @@ import java.util.List;
 
 import lombok.Data;
 
+import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.structure.SyntaxNodeStructure;
 
 import static com.google.common.collect.Iterables.concat;
@@ -14,7 +15,7 @@ import static org.zwobble.shed.compiler.parsing.nodes.structure.ScopedNodes.subS
 @Data
 public class FunctionDeclarationNode implements DeclarationNode, FunctionWithBodyNode, HoistableStatementNode {
     private final String identifier;
-    private final FormalTypeParametersNode formalTypeParameters;
+    private final Option<FormalTypeParametersNode> formalTypeParameters;
     private final List<FormalArgumentNode> formalArguments;
     private final ExpressionNode returnType;
     private final BlockNode body;
