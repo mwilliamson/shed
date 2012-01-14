@@ -77,10 +77,14 @@ public class FunctionTypeChecker {
     public Function<ValueInfo, TypeResult<ValueInfo>> typeCheckBody(final FunctionWithBodyNode function) {
         return new Function<ValueInfo, TypeResult<ValueInfo>>() {
             @Override
-            public TypeResult<ValueInfo> apply(ValueInfo returnTypeInfo) {
-                List<? extends Type> functionTypeParameters = ((TypeApplication)returnTypeInfo.getType()).getTypeParameters();
+            public TypeResult<ValueInfo> apply(ValueInfo functionTypeInfo) {
+                Type type = functionTypeInfo.getType();
+                if (type instanceof ParameterisedFunctionType) {
+                    type = CoreTypes.functionTypeOf(((ParameterisedFunctionType) type).getFunctionTypeParameters());
+                }
+                List<? extends Type> functionTypeParameters = ((TypeApplication)type).getTypeParameters();
                 Type returnType = functionTypeParameters.get(functionTypeParameters.size() - 1);
-                TypeResultBuilder<ValueInfo> result = typeResultBuilder(returnTypeInfo);
+                TypeResultBuilder<ValueInfo> result = typeResultBuilder(functionTypeInfo);
 
                 TypeResultWithValue<StatementTypeCheckResult> blockResult = typeCheckBlock(function.getBody(), some(returnType));
                 result.addErrors(blockResult);

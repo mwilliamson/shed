@@ -1,9 +1,11 @@
 package org.zwobble.shed.compiler.typechecker;
 
 import org.junit.Test;
+import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalTypeParameterNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionNode;
+import org.zwobble.shed.compiler.parsing.nodes.FunctionWithBodyNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
@@ -47,7 +49,31 @@ public class FunctionTypeCheckerTest {
         assertThat(inferredType.getFunctionTypeParameters(), is(asList((Type)formalTypeParameter, formalTypeParameter)));
     }
     
+    @Test public void
+    canTypeCheckBodiesOfGenericFunctions() {
+        VariableIdentifierNode typeParameterReference = Nodes.id("T");
+        FormalTypeParameterNode typeParameterDeclaration = Nodes.formalTypeParameter("T");
+        FormalArgumentNode argumentDeclaration = Nodes.formalArgument("value", typeParameterReference);
+        VariableIdentifierNode argumentReference = Nodes.id("value");
+        FunctionDeclarationNode func = Nodes.func(
+            "identity",
+            Nodes.formalTypeParameters(typeParameterDeclaration),
+            Nodes.formalArguments(argumentDeclaration),
+            typeParameterReference,
+            Nodes.block(Nodes.returnStatement(argumentReference))
+        );
+        fixture.addReference(typeParameterReference, typeParameterDeclaration);
+        fixture.addReference(argumentReference, argumentDeclaration);
+        
+        assertThat(typeCheckBody(func), isSuccess());
+    }
+    
     private TypeResult<ValueInfo> inferType(FunctionNode function) {
         return fixture.get(FunctionTypeChecker.class).inferFunctionType(function);
+    }
+    
+    private TypeResult<ValueInfo> typeCheckBody(FunctionWithBodyNode function) {
+        FunctionTypeChecker functionTypeChecker = fixture.get(FunctionTypeChecker.class);
+        return functionTypeChecker.inferFunctionType(function).ifValueThen(functionTypeChecker.typeCheckBody(function));
     }
 }
