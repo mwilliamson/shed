@@ -9,6 +9,7 @@ import java.util.Map;
 import org.zwobble.shed.compiler.ShedSymbols;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptExpressionNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptFunctionCallNode;
+import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptFunctionNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNode;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptNodes;
 import org.zwobble.shed.compiler.codegenerator.javascript.JavaScriptStatementNode;
@@ -20,7 +21,6 @@ import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
-import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionWithBodyNode;
 import org.zwobble.shed.compiler.parsing.nodes.HoistableStatementNode;
@@ -51,13 +51,12 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 
-import static org.zwobble.shed.compiler.util.Eager.transform;
-
 import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
+import static org.zwobble.shed.compiler.util.Eager.transform;
 
 public class JavaScriptGenerator {
     public static final String CORE_VALUES_OBJECT_NAME = ShedSymbols.INTERNAL_PREFIX + "core";
@@ -102,7 +101,7 @@ public class JavaScriptGenerator {
         }
         if (node instanceof ShortLambdaExpressionNode) {
             ShortLambdaExpressionNode lambda = (ShortLambdaExpressionNode)node;
-            List<String> argumentNames = transform(lambda.getFormalArguments(), toFormalArgumentName());
+            List<String> argumentNames = transform(lambda.getFormalArguments(), toName());
             List<JavaScriptStatementNode> javaScriptBody = asList((JavaScriptStatementNode)js.ret(generateExpression(lambda.getBody())));
             return js.func(argumentNames, javaScriptBody);
         }
@@ -175,7 +174,7 @@ public class JavaScriptGenerator {
         if (node instanceof ClassDeclarationNode) {
             ClassDeclarationNode classDeclaration = (ClassDeclarationNode) node;
             return js.var(namer.javaScriptIdentifierFor(classDeclaration), js.func(
-                transform(classDeclaration.getFormalArguments(), toFormalArgumentName()),
+                transform(classDeclaration.getFormalArguments(), toName()),
                 generateObjectBody(classDeclaration.getBody())
             ));
         }
@@ -225,8 +224,16 @@ public class JavaScriptGenerator {
 
     private JavaScriptExpressionNode generateFunctionWithBody(FunctionWithBodyNode function) {
         List<JavaScriptStatementNode> javaScriptBody = generateBlock(function.getBody());
-        List<String> argumentNames = transform(function.getFormalArguments(), toFormalArgumentName());
-        return js.func(argumentNames, javaScriptBody);
+        List<String> argumentNames = transform(function.getFormalArguments(), toName());
+        JavaScriptFunctionNode innerFunction = js.func(argumentNames, javaScriptBody);
+        if (function.getFormalTypeParameters().hasValue()) {
+            return js.func(
+                transform(function.getFormalTypeParameters().get(), toName()),
+                asList((JavaScriptStatementNode)js.ret(innerFunction))
+            );
+        } else {
+            return innerFunction;   
+        }
     }
     
     private List<JavaScriptStatementNode> generateObjectBody(Iterable<StatementNode> statements) {
@@ -248,10 +255,10 @@ public class JavaScriptGenerator {
         return javaScriptBody;
     }
 
-    private Function<FormalArgumentNode, String> toFormalArgumentName() {
-        return new Function<FormalArgumentNode, String>() {
+    private Function<DeclarationNode, String> toName() {
+        return new Function<DeclarationNode, String>() {
             @Override
-            public String apply(FormalArgumentNode input) {
+            public String apply(DeclarationNode input) {
                 return namer.javaScriptIdentifierFor(input);
             }
         };

@@ -435,6 +435,25 @@ public class JavaScriptGeneratorTest {
     }
     
     @Test public void
+    genericFunctionsCreatesFunctionWithinFunction() {
+        FunctionDeclarationNode source = Nodes.func(
+            "identity",
+            Nodes.formalTypeParameters(Nodes.formalTypeParameter("T")),
+            Nodes.formalArguments(Nodes.formalArgument("value", Nodes.id("T"))),
+            Nodes.id("T"),
+            Nodes.block(Nodes.returnStatement(Nodes.id("value")))
+        );
+        assertGeneratedJavaScript(
+            source,
+            js.var("identity$1", js.func(asList("T$1"), asList(
+                (JavaScriptStatementNode)js.ret(js.func(asList("value$1"), asList(
+                    (JavaScriptStatementNode)js.ret(js.id("value$1"))
+                )))
+            )))
+        );
+    }
+    
+    @Test public void
     functionDeclarationIsHoistedToTopOfFunction() {
         StatementNode returnNode = Nodes.returnStatement(Nodes.number("42"));
         FunctionDeclarationNode function = Nodes.func(
