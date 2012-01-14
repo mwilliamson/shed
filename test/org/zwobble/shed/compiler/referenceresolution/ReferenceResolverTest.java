@@ -15,6 +15,7 @@ import org.zwobble.shed.compiler.parsing.nodes.Declaration;
 import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
+import org.zwobble.shed.compiler.parsing.nodes.FormalTypeParameterNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.GlobalDeclaration;
 import org.zwobble.shed.compiler.parsing.nodes.Identity;
@@ -403,6 +404,20 @@ public class ReferenceResolverTest {
         StatementNode functionCall = Nodes.expressionStatement(Nodes.call(functionReference));
         BlockNode source = Nodes.block(functionCall, functionDeclaration);
         assertThat(resolveReferences(source), hasReference(functionReference, functionDeclaration));
+    }
+    
+    @Test public void
+    functionDeclarationAddsTypeParametersToScope() {
+        FormalTypeParameterNode formalTypeParameter = Nodes.formalTypeParameter("T");
+        VariableIdentifierNode returnType = Nodes.id("T");
+        SyntaxNode source = Nodes.func(
+            "go",
+            Nodes.formalTypeParameters(formalTypeParameter),
+            Nodes.formalArguments(),
+            returnType,
+            Nodes.block()
+        );
+        assertThat(resolveReferences(source), hasReference(returnType, formalTypeParameter));
     }
 
     private ReferenceResolverResult resolveReferences(SyntaxNode node) {

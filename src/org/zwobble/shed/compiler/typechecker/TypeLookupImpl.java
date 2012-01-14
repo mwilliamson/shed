@@ -25,13 +25,20 @@ public class TypeLookupImpl implements TypeLookup {
     }
     
     public TypeResultWithValue<Type> lookupTypeReference(ExpressionNode typeReference) {
-        return typeInferer.inferType(typeReference).ifValueThen(extractType(typeReference)).orElse(Types.newUnknown());
+        return typeInferer.inferValueInfo(typeReference).ifValueThen(extractType(typeReference)).orElse(Types.newUnknown());
     }
 
-    private Function<Type, TypeResult<Type>> extractType(final ExpressionNode expression) {
-        return new Function<Type, TypeResult<Type>>() {
+    private Function<ValueInfo, TypeResult<Type>> extractType(final ExpressionNode expression) {
+        return new Function<ValueInfo, TypeResult<Type>>() {
             @Override
-            public TypeResult<Type> apply(Type variableType) {
+            public TypeResult<Type> apply(ValueInfo valueInfo) {
+                if (valueInfo.getValue().hasValue()) {
+                    ShedValue staticValue = valueInfo.getValue().get();
+                    if (staticValue instanceof ShedTypeValue) {
+                        return success(((ShedTypeValue)staticValue).getType());
+                    }
+                }
+                Type variableType = valueInfo.getType();
                 if (!metaClasses.isMetaClass(variableType)) {
                     return failure(error(expression, ("Not a type but an instance of \"" + variableType.shortName() + "\"")));
                 }

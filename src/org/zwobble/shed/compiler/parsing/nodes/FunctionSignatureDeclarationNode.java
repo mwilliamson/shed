@@ -4,6 +4,7 @@ import java.util.List;
 
 import lombok.Data;
 
+import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.structure.SyntaxNodeStructure;
 
 import static java.util.Arrays.asList;
@@ -22,5 +23,10 @@ public class FunctionSignatureDeclarationNode implements DeclarationNode, Functi
             sameScope(asList(returnType)),
             subScope(formalArguments)
         );
+    }
+    
+    @Override
+    public Option<FormalTypeParametersNode> getFormalTypeParameters() {
+        return Option.none();
     }
 }

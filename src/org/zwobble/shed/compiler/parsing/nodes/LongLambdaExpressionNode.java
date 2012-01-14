@@ -4,6 +4,7 @@ import java.util.List;
 
 import lombok.Data;
 
+import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.structure.SyntaxNodeStructure;
 
 import static com.google.common.collect.Iterables.concat;
@@ -24,5 +25,10 @@ public class LongLambdaExpressionNode implements LambdaExpressionNode, FunctionW
             sameScope(asList(returnType)),
             subScope(concat(formalArguments, asList(body)))
        );
+    }
+    
+    @Override
+    public Option<FormalTypeParametersNode> getFormalTypeParameters() {
+        return Option.none();
     }
 }

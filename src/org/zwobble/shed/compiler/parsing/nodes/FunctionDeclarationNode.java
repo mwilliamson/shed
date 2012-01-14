@@ -22,7 +22,7 @@ public class FunctionDeclarationNode implements DeclarationNode, FunctionWithBod
     @Override
     public SyntaxNodeStructure describeStructure() {
         return SyntaxNodeStructure.build(
-            subScope(concat(formalTypeParameters, formalArguments, asList(body, returnType))
+            subScope(concat(concat(formalTypeParameters), formalArguments, asList(body, returnType))
         ));
     }
 }
