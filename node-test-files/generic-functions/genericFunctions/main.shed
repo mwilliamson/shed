@@ -1,0 +1,11 @@
+package genericFunctions;
+
+import shed.sys;
+
+fun identity[T](value: T) : T {
+    return value;
+}
+
+public fun main() : Unit {
+    sys.print(identity[String]("Blah"));
+}

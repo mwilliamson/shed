@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilationResult;
 import org.zwobble.shed.compiler.nodejs.ShedToNodeJsCompiler;
@@ -38,6 +39,12 @@ public class NodeTests {
     @Test
     public void filesAreLoadedInDependencyOrder() {
         assertThat(compileAndExecute("multiple-files", "multipleFiles.main"), isSuccessWithOutput("A"));
+    }
+    
+    @Ignore
+    @Test
+    public void canDeclareGenericFunctions() {
+        assertThat(compileAndExecute("generic-functions", "genericFunctions.main"), isSuccessWithOutput("Blah"));
     }
     
     private NodeExecutionResult compileAndExecute(String directory, String main) {
