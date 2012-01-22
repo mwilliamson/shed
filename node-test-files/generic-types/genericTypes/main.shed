@@ -3,11 +3,11 @@ package genericTypes;
 import sys;
 
 interface Matcher[T] {
-    fun matches(T value) : Boolean;
+    fun matches(value: T) : Boolean;
 }
 
 class NeverMatches[T]() <: Matcher[T] {
-    public fun matches(T value) : Boolean {
+    public fun matches(value: T) : Boolean {
         return false;
     }
 }
