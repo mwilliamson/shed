@@ -184,7 +184,7 @@ public class JavaScriptGenerator {
         if (node instanceof IfThenElseStatementNode) {
             IfThenElseStatementNode ifThenElse = (IfThenElseStatementNode) node;
             return js.ifThenElse(
-                generateExpression(ifThenElse.getCondition()),
+                js.propertyAccess(generateExpression(ifThenElse.getCondition()), "__value"),
                 generateBlock(ifThenElse.getIfTrue()),
                 generateBlock(ifThenElse.getIfFalse())
             );
@@ -199,7 +199,7 @@ public class JavaScriptGenerator {
                     transform(whileNode.getBody(), toJavaScriptStatement())
                 )),
                 js.whileLoop(
-                    generateExpression(whileNode.getCondition()),
+                    js.propertyAccess(generateExpression(whileNode.getCondition()), "__value"),
                     js.var(resultIdentifier, js.call(js.id(loopBodyIdentifier))),
                     js.ifThen(js.operator("!==", js.id(resultIdentifier), js.undefined()), js.ret(js.id(resultIdentifier)))
                 )

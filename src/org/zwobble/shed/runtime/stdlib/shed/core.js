@@ -5,7 +5,14 @@
         return value;
     };
     var String = exports.String = identityFunction;
-    var Boolean = exports.Boolean = identityFunction;
+    var Boolean = exports.Boolean = function(value) {
+        return {
+            __value: value,
+            toString: function() {
+                return String(value.toString());
+            }
+        };
+    };
     var Double = exports.Double = function(value) {
         return {
             __value: value,

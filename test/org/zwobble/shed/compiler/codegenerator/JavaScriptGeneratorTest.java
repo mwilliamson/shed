@@ -358,7 +358,7 @@ public class JavaScriptGeneratorTest {
         StatementNode ifFalse = Nodes.returnStatement(Nodes.number("8"));
         IfThenElseStatementNode source =  Nodes.ifThenElse(Nodes.bool(true), Nodes.block(ifTrue), Nodes.block(ifFalse));
         assertGeneratedJavaScript(source, js.ifThenElse(
-            generateLiteral(Nodes.bool(true)),
+            js.propertyAccess(generateLiteral(Nodes.bool(true)), "__value"),
             Arrays.<JavaScriptStatementNode>asList(js.ret(generateLiteral(Nodes.number("6")))),
             Arrays.<JavaScriptStatementNode>asList(js.ret(generateLiteral(Nodes.number("8"))))
         ));
@@ -372,7 +372,7 @@ public class JavaScriptGeneratorTest {
             Nodes.block(Nodes.immutableVar("x", Nodes.number("8")))
         );
         assertGeneratedJavaScript(source, js.ifThenElse(
-            generateLiteral(Nodes.bool(true)),
+            js.propertyAccess(generateLiteral(Nodes.bool(true)), "__value"),
             Arrays.<JavaScriptStatementNode>asList(js.var("x$1", generateLiteral(Nodes.number("5")))),
             Arrays.<JavaScriptStatementNode>asList(js.var("x$2", generateLiteral(Nodes.number("8"))))
         ));
@@ -388,7 +388,7 @@ public class JavaScriptGeneratorTest {
                 Arrays.<JavaScriptStatementNode>asList(js.ret(generateLiteral(Nodes.number("8"))))
             )),
             js.whileLoop(
-                generateLiteral(Nodes.bool(true)),
+                js.propertyAccess(generateLiteral(Nodes.bool(true)), "__value"),
                 js.var("$tmp_loopBodyResult$1", js.call(js.id("$tmp_loopBody$1"))),
                 js.ifThen(
                     js.operator("!==", js.id("$tmp_loopBodyResult$1"), js.undefined()),
