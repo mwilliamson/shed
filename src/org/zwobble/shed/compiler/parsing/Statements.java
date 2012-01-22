@@ -11,6 +11,7 @@ import org.zwobble.shed.compiler.parsing.nodes.DeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionNode;
 import org.zwobble.shed.compiler.parsing.nodes.ExpressionStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.FormalArgumentNode;
+import org.zwobble.shed.compiler.parsing.nodes.FormalTypeParametersNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionSignatureDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.IfThenElseStatementNode;
 import org.zwobble.shed.compiler.parsing.nodes.InterfaceBodyNode;
@@ -40,6 +41,7 @@ import static org.zwobble.shed.compiler.parsing.Rules.symbol;
 import static org.zwobble.shed.compiler.parsing.Rules.then;
 import static org.zwobble.shed.compiler.parsing.Rules.tokenOfType;
 import static org.zwobble.shed.compiler.parsing.Separator.hardSeparator;
+import static org.zwobble.shed.compiler.parsing.TypeParameters.formalTypeParameters;
 import static org.zwobble.shed.compiler.parsing.TypeReferences.typeSpecifier;
 import static org.zwobble.shed.compiler.tokeniser.TokenType.IDENTIFIER;
 
@@ -216,6 +218,7 @@ public class Statements {
 
     public static Rule<ClassDeclarationNode> classDeclaration() {
         final Rule<String> identifier = tokenOfType(IDENTIFIER);
+        final Rule<Option<FormalTypeParametersNode>> formalTypeParameters = optional(formalTypeParameters());
         final Rule<List<FormalArgumentNode>> formalArguments = Arguments.formalArgumentList();
         final Rule<Option<List<ExpressionNode>>> superTypes = optional(classSuperTypeSpecifier());
         final Rule<BlockNode> body = Blocks.block();
@@ -223,6 +226,7 @@ public class Statements {
             sequence(OnError.FINISH,
                 guard(keyword(Keyword.CLASS)),
                 identifier,
+                formalTypeParameters,
                 formalArguments,
                 superTypes,
                 body
@@ -231,7 +235,13 @@ public class Statements {
                 @Override
                 public ClassDeclarationNode apply(RuleValues result) {
                     List<ExpressionNode> superTypeExpressions = result.get(superTypes).orElse(Collections.<ExpressionNode>emptyList());
-                    return new ClassDeclarationNode(result.get(identifier), result.get(formalArguments), superTypeExpressions, result.get(body));
+                    return new ClassDeclarationNode(
+                        result.get(identifier),
+                        result.get(formalTypeParameters),
+                        result.get(formalArguments),
+                        superTypeExpressions,
+                        result.get(body)
+                    );
                 }
             }
         );

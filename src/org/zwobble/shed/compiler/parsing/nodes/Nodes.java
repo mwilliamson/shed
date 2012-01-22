@@ -63,11 +63,16 @@ public class Nodes {
     }
 
     public static ClassDeclarationNode clazz(String identifier, List<FormalArgumentNode> formalArguments, BlockNode body) {
-        return new ClassDeclarationNode(identifier, formalArguments, Collections.<ExpressionNode>emptyList(), body);
+        return new ClassDeclarationNode(identifier, Option.<FormalTypeParametersNode>none(), formalArguments, Collections.<ExpressionNode>emptyList(), body);
     }
 
     public static ClassDeclarationNode clazz(String identifier, List<FormalArgumentNode> formalArguments, List<ExpressionNode> superTypes, BlockNode body) {
-        return new ClassDeclarationNode(identifier, formalArguments, superTypes, body);
+        return new ClassDeclarationNode(identifier, Option.<FormalTypeParametersNode>none(), formalArguments, superTypes, body);
+    }
+
+    public static SyntaxNode clazz(
+            String identifier, FormalTypeParametersNode formalTypeParameters, List<FormalArgumentNode> formalArguments, BlockNode body) {
+        return new ClassDeclarationNode(identifier, some(formalTypeParameters), formalArguments, Collections.<ExpressionNode>emptyList(), body);
     }
 
     public static InterfaceDeclarationNode interfaceDeclaration(String identifier, InterfaceBodyNode body) {

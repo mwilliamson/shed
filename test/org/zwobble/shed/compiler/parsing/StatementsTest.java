@@ -109,6 +109,19 @@ public class StatementsTest {
     }
     
     @Test public void
+    canDeclareClassWithFormalTypeParameters() {
+        assertThat(
+            Statements.statement().parse(tokens("class Dictionary[K, V]() { }")),
+            isSuccessWithNode(Nodes.clazz(
+                "Dictionary",
+                Nodes.formalTypeParameters(Nodes.formalTypeParameter("K"), Nodes.formalTypeParameter("V")),
+                Nodes.formalArguments(),
+                Nodes.block()
+            ))
+        );
+    }
+    
+    @Test public void
     canDeclarePublicObjects() {
         assertThat(
             Statements.statement().parse(tokens("public object browser { }")),
