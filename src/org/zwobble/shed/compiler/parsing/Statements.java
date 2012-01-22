@@ -268,17 +268,23 @@ public class Statements {
     
     public static Rule<InterfaceDeclarationNode> interfaceDeclaration() {
         final Rule<String> identifier = tokenOfType(IDENTIFIER);
+        final Rule<Option<FormalTypeParametersNode>> formalTypeParameters = optional(formalTypeParameters());
         final Rule<InterfaceBodyNode> body = interfaceBody();
         return then(
             sequence(OnError.FINISH,
                 guard(keyword(Keyword.INTERFACE)),
                 identifier,
+                formalTypeParameters,
                 body
             ),
             new SimpleParseAction<RuleValues, InterfaceDeclarationNode>() {
                 @Override
                 public InterfaceDeclarationNode apply(RuleValues result) {
-                    return new InterfaceDeclarationNode(result.get(identifier), result.get(body));
+                    return new InterfaceDeclarationNode(
+                        result.get(identifier),
+                        result.get(formalTypeParameters),
+                        result.get(body)
+                    );
                 }
             }
         );

@@ -220,4 +220,14 @@ public class StatementsTest {
             ))
         );
     }
+    
+    @Test public void
+    canParseInterfaceDeclarationWithTypeParameters() {
+        assertThat(
+            Statements.statement().parse(tokens("interface Matcher[T] { }")),
+            isSuccessWithNode(Nodes.interfaceDeclaration(
+                "Matcher", Nodes.formalTypeParameters(Nodes.formalTypeParameter("T")), Nodes.interfaceBody()
+            ))
+        );
+    }
 }

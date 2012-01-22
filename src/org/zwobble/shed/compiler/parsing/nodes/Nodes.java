@@ -76,7 +76,11 @@ public class Nodes {
     }
 
     public static InterfaceDeclarationNode interfaceDeclaration(String identifier, InterfaceBodyNode body) {
-        return new InterfaceDeclarationNode(identifier, body);
+        return new InterfaceDeclarationNode(identifier, Option.<FormalTypeParametersNode>none(), body);
+    }
+
+    public static InterfaceDeclarationNode interfaceDeclaration(String identifier, FormalTypeParametersNode formalTypeParameters, InterfaceBodyNode body) {
+        return new InterfaceDeclarationNode(identifier, some(formalTypeParameters), body);
     }
 
     public static InterfaceBodyNode interfaceBody(FunctionSignatureDeclarationNode... functionDeclarations) {
