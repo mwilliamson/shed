@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.zwobble.shed.compiler.CompilationResult;
 import org.zwobble.shed.compiler.nodejs.ShedToNodeJsCompiler;
@@ -43,6 +44,12 @@ public class NodeTests {
     @Test
     public void canDeclareGenericFunctions() {
         assertThat(compileAndExecute("generic-functions", "genericFunctions.main"), isSuccessWithOutput("Blah"));
+    }
+    
+    @Ignore
+    @Test
+    public void canDeclareInterfacesAndClasses() {
+        assertThat(compileAndExecute("generic-types", "genericTypes.main"), isSuccessWithOutput("false"));
     }
     
     private NodeExecutionResult compileAndExecute(String directory, String main) {

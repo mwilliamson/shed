@@ -1,0 +1,18 @@
+package genericTypes;
+
+import sys;
+
+interface Matcher[T] {
+    fun matches(T value) : Boolean;
+}
+
+class NeverMatches[T]() <: Matcher[T] {
+    public fun matches(T value) : Boolean {
+        return false;
+    }
+}
+
+public fun main() : Unit {
+    val matcher : Matcher[String] = NeverMatches[String]();
+    sys.print(matcher.matches("Blah").toString());
+}
