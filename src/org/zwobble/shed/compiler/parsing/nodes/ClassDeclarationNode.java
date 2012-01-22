@@ -9,7 +9,6 @@ import org.zwobble.shed.compiler.parsing.nodes.structure.SyntaxNodeStructure;
 
 import static com.google.common.collect.Iterables.concat;
 import static java.util.Arrays.asList;
-import static org.zwobble.shed.compiler.parsing.nodes.structure.ScopedNodes.sameScope;
 import static org.zwobble.shed.compiler.parsing.nodes.structure.ScopedNodes.subScope;
 
 @Data
