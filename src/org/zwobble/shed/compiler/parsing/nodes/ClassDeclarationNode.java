@@ -22,6 +22,6 @@ public class ClassDeclarationNode implements TypeDeclarationNode, HoistableState
     
     @Override
     public SyntaxNodeStructure describeStructure() {
-        return SyntaxNodeStructure.build(sameScope(superTypes), subScope(concat(formalTypeParameters, formalArguments, asList(body))));
+        return SyntaxNodeStructure.build(subScope(concat(formalTypeParameters, formalArguments, superTypes, asList(body))));
     }
 }

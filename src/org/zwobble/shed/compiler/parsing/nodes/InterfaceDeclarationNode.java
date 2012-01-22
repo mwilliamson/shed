@@ -5,8 +5,7 @@ import lombok.Data;
 import org.zwobble.shed.compiler.Option;
 import org.zwobble.shed.compiler.parsing.nodes.structure.SyntaxNodeStructure;
 
-import com.google.common.collect.Iterables;
-
+import static com.google.common.collect.Iterables.concat;
 import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.parsing.nodes.structure.ScopedNodes.subScope;
 
@@ -18,6 +17,6 @@ public class InterfaceDeclarationNode implements TypeDeclarationNode {
     
     @Override
     public SyntaxNodeStructure describeStructure() {
-        return SyntaxNodeStructure.build(subScope(Iterables.concat(formalTypeParameters, asList(body))));
+        return SyntaxNodeStructure.build(subScope(concat(formalTypeParameters, asList(body))));
     }
 }
