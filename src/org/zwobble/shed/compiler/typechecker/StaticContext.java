@@ -97,7 +97,7 @@ public class StaticContext {
     }
     
     private void addScalarType(Declaration declaration, ScalarType type, ScalarTypeInfo typeInfo, Interfaces interfaces) {
-        ClassType metaClass = metaClasses.metaClassOf(type);
+        ClassType metaClass = (ClassType)metaClasses.metaClassOf(type);
         ScalarTypeInfo metaClassTypeInfo = new ScalarTypeInfo(interfaces, members());
         
         add(declaration, ValueInfo.unassignableValue(metaClass, shedTypeValue(type)));

@@ -11,23 +11,31 @@ import org.zwobble.shed.compiler.parsing.nodes.VariableIdentifierNode;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
 import org.zwobble.shed.compiler.types.FormalTypeParameters;
 import org.zwobble.shed.compiler.types.ParameterisedFunctionType;
-import org.zwobble.shed.compiler.types.ScalarFormalTypeParameter.Variance;
 import org.zwobble.shed.compiler.types.Type;
 
-import static com.google.common.collect.Iterables.get;
-import static com.google.common.collect.Iterables.size;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.zwobble.shed.compiler.CompilerTesting.isSuccess;
+import static org.zwobble.shed.compiler.typechecker.ShedTypeValue.shedTypeValue;
+import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
+import static org.zwobble.shed.compiler.types.ScalarFormalTypeParameter.invariantFormalTypeParameter;
 
 public class FunctionTypeCheckerTest {
     private final TypeCheckerTestFixture fixture = TypeCheckerTestFixture.build();
+    private final VariableIdentifierNode typeParameterReference = Nodes.id("T");
+    private final FormalTypeParameterNode typeParameterDeclaration = Nodes.formalTypeParameter("T");
+    private final FormalTypeParameter formalTypeParameter = invariantFormalTypeParameter("T");
+    
+    public FunctionTypeCheckerTest() {
+        fixture.addReference(typeParameterReference, typeParameterDeclaration);
+        fixture.addType(typeParameterDeclaration, formalTypeParameter);
+        fixture.context().add(typeParameterDeclaration, unassignableValue(formalTypeParameter, shedTypeValue(formalTypeParameter)));
+    }
     
     @Test public void
     genericFunctionsAreTypeFunctions() {
-        VariableIdentifierNode typeParameterReference = Nodes.id("T");
-        FormalTypeParameterNode typeParameterDeclaration = Nodes.formalTypeParameter("T");
         FunctionDeclarationNode func = Nodes.func(
             "identity",
             Nodes.formalTypeParameters(typeParameterDeclaration),
@@ -35,26 +43,21 @@ public class FunctionTypeCheckerTest {
             typeParameterReference,
             Nodes.block()
         );
-        fixture.addReference(typeParameterReference, typeParameterDeclaration);
         
         TypeResult<ValueInfo> inferedTypeResult = inferType(func);
         
         assertThat(inferedTypeResult, isSuccess());
         ParameterisedFunctionType inferredType = (ParameterisedFunctionType) inferedTypeResult.getOrThrow().getType();
         FormalTypeParameters typeParameters = inferredType.getFormalTypeParameters();
-        assertThat(size(typeParameters), is(1));
-        FormalTypeParameter formalTypeParameter = get(typeParameters, 0);
-        assertThat(formalTypeParameter.shortName(), is("T"));
-        assertThat(formalTypeParameter.getVariance(), is(Variance.INVARIANT));
+        assertThat(typeParameters, contains(formalTypeParameter));
         assertThat(inferredType.getFunctionTypeParameters(), is(asList((Type)formalTypeParameter, formalTypeParameter)));
     }
     
     @Test public void
     canTypeCheckBodiesOfGenericFunctions() {
-        VariableIdentifierNode typeParameterReference = Nodes.id("T");
-        FormalTypeParameterNode typeParameterDeclaration = Nodes.formalTypeParameter("T");
         FormalArgumentNode argumentDeclaration = Nodes.formalArgument("value", typeParameterReference);
         VariableIdentifierNode argumentReference = Nodes.id("value");
+        fixture.addReference(argumentReference, argumentDeclaration);
         FunctionDeclarationNode func = Nodes.func(
             "identity",
             Nodes.formalTypeParameters(typeParameterDeclaration),
@@ -62,8 +65,6 @@ public class FunctionTypeCheckerTest {
             typeParameterReference,
             Nodes.block(Nodes.returnStatement(argumentReference))
         );
-        fixture.addReference(typeParameterReference, typeParameterDeclaration);
-        fixture.addReference(argumentReference, argumentDeclaration);
         
         assertThat(typeCheckBody(func), isSuccess());
     }

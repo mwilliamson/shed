@@ -16,20 +16,20 @@ public class MetaClassesTest {
     @Test public void
     metaClassesAreGeneratedForEachType() {
         ClassType type = new ClassType(fullyQualifiedName("shed", "Song"));
-        assertThat(metaClasses.metaClassOf(type), is(classTypeWithName(fullyQualifiedName("shed", "Song", "$Meta"))));
+        assertThat((ClassType)metaClasses.metaClassOf(type), is(classTypeWithName(fullyQualifiedName("shed", "Song", "$Meta"))));
     }
     
     @Test public void
     typeCanBeRetrivedByMetaClass() {
         ScalarType type = new ClassType(fullyQualifiedName("shed", "Song"));
-        ClassType metaClass = metaClasses.metaClassOf(type);
+        ClassType metaClass = (ClassType)metaClasses.metaClassOf(type);
         assertThat(metaClasses.getTypeFromMetaClass(metaClass), is((Type)type));
     }
     
     @Test public void
     canDetermineIfATypeIsAMetaClass() {
         ScalarType type = new ClassType(fullyQualifiedName("shed", "Song"));
-        ClassType metaClass = metaClasses.metaClassOf(type);
+        ClassType metaClass = (ClassType)metaClasses.metaClassOf(type);
         assertThat(metaClasses.isMetaClass(type), is(false));
         assertThat(metaClasses.isMetaClass(metaClass), is(true));
     }

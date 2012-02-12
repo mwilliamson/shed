@@ -5,7 +5,7 @@ import lombok.Data;
 import org.zwobble.shed.compiler.parsing.nodes.structure.SyntaxNodeStructure;
 
 @Data
-public class FormalTypeParameterNode implements SyntaxNode, DeclarationNode {
+public class FormalTypeParameterNode implements SyntaxNode, TypeDeclarationNode {
     private final String identifier;
     
     @Override

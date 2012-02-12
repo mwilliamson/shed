@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.zwobble.shed.compiler.naming.FullyQualifiedName;
 import org.zwobble.shed.compiler.naming.FullyQualifiedNamesBuilder;
 import org.zwobble.shed.compiler.parsing.nodes.ClassDeclarationNode;
+import org.zwobble.shed.compiler.parsing.nodes.FormalTypeParameterNode;
 import org.zwobble.shed.compiler.parsing.nodes.InterfaceDeclarationNode;
 import org.zwobble.shed.compiler.parsing.nodes.Nodes;
 import org.zwobble.shed.compiler.parsing.nodes.ObjectDeclarationNode;
@@ -18,6 +19,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.zwobble.shed.compiler.naming.FullyQualifiedName.fullyQualifiedName;
 import static org.zwobble.shed.compiler.types.TypeMatchers.classTypeWithName;
 import static org.zwobble.shed.compiler.types.TypeMatchers.interfaceTypeWithName;
+import static org.zwobble.shed.compiler.types.TypeMatchers.invariantFormalTypeParameterWithName;
 
 public class TypeGeneratorTest {
     private final FullyQualifiedNamesBuilder names = new FullyQualifiedNamesBuilder();
@@ -44,6 +46,12 @@ public class TypeGeneratorTest {
         FullyQualifiedName name = fullyQualifiedName("shed", "music", "song");
         names.addFullyQualifiedName(declarationNode, name);
         assertThat(generate(declarationNode), isTypeStoreWith(declarationNode, interfaceTypeWithName(name)));
+    }
+    
+    @Test public void
+    typesAreGeneratedForInvariantFormalTypeParameters() {
+        FormalTypeParameterNode formalTypeParameter = Nodes.formalTypeParameter("T"); 
+        assertThat(generate(formalTypeParameter), isTypeStoreWith(formalTypeParameter, invariantFormalTypeParameterWithName("T")));
     }
     
     @Test public void

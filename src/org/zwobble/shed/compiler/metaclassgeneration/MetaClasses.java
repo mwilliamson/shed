@@ -3,6 +3,8 @@ package org.zwobble.shed.compiler.metaclassgeneration;
 import lombok.RequiredArgsConstructor;
 
 import org.zwobble.shed.compiler.types.ClassType;
+import org.zwobble.shed.compiler.types.CoreTypes;
+import org.zwobble.shed.compiler.types.FormalTypeParameter;
 import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.Type;
 
@@ -13,9 +15,14 @@ import com.google.common.collect.HashBiMap;
 public class MetaClasses {
     private final BiMap<ScalarType, ClassType> typesToMetaClasses = HashBiMap.<ScalarType, ClassType>create();
     
-    public ClassType metaClassOf(ScalarType type) {
-        if (!typesToMetaClasses.containsKey(type)) {
-            typesToMetaClasses.put(type, createMetaClass(type));
+    public Type metaClassOf(Type type) {
+        if (type instanceof FormalTypeParameter) {
+            // TODO: test
+            return CoreTypes.CLASS;
+        }
+        if (!typesToMetaClasses.containsKey(type) && type instanceof ScalarType) {
+            ScalarType scalarType = (ScalarType)type;
+            typesToMetaClasses.put(scalarType, createMetaClass(scalarType));
         }
         return typesToMetaClasses.get(type);
     }

@@ -12,6 +12,7 @@ import org.zwobble.shed.compiler.parsing.nodes.FunctionNode;
 import org.zwobble.shed.compiler.parsing.nodes.FunctionWithBodyNode;
 import org.zwobble.shed.compiler.typechecker.errors.MissingReturnStatementError;
 import org.zwobble.shed.compiler.typechecker.statements.StatementTypeCheckResult;
+import org.zwobble.shed.compiler.typegeneration.TypeStore;
 import org.zwobble.shed.compiler.types.CoreTypes;
 import org.zwobble.shed.compiler.types.FormalTypeParameter;
 import org.zwobble.shed.compiler.types.FormalTypeParameters;
@@ -28,27 +29,25 @@ import static java.util.Arrays.asList;
 import static org.zwobble.shed.compiler.Option.none;
 import static org.zwobble.shed.compiler.Option.some;
 import static org.zwobble.shed.compiler.errors.CompilerErrors.error;
-import static org.zwobble.shed.compiler.typechecker.ShedTypeValue.shedTypeValue;
 import static org.zwobble.shed.compiler.typechecker.TypeResultBuilder.typeResultBuilder;
 import static org.zwobble.shed.compiler.typechecker.TypeResults.success;
-import static org.zwobble.shed.compiler.typechecker.ValueInfo.unassignableValue;
 import static org.zwobble.shed.compiler.typechecker.ValueInfos.toUnassignableValueInfo;
 import static org.zwobble.shed.compiler.types.FormalTypeParameters.formalTypeParameters;
-import static org.zwobble.shed.compiler.types.ScalarFormalTypeParameter.invariantFormalTypeParameter;
 
 public class FunctionTypeChecker {
     private final ArgumentTypeInferer argumentTypeInferer;
     private final TypeLookup typeLookup;
+    private final TypeStore typeStore;
     private final BlockTypeChecker blockTypeChecker;
-    private final StaticContext context;
 
     @Inject
     public FunctionTypeChecker(
-            ArgumentTypeInferer argumentTypeInferer, TypeLookup typeLookup, BlockTypeChecker blockTypeChecker, StaticContext context) {
+            ArgumentTypeInferer argumentTypeInferer, TypeLookup typeLookup, TypeStore typeStore,
+            BlockTypeChecker blockTypeChecker) {
         this.argumentTypeInferer = argumentTypeInferer;
         this.typeLookup = typeLookup;
+        this.typeStore = typeStore;
         this.blockTypeChecker = blockTypeChecker;
-        this.context = context;
     }
     
     public TypeResult<ValueInfo> inferFunctionType(final FunctionNode function) {
@@ -64,8 +63,7 @@ public class FunctionTypeChecker {
             List<FormalTypeParameter> formalTypeParameters = Lists.newArrayList();
             FormalTypeParametersNode formalTypeParameterNodes = formalTypeParametersOption.get();
             for (FormalTypeParameterNode formalTypeParameterNode : formalTypeParameterNodes) {
-                FormalTypeParameter formalTypeParameter = invariantFormalTypeParameter(formalTypeParameterNode.getIdentifier());
-                context.add(formalTypeParameterNode, unassignableValue(CoreTypes.CLASS, shedTypeValue(formalTypeParameter)));
+                FormalTypeParameter formalTypeParameter = (FormalTypeParameter) typeStore.typeDeclaredBy(formalTypeParameterNode);
                 formalTypeParameters.add(formalTypeParameter);
             }
             return some(formalTypeParameters(formalTypeParameters));

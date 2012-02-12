@@ -6,7 +6,6 @@ import org.zwobble.shed.compiler.parsing.nodes.TypeDeclarationNode;
 import org.zwobble.shed.compiler.typechecker.StaticContext;
 import org.zwobble.shed.compiler.typechecker.ValueInfo;
 import org.zwobble.shed.compiler.typegeneration.TypeStore;
-import org.zwobble.shed.compiler.types.ScalarType;
 import org.zwobble.shed.compiler.types.Type;
 import org.zwobble.shed.compiler.util.Pair;
 
@@ -27,7 +26,7 @@ public class TypeBinder {
 
     private void bindGeneratedType(StaticContext context, Pair<TypeDeclarationNode, Type> generatedType) {
         TypeDeclarationNode declaration = generatedType.getFirst();
-        ScalarType type = (ScalarType) generatedType.getSecond();
+        Type type = generatedType.getSecond();
         if (isSingletonType(declaration)) {
             context.add(declaration, ValueInfo.unassignableValue(type));
         } else {
